@@ -1,0 +1,50 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Function;
+import java.util.HashSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableDistinctBenchmark {
+
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    private Observable<Integer> source;
+    private Observable<Integer> distinct;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Create a source with duplicates: first half unique, second half repeats some values
+        source = Observable.range(0, size)
+                .concatWith(Observable.range(0, size / 2));
+
+        // Apply distinct operator with a simple key selector (identity) and a HashSet supplier
+        distinct = source.distinct(
+                (Function<Integer, Integer>) i -> i,
+                HashSet::new
+        );
+    }
+
+    @Benchmark
+    public void distinctThroughput(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        distinct.subscribe(
+                bh::consume,
+                bh::consume,
+                latch::countDown
+        );
+        latch.await();
+    }
+}
+```

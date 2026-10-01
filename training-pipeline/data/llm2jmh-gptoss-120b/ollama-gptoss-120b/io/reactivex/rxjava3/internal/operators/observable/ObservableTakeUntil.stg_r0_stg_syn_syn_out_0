@@ -1,0 +1,99 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for the {@code takeUntil} operator of RxJava 3.
+ *
+ * <p>The benchmark measures the throughput (items per second) of an {@link Observable}
+ * that emits a configurable number of integer values and is terminated by a {@code takeUntil}
+ * with an {@link Observable#never()} as the other source (i.e., no early termination).</p>
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Parameterize the size of the source sequence with {@code @Param}.</li>
+ *   <li>Perform all allocations in {@code @Setup} to exclude them from the measured time.</li>
+ *   <li>Consume emitted items via {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Use {@code blockingSubscribe} to ensure the benchmark thread waits for completion.</li>
+ *   <li>Configure warm‑up and measurement iterations for reliable results.</li>
+ * </ul>
+ * </p>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableTakeUntilBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     */
+    @Param({ "1", "10", "100", "1_000", "10_000", "100_000" })
+    public int size;
+
+    /**
+     * The source Observable emitting a range of integers.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * The "other" Observable used by {@code takeUntil}. It never emits, so the source runs to completion.
+     */
+    private Observable<Object> other;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits 'size' sequential integers.
+        source = Observable.range(0, size);
+        // An Observable that never emits any item nor terminates.
+        other = Observable.never();
+    }
+
+    /**
+     * Benchmark the throughput of {@code source.takeUntil(other)}.
+     *
+     * @param bh Blackhole to consume the emitted items.
+     */
+    @Benchmark
+    public void takeUntil(Blackhole bh) {
+        // The operator under test is applied via the public API.
+        source.takeUntil(other).blockingSubscribe(bh::consume);
+    }
+}

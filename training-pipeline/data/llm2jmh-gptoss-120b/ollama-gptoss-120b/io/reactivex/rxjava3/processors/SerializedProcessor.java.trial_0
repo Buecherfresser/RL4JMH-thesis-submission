@@ -1,0 +1,108 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.reactivestreams.Subscription;
+
+/**
+ * JMH benchmark for {@link SerializedProcessor}.
+ *
+ * The benchmark measures the throughput of {@code onNext} calls under
+ * different threading scenarios. It uses a {@link PublishProcessor} as the
+ * underlying processor because it is a lightweight, unbounded, non‑blocking
+ * implementation that is suitable for micro‑benchmarks.
+ *
+ * Best‑practice JMH settings are applied:
+ *   • Warm‑up iterations to let the JIT stabilize.
+ *   • Measurement iterations for reliable results.
+ *   • A single fork to isolate JVM state.
+ *   • Separate benchmark methods for single‑threaded and multi‑threaded
+ *     workloads.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class SerializedProcessorBenchmark {
+
+    /**
+     * Shared state for the benchmark. The state is scoped to the whole
+     * benchmark instance, so it is created once per fork.
+     */
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+
+        /** The underlying processor that actually stores the items. */
+        PublishProcessor<Integer> actual;
+
+        /** The serialized wrapper we want to benchmark. */
+        SerializedProcessor<Integer> serialized;
+
+        /** A no‑op subscriber that requests an unbounded number of items. */
+        @SuppressWarnings("unused")
+        private final Subscriber<Integer> subscriber = new Subscriber<Integer>() {
+            @Override public void onSubscribe(Subscription s) { s.request(Long.MAX_VALUE); }
+            @Override public void onNext(Integer t) { /* no‑op */ }
+            @Override public void onError(Throwable t) { /* no‑op */ }
+            @Override public void onComplete() { /* no‑op */ }
+        };
+
+        /** Value used for each {@code onNext} call. */
+        final Integer value = 1;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create the actual processor and wrap it with SerializedProcessor.
+            actual = PublishProcessor.create();
+            serialized = new SerializedProcessor<>(actual);
+
+            // Subscribe the no‑op subscriber to the serialized processor.
+            serialized.subscribe(subscriber);
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            // Complete the processor to release any internal resources.
+            serialized.onComplete();
+        }
+    }
+
+    /**
+     * Single‑threaded throughput benchmark.
+     *
+     * Measures how many {@code onNext} calls can be performed per second
+     * when invoked from a single thread.
+     */
+    @Benchmark
+    @Threads(1)
+    public void onNextSingleThread(BenchmarkState state, Blackhole bh) {
+        state.serialized.onNext(state.value);
+        // Blackhole to prevent dead‑code elimination if the compiler tries to
+        // inline the call chain. The processor itself does not produce a
+        // return value, but the Blackhole ensures the method call is observed.
+        bh.consume(state.serialized);
+    }
+
+    /**
+     * Multi‑threaded throughput benchmark.
+     *
+     * Measures the aggregate throughput when {@code onNext} is called from
+     * multiple concurrent threads. The {@code @Threads} annotation can be
+     * overridden from the command line (e.g., {@code -t 4}) to explore
+     * scalability.
+     */
+    @Benchmark
+    @Threads(4) // default to 4 threads; can be changed via JMH CLI
+    public void onNextMultiThread(BenchmarkState state, Blackhole bh) {
+        state.serialized.onNext(state.value);
+        bh.consume(state.serialized);
+    }
+}
+```

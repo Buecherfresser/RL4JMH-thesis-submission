@@ -1,0 +1,589 @@
+diff --git a/com/squareup/moshi/AdapterMethodsFactory.java b/com/squareup/moshi/AdapterMethodsFactory.java
+index 84c8df7..3271181 100644
+--- a/com/squareup/moshi/AdapterMethodsFactory.java
++++ b/com/squareup/moshi/AdapterMethodsFactory.java
+@@ -42,7 +42,7 @@ final class AdapterMethodsFactory implements JsonAdapter.Factory {
+ 
+   @Override
+   public @Nullable JsonAdapter<?> create(
+-      final Type type, final Set<? extends Annotation> annotations, final Moshi moshi) {
++      final Type type, final Set<? extends Annotation> annotations, final Moshi moshi) { com.squareup.moshi.jmhbench.MutationSwitch.tick(28);
+     final AdapterMethod toAdapter = get(toAdapters, type, annotations);
+     final AdapterMethod fromAdapter = get(fromAdapters, type, annotations);
+     if (toAdapter == null && fromAdapter == null) return null;
+@@ -69,7 +69,7 @@ final class AdapterMethodsFactory implements JsonAdapter.Factory {
+ 
+     return new JsonAdapter<Object>() {
+       @Override
+-      public void toJson(JsonWriter writer, @Nullable Object value) throws IOException {
++      public void toJson(JsonWriter writer, @Nullable Object value) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(30);
+         if (toAdapter == null) {
+           delegate.toJson(writer, value);
+         } else if (!toAdapter.nullable && value == null) {
+@@ -86,7 +86,7 @@ final class AdapterMethodsFactory implements JsonAdapter.Factory {
+       }
+ 
+       @Override
+-      public @Nullable Object fromJson(JsonReader reader) throws IOException {
++      public @Nullable Object fromJson(JsonReader reader) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(31);
+         if (fromAdapter == null) {
+           return delegate.fromJson(reader);
+         } else if (!fromAdapter.nullable && reader.peek() == JsonReader.Token.NULL) {
+diff --git a/com/squareup/moshi/ArrayJsonAdapter.java b/com/squareup/moshi/ArrayJsonAdapter.java
+index 92d1463..ec39768 100644
+--- a/com/squareup/moshi/ArrayJsonAdapter.java
++++ b/com/squareup/moshi/ArrayJsonAdapter.java
+@@ -33,7 +33,7 @@ final class ArrayJsonAdapter extends JsonAdapter<Object> {
+       new Factory() {
+         @Override
+         public @Nullable JsonAdapter<?> create(
+-            Type type, Set<? extends Annotation> annotations, Moshi moshi) {
++            Type type, Set<? extends Annotation> annotations, Moshi moshi) { com.squareup.moshi.jmhbench.MutationSwitch.tick(1);
+           Type elementType = Types.arrayComponentType(type);
+           if (elementType == null) return null;
+           if (!annotations.isEmpty()) return null;
+@@ -52,7 +52,7 @@ final class ArrayJsonAdapter extends JsonAdapter<Object> {
+   }
+ 
+   @Override
+-  public Object fromJson(JsonReader reader) throws IOException {
++  public Object fromJson(JsonReader reader) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(4);
+     List<Object> list = new ArrayList<>();
+     reader.beginArray();
+     while (reader.hasNext()) {
+@@ -67,7 +67,7 @@ final class ArrayJsonAdapter extends JsonAdapter<Object> {
+   }
+ 
+   @Override
+-  public void toJson(JsonWriter writer, Object value) throws IOException {
++  public void toJson(JsonWriter writer, Object value) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(7);
+     writer.beginArray();
+     for (int i = 0, size = Array.getLength(value); i < size; i++) {
+       elementAdapter.toJson(writer, Array.get(value, i));
+diff --git a/com/squareup/moshi/ClassJsonAdapter.java b/com/squareup/moshi/ClassJsonAdapter.java
+index 50e7d46..f96b6be 100644
+--- a/com/squareup/moshi/ClassJsonAdapter.java
++++ b/com/squareup/moshi/ClassJsonAdapter.java
+@@ -56,7 +56,7 @@ final class ClassJsonAdapter<T> extends JsonAdapter<T> {
+       new JsonAdapter.Factory() {
+         @Override
+         public @Nullable JsonAdapter<?> create(
+-            Type type, Set<? extends Annotation> annotations, Moshi moshi) {
++            Type type, Set<? extends Annotation> annotations, Moshi moshi) { com.squareup.moshi.jmhbench.MutationSwitch.tick(32);
+           if (!(type instanceof Class) && !(type instanceof ParameterizedType)) {
+             return null;
+           }
+@@ -181,7 +181,7 @@ final class ClassJsonAdapter<T> extends JsonAdapter<T> {
+   }
+ 
+   @Override
+-  public T fromJson(JsonReader reader) throws IOException {
++  public T fromJson(JsonReader reader) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(33);
+     T result;
+     try {
+       result = classFactory.newInstance();
+@@ -212,7 +212,7 @@ final class ClassJsonAdapter<T> extends JsonAdapter<T> {
+   }
+ 
+   @Override
+-  public void toJson(JsonWriter writer, T value) throws IOException {
++  public void toJson(JsonWriter writer, T value) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(34);
+     try {
+       writer.beginObject();
+       for (FieldBinding<?> fieldBinding : fieldsArray) {
+diff --git a/com/squareup/moshi/JsonUtf8Reader.java b/com/squareup/moshi/JsonUtf8Reader.java
+index 79d8b9d..5754d9e 100644
+--- a/com/squareup/moshi/JsonUtf8Reader.java
++++ b/com/squareup/moshi/JsonUtf8Reader.java
+@@ -130,7 +130,7 @@ final class JsonUtf8Reader extends JsonReader {
+   }
+ 
+   @Override
+-  public void beginArray() throws IOException {
++  public void beginArray() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(35);
+     int p = peeked;
+     if (p == PEEKED_NONE) {
+       p = doPeek();
+@@ -146,7 +146,7 @@ final class JsonUtf8Reader extends JsonReader {
+   }
+ 
+   @Override
+-  public void endArray() throws IOException {
++  public void endArray() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(36);
+     int p = peeked;
+     if (p == PEEKED_NONE) {
+       p = doPeek();
+@@ -161,7 +161,7 @@ final class JsonUtf8Reader extends JsonReader {
+   }
+ 
+   @Override
+-  public void beginObject() throws IOException {
++  public void beginObject() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(37);
+     int p = peeked;
+     if (p == PEEKED_NONE) {
+       p = doPeek();
+diff --git a/com/squareup/moshi/JsonUtf8Writer.java b/com/squareup/moshi/JsonUtf8Writer.java
+index 8cc783f..25f04a5 100644
+--- a/com/squareup/moshi/JsonUtf8Writer.java
++++ b/com/squareup/moshi/JsonUtf8Writer.java
+@@ -77,13 +77,13 @@ final class JsonUtf8Writer extends JsonWriter {
+   }
+ 
+   @Override
+-  public void setIndent(String indent) {
++  public void setIndent(String indent) { com.squareup.moshi.jmhbench.MutationSwitch.tick(38);
+     super.setIndent(indent);
+     this.separator = !indent.isEmpty() ? ": " : ":";
+   }
+ 
+   @Override
+-  public JsonWriter beginArray() throws IOException {
++  public JsonWriter beginArray() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(39);
+     if (promoteValueToName) {
+       throw new IllegalStateException(
+           "Array cannot be used as a map key in JSON at path " + getPath());
+@@ -93,7 +93,7 @@ final class JsonUtf8Writer extends JsonWriter {
+   }
+ 
+   @Override
+-  public JsonWriter endArray() throws IOException {
++  public JsonWriter endArray() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(40);
+     return close(EMPTY_ARRAY, NONEMPTY_ARRAY, ']');
+   }
+ 
+diff --git a/com/squareup/moshi/JsonValueReader.java b/com/squareup/moshi/JsonValueReader.java
+index 5f889c6..605e61a 100644
+--- a/com/squareup/moshi/JsonValueReader.java
++++ b/com/squareup/moshi/JsonValueReader.java
+@@ -73,7 +73,7 @@ final class JsonValueReader extends JsonReader {
+   }
+ 
+   @Override
+-  public void beginArray() throws IOException {
++  public void beginArray() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(41);
+     List<?> peeked = require(List.class, Token.BEGIN_ARRAY);
+ 
+     JsonIterator iterator =
+@@ -89,7 +89,7 @@ final class JsonValueReader extends JsonReader {
+   }
+ 
+   @Override
+-  public void endArray() throws IOException {
++  public void endArray() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(42);
+     JsonIterator peeked = require(JsonIterator.class, Token.END_ARRAY);
+     if (peeked.endToken != Token.END_ARRAY || peeked.hasNext()) {
+       throw typeMismatch(peeked, Token.END_ARRAY);
+@@ -98,7 +98,7 @@ final class JsonValueReader extends JsonReader {
+   }
+ 
+   @Override
+-  public void beginObject() throws IOException {
++  public void beginObject() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(43);
+     Map<?, ?> peeked = require(Map.class, Token.BEGIN_OBJECT);
+ 
+     JsonIterator iterator =
+diff --git a/com/squareup/moshi/JsonValueSource.java b/com/squareup/moshi/JsonValueSource.java
+index a824fec..5227fdd 100644
+--- a/com/squareup/moshi/JsonValueSource.java
++++ b/com/squareup/moshi/JsonValueSource.java
+@@ -187,7 +187,7 @@ final class JsonValueSource implements Source {
+    * Discards any remaining JSON data in this source that was left behind after it was closed. It is
+    * an error to call {@link #read} after calling this method.
+    */
+-  public void discard() throws IOException {
++  public void discard() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(44);
+     closed = true;
+     while (state != STATE_END_OF_JSON) {
+       advanceLimit(8192);
+@@ -223,12 +223,12 @@ final class JsonValueSource implements Source {
+   }
+ 
+   @Override
+-  public Timeout timeout() {
++  public Timeout timeout() { com.squareup.moshi.jmhbench.MutationSwitch.tick(45);
+     return source.timeout();
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(46);
+     // Note that this does not close the underlying source; that's the creator's responsibility.
+     closed = true;
+   }
+diff --git a/com/squareup/moshi/JsonValueWriter.java b/com/squareup/moshi/JsonValueWriter.java
+index b104afa..a729b35 100644
+--- a/com/squareup/moshi/JsonValueWriter.java
++++ b/com/squareup/moshi/JsonValueWriter.java
+@@ -43,7 +43,7 @@ final class JsonValueWriter extends JsonWriter {
+     pushScope(EMPTY_DOCUMENT);
+   }
+ 
+-  public Object root() {
++  public Object root() { com.squareup.moshi.jmhbench.MutationSwitch.tick(47);
+     int size = stackSize;
+     if (size > 1 || size == 1 && scopes[size - 1] != NONEMPTY_DOCUMENT) {
+       throw new IllegalStateException("Incomplete document");
+@@ -52,7 +52,7 @@ final class JsonValueWriter extends JsonWriter {
+   }
+ 
+   @Override
+-  public JsonWriter beginArray() throws IOException {
++  public JsonWriter beginArray() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(48);
+     if (promoteValueToName) {
+       throw new IllegalStateException(
+           "Array cannot be used as a map key in JSON at path " + getPath());
+@@ -72,7 +72,7 @@ final class JsonValueWriter extends JsonWriter {
+   }
+ 
+   @Override
+-  public JsonWriter endArray() throws IOException {
++  public JsonWriter endArray() throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(49);
+     if (peekScope() != EMPTY_ARRAY) {
+       throw new IllegalStateException("Nesting problem.");
+     }
+diff --git a/com/squareup/moshi/LinkedHashTreeMap.java b/com/squareup/moshi/LinkedHashTreeMap.java
+index ffce2d4..ae62c73 100644
+--- a/com/squareup/moshi/LinkedHashTreeMap.java
++++ b/com/squareup/moshi/LinkedHashTreeMap.java
+@@ -74,7 +74,7 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
+   }
+ 
+   @Override
+-  public int size() {
++  public int size() { com.squareup.moshi.jmhbench.MutationSwitch.tick(10);
+     return size;
+   }
+ 
+@@ -85,7 +85,7 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
+   }
+ 
+   @Override
+-  public boolean containsKey(Object key) {
++  public boolean containsKey(Object key) { com.squareup.moshi.jmhbench.MutationSwitch.tick(13);
+     return findByObject(key) != null;
+   }
+ 
+@@ -101,7 +101,7 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
+   }
+ 
+   @Override
+-  public void clear() {
++  public void clear() { com.squareup.moshi.jmhbench.MutationSwitch.tick(16);
+     Arrays.fill(table, null);
+     size = 0;
+     modCount++;
+diff --git a/com/squareup/moshi/MapJsonAdapter.java b/com/squareup/moshi/MapJsonAdapter.java
+index 0e0d83a..f83cee6 100644
+--- a/com/squareup/moshi/MapJsonAdapter.java
++++ b/com/squareup/moshi/MapJsonAdapter.java
+@@ -32,7 +32,7 @@ final class MapJsonAdapter<K, V> extends JsonAdapter<Map<K, V>> {
+       new Factory() {
+         @Override
+         public @Nullable JsonAdapter<?> create(
+-            Type type, Set<? extends Annotation> annotations, Moshi moshi) {
++            Type type, Set<? extends Annotation> annotations, Moshi moshi) { com.squareup.moshi.jmhbench.MutationSwitch.tick(19);
+           if (!annotations.isEmpty()) return null;
+           Class<?> rawType = Types.getRawType(type);
+           if (rawType != Map.class) return null;
+@@ -50,7 +50,7 @@ final class MapJsonAdapter<K, V> extends JsonAdapter<Map<K, V>> {
+   }
+ 
+   @Override
+-  public void toJson(JsonWriter writer, Map<K, V> map) throws IOException {
++  public void toJson(JsonWriter writer, Map<K, V> map) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(22);
+     writer.beginObject();
+     for (Map.Entry<K, V> entry : map.entrySet()) {
+       if (entry.getKey() == null) {
+@@ -64,7 +64,7 @@ final class MapJsonAdapter<K, V> extends JsonAdapter<Map<K, V>> {
+   }
+ 
+   @Override
+-  public Map<K, V> fromJson(JsonReader reader) throws IOException {
++  public Map<K, V> fromJson(JsonReader reader) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(25);
+     LinkedHashTreeMap<K, V> result = new LinkedHashTreeMap<>();
+     reader.beginObject();
+     while (reader.hasNext()) {
+diff --git a/com/squareup/moshi/Moshi.java b/com/squareup/moshi/Moshi.java
+index 312e520..bf6e91a 100644
+--- a/com/squareup/moshi/Moshi.java
++++ b/com/squareup/moshi/Moshi.java
+@@ -71,7 +71,7 @@ public final class Moshi {
+ 
+   /** Returns a JSON adapter for {@code type}, creating it if necessary. */
+   @CheckReturnValue
+-  public <T> JsonAdapter<T> adapter(Type type) {
++  public <T> JsonAdapter<T> adapter(Type type) { com.squareup.moshi.jmhbench.MutationSwitch.tick(50);
+     return adapter(type, Util.NO_ANNOTATIONS);
+   }
+ 
+diff --git a/com/squareup/moshi/adapters/EnumJsonAdapter.java b/com/squareup/moshi/adapters/EnumJsonAdapter.java
+index 058231f..8c7d97c 100644
+--- a/com/squareup/moshi/adapters/EnumJsonAdapter.java
++++ b/com/squareup/moshi/adapters/EnumJsonAdapter.java
+@@ -45,7 +45,7 @@ public final class EnumJsonAdapter<T extends Enum<T>> extends JsonAdapter<T> {
+   final boolean useFallbackValue;
+   final @Nullable T fallbackValue;
+ 
+-  public static <T extends Enum<T>> EnumJsonAdapter<T> create(Class<T> enumType) {
++  public static <T extends Enum<T>> EnumJsonAdapter<T> create(Class<T> enumType) { com.squareup.moshi.jmhbench.MutationSwitch.tick(8);
+     return new EnumJsonAdapter<>(enumType, null, false);
+   }
+ 
+@@ -55,7 +55,7 @@ public final class EnumJsonAdapter<T extends Enum<T>> extends JsonAdapter<T> {
+    * null, absent, or not a string. Also, the string values are case-sensitive, and this fallback
+    * value will be used even on case mismatches.
+    */
+-  public EnumJsonAdapter<T> withUnknownFallback(@Nullable T fallbackValue) {
++  public EnumJsonAdapter<T> withUnknownFallback(@Nullable T fallbackValue) { com.squareup.moshi.jmhbench.MutationSwitch.tick(11);
+     return new EnumJsonAdapter<>(enumType, fallbackValue, true);
+   }
+ 
+@@ -77,7 +77,7 @@ public final class EnumJsonAdapter<T extends Enum<T>> extends JsonAdapter<T> {
+   }
+ 
+   @Override
+-  public @Nullable T fromJson(JsonReader reader) throws IOException {
++  public @Nullable T fromJson(JsonReader reader) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(14);
+     int index = reader.selectString(options);
+     if (index != -1) return constants[index];
+ 
+diff --git a/com/squareup/moshi/adapters/Iso8601Utils.java b/com/squareup/moshi/adapters/Iso8601Utils.java
+index 43ee6a1..034f54f 100644
+--- a/com/squareup/moshi/adapters/Iso8601Utils.java
++++ b/com/squareup/moshi/adapters/Iso8601Utils.java
+@@ -43,7 +43,7 @@ final class Iso8601Utils {
+   static final TimeZone TIMEZONE_Z = TimeZone.getTimeZone(GMT_ID);
+ 
+   /** Returns {@code date} formatted as yyyy-MM-ddThh:mm:ss.sssZ */
+-  public static String format(Date date) {
++  public static String format(Date date) { com.squareup.moshi.jmhbench.MutationSwitch.tick(2);
+     Calendar calendar = new GregorianCalendar(TIMEZONE_Z, Locale.US);
+     calendar.setTime(date);
+ 
+@@ -74,7 +74,7 @@ final class Iso8601Utils {
+    * @param date ISO string to parse in the appropriate format.
+    * @return the parsed date
+    */
+-  public static Date parse(String date) {
++  public static Date parse(String date) { com.squareup.moshi.jmhbench.MutationSwitch.tick(5);
+     try {
+       int offset = 0;
+ 
+diff --git a/com/squareup/moshi/adapters/PolymorphicJsonAdapterFactory.java b/com/squareup/moshi/adapters/PolymorphicJsonAdapterFactory.java
+index 7eb9020..1186f88 100644
+--- a/com/squareup/moshi/adapters/PolymorphicJsonAdapterFactory.java
++++ b/com/squareup/moshi/adapters/PolymorphicJsonAdapterFactory.java
+@@ -140,7 +140,7 @@ public final class PolymorphicJsonAdapterFactory<T> implements JsonAdapter.Facto
+    *     JSON object.
+    */
+   @CheckReturnValue
+-  public static <T> PolymorphicJsonAdapterFactory<T> of(Class<T> baseType, String labelKey) {
++  public static <T> PolymorphicJsonAdapterFactory<T> of(Class<T> baseType, String labelKey) { com.squareup.moshi.jmhbench.MutationSwitch.tick(17);
+     if (baseType == null) throw new NullPointerException("baseType == null");
+     if (labelKey == null) throw new NullPointerException("labelKey == null");
+     return new PolymorphicJsonAdapterFactory<>(
+@@ -148,7 +148,7 @@ public final class PolymorphicJsonAdapterFactory<T> implements JsonAdapter.Facto
+   }
+ 
+   /** Returns a new factory that decodes instances of {@code subtype}. */
+-  public PolymorphicJsonAdapterFactory<T> withSubtype(Class<? extends T> subtype, String label) {
++  public PolymorphicJsonAdapterFactory<T> withSubtype(Class<? extends T> subtype, String label) { com.squareup.moshi.jmhbench.MutationSwitch.tick(20);
+     if (subtype == null) throw new NullPointerException("subtype == null");
+     if (label == null) throw new NullPointerException("label == null");
+     if (labels.contains(label)) {
+@@ -170,7 +170,7 @@ public final class PolymorphicJsonAdapterFactory<T> implements JsonAdapter.Facto
+    * it within your implementation of {@link JsonAdapter#fromJson(JsonReader)}
+    */
+   public PolymorphicJsonAdapterFactory<T> withFallbackJsonAdapter(
+-      @Nullable JsonAdapter<Object> fallbackJsonAdapter) {
++      @Nullable JsonAdapter<Object> fallbackJsonAdapter) { com.squareup.moshi.jmhbench.MutationSwitch.tick(23);
+     return new PolymorphicJsonAdapterFactory<>(
+         baseType, labelKey, labels, subtypes, fallbackJsonAdapter);
+   }
+diff --git a/com/squareup/moshi/adapters/Rfc3339DateJsonAdapter.java b/com/squareup/moshi/adapters/Rfc3339DateJsonAdapter.java
+index c97a133..3e1500c 100644
+--- a/com/squareup/moshi/adapters/Rfc3339DateJsonAdapter.java
++++ b/com/squareup/moshi/adapters/Rfc3339DateJsonAdapter.java
+@@ -34,7 +34,7 @@ import java.util.Date;
+  */
+ public final class Rfc3339DateJsonAdapter extends JsonAdapter<Date> {
+   @Override
+-  public synchronized Date fromJson(JsonReader reader) throws IOException {
++  public synchronized Date fromJson(JsonReader reader) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(26);
+     if (reader.peek() == JsonReader.Token.NULL) {
+       return reader.nextNull();
+     }
+@@ -43,7 +43,7 @@ public final class Rfc3339DateJsonAdapter extends JsonAdapter<Date> {
+   }
+ 
+   @Override
+-  public synchronized void toJson(JsonWriter writer, Date value) throws IOException {
++  public synchronized void toJson(JsonWriter writer, Date value) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(29);
+     if (value == null) {
+       writer.nullValue();
+     } else {
+diff --git a/com/squareup/moshi/internal/NonNullJsonAdapter.java b/com/squareup/moshi/internal/NonNullJsonAdapter.java
+index c0de42a..5702c91 100644
+--- a/com/squareup/moshi/internal/NonNullJsonAdapter.java
++++ b/com/squareup/moshi/internal/NonNullJsonAdapter.java
+@@ -30,13 +30,13 @@ public final class NonNullJsonAdapter<T> extends JsonAdapter<T> {
+     this.delegate = delegate;
+   }
+ 
+-  public JsonAdapter<T> delegate() {
++  public JsonAdapter<T> delegate() { com.squareup.moshi.jmhbench.MutationSwitch.tick(12);
+     return delegate;
+   }
+ 
+   @Nullable
+   @Override
+-  public T fromJson(JsonReader reader) throws IOException {
++  public T fromJson(JsonReader reader) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(15);
+     if (reader.peek() == JsonReader.Token.NULL) {
+       throw new JsonDataException("Unexpected null at " + reader.getPath());
+     } else {
+@@ -45,7 +45,7 @@ public final class NonNullJsonAdapter<T> extends JsonAdapter<T> {
+   }
+ 
+   @Override
+-  public void toJson(JsonWriter writer, @Nullable T value) throws IOException {
++  public void toJson(JsonWriter writer, @Nullable T value) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(18);
+     if (value == null) {
+       throw new JsonDataException("Unexpected null at " + writer.getPath());
+     } else {
+diff --git a/com/squareup/moshi/internal/NullSafeJsonAdapter.java b/com/squareup/moshi/internal/NullSafeJsonAdapter.java
+index 0ed2b85..b9242d1 100644
+--- a/com/squareup/moshi/internal/NullSafeJsonAdapter.java
++++ b/com/squareup/moshi/internal/NullSafeJsonAdapter.java
+@@ -29,12 +29,12 @@ public final class NullSafeJsonAdapter<T> extends JsonAdapter<T> {
+     this.delegate = delegate;
+   }
+ 
+-  public JsonAdapter<T> delegate() {
++  public JsonAdapter<T> delegate() { com.squareup.moshi.jmhbench.MutationSwitch.tick(21);
+     return delegate;
+   }
+ 
+   @Override
+-  public @Nullable T fromJson(JsonReader reader) throws IOException {
++  public @Nullable T fromJson(JsonReader reader) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(24);
+     if (reader.peek() == JsonReader.Token.NULL) {
+       return reader.nextNull();
+     } else {
+@@ -43,7 +43,7 @@ public final class NullSafeJsonAdapter<T> extends JsonAdapter<T> {
+   }
+ 
+   @Override
+-  public void toJson(JsonWriter writer, @Nullable T value) throws IOException {
++  public void toJson(JsonWriter writer, @Nullable T value) throws IOException { com.squareup.moshi.jmhbench.MutationSwitch.tick(27);
+     if (value == null) {
+       writer.nullValue();
+     } else {
+diff --git a/com/squareup/moshi/internal/Util.java b/com/squareup/moshi/internal/Util.java
+index d8edb50..6a832e2 100644
+--- a/com/squareup/moshi/internal/Util.java
++++ b/com/squareup/moshi/internal/Util.java
+@@ -96,17 +96,17 @@ public final class Util {
+ 
+   private Util() {}
+ 
+-  public static String jsonName(String declaredName, AnnotatedElement element) {
++  public static String jsonName(String declaredName, AnnotatedElement element) { com.squareup.moshi.jmhbench.MutationSwitch.tick(3);
+     return jsonName(declaredName, element.getAnnotation(Json.class));
+   }
+ 
+-  public static String jsonName(String declaredName, @Nullable Json annotation) {
++  public static String jsonName(String declaredName, @Nullable Json annotation) { com.squareup.moshi.jmhbench.MutationSwitch.tick(6);
+     if (annotation == null) return declaredName;
+     String annotationName = annotation.name();
+     return Json.UNSET_NAME.equals(annotationName) ? declaredName : annotationName;
+   }
+ 
+-  public static boolean typesMatch(Type pattern, Type candidate) {
++  public static boolean typesMatch(Type pattern, Type candidate) { com.squareup.moshi.jmhbench.MutationSwitch.tick(9);
+     // TODO: permit raw types (like Set.class) to match non-raw candidates (like Set<Long>).
+     return Types.equals(pattern, candidate);
+   }
+diff --git a/com/squareup/moshi/jmhbench/MutationSwitch.java b/com/squareup/moshi/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..d49aa16
+--- /dev/null
++++ b/com/squareup/moshi/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.squareup.moshi.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

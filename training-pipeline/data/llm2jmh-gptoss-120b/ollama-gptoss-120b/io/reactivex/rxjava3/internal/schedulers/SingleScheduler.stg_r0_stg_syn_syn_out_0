@@ -1,0 +1,182 @@
+package io.reactivex.rxjava3.internal.schedulers;
+
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link SingleScheduler}.
+ *
+ * The benchmarks focus on the overhead of scheduling tasks
+ * (direct scheduling, periodic scheduling and worker scheduling)
+ * in throughput mode.
+ *
+ * Best practices applied:
+ * - @State(Scope.Benchmark) to share the scheduler across all benchmark threads.
+ * - @Setup and @TearDown to correctly start and shut down the scheduler.
+ * - Blackhole consumption to avoid dead‑code elimination.
+ * - Parameterization of delays/periods to cover common use‑cases.
+ * - Forks, warm‑up and measurement iterations are left to the JMH runner defaults
+ *   (or can be overridden via command line).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
+public class SingleSchedulerBenchmark {
+
+    /**
+     * Scheduler under test
+     */
+    private SingleScheduler scheduler;
+
+    /**
+     * Worker obtained from the scheduler (reused for worker benchmarks)
+     */
+    private Scheduler.Worker worker;
+
+    /**
+     * A no‑op runnable used for all scheduling operations
+     */
+    private static final Runnable NOOP = () -> {
+        /* intentionally empty */
+    };
+
+    /**
+     * Simple counter to make the runnable non‑trivial and to prevent dead‑code elimination
+     */
+    private final AtomicInteger counter = new AtomicInteger();
+
+    /**
+     * Runnable that increments a counter – cheap enough for micro‑benchmarks
+     */
+    private final Runnable countingRunnable = counter::incrementAndGet;
+
+    /**
+     * Delay used for delayed scheduling benchmarks (10 µs)
+     */
+    @Param({ "0", "10" })
+    public long delayMicros;
+
+    /**
+     * Period used for periodic scheduling benchmarks (10 µs)
+     */
+    @Param({ "0", "10" })
+    public long periodMicros;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        scheduler = new SingleScheduler();
+        // Ensure the underlying executor is started
+        scheduler.start();
+        worker = scheduler.createWorker();
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Dispose the worker first to avoid rejecting new tasks during shutdown
+        worker.dispose();
+        scheduler.shutdown();
+    }
+
+    /* --------------------------------------------------------------------- */
+    /* Direct scheduling benchmarks                                          */
+    /* --------------------------------------------------------------------- */
+    @Benchmark
+    public void scheduleDirect_noDelay(Blackhole bh) {
+        Disposable d = scheduler.scheduleDirect(countingRunnable, 0, TimeUnit.NANOSECONDS);
+        bh.consume(d);
+        // Cancel immediately to keep the executor clean
+        d.dispose();
+    }
+
+    @Benchmark
+    public void scheduleDirect_withDelay(Blackhole bh) {
+        long delay = TimeUnit.MICROSECONDS.toNanos(delayMicros);
+        Disposable d = scheduler.scheduleDirect(countingRunnable, delay, TimeUnit.NANOSECONDS);
+        bh.consume(d);
+        d.dispose();
+    }
+
+    /* --------------------------------------------------------------------- */
+    /* Periodic scheduling benchmarks (fixed‑rate)                           */
+    /* --------------------------------------------------------------------- */
+    @Benchmark
+    public void schedulePeriodicallyDirect_fixedRate(Blackhole bh) {
+        // periodMicros == 0 means "instant" periodic (handled separately)
+        if (periodMicros == 0) {
+            // JMH will invoke the other benchmark for this case
+            return;
+        }
+        long initialDelay = TimeUnit.MICROSECONDS.toNanos(delayMicros);
+        long period = TimeUnit.MICROSECONDS.toNanos(periodMicros);
+        Disposable d = scheduler.schedulePeriodicallyDirect(countingRunnable, initialDelay, period, TimeUnit.NANOSECONDS);
+        bh.consume(d);
+        // Dispose after a single execution to avoid runaway tasks
+        d.dispose();
+    }
+
+    @Benchmark
+    public void schedulePeriodicallyDirect_instant(Blackhole bh) {
+        // Instant periodic (period <= 0) – the scheduler creates an InstantPeriodicTask
+        if (periodMicros != 0) {
+            // JMH will invoke the fixed‑rate benchmark for non‑zero periods
+            return;
+        }
+        long initialDelay = TimeUnit.MICROSECONDS.toNanos(delayMicros);
+        Disposable d = scheduler.schedulePeriodicallyDirect(countingRunnable, initialDelay, 0, TimeUnit.NANOSECONDS);
+        bh.consume(d);
+        d.dispose();
+    }
+
+    /* --------------------------------------------------------------------- */
+    /* Worker scheduling benchmarks                                          */
+    /* --------------------------------------------------------------------- */
+    @Benchmark
+    public void workerSchedule_noDelay(Blackhole bh) {
+        Disposable d = worker.schedule(countingRunnable, 0, TimeUnit.NANOSECONDS);
+        bh.consume(d);
+        d.dispose();
+    }
+
+    @Benchmark
+    public void workerSchedule_withDelay(Blackhole bh) {
+        long delay = TimeUnit.MICROSECONDS.toNanos(delayMicros);
+        Disposable d = worker.schedule(countingRunnable, delay, TimeUnit.NANOSECONDS);
+        bh.consume(d);
+        d.dispose();
+    }
+}

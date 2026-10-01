@@ -1,0 +1,62 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.single.SingleFlatMapCompletable;
+
+/**
+ * Benchmark for {@link SingleFlatMapCompletable}.
+ *
+ * The benchmark measures the throughput of the flatMap operation when the source
+ * Single emits a value and the mapper returns an already completed Completable.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create immutable objects once per benchmark thread.
+ * - @BenchmarkMode(Mode.Throughput) with a reasonable time unit.
+ * - Warm‑up and measurement iterations to let the JIT stabilize.
+ * - Multiple forks to reduce JVM warm‑up bias.
+ * - Blackhole is not needed because the operation has no result; we simply
+ *   block until completion to ensure the work is performed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, warmups = 1)
+@Threads(1)
+public class SingleFlatMapCompletableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        // A simple source Single that emits a constant integer.
+        Single<Integer> source;
+
+        // Mapper that turns the integer into a completed Completable.
+        Function<Integer, CompletableSource> mapper;
+
+        // The operator under test.
+        SingleFlatMapCompletable<Integer> operator;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Single.just(1);
+            mapper = v -> Completable.complete();
+            operator = new SingleFlatMapCompletable<>(source, mapper);
+        }
+    }
+
+    @Benchmark
+    public void flatMapCompletableThroughput(BenchmarkState state) {
+        // blockingAwait forces the subscription to be executed and waits for completion.
+        // This ensures the measured work includes the full operator chain.
+        state.operator.blockingAwait();
+    }
+}
+```

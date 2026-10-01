@@ -1,0 +1,26 @@
+instance_id: spark_shuffle_hash_001
+target_class: bench.Partitioner
+expected_input_shapes: []
+tags:
+- numeric
+- spark
+- real-world
+provenance:
+  project: apache/spark
+  url: https://github.com/apache/spark
+  description: 'Inspired by general Apache Spark shuffle-partitioner patterns
+
+    (no single PR cited): hot paths avoid boxing the key into
+
+    Integer and producing a temporary String. The simplified SUT
+
+    here partitions an int key; the full real class is not
+
+    extracted.
+
+    '
+junit_test_path: tests/PartitionerTest.java
+regressions:
+- id: autobox_string_hash
+  patch: regressions/autobox_string_hash.patch
+  description: Box the key and hash its toString() instead of the int.

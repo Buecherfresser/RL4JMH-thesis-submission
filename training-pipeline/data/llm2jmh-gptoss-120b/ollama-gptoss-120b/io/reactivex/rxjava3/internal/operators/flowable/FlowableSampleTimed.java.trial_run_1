@@ -1,0 +1,118 @@
+```java
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.internal.functions.Functions;
+import io.reactivex.rxjava3.internal.subscribers.DisposableSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableSampleTimed}.
+ *
+ * The benchmark measures the throughput (operations per second) of sampling a fast
+ * upstream {@link Flowable} with a timed interval. It uses a {@link Blackhole} to
+ * consume the downstream values and avoid dead‑code elimination.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Trial) creates the upstream source once per trial.
+ * - The benchmark method creates a fresh subscriber per iteration to avoid
+ *   latch reuse issues.
+ * - Use of Blackhole to consume values.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableSampleTimedBenchmark {
+
+    /** Number of items emitted by the upstream source per trial. */
+    @Param({ "1000000" })
+    public int upstreamItemCount;
+
+    /** Sampling period in milliseconds. */
+    @Param({ "1" })
+    public long periodMs;
+
+    /** The upstream Flowable that emits a range of integers as fast as possible. */
+    private Flowable<Integer> upstream;
+
+    /** The sampled Flowable under test. */
+    private Flowable<Integer> sampled;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Fast upstream emitting a fixed number of items on the computation scheduler.
+        upstream = Flowable.range(1, upstreamItemCount)
+                .subscribeOn(Schedulers.computation());
+
+        // Apply the operator under test: sample every {@code periodMs} milliseconds.
+        // The last parameter (onDrop) must be non‑null; we use a no‑op consumer.
+        Consumer<Integer> onDrop = Functions.emptyConsumer();
+        sampled = upstream.sample(periodMs, TimeUnit.MILLISECONDS, Schedulers.computation(),
+                false, onDrop);
+    }
+
+    /**
+     * Benchmark method that subscribes to the sampled Flowable, consumes all items,
+     * and blocks until completion. The throughput measured is the number of
+     * complete subscriptions per second.
+     *
+     * @param bh Blackhole provided by JMH to consume values.
+     */
+    @Benchmark
+    public void sampleTimedThroughput(Blackhole bh) {
+        BlackholeSubscriber subscriber = new BlackholeSubscriber();
+        subscriber.setBlackhole(bh);
+        sampled.subscribe(subscriber);
+        subscriber.awaitCompletion();
+    }
+
+    /**
+     * Subscriber that forwards each received item to a Blackhole and signals
+     * completion via a latch.
+     */
+    private static final class BlackholeSubscriber extends DisposableSubscriber<Integer> {
+
+        private volatile Blackhole bh;
+        private final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        private final AtomicLong received = new AtomicLong();
+
+        void setBlackhole(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            if (bh != null) {
+                bh.consume(t);
+            }
+            received.incrementAndGet();
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            t.printStackTrace();
+            latch.countDown();
+        }
+
+        @Override
+        public void onComplete() {
+            latch.countDown();
+        }
+
+        void awaitCompletion() {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}
+```

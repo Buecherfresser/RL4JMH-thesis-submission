@@ -1,0 +1,118 @@
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link ObservableMapOptional}.
+ *
+ * Measures the throughput of mapping a stream of integers to {@link Optional}
+ * values and emitting only the present ones.
+ *
+ * The benchmark follows best practices:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create immutable data structures once per iteration.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations, multiple forks, and a reasonable timeout.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@Threads(1)
+@State(Scope.Thread)
+public class ObservableMapOptionalBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    /**
+     * Source Observable that emits a range of integers.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * Mapper function converting an integer to an Optional.
+     */
+    private Function<Integer, Optional<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits a range of integers.
+        source = Observable.range(1, size);
+        // Simple mapper: even numbers are wrapped in Optional, odd numbers become empty.
+        mapper = i -> (i & 1) == 0 ? Optional.of(i) : Optional.empty();
+    }
+
+    /**
+     * Benchmark the full pipeline: source → ObservableMapOptional → blocking subscription.
+     *
+     * The Blackhole consumes each emitted item to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void mapOptionalThroughput(Blackhole bh) {
+        ObservableMapOptional<Integer, Integer> mapped = new ObservableMapOptional<>(source, mapper);
+        // Use a custom Observer that forwards each onNext to the Blackhole.
+        mapped.blockingSubscribe(new Observer<Integer>() {
+
+            @Override
+            public void onSubscribe(io.reactivex.rxjava3.disposables.Disposable d) {
+                /* no‑op */
+            }
+
+            @Override
+            public void onNext(Integer value) {
+                bh.consume(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // Propagate errors to the benchmark harness.
+                throw new RuntimeException(e);
+            }
+
+            @Override
+            public void onComplete() {
+                // No‑op; completion is implicit in the benchmark timing.
+            }
+        });
+    }
+}

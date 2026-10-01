@@ -1,0 +1,160 @@
+package io.reactivex.rxjava3.subjects;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link ReplaySubject}.
+ *
+ * <p>These benchmarks measure the throughput of the most common operations:
+ * <ul>
+ *   <li>onNext – emitting items into the subject</li>
+ *   <li>subscribe – adding a new observer (which triggers a replay of buffered items)</li>
+ *   <li>replay – subscribing after a pre‑filled buffer to measure replay cost</li>
+ * </ul>
+ *
+ * <p>All benchmarks run in {@code Mode.Throughput} (operations per second) and use a
+ * {@link Blackhole} to consume emitted values, preventing dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ReplaySubjectBenchmark {
+
+    /**
+     * Subject under test.
+     */
+    private ReplaySubject<Integer> subject;
+
+    /**
+     * Simple observer that forwards received items to a Blackhole.
+     */
+    private static final class BlackholeObserver implements Observer<Integer> {
+
+        private final Blackhole bh;
+
+        BlackholeObserver(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onNext(Integer value) {
+            bh.consume(value);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            bh.consume(e);
+        }
+
+        @Override
+        public void onComplete() {
+            /* no‑op */
+        }
+    }
+
+    /**
+     * Number of items to pre‑populate the subject for replay benchmarks.
+     */
+    @Param({ "1000", "10000", "100000" })
+    private int prefillSize;
+
+    /**
+     * Value generator for onNext benchmark.
+     */
+    private int nextValue;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Unbounded buffer – the most common configuration.
+        subject = ReplaySubject.create();
+        nextValue = 0;
+    }
+
+    @Setup(Level.Iteration)
+    public void prefill() {
+        // Clear any previous state and fill the subject with a deterministic number of items.
+        subject = ReplaySubject.create();
+        for (int i = 0; i < prefillSize; i++) {
+            subject.onNext(i);
+        }
+    }
+
+    /**
+     * Benchmark the raw emission path (subject.onNext).
+     *
+     * <p>Each invocation emits a single integer. The value is incremented to avoid
+     * constant folding and to keep the emitted data realistic.
+     */
+    @Benchmark
+    public void emitOnNext() {
+        subject.onNext(nextValue++);
+    }
+
+    /**
+     * Benchmark the cost of subscribing a fresh observer.
+     *
+     * <p>The observer immediately receives all buffered items (replay). The
+     * Blackhole consumes each item to ensure the replay loop is not optimized away.
+     */
+    @Benchmark
+    public void subscribeAndReplay(Blackhole bh) {
+        subject.subscribe(new BlackholeObserver(bh));
+    }
+
+    /**
+     * Benchmark a hot‑path scenario where the subject already has a subscriber,
+     * and we only emit items. This measures the overhead of notifying a single
+     * downstream observer while the buffer grows.
+     */
+    @Benchmark
+    public void emitWithSingleSubscriber(Blackhole bh) {
+        // Ensure a subscriber is present; the setup is cheap because the observer
+        // does nothing but consume values via Blackhole.
+        if (subject.hasObservers() == false) {
+            subject.subscribe(new BlackholeObserver(bh));
+        }
+        subject.onNext(nextValue++);
+    }
+}

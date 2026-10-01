@@ -1,0 +1,93 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableReduceMaybe}
+ * measuring the throughput of the reduce operation on an {@link Observable}.
+ *
+ * The benchmark creates an {@link Observable} emitting a configurable number of integers
+ * and applies a simple sum reducer. The result is obtained via {@code blockingGet()}
+ * to ensure the operation completes before the measurement ends.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize the size of the source to explore scaling behavior.
+ * - Include warm‑up, measurement, and fork settings to obtain reliable results.
+ * - Use Mode.Throughput to measure operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3)
+@State(Scope.Thread)
+public class ObservableReduceMaybeBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     * Typical values: 10, 100, 1_000, 10_000, 100_000.
+     */
+    @Param({ "10", "100", "1000", "10000" })
+    public int size;
+
+    private Observable<Integer> source;
+
+    private BiFunction<Integer, Integer, Integer> sumReducer;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits a range of integers [1, size]
+        source = Observable.range(1, size);
+        // Simple sum reducer used by ObservableReduceMaybe
+        sumReducer = (a, b) -> a + b;
+    }
+
+    /**
+     * Executes the reduce operation and blocks until the Maybe emits the final result.
+     *
+     * @return the reduced sum (or null if the source is empty)
+     */
+    @Benchmark
+    public Integer reduceAndBlock() {
+        // ObservableReduceMaybe is internally used by the reduceMaybe operator.
+        Maybe<Integer> maybe = source.reduceMaybe(sumReducer);
+        // blockingGet forces the subscription to complete synchronously,
+        // which is appropriate for a throughput benchmark.
+        return maybe.blockingGet();
+    }
+}

@@ -1,0 +1,75 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableAnySingle;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableAnySingle}.
+ *
+ * Measures the throughput (operations per second) of the {@code any} operator
+ * when applied to an {@link Observable} of varying size.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize the source size to explore scaling behavior.
+ * - Use a simple, deterministic predicate to focus on operator overhead.
+ * - Block on the {@link io.reactivex.rxjava3.core.Single} result to ensure the
+ *   operation completes within the benchmark iteration.
+ * - Include warm‑up and measurement iterations to let the JIT stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableAnySingleBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     * Typical values explore small, medium and large streams.
+     */
+    @Param({"10", "100", "1_000", "10_000", "100_000"})
+    public int size;
+
+    /**
+     * The source Observable emitting a range of integers [1, size].
+     */
+    private ObservableSource<Integer> source;
+
+    /**
+     * Predicate used by the operator. Returns {@code true} for even numbers.
+     * This keeps the predicate cheap and deterministic.
+     */
+    private Predicate<Integer> predicate = v -> (v & 1) == 0;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Observable.range is a fast, non‑blocking source suitable for micro‑benchmarks.
+        source = Observable.range(1, size);
+    }
+
+    /**
+     * Benchmark method that creates a new {@link ObservableAnySingle},
+     * subscribes to it and blocks until the result is available.
+     *
+     * The blocking call ensures the whole pipeline (including upstream disposal)
+     * is accounted for in the measured throughput.
+     *
+     * @return the Boolean result of the {@code any} operation (ignored by JMH)
+     */
+    @Benchmark
+    public Boolean anySingleThroughput() {
+        // Each iteration creates a fresh operator instance to avoid caching effects.
+        ObservableAnySingle<Integer> anySingle = new ObservableAnySingle<>(source, predicate);
+        // blockingGet forces the Single to execute synchronously and wait for completion.
+        return anySingle.blockingGet();
+    }
+}
+```

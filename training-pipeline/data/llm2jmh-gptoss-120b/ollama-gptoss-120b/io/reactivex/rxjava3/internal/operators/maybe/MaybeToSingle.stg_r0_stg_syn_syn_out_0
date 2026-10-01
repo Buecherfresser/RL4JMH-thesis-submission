@@ -1,0 +1,131 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmark for {@link MaybeToSingle}.
+ *
+ * Measures the throughput of converting a {@code Maybe} into a {@code Single}
+ * using the {@code MaybeToSingle} operator in three typical scenarios:
+ *
+ * <ul>
+ *   <li>Maybe emits a value (happy path)</li>
+ *   <li>Maybe completes empty and a default value is supplied</li>
+ *   <li>Maybe completes empty and no default value is supplied (error path)</li>
+ * </ul>
+ *
+ * The benchmark runs in {@link Mode#Throughput} mode, reporting operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class MaybeToSingleBenchmark {
+
+    /**
+     * Source that emits a single value.
+     */
+    private Maybe<Integer> maybeJust;
+
+    /**
+     * Source that completes without a value.
+     */
+    private Maybe<Integer> maybeEmpty;
+
+    /**
+     * Operator instance for the happy‑path case (no default value needed).
+     */
+    private MaybeToSingle<Integer> justToSingle;
+
+    /**
+     * Operator instance for the empty‑source case with a default value.
+     */
+    private MaybeToSingle<Integer> emptyToSingleWithDefault;
+
+    /**
+     * Operator instance for the empty‑source case without a default value (error path).
+     */
+    private MaybeToSingle<Integer> emptyToSingleNoDefault;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        maybeJust = Maybe.just(42);
+        maybeEmpty = Maybe.empty();
+        justToSingle = new MaybeToSingle<>(maybeJust, null);
+        emptyToSingleWithDefault = new MaybeToSingle<>(maybeEmpty, 0);
+        emptyToSingleNoDefault = new MaybeToSingle<>(maybeEmpty, null);
+    }
+
+    /**
+     * Benchmark the happy‑path conversion where the upstream {@code Maybe}
+     * emits a value.
+     */
+    @Benchmark
+    public void maybeToSingleSuccess(Blackhole bh) {
+        Single<Integer> single = justToSingle;
+        // blockingGet is used to materialise the result synchronously.
+        bh.consume(single.blockingGet());
+    }
+
+    /**
+     * Benchmark the conversion where the upstream {@code Maybe} is empty
+     * but a default value is supplied.
+     */
+    @Benchmark
+    public void maybeToSingleEmptyWithDefault(Blackhole bh) {
+        Single<Integer> single = emptyToSingleWithDefault;
+        bh.consume(single.blockingGet());
+    }
+
+    /**
+     * Benchmark the conversion where the upstream {@code Maybe} is empty
+     * and no default value is supplied. The operator signals an error,
+     * which we consume to avoid the benchmark aborting.
+     */
+    @Benchmark
+    public void maybeToSingleEmptyNoDefault(Blackhole bh) {
+        Single<Integer> single = emptyToSingleNoDefault;
+        try {
+            bh.consume(single.blockingGet());
+        } catch (Throwable ignored) {
+            // Expected NoSuchElementException; count the operation as completed.
+            bh.consume(ignored);
+        }
+    }
+}

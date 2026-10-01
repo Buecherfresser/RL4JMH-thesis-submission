@@ -1,0 +1,61 @@
+```
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import io.reactivex.rxjava3.core.Completable;
+
+/**
+ * JMH benchmark for {@link CompletableDetach}.
+ *
+ * Measures the throughput of subscribing to a Completable that immediately completes
+ * through the {@code CompletableDetach} operator.
+ *
+ * The benchmark follows best practices:
+ * - Warm‑up and measurement iterations are defined.
+ * - A single fork is used to isolate JVM optimizations.
+ * - The state is scoped to a thread to avoid sharing mutable data.
+ * - The benchmark runs in {@link Mode#Throughput} (operations per second).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class CompletableDetachBenchmark {
+
+    /** A Completable that completes immediately. */
+    private Completable source;
+
+    /** The Completable wrapped with the detach operator. */
+    private Completable detached;
+
+    /**
+     * Set up the benchmark state.
+     *
+     * The source is a plain {@code Completable.complete()} which emits onSubscribe
+     * and then completes synchronously. The {@code CompletableDetach} operator is
+     * instantiated directly (it resides in the same package as this benchmark).
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Completable.complete();
+        detached = new CompletableDetach(source);
+    }
+
+    /**
+     * Benchmark the throughput of subscribing to the detached Completable.
+     *
+     * Each operation subscribes to the Completable and blocks until it terminates.
+     * The operation is deliberately simple to isolate the overhead introduced by
+     * {@code CompletableDetach}.
+     */
+    @Benchmark
+    public void subscribeAndAwait() {
+        // blockingAwait() returns void; it will block until the Completable terminates.
+        detached.blockingAwait();
+    }
+}
+```

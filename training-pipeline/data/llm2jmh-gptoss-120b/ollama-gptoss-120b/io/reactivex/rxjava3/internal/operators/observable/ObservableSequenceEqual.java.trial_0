@@ -1,0 +1,77 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.BiPredicate;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableSequenceEqual;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link ObservableSequenceEqual}.
+ *
+ * The benchmark creates two hot observables emitting a configurable number of
+ * integer values and measures the throughput of the sequence‑equal operator.
+ *
+ * Best‑practice JMH settings are used:
+ * - multiple warm‑up iterations
+ * - multiple measurement iterations
+ * - at least one fork
+ * - time unit in seconds (throughput = ops/sec)
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class ObservableSequenceEqualBenchmark {
+
+    /** Number of items emitted by each source observable. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Buffer size used by the internal queues. */
+    @Param({"128", "1024", "8192"})
+    public int bufferSize;
+
+    /** The two source observables. */
+    private Observable<Integer> source1;
+    private Observable<Integer> source2;
+
+    /** Equality predicate (simple integer equality). */
+    private static final BiPredicate<Integer, Integer> EQUALS = Integer::equals;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create deterministic, cold observables that emit a range of integers.
+        source1 = Observable.range(0, itemCount);
+        source2 = Observable.range(0, itemCount);
+    }
+
+    /**
+     * Executes the sequence‑equal operator and consumes the result.
+     *
+     * @param bh Blackhole to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void sequenceEqual(Blackhole bh) {
+        // The operator under test.
+        Observable<Boolean> result = new ObservableSequenceEqual<>(
+                source1,
+                source2,
+                EQUALS,
+                bufferSize
+        );
+
+        // Blocking subscription ensures the benchmark measures the full execution.
+        boolean equal = result.blockingFirst();
+
+        // Consume the result so the JIT cannot eliminate the call.
+        bh.consume(equal);
+    }
+}
+```

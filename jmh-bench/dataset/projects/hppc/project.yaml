@@ -1,0 +1,81 @@
+name: hppc
+display_name: Carrot Search HPPC
+version: 0.10.0
+
+# Where the pristine, vendored subject-under-test lives (relative to this dir).
+# Sources are the published `com.carrotsearch:hppc:0.10.0` sources artefact:
+# HPPC generates its primitive specialisations from templates at build time, and
+# the published artefact ships the *expanded* result, so the vendored tree needs
+# no code generation. `module-info.java` is dropped (the JMH suite compiles into
+# the same unnamed module as the SUT).
+source_dir: src/main/java
+
+provenance:
+  project: Carrot Search HPPC
+  url: https://github.com/carrotsearch/hppc/tree/0.10.0
+  tag: "0.10.0"
+  released: 2024-05-23
+
+mutations_patch: mutations.patch
+mutants_registry: mutants.yaml
+api_surface: api_surface.md
+
+harness_input:
+  mode: per_class
+  # HPPC is flat: the containers and their interfaces all live in the root
+  # package, with sorting helpers alongside. `cursors`, `predicates`,
+  # `procedures` and `comparators` are single-method callback types with no
+  # behaviour worth benchmarking on their own.
+  include_packages:
+    - "(root)"
+    - sorting
+  name_filter: "(HashMap|HashSet|ArrayList|ArrayDeque|IdentityHashMap|WormMap|WormSet|Sort|Arrays|BitSet|Stack|Heap|Container|Deque|Indexed)"
+
+# HPPC has no runtime dependencies; the SUT compiles against the JDK alone.
+dependencies: []
+
+mutation:
+  switch_class: com.carrotsearch.hppc.jmhbench.MutationSwitch
+  arm_property: jmhbench.mutant
+  record_property: jmhbench.record
+  record_file_property: jmhbench.record.file
+  count: 50
+  # Per-element container plumbing on top of the generator's shared hot-name
+  # list: these fire once per key/value touched, so a mutant there would cost
+  # ~1ms times the container size per benchmark op.
+  skip_methods:
+    - addTo
+    - putOrAdd
+    - putIfAbsent
+    - getOrDefault
+    - indexExists
+    - indexGet
+    - indexInsert
+    - indexReplace
+    - addLast
+    - addFirst
+    - removeLast
+    - removeFirst
+    - getLast
+    - getFirst
+    - elementAt
+    - removeAt
+    - removeFirstOccurrence
+    - removeLastOccurrence
+    - hashKey
+    - equalElements
+    - sameKeys
+    - shiftConflictingKeys
+    - allocateThenInsertThenRehash
+    - expandAtCount
+    - verifyLoadFactor
+    - nextIterationSeed
+    - iteratorSeed
+    - oneLeft
+    - oneRight
+    - bufferIndexOf
+    - lastBufferIndexOf
+    # Diagnostic-only: builds a histogram string of the hash distribution.
+    # Present on every SortedIteration*HashMap view, and never on a benchmark's
+    # measured path.
+    - visualizeKeyDistribution

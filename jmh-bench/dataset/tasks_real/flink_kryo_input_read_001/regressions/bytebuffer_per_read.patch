@@ -1,0 +1,23 @@
+--- a/bench/IntInput.java
++++ b/bench/IntInput.java
+@@ -1,13 +1,16 @@
+ package bench;
++
++import java.nio.ByteBuffer;
+ 
+ public final class IntInput {
+ 
+     private IntInput() {}
+ 
++    // Regressed: route every read through a fresh ByteBuffer wrapper.
+     public static int readInt(byte[] buf, int off) {
+-        return ((buf[off] & 0xff) << 24)
+-             | ((buf[off + 1] & 0xff) << 16)
+-             | ((buf[off + 2] & 0xff) << 8)
+-             | (buf[off + 3] & 0xff);
++        if (off < 0 || off + 4 > buf.length) {
++            throw new IndexOutOfBoundsException();
++        }
++        return ByteBuffer.wrap(buf, off, 4).getInt();
+     }
+ }

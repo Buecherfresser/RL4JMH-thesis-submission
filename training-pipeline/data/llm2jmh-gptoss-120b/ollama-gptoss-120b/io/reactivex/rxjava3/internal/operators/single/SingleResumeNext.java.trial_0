@@ -1,0 +1,80 @@
+```
+package io.reactivex.rxjava3.internal.operators.single.benchmark;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.internal.operators.single.SingleResumeNext;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link SingleResumeNext}.
+ *
+ * <p>Two scenarios are measured:
+ * <ul>
+ *   <li>Successful emission (no error handling path).</li>
+ *   <li>Error handling path where the source errors and the {@code nextFunction}
+ *       provides a fallback {@link Single}.</li>
+ * </ul>
+ *
+ * <p>Throughput mode is used to report how many operations per time unit can be
+ * performed. The benchmarks block on the {@code Single} to obtain a deterministic
+ * result and avoid asynchronous side‑effects that would otherwise interfere with
+ * measurement accuracy.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, warmups = 1)
+@State(Scope.Thread)
+public class SingleResumeNextBenchmark {
+
+    /** Single that completes successfully without invoking the resume function. */
+    private Single<Integer> successSingle;
+
+    /** Single that errors and then resumes with the fallback Single. */
+    private Single<Integer> errorResumeSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Successful path: source emits 1, resume function would never be called.
+        successSingle = new SingleResumeNext<>(
+                Single.just(1),
+                throwable -> {
+                    // This fallback should never be used in the success benchmark,
+                    // but we provide a valid implementation to keep the operator functional.
+                    return Single.just(-1);
+                });
+
+        // Error‑resume path: source errors, resume function provides a fallback emitting 2.
+        errorResumeSingle = new SingleResumeNext<>(
+                Single.error(new RuntimeException("forced error")),
+                throwable -> Single.just(2));
+    }
+
+    /**
+     * Benchmark the throughput of the success path (no error handling).
+     *
+     * @param bh Blackhole to consume the result and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void successPath(Blackhole bh) {
+        // blockingGet forces the Single to run synchronously, suitable for micro‑benchmarks.
+        int value = successSingle.blockingGet();
+        bh.consume(value);
+    }
+
+    /**
+     * Benchmark the throughput of the error‑resume path.
+     *
+     * @param bh Blackhole to consume the result and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void errorResumePath(Blackhole bh) {
+        int value = errorResumeSingle.blockingGet();
+        bh.consume(value);
+    }
+}
+```

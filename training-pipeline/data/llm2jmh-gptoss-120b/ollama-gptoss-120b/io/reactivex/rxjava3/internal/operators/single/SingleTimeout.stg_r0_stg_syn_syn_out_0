@@ -1,0 +1,120 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link SingleTimeout}.
+ *
+ * The benchmarks measure the throughput of:
+ * 1. A plain {@link Single#just(Object)} (baseline).
+ * 2. A {@link SingleTimeout} that completes before the timeout (happy path).
+ *
+ * The timeout is set to a value larger than the execution time of the source
+ * to avoid triggering the fallback, thus measuring the overhead of the operator
+ * itself.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Warm‑up and measurement iterations are defined.
+ * - Blackhole consumes the result to prevent dead‑code elimination.
+ * - The benchmark runs in Mode.Throughput with results expressed per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class SingleTimeoutBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Scheduler used by the timeout operator.
+         */
+        Scheduler scheduler;
+
+        /**
+         * Source that emits a value immediately.
+         */
+        Single<Integer> source;
+
+        /**
+         * SingleTimeout wrapping the source with a timeout that never fires.
+         */
+        Single<Integer> timeoutSingle;
+
+        /**
+         * Timeout duration (large enough to never trigger).
+         */
+        // 10 seconds
+        final long timeout = 10_000L;
+
+        final TimeUnit unit = TimeUnit.MILLISECONDS;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Use a single‑threaded scheduler to keep scheduling deterministic.
+            scheduler = Schedulers.single();
+            // Immediate source.
+            source = Single.just(1);
+            // No fallback – we only want to measure the successful path.
+            SingleSource<? extends Integer> fallback = null;
+            // Create the operator under test.
+            timeoutSingle = new SingleTimeout<>(source, timeout, unit, scheduler, fallback);
+        }
+    }
+
+    /**
+     * Baseline benchmark: subscribe to a plain Single.just and block for the result.
+     */
+    @Benchmark
+    public void baseline(Blackhole bh, BenchmarkState state) {
+        int value = state.source.blockingGet();
+        bh.consume(value);
+    }
+
+    /**
+     * Benchmark the SingleTimeout operator when the source completes before the timeout.
+     */
+    @Benchmark
+    public void timeoutSuccess(Blackhole bh, BenchmarkState state) {
+        int value = state.timeoutSingle.blockingGet();
+        bh.consume(value);
+    }
+}

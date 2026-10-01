@@ -1,0 +1,149 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable.benchmark;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableWindowBoundarySelector;
+import io.reactivex.rxjava3.internal.util.ExceptionHelper;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * JMH benchmark for {@link ObservableWindowBoundarySelector}.
+ *
+ * The benchmark measures the throughput (operations per second) of the operator
+ * when processing a fixed number of items with a simple boundary selector.
+ *
+ * Best‑practice notes:
+ * - All allocations that are not part of the measured code are performed in @Setup.
+ * - The benchmark method does not block the JMH thread; it uses a CountDownLatch
+ *   to wait for completion and then signals the Blackhole.
+ * - The source Observable, the opening Observable and the closing indicator are
+ *   recreated for each iteration to avoid cross‑iteration interference.
+ * - The benchmark runs in Throughput mode, with warm‑up and measurement iterations,
+ *   and forks to isolate JVM state.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class ObservableWindowBoundarySelectorBenchmark {
+
+    /** Number of items emitted by the source Observable per iteration. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Size of the internal buffer used by the UnicastSubject. */
+    @Param({"128", "1024"})
+    public int bufferSize;
+
+    /** Interval (in items) at which a new window is opened. */
+    @Param({"10", "100"})
+    public int windowOpenInterval;
+
+    /** Interval (in items) after which a window is closed. */
+    @Param({"20", "200"})
+    public int windowCloseInterval;
+
+    /** Scheduler used for the source and boundary observables. */
+    private Scheduler scheduler;
+
+    /** A reusable latch factory to avoid allocation overhead inside the benchmark. */
+    private CountDownLatchFactory latchFactory;
+
+    @Setup(Level.Trial)
+    public void setUpTrial() {
+        // Use a single‑threaded scheduler to keep the benchmark deterministic.
+        scheduler = Schedulers.single();
+        latchFactory = new CountDownLatchFactory();
+        // Suppress RxJava's global error handler to avoid noise during benchmarking.
+        RxJavaPlugins.setErrorHandler(Throwable::printStackTrace);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDownTrial() {
+        RxJavaPlugins.reset();
+    }
+
+    /**
+     * Benchmark method that creates the operator, subscribes, and waits for completion.
+     *
+     * @param bh Blackhole to consume the emitted windows and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void windowBoundarySelectorThroughput(Blackhole bh) throws InterruptedException {
+        // 1️⃣ Create the source Observable that emits a known number of integers.
+        Observable<Integer> source = Observable.range(1, itemCount)
+                .subscribeOn(scheduler);
+
+        // 2️⃣ Create the opening Observable that emits a signal every {@code windowOpenInterval} items.
+        Observable<Long> open = Observable.intervalRange(0,
+                (itemCount + windowOpenInterval - 1) / windowOpenInterval,
+                0,
+                0,
+                scheduler)
+                .map(i -> i * windowOpenInterval);
+
+        // 3️⃣ Closing indicator: for each opening value, close after {@code windowCloseInterval} items.
+        Function<Long, ObservableSource<Object>> closingIndicator = start -> {
+            long closeAfter = Math.min(windowCloseInterval, itemCount - start);
+            return Observable.timer(closeAfter, TimeUnit.MILLISECONDS, scheduler);
+        };
+
+        // 4️⃣ Build the operator under test.
+        Observable<Observable<Integer>> windowed = new ObservableWindowBoundarySelector<>(
+                source,
+                open,
+                closingIndicator,
+                bufferSize
+        );
+
+        // 5️⃣ Subscribe and count down when all windows have completed.
+        CountDownLatch latch = latchFactory.createLatch(1);
+        Disposable d = windowed
+                .flatMap(w -> w
+                        .doOnNext(item -> bh.consume(item))
+                        .ignoreElements()
+                        .toObservable())
+                .doOnComplete(latch::countDown)
+                .subscribe();
+
+        // 6️⃣ Wait for completion (bounded to avoid hanging benchmarks).
+        if (!latch.await(30, TimeUnit.SECONDS)) {
+            // If the latch timed out, cancel the subscription to free resources.
+            d.dispose();
+            throw new IllegalStateException("Benchmark timed out");
+        }
+
+        // Ensure the subscription is disposed to avoid leaking resources between iterations.
+        d.dispose();
+    }
+
+    /**
+     * Simple factory that reuses {@link CountDownLatch} instances to reduce allocation pressure.
+     */
+    private static final class CountDownLatchFactory {
+        private final ConcurrentLinkedQueue<CountDownLatch> pool = new ConcurrentLinkedQueue<>();
+
+        CountDownLatch createLatch(int count) {
+            CountDownLatch latch = pool.poll();
+            if (latch == null) {
+                return new CountDownLatch(count);
+            }
+            // Resetting a CountDownLatch is not possible; we create a fresh one when needed.
+            return new CountDownLatch(count);
+        }
+
+        void recycle(CountDownLatch latch) {
+            // No-op: we do not recycle because CountDownLatch cannot be reset.
+        }
+    }
+}
+```

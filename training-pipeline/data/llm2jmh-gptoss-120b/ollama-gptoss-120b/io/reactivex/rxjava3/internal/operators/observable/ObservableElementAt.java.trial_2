@@ -1,0 +1,74 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Observable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableElementAt}
+ * measuring the throughput of the {@code elementAt} operator under different stream sizes
+ * and index positions.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Parameterize the source size and the target index to cover typical use‑cases.</li>
+ *   <li>Perform a warm‑up phase and a measurement phase with a reasonable number of iterations.</li>
+ *   <li>Consume the result with {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Run in {@link Mode#Throughput} with a time unit of {@link TimeUnit#MILLISECONDS}.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class ObservableElementAtBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the source Observable.
+         */
+        @Param({ "10", "1000", "100000" })
+        public int size;
+
+        /**
+         * Index of the element to retrieve.
+         * {@code -1} means "last element" (size - 1) to test the worst‑case traversal.
+         */
+        @Param({ "0", "10", "-1" })
+        public int indexParam;
+
+        /**
+         * The source Observable emitting a range of integers.
+         */
+        Observable<Integer> source;
+
+        /**
+         * The actual index used in the benchmark (resolved from {@code indexParam}).
+         */
+        int index;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Observable.range(0, size);
+            index = indexParam == -1 ? size - 1 : indexParam;
+        }
+    }
+
+    @Benchmark
+    public void elementAtThroughput(BenchmarkState state, Blackhole bh) {
+        // The operator under test: Observable.elementAt(index)
+        // Use blockingGet to force evaluation and avoid asynchronous overhead.
+        Integer value = state.source
+                .elementAt(state.index) // will throw NoSuchElementException if out of bounds, which is fine for the benchmark
+                .blockingGet();
+        bh.consume(value);
+    }
+}
+```

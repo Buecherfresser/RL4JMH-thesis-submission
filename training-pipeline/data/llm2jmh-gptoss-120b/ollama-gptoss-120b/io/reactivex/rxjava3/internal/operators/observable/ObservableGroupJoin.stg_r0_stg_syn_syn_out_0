@@ -1,0 +1,104 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableGroupJoinBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        Observable<Integer> left;
+
+        Observable<Integer> right;
+
+        Function<Integer, ObservableSource<Integer>> leftEnd;
+
+        Function<Integer, ObservableSource<Integer>> rightEnd;
+
+        BiFunction<Integer, Observable<Integer>, Integer> resultSelector;
+
+        // number of items per source
+        int size = 1_000;
+
+        @Setup(Level.Trial)
+        public void setup() {
+            left = Observable.range(1, size);
+            right = Observable.range(1, size);
+            // Each element's window closes immediately after the element is emitted.
+            leftEnd = v -> Observable.just(v);
+            rightEnd = v -> Observable.just(v);
+            // Simple selector that returns the left value; the right Observable is ignored.
+            resultSelector = (l, o) -> l;
+        }
+
+        void execute(Blackhole bh) {
+            ObservableGroupJoin<Integer, Integer, Integer, Integer, Integer> op = new ObservableGroupJoin<>(left, right, leftEnd, rightEnd, resultSelector);
+            op.subscribe(new Observer<Integer>() {
+
+                @Override
+                public void onSubscribe(Disposable d) {
+                    /* no-op */
+                }
+
+                @Override
+                public void onNext(Integer v) {
+                    bh.consume(v);
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    e.printStackTrace();
+                }
+
+                @Override
+                public void onComplete() {
+                    /* no-op */
+                }
+            });
+        }
+    }
+
+    @Benchmark
+    public void groupJoinThroughput(BenchmarkState state, Blackhole bh) {
+        state.execute(bh);
+    }
+}

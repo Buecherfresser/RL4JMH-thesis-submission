@@ -1,0 +1,128 @@
+# Qwen3.5-4B GRPO.  vLLM runs in server mode on a GPU separate from the trainer; do not change
+# this to colocate until the exact Qwen CUDA-12.8 profile has been validated with TRL.
+base_model: Qwen/Qwen3.5-4B
+model_family: qwen
+output_dir: outputs/qwen35-4b/grpo
+dataset_path: data/snippets/rl-merged.good.jsonl
+# original = six curated libraries; full = expanded ~99-library merge. CLI: --corpus
+corpus: original
+seed: 42
+
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, in_proj, out_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: []
+  bias: none
+
+learning_rate: 1.0e-6
+# Long-context GRPO on one H100 trainer GPU: keep microbatch small so prompt+completion
+# activations/logits fit; grad_accum restores global batch = group_size (2*4=8).
+per_device_batch_size: 2
+gradient_accumulation_steps: 4
+group_size: 8
+rollout_temperature: 1.0
+top_p: 0.95
+top_k: 20
+# H100 80GB practical GRPO window with standard TRL (no Unsloth logit chunking).
+# 24576+8192 = 32768 = vllm_max_model_length. Covers ~110/113 rl-merged prompts.
+max_prompt_length: 24576
+max_completion_length: 8192
+completion_eos_token_id: null
+max_source_chars: 90000
+limit_prompts: 0
+
+kl_coeff: 0.0
+epsilon: 0.2
+epsilon_high: 0.28
+grpo_loss_type: dr_grpo
+scale_rewards: false
+mask_truncated_completions: true
+mu: 1
+num_epochs: 1.0
+num_iterations: 0
+warmup_ratio: 0.03
+logging_steps: 1
+save_steps: 50
+report_to: none
+
+use_vllm: true
+vllm_mode: server
+vllm_server_base_url: http://localhost:8000
+vllm_server_timeout: 600.0
+vllm_tensor_parallel_size: 1
+vllm_max_model_length: 32768
+
+reward_weights:
+  compile: 0.34
+  runtime: 0.33
+  anti_pattern: 0.33
+  rsd: 0.0
+  mutation: 0.0
+need_run: true
+runner:
+  jmh_version: "1.37"
+  java_release: 17
+  jmh:
+    warmup_iterations: 1
+    measurement_iterations: 1
+    forks: 1
+    warmup_time: "200ms"
+    measurement_time: "200ms"
+    timeout_s: 120.0
+    per_iteration_timeout_s: 30.0
+    fail_on_error: false
+# Original six-library corpus only (matches data/snippets/rl-merged.good.jsonl).
+# Every project in that prompt set MUST appear here or rollouts fail to compile.
+project_classpaths:
+  commons-numbers: data/classpaths/commons-numbers.cp
+  commons-statistics: data/classpaths/commons-statistics.cp
+  commons-codec: data/classpaths/commons-codec.cp
+  commons-text: data/classpaths/commons-text.cp
+  jackson-core: data/classpaths/jackson-core.cp
+  roaringbitmap: data/classpaths/roaringbitmap.cp
+  agrona: data/classpaths/agrona.cp
+  chronicle-bytes: data/classpaths/chronicle-bytes.cp
+  chronicle-map: data/classpaths/chronicle-map.cp
+  chronicle-wire: data/classpaths/chronicle-wire.cp
+  cache2k: data/classpaths/cache2k.cp
+  stream-lib: data/classpaths/stream-lib.cp
+  commons-crypto: data/classpaths/commons-crypto.cp
+  big-math: data/classpaths/big-math.cp
+  hipparchus: data/classpaths/hipparchus.cp
+  ojalgo: data/classpaths/ojalgo.cp
+  commons-math: data/classpaths/commons-math.cp
+  commons-rng: data/classpaths/commons-rng.cp
+  commons-geometry: data/classpaths/commons-geometry.cp
+  jackson-databind: data/classpaths/jackson-databind.cp
+  dsl-json: data/classpaths/dsl-json.cp
+  json-java: data/classpaths/json-java.cp
+  json-simple: data/classpaths/json-simple.cp
+  wire: data/classpaths/wire.cp
+  jackson-dataformats-binary: data/classpaths/jackson-dataformats-binary.cp
+  commons-csv: data/classpaths/commons-csv.cp
+  commons-io: data/classpaths/commons-io.cp
+  brics-automaton: data/classpaths/brics-automaton.cp
+  joda-time: data/classpaths/joda-time.cp
+  threeten-extra: data/classpaths/threeten-extra.cp
+  conversant-disruptor: data/classpaths/conversant-disruptor.cp
+  hdrhistogram: data/classpaths/hdrhistogram.cp
+  micrometer: data/classpaths/micrometer.cp
+  vertx: data/classpaths/vertx.cp
+  jts: data/classpaths/jts.cp
+  spatial4j: data/classpaths/spatial4j.cp
+  jgraphx: data/classpaths/jgraphx.cp
+  zxing: data/classpaths/zxing.cp
+  commons-imaging: data/classpaths/commons-imaging.cp
+  jimfs: data/classpaths/jimfs.cp
+  tablesaw: data/classpaths/tablesaw.cp
+  byte-buddy: data/classpaths/byte-buddy.cp
+  bigqueue: data/classpaths/bigqueue.cp
+  commons-configuration: data/classpaths/commons-configuration.cp
+  commons-validator: data/classpaths/commons-validator.cp
+  commons-beanutils: data/classpaths/commons-beanutils.cp

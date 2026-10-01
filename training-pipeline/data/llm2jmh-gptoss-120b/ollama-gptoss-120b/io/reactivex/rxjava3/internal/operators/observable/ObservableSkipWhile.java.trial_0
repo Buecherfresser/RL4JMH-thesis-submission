@@ -1,0 +1,42 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableSkipWhileBenchmark {
+
+    @Param({"100000"})
+    public int size;
+
+    private Observable<Integer> observable;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        observable = Observable.range(0, size)
+                .skipWhile(new Predicate<Integer>() {
+                    @Override
+                    public boolean test(Integer v) throws Exception {
+                        // Skip the first half of the sequence
+                        return v < size / 2;
+                    }
+                });
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    public void skipWhileThroughput(Blackhole bh) {
+        // Consume the observable synchronously; Blackhole prevents dead-code elimination
+        observable.blockingSubscribe(bh::consume);
+    }
+}
+```

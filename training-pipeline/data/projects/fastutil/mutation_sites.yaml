@@ -1,0 +1,90 @@
+# Curated performance-mutation sites for fastutil.
+#
+# Hand-picked concrete, instantiable primitive/object collections and their hot ~once-per-call
+# public methods. fastutil's generated sources are dominated by Abstract* scaffolding (which the
+# is_benchmarkable_type filter rejects); these are the concrete data structures a JMH benchmark
+# can actually build and drive. Several methods per class => `killed / in-class mutants` measures
+# whether the benchmark covered the collection's core operations (add / lookup / remove / ...).
+#
+# `match` pins the exact overload (parens included). The big it.unimi.dsi.fastutil.ints.IntArrays
+# sort utility is excluded (>90k chars -> skipped by the RFT generate phase).
+#
+# Regenerate with:
+#   jmh-make-mutants fastutil --source data/external-src/fastutil \
+#       --sites data/projects/fastutil/mutation_sites.yaml
+
+package_root: it.unimi.dsi.fastutil
+
+sites:
+  # --- int array list ---
+  - {class: it.unimi.dsi.fastutil.ints.IntArrayList, method: add, match: "(final int k)", note: "append int"}
+  - {class: it.unimi.dsi.fastutil.ints.IntArrayList, method: getInt, match: "(final int index)", note: "indexed read"}
+  - {class: it.unimi.dsi.fastutil.ints.IntArrayList, method: indexOf, match: "(final int k)", note: "linear search"}
+  - {class: it.unimi.dsi.fastutil.ints.IntArrayList, method: removeInt, match: "(final int index)", note: "indexed remove (shift)"}
+
+  # --- int hash set ---
+  - {class: it.unimi.dsi.fastutil.ints.IntOpenHashSet, method: add, match: "(final int k)", note: "insert (open addressing)"}
+  - {class: it.unimi.dsi.fastutil.ints.IntOpenHashSet, method: contains, match: "(final int k)", note: "membership probe"}
+  - {class: it.unimi.dsi.fastutil.ints.IntOpenHashSet, method: remove, match: "(final int k)", note: "delete + shift keys"}
+
+  # --- int->int hash map ---
+  - {class: it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap, method: put, match: "(final int k, final int v)", note: "insert/update"}
+  - {class: it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap, method: get, match: "(final int k)", note: "lookup"}
+  - {class: it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap, method: containsKey, match: "(final int k)", note: "key probe"}
+  - {class: it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap, method: remove, match: "(final int k)", note: "delete + shift keys"}
+
+  # --- hashing / sizing primitives ---
+  - {class: it.unimi.dsi.fastutil.HashCommon, method: murmurHash3, match: "(int x)", note: "32-bit murmur mix"}
+  - {class: it.unimi.dsi.fastutil.HashCommon, method: mix, match: "(final int x)", note: "fast int hash mix"}
+  - {class: it.unimi.dsi.fastutil.HashCommon, method: nextPowerOfTwo, match: "(final int x)", note: "round up to 2^k"}
+  - {class: it.unimi.dsi.fastutil.HashCommon, method: arraySize, note: "table size from load factor"}
+
+  # --- int heap priority queue ---
+  - {class: it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue, method: enqueue, match: "(int x)", note: "sift-up insert"}
+  - {class: it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue, method: dequeueInt, note: "sift-down extract-min"}
+
+  # --- object array list ---
+  - {class: it.unimi.dsi.fastutil.objects.ObjectArrayList, method: add, match: "(final K k)", note: "append object"}
+  - {class: it.unimi.dsi.fastutil.objects.ObjectArrayList, method: get, match: "(final int index)", note: "indexed read"}
+  - {class: it.unimi.dsi.fastutil.objects.ObjectArrayList, method: indexOf, match: "(final Object k)", note: "linear search"}
+
+  # --- long array list ---
+  - {class: it.unimi.dsi.fastutil.longs.LongArrayList, method: add, match: "(final long k)", note: "append long"}
+  - {class: it.unimi.dsi.fastutil.longs.LongArrayList, method: getLong, match: "(final int index)", note: "indexed read"}
+  - {class: it.unimi.dsi.fastutil.longs.LongArrayList, method: indexOf, match: "(final long k)", note: "linear search"}
+
+  # --- double array list ---
+  - {class: it.unimi.dsi.fastutil.doubles.DoubleArrayList, method: add, match: "(final double k)", note: "append double"}
+  - {class: it.unimi.dsi.fastutil.doubles.DoubleArrayList, method: getDouble, match: "(final int index)", note: "indexed read"}
+  - {class: it.unimi.dsi.fastutil.doubles.DoubleArrayList, method: indexOf, match: "(final double k)", note: "linear search"}
+
+  # --- object->int hash map ---
+  - {class: it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap, method: put, match: "(final K k, final int v)", note: "insert/update"}
+  - {class: it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap, method: getInt, match: "(final Object k)", note: "lookup"}
+  - {class: it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap, method: containsKey, match: "(final Object k)", note: "key probe"}
+
+  # --- linked open hash set (insertion-order iteration) ---
+  - {class: it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet, method: add, match: "(final int k)", note: "insert (linked open addressing)"}
+  - {class: it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet, method: contains, match: "(final int k)", note: "membership probe"}
+  - {class: it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet, method: remove, match: "(final int k)", note: "delete key"}
+
+  # --- red-black tree set (log-time ops) ---
+  - {class: it.unimi.dsi.fastutil.ints.IntRBTreeSet, method: add, match: "(final int k)", note: "tree insert"}
+  - {class: it.unimi.dsi.fastutil.ints.IntRBTreeSet, method: contains, match: "(final int k)", note: "tree membership"}
+  - {class: it.unimi.dsi.fastutil.ints.IntRBTreeSet, method: remove, match: "(final int k)", note: "tree delete"}
+
+  # --- array-backed FIFO queue ---
+  - {class: it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue, method: enqueue, match: "(int x)", note: "append to ring buffer"}
+  - {class: it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue, method: dequeueInt, note: "pop from ring buffer"}
+  - {class: it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue, method: size, note: "queue length"}
+
+  # --- object hash set ---
+  - {class: it.unimi.dsi.fastutil.objects.ObjectOpenHashSet, method: add, match: "(final K k)", note: "insert object key"}
+  - {class: it.unimi.dsi.fastutil.objects.ObjectOpenHashSet, method: contains, match: "(final Object k)", note: "membership probe"}
+  - {class: it.unimi.dsi.fastutil.objects.ObjectOpenHashSet, method: remove, match: "(final Object k)", note: "delete object key"}
+
+  # --- int->object hash map ---
+  - {class: it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap, method: put, match: "(final int k, final V v)", note: "insert/update"}
+  - {class: it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap, method: get, match: "(final int k)", note: "lookup value"}
+  - {class: it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap, method: containsKey, match: "(final int k)", note: "key probe"}
+  - {class: it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap, method: remove, match: "(final int k)", note: "delete key"}

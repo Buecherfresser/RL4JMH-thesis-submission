@@ -1,0 +1,96 @@
+```
+package io.reactivex.rxjava3.internal.operators.single.benchmark;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.internal.operators.single.SingleDoOnDispose;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * JMH benchmark for {@link SingleDoOnDispose}.
+ *
+ * Measures the throughput of the dispose path (the most critical part of the operator)
+ * and the success path (baseline Single without disposal).
+ *
+ * The benchmark follows best practices:
+ * - State is scoped to a single thread to avoid contention.
+ * - All objects that can be reused are created in {@link Setup}.
+ * - No allocations are performed inside the benchmark method.
+ * - {@link Blackhole} is used to consume results and prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class SingleDoOnDisposeBenchmark {
+
+    /** A simple source that immediately emits a value. */
+    private Single<Integer> source;
+
+    /** The operator under test – a Single that runs an Action on dispose. */
+    private Single<Integer> doOnDisposeSingle;
+
+    /** A no‑op Action used to avoid side‑effects during the benchmark. */
+    private Action noopAction;
+
+    /** Counter used by the Action to ensure the JIT does not inline away the call. */
+    private AtomicInteger disposeCounter;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Baseline source
+        source = Single.just(1);
+
+        // Counter to make the Action observable for the JIT
+        disposeCounter = new AtomicInteger();
+
+        // Action that increments the counter – cheap enough to not dominate the measurement
+        noopAction = () -> disposeCounter.incrementAndGet();
+
+        // Wrap the source with the operator under test
+        doOnDisposeSingle = new SingleDoOnDispose<>(source, noopAction);
+    }
+
+    /**
+     * Benchmark the dispose path of {@link SingleDoOnDispose}.
+     *
+     * The subscription is immediately disposed, triggering the {@code onDispose} Action.
+     */
+    @Benchmark
+    public void disposePath(Blackhole bh) {
+        // Subscribe with a dummy observer that does nothing on success/error.
+        Disposable d = doOnDisposeSingle.subscribe(
+                bh::consume,          // onSuccess consumer (won't be called)
+                bh::consume           // onError consumer (won't be called)
+        );
+        // Immediately dispose to exercise the doOnDispose logic.
+        d.dispose();
+
+        // Consume the counter to prevent dead‑code elimination of the Action.
+        bh.consume(disposeCounter.get());
+    }
+
+    /**
+     * Benchmark the success path (no disposal) for comparison.
+     *
+     * This measures the overhead of the operator when the stream completes normally.
+     */
+    @Benchmark
+    public void successPath(Blackhole bh) {
+        // Subscribe and let the Single emit its value.
+        doOnDisposeSingle.subscribe(
+                bh::consume,          // onSuccess
+                bh::consume           // onError
+        );
+        // No explicit dispose – the upstream disposes itself after onSuccess.
+    }
+}
+```

@@ -1,0 +1,48 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
+/**
+ * Benchmark for {@link FlowableSkipLastTimed} measuring throughput.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableSkipLastTimedBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        @Param({ "1000", "10000", "100000" })
+        public int size;
+
+        public Flowable<Integer> source;
+
+        public final io.reactivex.rxjava3.core.Scheduler scheduler = Schedulers.computation();
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            source = Flowable.range(1, size);
+        }
+    }
+
+    @Benchmark
+    public void skipLastTimedThroughput(BenchmarkState state, Blackhole bh) {
+        new FlowableSkipLastTimed<>(
+                state.source,
+                1L,
+                TimeUnit.MILLISECONDS,
+                state.scheduler,
+                128,
+                false
+        ).blockingForEach(bh::consume);
+    }
+}
+```

@@ -1,0 +1,67 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.functions.Predicate;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeFilterSingle;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link MaybeFilterSingle}.
+ *
+ * The benchmark measures the throughput of filtering a {@link Single} source
+ * into a {@link Maybe} using a simple predicate. It follows best practices:
+ * <ul>
+ *   <li>Separate state from benchmark logic.</li>
+ *   <li>Use {@link Blackhole} to consume results and avoid dead‑code elimination.</li>
+ *   <li>Provide warm‑up and measurement iterations.</li>
+ *   <li>Run in {@link Mode#Throughput} to express operations per time unit.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class MaybeFilterSingleBenchmark {
+
+    /** Simple source emitting a constant integer. */
+    private Single<Integer> source;
+
+    /** Predicate used by the filter operator. */
+    private Predicate<Integer> predicate;
+
+    /** The operator under test. */
+    private Maybe<Integer> maybeFilterSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A deterministic source; using just() avoids external variability.
+        source = Single.just(42);
+
+        // A lightweight predicate; change to a more expensive one if needed.
+        predicate = value -> (value & 1) == 0; // always true for 42
+
+        // Create the operator instance once per trial.
+        maybeFilterSingle = new MaybeFilterSingle<>(source, predicate);
+    }
+
+    /**
+     * Executes the operator and consumes the result.
+     *
+     * The {@link Blackhole} ensures the returned value is used, preventing the JIT
+     * from optimizing away the whole call chain.
+     */
+    @Benchmark
+    public void filterSingle(Blackhole bh) {
+        // blockingGet() is appropriate for a micro‑benchmark; it forces the
+        // subscription to complete synchronously.
+        maybeFilterSingle.blockingSubscribe(bh::consume, bh::consume, () -> bh.consume(null));
+    }
+}
+```

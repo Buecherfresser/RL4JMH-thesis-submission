@@ -1,0 +1,572 @@
+diff --git a/com/google/flatbuffers/ArrayReadWriteBuf.java b/com/google/flatbuffers/ArrayReadWriteBuf.java
+index 08a6246..dbbb8b6 100644
+--- a/com/google/flatbuffers/ArrayReadWriteBuf.java
++++ b/com/google/flatbuffers/ArrayReadWriteBuf.java
+@@ -33,12 +33,12 @@ public class ArrayReadWriteBuf implements ReadWriteBuf {
+   }
+ 
+   @Override
+-  public void clear() {
++  public void clear() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(1);
+     this.writePos = 0;
+   }
+ 
+   @Override
+-  public boolean getBoolean(int index) {
++  public boolean getBoolean(int index) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(3);
+     return buffer[index] != 0;
+   }
+ 
+diff --git a/com/google/flatbuffers/BaseVector.java b/com/google/flatbuffers/BaseVector.java
+index 72cb5b7..df25ec8 100644
+--- a/com/google/flatbuffers/BaseVector.java
++++ b/com/google/flatbuffers/BaseVector.java
+@@ -39,7 +39,7 @@ public class BaseVector {
+    *
+    * @return Returns the start of the vector data.
+    */
+-  protected int __vector() {
++  protected int __vector() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(27);
+     return vector;
+   }
+ 
+@@ -49,7 +49,7 @@ public class BaseVector {
+    * @param j An `int` index of element into a vector.
+    * @return Returns the position of the vector element in a ByteBuffer.
+    */
+-  protected int __element(int j) {
++  protected int __element(int j) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(29);
+     return vector + j * element_size;
+   }
+ 
+diff --git a/com/google/flatbuffers/BooleanVector.java b/com/google/flatbuffers/BooleanVector.java
+index ce335e1..76e4b15 100644
+--- a/com/google/flatbuffers/BooleanVector.java
++++ b/com/google/flatbuffers/BooleanVector.java
+@@ -30,7 +30,7 @@ public final class BooleanVector extends BaseVector {
+    * @return Returns current vector access object assigned to vector data whose offset is stored at
+    *     `vector`.
+    */
+-  public BooleanVector __assign(int _vector, ByteBuffer _bb) {
++  public BooleanVector __assign(int _vector, ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(31);
+     __reset(_vector, Constants.SIZEOF_BYTE, _bb);
+     return this;
+   }
+diff --git a/com/google/flatbuffers/ByteBufferReadWriteBuf.java b/com/google/flatbuffers/ByteBufferReadWriteBuf.java
+index a973a5c..d92d884 100644
+--- a/com/google/flatbuffers/ByteBufferReadWriteBuf.java
++++ b/com/google/flatbuffers/ByteBufferReadWriteBuf.java
+@@ -13,12 +13,12 @@ public class ByteBufferReadWriteBuf implements ReadWriteBuf {
+   }
+ 
+   @Override
+-  public void clear() {
++  public void clear() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(5);
+     buffer.clear();
+   }
+ 
+   @Override
+-  public boolean getBoolean(int index) {
++  public boolean getBoolean(int index) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(7);
+     return get(index) != 0;
+   }
+ 
+diff --git a/com/google/flatbuffers/ByteBufferUtil.java b/com/google/flatbuffers/ByteBufferUtil.java
+index 3e6c272..29632e0 100644
+--- a/com/google/flatbuffers/ByteBufferUtil.java
++++ b/com/google/flatbuffers/ByteBufferUtil.java
+@@ -33,7 +33,7 @@ public class ByteBufferUtil {
+    * @param bb a size-prefixed buffer
+    * @return the size prefix
+    */
+-  public static int getSizePrefix(ByteBuffer bb) {
++  public static int getSizePrefix(ByteBuffer bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(9);
+     return bb.getInt(bb.position());
+   }
+ 
+@@ -44,7 +44,7 @@ public class ByteBufferUtil {
+    * @param bb a size-prefixed buffer
+    * @return a new buffer on the same underlying data that has skipped the size prefix
+    */
+-  public static ByteBuffer removeSizePrefix(ByteBuffer bb) {
++  public static ByteBuffer removeSizePrefix(ByteBuffer bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(11);
+     ByteBuffer s = bb.duplicate();
+     s.position(s.position() + SIZE_PREFIX_LENGTH);
+     return s;
+diff --git a/com/google/flatbuffers/ByteVector.java b/com/google/flatbuffers/ByteVector.java
+index 15e2417..e66245f 100644
+--- a/com/google/flatbuffers/ByteVector.java
++++ b/com/google/flatbuffers/ByteVector.java
+@@ -30,7 +30,7 @@ public final class ByteVector extends BaseVector {
+    * @return Returns current vector access object assigned to vector data whose offset is stored at
+    *     `vector`.
+    */
+-  public ByteVector __assign(int vector, ByteBuffer bb) {
++  public ByteVector __assign(int vector, ByteBuffer bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(33);
+     __reset(vector, Constants.SIZEOF_BYTE, bb);
+     return this;
+   }
+@@ -52,7 +52,7 @@ public final class ByteVector extends BaseVector {
+    * @param j The index from which the byte will be read.
+    * @return the unsigned 8-bit at the given index.
+    */
+-  public int getAsUnsigned(int j) {
++  public int getAsUnsigned(int j) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(35);
+     return (int) get(j) & 0xFF;
+   }
+ }
+diff --git a/com/google/flatbuffers/Constants.java b/com/google/flatbuffers/Constants.java
+index fac14d8..d333711 100644
+--- a/com/google/flatbuffers/Constants.java
++++ b/com/google/flatbuffers/Constants.java
+@@ -51,7 +51,7 @@ public class Constants {
+    * and generated code are modified in sync. Changes to the Java implementation need to be sure to
+    * change the version here and in the code generator on every possible incompatible change
+    */
+-  public static void FLATBUFFERS_25_12_19() {}
++  public static void FLATBUFFERS_25_12_19() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(37);}
+ }
+ 
+ /// @endcond
+diff --git a/com/google/flatbuffers/DoubleVector.java b/com/google/flatbuffers/DoubleVector.java
+index 0b1e04d..75b0dfd 100644
+--- a/com/google/flatbuffers/DoubleVector.java
++++ b/com/google/flatbuffers/DoubleVector.java
+@@ -30,7 +30,7 @@ public final class DoubleVector extends BaseVector {
+    * @return Returns current vector access object assigned to vector data whose offset is stored at
+    *     `vector`.
+    */
+-  public DoubleVector __assign(int _vector, ByteBuffer _bb) {
++  public DoubleVector __assign(int _vector, ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(39);
+     __reset(_vector, Constants.SIZEOF_DOUBLE, _bb);
+     return this;
+   }
+diff --git a/com/google/flatbuffers/FlatBufferBuilder.java b/com/google/flatbuffers/FlatBufferBuilder.java
+index bac946d..f5f7126 100644
+--- a/com/google/flatbuffers/FlatBufferBuilder.java
++++ b/com/google/flatbuffers/FlatBufferBuilder.java
+@@ -145,7 +145,7 @@ public class FlatBufferBuilder {
+    *     buffer needs to grow
+    * @return Returns `this`.
+    */
+-  public FlatBufferBuilder init(ByteBuffer existing_bb, ByteBufferFactory bb_factory) {
++  public FlatBufferBuilder init(ByteBuffer existing_bb, ByteBufferFactory bb_factory) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(13);
+     this.bb_factory = bb_factory;
+     bb = existing_bb;
+     bb.clear();
+@@ -191,7 +191,7 @@ public class FlatBufferBuilder {
+      *
+      * @param bb the buffer to release
+      */
+-    public void releaseByteBuffer(ByteBuffer bb) {}
++    public void releaseByteBuffer(ByteBuffer bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(15);}
+   }
+ 
+   /**
+diff --git a/com/google/flatbuffers/FlexBuffers.java b/com/google/flatbuffers/FlexBuffers.java
+index 89d9d1d..8f3ee16 100644
+--- a/com/google/flatbuffers/FlexBuffers.java
++++ b/com/google/flatbuffers/FlexBuffers.java
+@@ -234,7 +234,7 @@ public class FlexBuffers {
+    * @return {@link Reference} to the root object
+    */
+   @Deprecated
+-  public static Reference getRoot(ByteBuffer buffer) {
++  public static Reference getRoot(ByteBuffer buffer) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(17);
+     return getRoot(
+         buffer.hasArray()
+             ? new ArrayReadWriteBuf(buffer.array(), buffer.limit())
+@@ -247,7 +247,7 @@ public class FlexBuffers {
+    * @param buffer ReadBuf containing FlexBuffer message
+    * @return {@link Reference} to the root object
+    */
+-  public static Reference getRoot(ReadBuf buffer) {
++  public static Reference getRoot(ReadBuf buffer) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(19);
+     // See Finish() below for the serialization counterpart of this.
+     // The root ends at the end of the buffer, so we parse backwards from there.
+     int end = buffer.limit();
+diff --git a/com/google/flatbuffers/FlexBuffersBuilder.java b/com/google/flatbuffers/FlexBuffersBuilder.java
+index 57a6e6f..e7256c5 100644
+--- a/com/google/flatbuffers/FlexBuffersBuilder.java
++++ b/com/google/flatbuffers/FlexBuffersBuilder.java
+@@ -156,7 +156,7 @@ public class FlexBuffersBuilder {
+   }
+ 
+   /** Reset the FlexBuffersBuilder by purging all data that it holds. */
+-  public void clear() {
++  public void clear() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(21);
+     bb.clear();
+     stack.clear();
+     keyPool.clear();
+@@ -170,7 +170,7 @@ public class FlexBuffersBuilder {
+    *
+    * @return `ByteBuffer` with finished message
+    */
+-  public ReadWriteBuf getBuffer() {
++  public ReadWriteBuf getBuffer() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(23);
+     assert (finished);
+     return bb;
+   }
+diff --git a/com/google/flatbuffers/FloatVector.java b/com/google/flatbuffers/FloatVector.java
+index 76a10ae..1246199 100644
+--- a/com/google/flatbuffers/FloatVector.java
++++ b/com/google/flatbuffers/FloatVector.java
+@@ -30,7 +30,7 @@ public final class FloatVector extends BaseVector {
+    * @return Returns current vector access object assigned to vector data whose offset is stored at
+    *     `vector`.
+    */
+-  public FloatVector __assign(int _vector, ByteBuffer _bb) {
++  public FloatVector __assign(int _vector, ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(41);
+     __reset(_vector, Constants.SIZEOF_FLOAT, _bb);
+     return this;
+   }
+diff --git a/com/google/flatbuffers/IntVector.java b/com/google/flatbuffers/IntVector.java
+index 4e40056..a9192b0 100644
+--- a/com/google/flatbuffers/IntVector.java
++++ b/com/google/flatbuffers/IntVector.java
+@@ -30,7 +30,7 @@ public final class IntVector extends BaseVector {
+    * @return Returns current vector access object assigned to vector data whose offset is stored at
+    *     `vector`.
+    */
+-  public IntVector __assign(int _vector, ByteBuffer _bb) {
++  public IntVector __assign(int _vector, ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(43);
+     __reset(_vector, Constants.SIZEOF_INT, _bb);
+     return this;
+   }
+@@ -52,7 +52,7 @@ public final class IntVector extends BaseVector {
+    * @param j The index from which the integer will be read.
+    * @return the unsigned 32-bit at the given index.
+    */
+-  public long getAsUnsigned(int j) {
++  public long getAsUnsigned(int j) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(44);
+     return (long) get(j) & 0xFFFFFFFFL;
+   }
+ }
+diff --git a/com/google/flatbuffers/LongVector.java b/com/google/flatbuffers/LongVector.java
+index e56d9f0..af3cc48 100644
+--- a/com/google/flatbuffers/LongVector.java
++++ b/com/google/flatbuffers/LongVector.java
+@@ -30,7 +30,7 @@ public final class LongVector extends BaseVector {
+    * @return Returns current vector access object assigned to vector data whose offset is stored at
+    *     `vector`.
+    */
+-  public LongVector __assign(int _vector, ByteBuffer _bb) {
++  public LongVector __assign(int _vector, ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(45);
+     __reset(_vector, Constants.SIZEOF_LONG, _bb);
+     return this;
+   }
+diff --git a/com/google/flatbuffers/ShortVector.java b/com/google/flatbuffers/ShortVector.java
+index 2d722f1..d19900a 100644
+--- a/com/google/flatbuffers/ShortVector.java
++++ b/com/google/flatbuffers/ShortVector.java
+@@ -30,7 +30,7 @@ public final class ShortVector extends BaseVector {
+    * @return Returns current vector access object assigned to vector data whose offset is stored at
+    *     `vector`.
+    */
+-  public ShortVector __assign(int _vector, ByteBuffer _bb) {
++  public ShortVector __assign(int _vector, ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(46);
+     __reset(_vector, Constants.SIZEOF_SHORT, _bb);
+     return this;
+   }
+@@ -52,7 +52,7 @@ public final class ShortVector extends BaseVector {
+    * @param j The index from which the short value will be read.
+    * @return the unsigned 16-bit at the given index.
+    */
+-  public int getAsUnsigned(int j) {
++  public int getAsUnsigned(int j) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(47);
+     return (int) get(j) & 0xFFFF;
+   }
+ }
+diff --git a/com/google/flatbuffers/StringVector.java b/com/google/flatbuffers/StringVector.java
+index d51239a..f456e81 100644
+--- a/com/google/flatbuffers/StringVector.java
++++ b/com/google/flatbuffers/StringVector.java
+@@ -33,7 +33,7 @@ public final class StringVector extends BaseVector {
+    * @return Returns current vector access object assigned to vector data whose offset is stored at
+    *     `vector`.
+    */
+-  public StringVector __assign(int _vector, int _element_size, ByteBuffer _bb) {
++  public StringVector __assign(int _vector, int _element_size, ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(25);
+     __reset(_vector, _element_size, _bb);
+     return this;
+   }
+diff --git a/com/google/flatbuffers/Struct.java b/com/google/flatbuffers/Struct.java
+index f715b0a..90d281e 100644
+--- a/com/google/flatbuffers/Struct.java
++++ b/com/google/flatbuffers/Struct.java
+@@ -34,7 +34,7 @@ public class Struct {
+    * <p>This method exists primarily to allow recycling Table instances without risking memory leaks
+    * due to {@code ByteBuffer} references.
+    */
+-  protected void __reset(int _i, ByteBuffer _bb) {
++  protected void __reset(int _i, ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(48);
+     bb = _bb;
+     if (bb != null) {
+       bb_pos = _i;
+@@ -52,7 +52,7 @@ public class Struct {
+    *
+    * @param struct the instance to reset to initial state
+    */
+-  public void __reset() {
++  public void __reset() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(49);
+     __reset(0, null);
+   }
+ }
+diff --git a/com/google/flatbuffers/Table.java b/com/google/flatbuffers/Table.java
+index 5711aae..20b9b99 100644
+--- a/com/google/flatbuffers/Table.java
++++ b/com/google/flatbuffers/Table.java
+@@ -44,7 +44,7 @@ public class Table {
+    *
+    * @return Returns the Table's ByteBuffer.
+    */
+-  public ByteBuffer getByteBuffer() {
++  public ByteBuffer getByteBuffer() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(50);
+     return bb;
+   }
+ 
+diff --git a/com/google/flatbuffers/jmhbench/MutationSwitch.java b/com/google/flatbuffers/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..7eb38af
+--- /dev/null
++++ b/com/google/flatbuffers/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.google.flatbuffers.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/google/flatbuffers/reflection/BaseType.java b/com/google/flatbuffers/reflection/BaseType.java
+index ef6ba2d..22e6e3f 100644
+--- a/com/google/flatbuffers/reflection/BaseType.java
++++ b/com/google/flatbuffers/reflection/BaseType.java
+@@ -28,6 +28,6 @@ public final class BaseType {
+ 
+   public static final String[] names = { "None", "UType", "Bool", "Byte", "UByte", "Short", "UShort", "Int", "UInt", "Long", "ULong", "Float", "Double", "String", "Vector", "Obj", "Union", "Array", "Vector64", "MaxBaseType", };
+ 
+-  public static String name(int e) { return names[e]; }
++  public static String name(int e) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(2); return names[e]; }
+ }
+ 
+diff --git a/com/google/flatbuffers/reflection/Enum.java b/com/google/flatbuffers/reflection/Enum.java
+index 6376745..3b1cd37 100644
+--- a/com/google/flatbuffers/reflection/Enum.java
++++ b/com/google/flatbuffers/reflection/Enum.java
+@@ -20,8 +20,8 @@ import java.nio.ByteOrder;
+ 
+ @SuppressWarnings("unused")
+ public final class Enum extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static Enum getRootAsEnum(ByteBuffer _bb) { return getRootAsEnum(_bb, new Enum()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(4); Constants.FLATBUFFERS_25_12_19(); }
++  public static Enum getRootAsEnum(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(6); return getRootAsEnum(_bb, new Enum()); }
+   public static Enum getRootAsEnum(ByteBuffer _bb, Enum obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+   public Enum __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+diff --git a/com/google/flatbuffers/reflection/EnumVal.java b/com/google/flatbuffers/reflection/EnumVal.java
+index f9d0bea..3aadc8e 100644
+--- a/com/google/flatbuffers/reflection/EnumVal.java
++++ b/com/google/flatbuffers/reflection/EnumVal.java
+@@ -20,8 +20,8 @@ import java.nio.ByteOrder;
+ 
+ @SuppressWarnings("unused")
+ public final class EnumVal extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static EnumVal getRootAsEnumVal(ByteBuffer _bb) { return getRootAsEnumVal(_bb, new EnumVal()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(8); Constants.FLATBUFFERS_25_12_19(); }
++  public static EnumVal getRootAsEnumVal(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(10); return getRootAsEnumVal(_bb, new EnumVal()); }
+   public static EnumVal getRootAsEnumVal(ByteBuffer _bb, EnumVal obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+   public EnumVal __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+diff --git a/com/google/flatbuffers/reflection/Field.java b/com/google/flatbuffers/reflection/Field.java
+index ed8698d..201d964 100644
+--- a/com/google/flatbuffers/reflection/Field.java
++++ b/com/google/flatbuffers/reflection/Field.java
+@@ -20,8 +20,8 @@ import java.nio.ByteOrder;
+ 
+ @SuppressWarnings("unused")
+ public final class Field extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static Field getRootAsField(ByteBuffer _bb) { return getRootAsField(_bb, new Field()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(12); Constants.FLATBUFFERS_25_12_19(); }
++  public static Field getRootAsField(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(14); return getRootAsField(_bb, new Field()); }
+   public static Field getRootAsField(ByteBuffer _bb, Field obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+   public Field __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+diff --git a/com/google/flatbuffers/reflection/KeyValue.java b/com/google/flatbuffers/reflection/KeyValue.java
+index a8fdc45..ed9891c 100644
+--- a/com/google/flatbuffers/reflection/KeyValue.java
++++ b/com/google/flatbuffers/reflection/KeyValue.java
+@@ -20,8 +20,8 @@ import java.nio.ByteOrder;
+ 
+ @SuppressWarnings("unused")
+ public final class KeyValue extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static KeyValue getRootAsKeyValue(ByteBuffer _bb) { return getRootAsKeyValue(_bb, new KeyValue()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(16); Constants.FLATBUFFERS_25_12_19(); }
++  public static KeyValue getRootAsKeyValue(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(18); return getRootAsKeyValue(_bb, new KeyValue()); }
+   public static KeyValue getRootAsKeyValue(ByteBuffer _bb, KeyValue obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+   public KeyValue __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+diff --git a/com/google/flatbuffers/reflection/Object.java b/com/google/flatbuffers/reflection/Object.java
+index cffe0c4..159b717 100644
+--- a/com/google/flatbuffers/reflection/Object.java
++++ b/com/google/flatbuffers/reflection/Object.java
+@@ -20,8 +20,8 @@ import java.nio.ByteOrder;
+ 
+ @SuppressWarnings("unused")
+ public final class Object extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static Object getRootAsObject(ByteBuffer _bb) { return getRootAsObject(_bb, new Object()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(20); Constants.FLATBUFFERS_25_12_19(); }
++  public static Object getRootAsObject(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(22); return getRootAsObject(_bb, new Object()); }
+   public static Object getRootAsObject(ByteBuffer _bb, Object obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+   public Object __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+diff --git a/com/google/flatbuffers/reflection/RPCCall.java b/com/google/flatbuffers/reflection/RPCCall.java
+index ecf3cd9..bdbc25a 100644
+--- a/com/google/flatbuffers/reflection/RPCCall.java
++++ b/com/google/flatbuffers/reflection/RPCCall.java
+@@ -20,8 +20,8 @@ import java.nio.ByteOrder;
+ 
+ @SuppressWarnings("unused")
+ public final class RPCCall extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static RPCCall getRootAsRPCCall(ByteBuffer _bb) { return getRootAsRPCCall(_bb, new RPCCall()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(24); Constants.FLATBUFFERS_25_12_19(); }
++  public static RPCCall getRootAsRPCCall(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(26); return getRootAsRPCCall(_bb, new RPCCall()); }
+   public static RPCCall getRootAsRPCCall(ByteBuffer _bb, RPCCall obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+   public RPCCall __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+diff --git a/com/google/flatbuffers/reflection/Schema.java b/com/google/flatbuffers/reflection/Schema.java
+index 260d18b..b17d82a 100644
+--- a/com/google/flatbuffers/reflection/Schema.java
++++ b/com/google/flatbuffers/reflection/Schema.java
+@@ -20,8 +20,8 @@ import java.nio.ByteOrder;
+ 
+ @SuppressWarnings("unused")
+ public final class Schema extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static Schema getRootAsSchema(ByteBuffer _bb) { return getRootAsSchema(_bb, new Schema()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(28); Constants.FLATBUFFERS_25_12_19(); }
++  public static Schema getRootAsSchema(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(30); return getRootAsSchema(_bb, new Schema()); }
+   public static Schema getRootAsSchema(ByteBuffer _bb, Schema obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public static boolean SchemaBufferHasIdentifier(ByteBuffer _bb) { return __has_identifier(_bb, "BFBS"); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+diff --git a/com/google/flatbuffers/reflection/SchemaFile.java b/com/google/flatbuffers/reflection/SchemaFile.java
+index 3cbaa34..6bd153d 100644
+--- a/com/google/flatbuffers/reflection/SchemaFile.java
++++ b/com/google/flatbuffers/reflection/SchemaFile.java
+@@ -25,8 +25,8 @@ import java.nio.ByteOrder;
+  */
+ @SuppressWarnings("unused")
+ public final class SchemaFile extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static SchemaFile getRootAsSchemaFile(ByteBuffer _bb) { return getRootAsSchemaFile(_bb, new SchemaFile()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(32); Constants.FLATBUFFERS_25_12_19(); }
++  public static SchemaFile getRootAsSchemaFile(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(34); return getRootAsSchemaFile(_bb, new SchemaFile()); }
+   public static SchemaFile getRootAsSchemaFile(ByteBuffer _bb, SchemaFile obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+   public SchemaFile __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+diff --git a/com/google/flatbuffers/reflection/Service.java b/com/google/flatbuffers/reflection/Service.java
+index 373b976..4cef452 100644
+--- a/com/google/flatbuffers/reflection/Service.java
++++ b/com/google/flatbuffers/reflection/Service.java
+@@ -20,8 +20,8 @@ import java.nio.ByteOrder;
+ 
+ @SuppressWarnings("unused")
+ public final class Service extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static Service getRootAsService(ByteBuffer _bb) { return getRootAsService(_bb, new Service()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(36); Constants.FLATBUFFERS_25_12_19(); }
++  public static Service getRootAsService(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(38); return getRootAsService(_bb, new Service()); }
+   public static Service getRootAsService(ByteBuffer _bb, Service obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+   public Service __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+diff --git a/com/google/flatbuffers/reflection/Type.java b/com/google/flatbuffers/reflection/Type.java
+index d010675..f458700 100644
+--- a/com/google/flatbuffers/reflection/Type.java
++++ b/com/google/flatbuffers/reflection/Type.java
+@@ -20,8 +20,8 @@ import java.nio.ByteOrder;
+ 
+ @SuppressWarnings("unused")
+ public final class Type extends com.google.flatbuffers.Table {
+-  public static void ValidateVersion() { Constants.FLATBUFFERS_25_12_19(); }
+-  public static Type getRootAsType(ByteBuffer _bb) { return getRootAsType(_bb, new Type()); }
++  public static void ValidateVersion() { com.google.flatbuffers.jmhbench.MutationSwitch.tick(40); Constants.FLATBUFFERS_25_12_19(); }
++  public static Type getRootAsType(ByteBuffer _bb) { com.google.flatbuffers.jmhbench.MutationSwitch.tick(42); return getRootAsType(_bb, new Type()); }
+   public static Type getRootAsType(ByteBuffer _bb, Type obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
+   public Type __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }

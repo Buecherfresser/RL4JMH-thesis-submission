@@ -1,0 +1,51 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableDistinct;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableDistinctBenchmark {
+
+    /** Number of items emitted by the source Flowable per benchmark iteration. */
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    /** Supplier for the collection used by the distinct operator (HashSet). */
+    private Supplier<HashSet<Integer>> collectionSupplier = HashSet::new;
+
+    /** Key selector that returns the item itself (identity function). */
+    private Function<Integer, Integer> keySelector = i -> i;
+
+    /** The Flowable under test. */
+    private Flowable<Integer> distinctFlowable;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Create a source Flowable that emits a repeating pattern to trigger distinct logic.
+        Flowable<Integer> source = Flowable.range(0, size)
+                .concatWith(Flowable.range(0, size)); // duplicate the range to test filtering
+
+        // Apply the distinct operator using the same implementation as in the library.
+        distinctFlowable = new FlowableDistinct<>(source, keySelector, collectionSupplier);
+    }
+
+    @Benchmark
+    public void distinctThroughput(Blackhole bh) {
+        // Subscribe and consume all items, forcing the operator to run.
+        distinctFlowable.subscribe(bh::consume);
+    }
+}
+```

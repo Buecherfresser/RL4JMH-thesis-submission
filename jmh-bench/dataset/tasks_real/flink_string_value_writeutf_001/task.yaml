@@ -1,0 +1,27 @@
+instance_id: flink_string_value_writeutf_001
+target_class: bench.StringEncoder
+expected_input_shapes: []
+tags:
+- string
+- flink
+- real-world
+provenance:
+  project: apache/flink
+  url: https://github.com/apache/flink/pull/10358
+  commit: be967fa1f71bfefe37db3c4a7e0e8a954b30df8c
+  description: 'Inspired by Flink PR #10358 ([FLINK-14346] faster implementation
+
+    of StringValue writeString and readString). The simplified SUT
+
+    here encodes a String to UTF-8 bytes with a pre-sized buffer;
+
+    the full real class is not extracted, so the SUT may be
+
+    expanded later by following the linked PR.
+
+    '
+junit_test_path: tests/StringEncoderTest.java
+regressions:
+- id: per_char_buffer_grow
+  patch: regressions/per_char_buffer_grow.patch
+  description: Grow the output buffer one byte at a time via Arrays.copyOf.

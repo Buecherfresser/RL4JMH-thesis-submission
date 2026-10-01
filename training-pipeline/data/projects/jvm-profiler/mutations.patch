@@ -1,0 +1,603 @@
+diff --git a/com/uber/profiling/Agent.java b/com/uber/profiling/Agent.java
+index 943475d..8a60bee 100644
+--- a/com/uber/profiling/Agent.java
++++ b/com/uber/profiling/Agent.java
+@@ -25,11 +25,11 @@ public final class Agent {
+     private Agent() {
+     }
+ 
+-    public static void agentmain(final String args, final Instrumentation instrumentation) {
++    public static void agentmain(final String args, final Instrumentation instrumentation) { com.uber.profiling.jmhbench.MutationSwitch.tick(13);
+         premain(args, instrumentation);
+     }
+ 
+-    public static void premain(final String args, final Instrumentation instrumentation) {
++    public static void premain(final String args, final Instrumentation instrumentation) { com.uber.profiling.jmhbench.MutationSwitch.tick(18);
+         System.out.println("Java Agent " + AgentImpl.VERSION + " premain args: " + args);
+ 
+         Arguments arguments = Arguments.parseArgs(args);
+diff --git a/com/uber/profiling/AgentImpl.java b/com/uber/profiling/AgentImpl.java
+index bf0da44..78af552 100644
+--- a/com/uber/profiling/AgentImpl.java
++++ b/com/uber/profiling/AgentImpl.java
+@@ -57,7 +57,7 @@ public class AgentImpl {
+ 
+     private boolean started = false;
+ 
+-    public void run(Arguments arguments, Instrumentation instrumentation, Collection<AutoCloseable> objectsToCloseOnShutdown) {
++    public void run(Arguments arguments, Instrumentation instrumentation, Collection<AutoCloseable> objectsToCloseOnShutdown) { com.uber.profiling.jmhbench.MutationSwitch.tick(22);
+         if (arguments.isNoop()) {
+             logger.info("Agent noop is true, do not run anything");
+             return;
+@@ -112,7 +112,7 @@ public class AgentImpl {
+         Runtime.getRuntime().addShutdownHook(shutdownHook);
+     }
+ 
+-    public ProfilerGroup startProfilers(Collection<Profiler> profilers) {
++    public ProfilerGroup startProfilers(Collection<Profiler> profilers) { com.uber.profiling.jmhbench.MutationSwitch.tick(26);
+         if (started) {
+             logger.warn("Profilers already started, do not start it again");
+             return new ProfilerGroup(new ArrayList<>(), new ArrayList<>());
+diff --git a/com/uber/profiling/AgentThreadFactory.java b/com/uber/profiling/AgentThreadFactory.java
+index 227837b..86c35b4 100644
+--- a/com/uber/profiling/AgentThreadFactory.java
++++ b/com/uber/profiling/AgentThreadFactory.java
+@@ -25,7 +25,7 @@ public class AgentThreadFactory implements ThreadFactory {
+     private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+ 
+     @Override
+-    public Thread newThread(Runnable r) {
++    public Thread newThread(Runnable r) { com.uber.profiling.jmhbench.MutationSwitch.tick(30);
+         Thread thread = defaultThreadFactory.newThread(r);
+         if (thread != null) {
+             thread.setDaemon(true);
+diff --git a/com/uber/profiling/ArgumentUtils.java b/com/uber/profiling/ArgumentUtils.java
+index 7e18332..b4c2b85 100644
+--- a/com/uber/profiling/ArgumentUtils.java
++++ b/com/uber/profiling/ArgumentUtils.java
+@@ -22,11 +22,11 @@ import java.util.Map;
+ 
+ public class ArgumentUtils {
+ 
+-    public static boolean needToUpdateArg(String argValue) {
++    public static boolean needToUpdateArg(String argValue) { com.uber.profiling.jmhbench.MutationSwitch.tick(1);
+         return argValue != null && !argValue.isEmpty();
+     }
+ 
+-    public static boolean needToUpdateRollingArg(String enableRolling) {
++    public static boolean needToUpdateRollingArg(String enableRolling) { com.uber.profiling.jmhbench.MutationSwitch.tick(7);
+         return enableRolling != null && !enableRolling.isEmpty() && Boolean.parseBoolean(enableRolling);
+     }
+ 
+diff --git a/com/uber/profiling/Arguments.java b/com/uber/profiling/Arguments.java
+index 5a4cbb5..af5b9d0 100644
+--- a/com/uber/profiling/Arguments.java
++++ b/com/uber/profiling/Arguments.java
+@@ -79,7 +79,7 @@ public class Arguments {
+         updateArguments(parsedArgs);
+     }
+ 
+-    public static Arguments parseArgs(String args) {
++    public static Arguments parseArgs(String args) { com.uber.profiling.jmhbench.MutationSwitch.tick(34);
+         if (args == null) {
+             return new Arguments(new HashMap<>());
+         }
+@@ -108,7 +108,7 @@ public class Arguments {
+         return new Arguments(map);
+     }
+ 
+-    public void updateArguments(Map<String, List<String>> parsedArgs) {
++    public void updateArguments(Map<String, List<String>> parsedArgs) { com.uber.profiling.jmhbench.MutationSwitch.tick(38);
+         rawArgValues.putAll(parsedArgs);
+ 
+         String argValue = ArgumentUtils.getArgumentSingleValue(parsedArgs, ARG_NOOP);
+diff --git a/com/uber/profiling/ProfilerGroup.java b/com/uber/profiling/ProfilerGroup.java
+index 5e4b36d..dcecac1 100644
+--- a/com/uber/profiling/ProfilerGroup.java
++++ b/com/uber/profiling/ProfilerGroup.java
+@@ -28,11 +28,11 @@ public class ProfilerGroup {
+         this.periodicProfilers = new ArrayList<>(periodicProfilers);
+     }
+ 
+-    public List<Profiler> getOneTimeProfilers() {
++    public List<Profiler> getOneTimeProfilers() { com.uber.profiling.jmhbench.MutationSwitch.tick(42);
+         return oneTimeProfilers;
+     }
+ 
+-    public List<Profiler> getPeriodicProfilers() {
++    public List<Profiler> getPeriodicProfilers() { com.uber.profiling.jmhbench.MutationSwitch.tick(46);
+         return periodicProfilers;
+     }
+ }
+diff --git a/com/uber/profiling/ProfilerRunner.java b/com/uber/profiling/ProfilerRunner.java
+index bcd6db3..4453de9 100644
+--- a/com/uber/profiling/ProfilerRunner.java
++++ b/com/uber/profiling/ProfilerRunner.java
+@@ -33,7 +33,7 @@ public class ProfilerRunner implements Runnable {
+     }
+ 
+     @Override
+-    public void run() {
++    public void run() { com.uber.profiling.jmhbench.MutationSwitch.tick(49);
+         try {
+             profiler.profile();
+         } catch (Throwable e) {
+diff --git a/com/uber/profiling/examples/HelloWorldApplication.java b/com/uber/profiling/examples/HelloWorldApplication.java
+index d429f6d..c1d5194 100644
+--- a/com/uber/profiling/examples/HelloWorldApplication.java
++++ b/com/uber/profiling/examples/HelloWorldApplication.java
+@@ -26,7 +26,7 @@ public class HelloWorldApplication {
+      * For example, you could run it with following argument:
+      * -javaagent:target/uber-java-agent-0.0.1-jar-with-dependencies.jar=reporter=com.uber.profiling.reporters.ConsoleOutputReporter,tag=tag1,metricInterval=10000,durationProfiling=com.uber.profiling.examples.HelloWorldApplication.*
+      */
+-    public static void main(String[] args) throws Throwable {
++    public static void main(String[] args) throws Throwable { com.uber.profiling.jmhbench.MutationSwitch.tick(2);
+         long totalRunningMillis = 1 * 60 * 1000;
+         long sleepMillis = 1000;
+ 
+@@ -67,7 +67,7 @@ public class HelloWorldApplication {
+         }
+     }
+ 
+-    public static void publicSleepMethod(AtomicLong millis) {
++    public static void publicSleepMethod(AtomicLong millis) { com.uber.profiling.jmhbench.MutationSwitch.tick(8);
+         try {
+             Thread.sleep(millis.get());
+         } catch (InterruptedException e) {
+diff --git a/com/uber/profiling/jmhbench/MutationSwitch.java b/com/uber/profiling/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..87a7240
+--- /dev/null
++++ b/com/uber/profiling/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.uber.profiling.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/uber/profiling/profilers/CpuAndMemoryProfiler.java b/com/uber/profiling/profilers/CpuAndMemoryProfiler.java
+index 6df53d7..8ba8201 100644
+--- a/com/uber/profiling/profilers/CpuAndMemoryProfiler.java
++++ b/com/uber/profiling/profilers/CpuAndMemoryProfiler.java
+@@ -66,11 +66,11 @@ public class CpuAndMemoryProfiler extends ProfilerBase implements Profiler {
+     }
+ 
+     @Override
+-    public long getIntervalMillis() {
++    public long getIntervalMillis() { com.uber.profiling.jmhbench.MutationSwitch.tick(3);
+         return intervalMillis;
+     }
+ 
+-    public void setIntervalMillis(long intervalMillis) {
++    public void setIntervalMillis(long intervalMillis) { com.uber.profiling.jmhbench.MutationSwitch.tick(9);
+         this.intervalMillis = intervalMillis;
+     }
+ 
+diff --git a/com/uber/profiling/profilers/IOProfiler.java b/com/uber/profiling/profilers/IOProfiler.java
+index c1ac93d..a878b57 100644
+--- a/com/uber/profiling/profilers/IOProfiler.java
++++ b/com/uber/profiling/profilers/IOProfiler.java
+@@ -36,11 +36,11 @@ public class IOProfiler extends ProfilerBase implements Profiler {
+     }
+ 
+     @Override
+-    public long getIntervalMillis() {
++    public long getIntervalMillis() { com.uber.profiling.jmhbench.MutationSwitch.tick(14);
+         return intervalMillis;
+     }
+ 
+-    public void setIntervalMillis(long intervalMillis) {
++    public void setIntervalMillis(long intervalMillis) { com.uber.profiling.jmhbench.MutationSwitch.tick(19);
+         this.intervalMillis = intervalMillis;
+     }
+ 
+diff --git a/com/uber/profiling/profilers/MethodArgumentCollector.java b/com/uber/profiling/profilers/MethodArgumentCollector.java
+index c7d3688..cd7d0a8 100644
+--- a/com/uber/profiling/profilers/MethodArgumentCollector.java
++++ b/com/uber/profiling/profilers/MethodArgumentCollector.java
+@@ -25,7 +25,7 @@ public class MethodArgumentCollector {
+         this.buffer = buffer;
+     }
+ 
+-    public void collectMetric(String className, String methodName, String argument) {
++    public void collectMetric(String className, String methodName, String argument) { com.uber.profiling.jmhbench.MutationSwitch.tick(23);
+         if (argument == null) {
+             argument = "";
+         }
+diff --git a/com/uber/profiling/profilers/MethodArgumentProfiler.java b/com/uber/profiling/profilers/MethodArgumentProfiler.java
+index a20e384..de42d39 100644
+--- a/com/uber/profiling/profilers/MethodArgumentProfiler.java
++++ b/com/uber/profiling/profilers/MethodArgumentProfiler.java
+@@ -41,11 +41,11 @@ public class MethodArgumentProfiler extends ProfilerBase implements Profiler {
+     }
+ 
+     @Override
+-    public long getIntervalMillis() {
++    public long getIntervalMillis() { com.uber.profiling.jmhbench.MutationSwitch.tick(27);
+         return intervalMillis;
+     }
+ 
+-    public void setIntervalMillis(long intervalMillis) {
++    public void setIntervalMillis(long intervalMillis) { com.uber.profiling.jmhbench.MutationSwitch.tick(31);
+         this.intervalMillis = intervalMillis;
+     }
+ 
+diff --git a/com/uber/profiling/profilers/MethodDurationCollector.java b/com/uber/profiling/profilers/MethodDurationCollector.java
+index d75ab0d..2f1bd40 100644
+--- a/com/uber/profiling/profilers/MethodDurationCollector.java
++++ b/com/uber/profiling/profilers/MethodDurationCollector.java
+@@ -25,7 +25,7 @@ public class MethodDurationCollector {
+         this.buffer = buffer;
+     }
+ 
+-    public void collectLongMetric(String className, String methodName, String metricName, long metricValue) {
++    public void collectLongMetric(String className, String methodName, String metricName, long metricValue) { com.uber.profiling.jmhbench.MutationSwitch.tick(35);
+         buffer.appendValue(className, methodName, metricName, metricValue);
+     }
+ }
+diff --git a/com/uber/profiling/profilers/MethodDurationProfiler.java b/com/uber/profiling/profilers/MethodDurationProfiler.java
+index 344ab11..9fc28ee 100644
+--- a/com/uber/profiling/profilers/MethodDurationProfiler.java
++++ b/com/uber/profiling/profilers/MethodDurationProfiler.java
+@@ -41,11 +41,11 @@ public class MethodDurationProfiler extends ProfilerBase implements Profiler {
+     }
+ 
+     @Override
+-    public long getIntervalMillis() {
++    public long getIntervalMillis() { com.uber.profiling.jmhbench.MutationSwitch.tick(39);
+         return intervalMillis;
+     }
+ 
+-    public void setIntervalMillis(long intervalMillis) {
++    public void setIntervalMillis(long intervalMillis) { com.uber.profiling.jmhbench.MutationSwitch.tick(43);
+         this.intervalMillis = intervalMillis;
+     }
+ 
+diff --git a/com/uber/profiling/profilers/ProcessInfoProfiler.java b/com/uber/profiling/profilers/ProcessInfoProfiler.java
+index fe22962..324626b 100644
+--- a/com/uber/profiling/profilers/ProcessInfoProfiler.java
++++ b/com/uber/profiling/profilers/ProcessInfoProfiler.java
+@@ -49,12 +49,12 @@ public class ProcessInfoProfiler extends ProfilerBase implements Profiler {
+     }
+ 
+     @Override
+-    public long getIntervalMillis() {
++    public long getIntervalMillis() { com.uber.profiling.jmhbench.MutationSwitch.tick(47);
+         return 0;
+     }
+ 
+     @Override
+-    public void setReporter(Reporter reporter) {
++    public void setReporter(Reporter reporter) { com.uber.profiling.jmhbench.MutationSwitch.tick(50);
+         this.reporter = reporter;
+     }
+ 
+diff --git a/com/uber/profiling/reporters/ConsoleOutputReporter.java b/com/uber/profiling/reporters/ConsoleOutputReporter.java
+index 37b7c11..558aa10 100644
+--- a/com/uber/profiling/reporters/ConsoleOutputReporter.java
++++ b/com/uber/profiling/reporters/ConsoleOutputReporter.java
+@@ -24,11 +24,11 @@ import java.util.Map;
+ 
+ public class ConsoleOutputReporter implements Reporter {
+     @Override
+-    public void report(String profilerName, Map<String, Object> metrics) {
++    public void report(String profilerName, Map<String, Object> metrics) { com.uber.profiling.jmhbench.MutationSwitch.tick(4);
+         System.out.println(String.format("ConsoleOutputReporter - %s: %s", profilerName, JsonUtils.serialize(metrics)));
+     }
+ 
+     @Override
+-    public void close() {
++    public void close() { com.uber.profiling.jmhbench.MutationSwitch.tick(10);
+     }
+ }
+diff --git a/com/uber/profiling/reporters/FileOutputReporter.java b/com/uber/profiling/reporters/FileOutputReporter.java
+index 4fe03dc..b9ce3fe 100644
+--- a/com/uber/profiling/reporters/FileOutputReporter.java
++++ b/com/uber/profiling/reporters/FileOutputReporter.java
+@@ -46,14 +46,14 @@ public class FileOutputReporter implements Reporter {
+     public FileOutputReporter() {
+     }
+ 
+-    public String getDirectory() {
++    public String getDirectory() { com.uber.profiling.jmhbench.MutationSwitch.tick(15);
+         return directory;
+     }
+ 
+     // This method sets the output directory. By default, this reporter will create a temporary directory
+     // and use it as output directory. User could set the output director if want to use another one. But
+     // the output directory can only be set at mose once. Setting it again will throw exception.
+-    public void setDirectory(String directory) {
++    public void setDirectory(String directory) { com.uber.profiling.jmhbench.MutationSwitch.tick(20);
+         synchronized (this) {
+             if (this.directory == null || this.directory.isEmpty()) {
+                 Path path = Paths.get(directory);
+diff --git a/com/uber/profiling/reporters/FlattenKafkaOutputReporter.java b/com/uber/profiling/reporters/FlattenKafkaOutputReporter.java
+index e6a6a34..c5bbdf5 100644
+--- a/com/uber/profiling/reporters/FlattenKafkaOutputReporter.java
++++ b/com/uber/profiling/reporters/FlattenKafkaOutputReporter.java
+@@ -19,10 +19,10 @@ public class FlattenKafkaOutputReporter extends KafkaOutputReporter{
+     private static final AgentLogger logger = AgentLogger.getLogger(FlattenKafkaOutputReporter.class.getName());
+ 
+     private Boolean topicLowercase;
+-    public Boolean getTopicLowercase() {
++    public Boolean getTopicLowercase() { com.uber.profiling.jmhbench.MutationSwitch.tick(24);
+         return topicLowercase;
+     }
+-    public void setTopicLowercase(Boolean topicLowercase) {this.topicLowercase = topicLowercase;}
++    public void setTopicLowercase(Boolean topicLowercase) { com.uber.profiling.jmhbench.MutationSwitch.tick(28);this.topicLowercase = topicLowercase;}
+ 
+     public FlattenKafkaOutputReporter(String brokerList, boolean syncMode, String topicPrefix, Boolean topicLowercase) {
+         super(brokerList, syncMode, topicPrefix);
+diff --git a/com/uber/profiling/reporters/GraphiteOutputReporter.java b/com/uber/profiling/reporters/GraphiteOutputReporter.java
+index 60bf257..59df7c2 100644
+--- a/com/uber/profiling/reporters/GraphiteOutputReporter.java
++++ b/com/uber/profiling/reporters/GraphiteOutputReporter.java
+@@ -44,7 +44,7 @@ public class GraphiteOutputReporter implements Reporter {
+   private Set whiteList = new HashSet();
+ 
+   @Override
+-  public void report(String profilerName, Map<String, Object> metrics) {
++  public void report(String profilerName, Map<String, Object> metrics) { com.uber.profiling.jmhbench.MutationSwitch.tick(32);
+     // get DB connection
+     ensureGraphiteConnection();
+     // format metrics
+@@ -81,7 +81,7 @@ public class GraphiteOutputReporter implements Reporter {
+   }
+ 
+   // Format metrics in key=value (line protocol)
+-  public Map<String, Object> getFormattedMetrics(Map<String, Object> metrics) {
++  public Map<String, Object> getFormattedMetrics(Map<String, Object> metrics) { com.uber.profiling.jmhbench.MutationSwitch.tick(36);
+     Map<String, Object> formattedMetrics = new HashMap<>();
+     for (Map.Entry<String, Object> entry : metrics.entrySet()) {
+       String key = entry.getKey();
+diff --git a/com/uber/profiling/reporters/KafkaOutputReporter.java b/com/uber/profiling/reporters/KafkaOutputReporter.java
+index 46ab46a..861d9b0 100644
+--- a/com/uber/profiling/reporters/KafkaOutputReporter.java
++++ b/com/uber/profiling/reporters/KafkaOutputReporter.java
+@@ -59,7 +59,7 @@ public class KafkaOutputReporter implements Reporter {
+     }
+ 
+     @Override
+-    public void updateArguments(Map<String, List<String>> parsedArgs) {
++    public void updateArguments(Map<String, List<String>> parsedArgs) { com.uber.profiling.jmhbench.MutationSwitch.tick(40);
+         String argValue = ArgumentUtils.getArgumentSingleValue(parsedArgs, ARG_BROKER_LIST);
+         if (ArgumentUtils.needToUpdateArg(argValue)) {
+             setBrokerList(argValue);
+@@ -80,7 +80,7 @@ public class KafkaOutputReporter implements Reporter {
+     }
+ 
+     @Override
+-    public void report(String profilerName, Map<String, Object> metrics) {
++    public void report(String profilerName, Map<String, Object> metrics) { com.uber.profiling.jmhbench.MutationSwitch.tick(44);
+         ensureProducer();
+ 
+         String topicName = getTopic(profilerName);
+diff --git a/com/uber/profiling/transformers/JavaAgentFileTransformer.java b/com/uber/profiling/transformers/JavaAgentFileTransformer.java
+index 2161052..060fe22 100644
+--- a/com/uber/profiling/transformers/JavaAgentFileTransformer.java
++++ b/com/uber/profiling/transformers/JavaAgentFileTransformer.java
+@@ -44,7 +44,7 @@ public class JavaAgentFileTransformer implements ClassFileTransformer {
+     }
+ 
+     @Override
+-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
++    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException { com.uber.profiling.jmhbench.MutationSwitch.tick(5);
+         try {
+             if (className == null || className.isEmpty()) {
+                 logger.debug("Hit null or empty class name");
+diff --git a/com/uber/profiling/transformers/MethodProfilerStaticProxy.java b/com/uber/profiling/transformers/MethodProfilerStaticProxy.java
+index 287aa4c..0e1356e 100644
+--- a/com/uber/profiling/transformers/MethodProfilerStaticProxy.java
++++ b/com/uber/profiling/transformers/MethodProfilerStaticProxy.java
+@@ -26,11 +26,11 @@ public class MethodProfilerStaticProxy {
+     private MethodProfilerStaticProxy() {
+     }
+ 
+-    public static void setCollector(MethodDurationCollector collector) {
++    public static void setCollector(MethodDurationCollector collector) { com.uber.profiling.jmhbench.MutationSwitch.tick(11);
+         collectorSingleton = collector;
+     }
+ 
+-    public static void setArgumentCollector(MethodArgumentCollector collector) {
++    public static void setArgumentCollector(MethodArgumentCollector collector) { com.uber.profiling.jmhbench.MutationSwitch.tick(16);
+         argumentCollectorSingleton = collector;
+     }
+ 
+diff --git a/com/uber/profiling/util/ClassAndMethodLongMetricBuffer.java b/com/uber/profiling/util/ClassAndMethodLongMetricBuffer.java
+index ec7953b..5a7ad03 100644
+--- a/com/uber/profiling/util/ClassAndMethodLongMetricBuffer.java
++++ b/com/uber/profiling/util/ClassAndMethodLongMetricBuffer.java
+@@ -26,13 +26,13 @@ import java.util.concurrent.ConcurrentHashMap;
+ public class ClassAndMethodLongMetricBuffer {
+     private volatile ConcurrentHashMap<ClassAndMethodMetricKey, Histogram> metrics = new ConcurrentHashMap<>();
+ 
+-    public void appendValue(String className, String methodName, String metricName, long value) {
++    public void appendValue(String className, String methodName, String metricName, long value) { com.uber.profiling.jmhbench.MutationSwitch.tick(6);
+         ClassAndMethodMetricKey methodMetricKey = new ClassAndMethodMetricKey(className, methodName, metricName);
+         Histogram histogram = metrics.computeIfAbsent(methodMetricKey, key -> new Histogram());
+         histogram.appendValue(value);
+     }
+ 
+-    public Map<ClassAndMethodMetricKey, Histogram> reset() {
++    public Map<ClassAndMethodMetricKey, Histogram> reset() { com.uber.profiling.jmhbench.MutationSwitch.tick(12);
+         ConcurrentHashMap<ClassAndMethodMetricKey, Histogram> oldCopy = metrics;
+         metrics = new ConcurrentHashMap<>();
+         return oldCopy;
+diff --git a/com/uber/profiling/util/ClassMethodArgumentMetricBuffer.java b/com/uber/profiling/util/ClassMethodArgumentMetricBuffer.java
+index 1785f06..015fd2f 100644
+--- a/com/uber/profiling/util/ClassMethodArgumentMetricBuffer.java
++++ b/com/uber/profiling/util/ClassMethodArgumentMetricBuffer.java
+@@ -27,13 +27,13 @@ import java.util.concurrent.atomic.AtomicLong;
+ public class ClassMethodArgumentMetricBuffer {
+     private volatile ConcurrentHashMap<ClassAndMethodMetricKey, AtomicLong> metrics = new ConcurrentHashMap<>();
+ 
+-    public void appendValue(String className, String methodName, String argument) {
++    public void appendValue(String className, String methodName, String argument) { com.uber.profiling.jmhbench.MutationSwitch.tick(17);
+         ClassAndMethodMetricKey methodMetricKey = new ClassAndMethodMetricKey(className, methodName, argument);
+         AtomicLong counter = metrics.computeIfAbsent(methodMetricKey, key -> new AtomicLong(0));
+         counter.incrementAndGet();
+     }
+ 
+-    public Map<ClassAndMethodMetricKey, AtomicLong> reset() {
++    public Map<ClassAndMethodMetricKey, AtomicLong> reset() { com.uber.profiling.jmhbench.MutationSwitch.tick(21);
+         ConcurrentHashMap<ClassAndMethodMetricKey, AtomicLong> oldCopy = metrics;
+         metrics = new ConcurrentHashMap<>();
+         return oldCopy;
+diff --git a/com/uber/profiling/util/IOUtils.java b/com/uber/profiling/util/IOUtils.java
+index 5526d2f..3039a1f 100644
+--- a/com/uber/profiling/util/IOUtils.java
++++ b/com/uber/profiling/util/IOUtils.java
+@@ -21,7 +21,7 @@ import java.io.IOException;
+ import java.io.InputStream;
+ 
+ public class IOUtils {
+-    public static byte[] toByteArray(InputStream input) {
++    public static byte[] toByteArray(InputStream input) { com.uber.profiling.jmhbench.MutationSwitch.tick(25);
+         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+             int readByteCount;
+             byte[] data = new byte[16 * 1024];
+diff --git a/com/uber/profiling/util/JsonUtils.java b/com/uber/profiling/util/JsonUtils.java
+index 2c418aa..ce34f2f 100644
+--- a/com/uber/profiling/util/JsonUtils.java
++++ b/com/uber/profiling/util/JsonUtils.java
+@@ -34,11 +34,11 @@ public class JsonUtils {
+         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+     }
+ 
+-    public static ObjectMapper getMapper() {
++    public static ObjectMapper getMapper() { com.uber.profiling.jmhbench.MutationSwitch.tick(29);
+         return mapper;
+     }
+ 
+-    public static String serialize(Object obj) {
++    public static String serialize(Object obj) { com.uber.profiling.jmhbench.MutationSwitch.tick(33);
+         if (obj == null) {
+             return "";
+         }
+diff --git a/com/uber/profiling/util/NetworkUtils.java b/com/uber/profiling/util/NetworkUtils.java
+index bf3e920..f67766e 100644
+--- a/com/uber/profiling/util/NetworkUtils.java
++++ b/com/uber/profiling/util/NetworkUtils.java
+@@ -20,7 +20,7 @@ import java.net.InetAddress;
+ import java.util.Map;
+ 
+ public class NetworkUtils {
+-    public static String getLocalHostName() {
++    public static String getLocalHostName() { com.uber.profiling.jmhbench.MutationSwitch.tick(37);
+         try {
+             Map<String, String> env = System.getenv();
+             if (env.containsKey("COMPUTERNAME"))
+@@ -34,7 +34,7 @@ public class NetworkUtils {
+         }
+     }
+ 
+-    public static void main(String[] args) {
++    public static void main(String[] args) { com.uber.profiling.jmhbench.MutationSwitch.tick(41);
+         System.out.println(getLocalHostName());
+     }
+ }
+diff --git a/com/uber/profiling/util/ProcFileUtils.java b/com/uber/profiling/util/ProcFileUtils.java
+index ae23cc3..e2485e5 100644
+--- a/com/uber/profiling/util/ProcFileUtils.java
++++ b/com/uber/profiling/util/ProcFileUtils.java
+@@ -37,11 +37,11 @@ public class ProcFileUtils {
+     private static final String PROC_SELF_CMDLINE_FILE = "/proc/self/cmdline";
+     private static final String VALUE_SEPARATOR = ":";
+ 
+-    public static Map<String, String> getProcStatus() {
++    public static Map<String, String> getProcStatus() { com.uber.profiling.jmhbench.MutationSwitch.tick(45);
+         return getProcFileAsMap(PROC_SELF_STATUS_FILE);
+     }
+ 
+-    public static Map<String, String>  getProcIO() {
++    public static Map<String, String>  getProcIO() { com.uber.profiling.jmhbench.MutationSwitch.tick(48);
+         return getProcFileAsMap(PROC_SELF_IO_FILE);
+     }
+     

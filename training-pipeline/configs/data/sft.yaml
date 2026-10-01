@@ -1,0 +1,18 @@
+# SFT dataset build. See jmhgen.config.SftDataConfig.
+#
+# Builds (original Java class -> final verified JMH benchmark) pairs from the distilled
+# gpt-oss-120b tree, filtered to run-verified classes (those with a *.stg_r0_stg_run_run_lock_0
+# marker). The original Java sources are read from a local RxJava checkout pinned to
+# java_source_commit; see the README for how to obtain it.
+distilled_root: data/llm2jmh-gptoss-120b/ollama-gptoss-120b
+java_source_root: data/rxjava-src
+java_source_commit: 67e949db
+fork_dir: data/llm2jmh-gptoss-120b-ap-spot-fork_2
+output_dir: data/sft
+template: jmhbench           # JMH-Bench system+user contract; or "canonical"/"llm2jmh_original"
+fence_assistant: false       # jmhbench wants raw Java (no markdown fence) as the target
+enforce_conformance: true    # render only targets that satisfy the (WiP) jmhbench rules
+max_java_source_chars: 0     # 0 disables the size cap (~4 chars per token rule of thumb)
+val_fraction: 0.05
+seed: 42
+require_all_resolved: true   # abort if any run-locked class can't be resolved at the commit

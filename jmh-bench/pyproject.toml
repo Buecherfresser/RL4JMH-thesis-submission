@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jmhbench"
+version = "0.1.0"
+description = "JMH-Bench: an SWT-Bench-style benchmark for evaluating LLMs and harnesses at generating JMH microbenchmarks."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "JMH-Bench contributors" }]
+dependencies = [
+    "click>=8.1",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "rich>=13.7",
+    "scipy>=1.11",
+    "numpy>=1.26",
+    "jinja2>=3.1",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.30"]
+anthropic = ["anthropic>=0.30"]
+dev = ["pytest>=8.0", "ruff>=0.5", "mypy>=1.10"]
+
+[project.scripts]
+jmhbench = "jmhbench.cli:main"
+
+[project.entry-points."jmhbench.harnesses"]
+dummy-passthrough = "jmhbench.adapters.dummy_passthrough:DummyPassthroughHarness"
+openai-zero-shot = "jmhbench.adapters.openai_zero_shot:OpenAIZeroShotHarness"
+anthropic-zero-shot = "jmhbench.adapters.anthropic_zero_shot:AnthropicZeroShotHarness"
+openrouter = "jmhbench.adapters.openrouter:OpenRouterHarness"
+ju2jmh = "jmhbench.adapters.ju2jmh_adapter:Ju2JmhHarness"
+predictions = "jmhbench.adapters.predictions:PredictionsHarness"
+
+[tool.setuptools]
+packages = ["jmhbench", "jmhbench.adapters"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+jmhbench = ["py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+ignore = ["E501"]

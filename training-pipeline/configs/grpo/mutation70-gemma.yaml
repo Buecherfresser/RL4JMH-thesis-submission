@@ -1,0 +1,252 @@
+# Gemma 4 E2B — coverage-guided 70%-mutation GRPO over the full mutation-scorable corpus.
+#
+# Same reward as configs/grpo/jmh-rl-coverage-mutation.yaml (mutation 0.70, coverage_aware),
+# but the prompt set is every project that has a patched mutant jar AND a hidden registry
+# (1097 prompts / 55 projects) instead of the six-library `corpus: original` slice (113 prompts).
+# `corpus: full` is therefore correct here: dataset_path is already pre-filtered by
+# scripts/build_mutation_corpus.py, so nothing unscorable can leak in.
+#
+#   uv run python scripts/build_mutation_corpus.py        # regenerate the prompt set
+#   uv run jmh-train-grpo --config configs/grpo/mutation70-gemma.yaml --corpus full
+
+base_model: google/gemma-4-E2B-it
+output_dir: outputs/grpo-mutation70-gemma
+dataset_path: data/snippets/rl-mutation.good.jsonl
+corpus: full
+seed: 42
+
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: [vision_tower, audio_tower, multi_modal_projector]
+  bias: none
+
+learning_rate: 1.0e-6
+# 2x4 rather than 4x2: same global batch (8 = group_size, so the gradient is numerically
+# unchanged) at half the peak activation memory. The 4x2 shape OOM'd in backward at step
+# 108/744 of job 5721357 on a 94GB H100 -- a batch with unusually long completions
+# (mean 594, max 714, clipped_ratio 0.25) asked for 16 GiB against a fragmented heap.
+per_device_batch_size: 2
+gradient_accumulation_steps: 4
+group_size: 8
+rollout_temperature: 1.0
+top_p: 0.95
+top_k: 64
+max_prompt_length: 8192
+max_completion_length: 4096
+completion_eos_token_id: 106
+# 24000 chars ~ 6k tokens: keeps every prompt inside max_prompt_length. Drops the 170
+# largest of the 1097 subjects (927 remain); raising it would truncate prompts instead.
+max_source_chars: 24000
+limit_prompts: 0
+
+kl_coeff: 0.0
+epsilon: 0.2
+epsilon_high: 0.28
+grpo_loss_type: dr_grpo
+scale_rewards: false
+mask_truncated_completions: true
+mu: 1
+
+num_epochs: 1.0
+num_iterations: 0
+warmup_ratio: 0.03
+logging_steps: 1
+# Slurm caps this QOS at 2 days, which is shorter than one epoch over 927 prompts.
+# Checkpoint often so a follow-up job can resume instead of restarting.
+save_steps: 25
+# 'auto' = continue from the newest checkpoint-* in output_dir, or start fresh if none.
+# Guards against losing hours to a crash or the 2-day wall; see training-run-failures.md.
+resume_from_checkpoint: auto
+report_to: none
+
+use_vllm: true
+vllm_mode: colocate
+vllm_gpu_memory_utilization: 0.30
+vllm_max_model_length: 16384
+vllm_tensor_parallel_size: 1
+vllm_enable_sleep_mode: true
+
+reward_weights:
+  compile: 0.10
+  runtime: 0.10
+  anti_pattern: 0.05
+  rsd: 0.05
+  mutation: 0.70
+# SpotJMHBugs (Costa et al., TSE 2019) bytecode analysis, not the regex pre-screen.
+# regex is only a static approximation; spotjmh is the actual detector. Requires
+# vendor/spotbugs (tools/install_spotjmhbugs.sh) -- preflight_grpo.py --reward-smoke
+# fails the run if the backend is missing, since r_anti would otherwise be dead weight.
+anti_pattern_backend: spotjmh
+need_run: true
+rsd_good: 0.05
+rsd_bad: 0.25
+
+mutation:
+  alpha: 0.05
+  min_slowdown: 1.10
+  arm_property: jmhbench.mutant
+  coverage_guidance: true
+  max_mutants_per_candidate: 0
+  max_benchmarks_per_mutant: 6
+  mode: coverage_aware
+  coverage_weight: 0.30
+  coverage_jmh:
+    warmup_iterations: 0
+    measurement_iterations: 1
+    forks: 1
+    warmup_time: "100ms"
+    measurement_time: "100ms"
+    timeout_s: 120.0
+    per_iteration_timeout_s: 60.0
+    fail_on_error: false
+
+runner:
+  jmh_version: "1.37"
+  java_release: 17
+  jmh:
+    warmup_iterations: 3
+    measurement_iterations: 5
+    forks: 1
+    warmup_time: "200ms"
+    measurement_time: "200ms"
+    timeout_s: 120.0
+    per_iteration_timeout_s: 60.0
+    fail_on_error: false
+
+project_classpaths:
+  commons-numbers: data/classpaths/commons-numbers-mutants.cp
+  commons-statistics: data/classpaths/commons-statistics-mutants.cp
+  commons-codec: data/classpaths/commons-codec-mutants.cp
+  commons-text: data/classpaths/commons-text-mutants.cp
+  jackson-core: data/classpaths/jackson-core-mutants.cp
+  roaringbitmap: data/classpaths/roaringbitmap-mutants.cp
+  parallelcolt: data/classpaths/parallelcolt-mutants.cp
+  chronicle-bytes: data/classpaths/chronicle-bytes-mutants.cp
+  chronicle-map: data/classpaths/chronicle-map-mutants.cp
+  chronicle-wire: data/classpaths/chronicle-wire-mutants.cp
+  objectlayout: data/classpaths/objectlayout-mutants.cp
+  jheaps: data/classpaths/jheaps-mutants.cp
+  streamex: data/classpaths/streamex-mutants.cp
+  vavr: data/classpaths/vavr-mutants.cp
+  cache2k: data/classpaths/cache2k-mutants.cp
+  stream-lib: data/classpaths/stream-lib-mutants.cp
+  sparsebitset: data/classpaths/sparsebitset-mutants.cp
+  hash4j: data/classpaths/hash4j-mutants.cp
+  zero-allocation-hashing: data/classpaths/zero-allocation-hashing-mutants.cp
+  guava: data/classpaths/guava-mutants.cp
+  xz-java: data/classpaths/xz-java-mutants.cp
+  commons-crypto: data/classpaths/commons-crypto-mutants.cp
+  big-math: data/classpaths/big-math-mutants.cp
+  hipparchus: data/classpaths/hipparchus-mutants.cp
+  ojalgo: data/classpaths/ojalgo-mutants.cp
+  la4j: data/classpaths/la4j-mutants.cp
+  jafama: data/classpaths/jafama-mutants.cp
+  commons-math: data/classpaths/commons-math-mutants.cp
+  commons-rng: data/classpaths/commons-rng-mutants.cp
+  commons-geometry: data/classpaths/commons-geometry-mutants.cp
+  jackson-databind: data/classpaths/jackson-databind-mutants.cp
+  gson: data/classpaths/gson-mutants.cp
+  dsl-json: data/classpaths/dsl-json-mutants.cp
+  moshi: data/classpaths/moshi-mutants.cp
+  json-java: data/classpaths/json-java-mutants.cp
+  json-simple: data/classpaths/json-simple-mutants.cp
+  flatbuffers: data/classpaths/flatbuffers-mutants.cp
+  avro: data/classpaths/avro-mutants.cp
+  jackson-dataformats-binary: data/classpaths/jackson-dataformats-binary-mutants.cp
+  commons-csv: data/classpaths/commons-csv-mutants.cp
+  fastcsv: data/classpaths/fastcsv-mutants.cp
+  jsoup: data/classpaths/jsoup-mutants.cp
+  commons-io: data/classpaths/commons-io-mutants.cp
+  brics-automaton: data/classpaths/brics-automaton-mutants.cp
+  joda-time: data/classpaths/joda-time-mutants.cp
+  threeten-extra: data/classpaths/threeten-extra-mutants.cp
+  conversant-disruptor: data/classpaths/conversant-disruptor-mutants.cp
+  hdrhistogram: data/classpaths/hdrhistogram-mutants.cp
+  commons-pool: data/classpaths/commons-pool-mutants.cp
+  reactor-core: data/classpaths/reactor-core-mutants.cp
+  vertx: data/classpaths/vertx-mutants.cp
+  jts: data/classpaths/jts-mutants.cp
+  spatial4j: data/classpaths/spatial4j-mutants.cp
+  h3-java: data/classpaths/h3-java-mutants.cp
+  jgraphx: data/classpaths/jgraphx-mutants.cp
+  zxing: data/classpaths/zxing-mutants.cp
+  commons-imaging: data/classpaths/commons-imaging-mutants.cp
+  jimfs: data/classpaths/jimfs-mutants.cp
+  tablesaw: data/classpaths/tablesaw-mutants.cp
+  bigqueue: data/classpaths/bigqueue-mutants.cp
+  commons-configuration: data/classpaths/commons-configuration-mutants.cp
+  commons-validator: data/classpaths/commons-validator-mutants.cp
+  commons-beanutils: data/classpaths/commons-beanutils-mutants.cp
+  javatuples: data/classpaths/javatuples-mutants.cp
+project_mutants:
+  commons-numbers: data/projects/commons-numbers/mutants.yaml
+  commons-statistics: data/projects/commons-statistics/mutants.yaml
+  commons-codec: data/projects/commons-codec/mutants.yaml
+  commons-text: data/projects/commons-text/mutants.yaml
+  jackson-core: data/projects/jackson-core/mutants.yaml
+  roaringbitmap: data/projects/roaringbitmap/mutants.yaml
+  parallelcolt: data/projects/parallelcolt/mutants.yaml
+  chronicle-bytes: data/projects/chronicle-bytes/mutants.yaml
+  chronicle-map: data/projects/chronicle-map/mutants.yaml
+  chronicle-wire: data/projects/chronicle-wire/mutants.yaml
+  objectlayout: data/projects/objectlayout/mutants.yaml
+  jheaps: data/projects/jheaps/mutants.yaml
+  streamex: data/projects/streamex/mutants.yaml
+  vavr: data/projects/vavr/mutants.yaml
+  cache2k: data/projects/cache2k/mutants.yaml
+  stream-lib: data/projects/stream-lib/mutants.yaml
+  sparsebitset: data/projects/sparsebitset/mutants.yaml
+  hash4j: data/projects/hash4j/mutants.yaml
+  zero-allocation-hashing: data/projects/zero-allocation-hashing/mutants.yaml
+  guava: data/projects/guava/mutants.yaml
+  xz-java: data/projects/xz-java/mutants.yaml
+  commons-crypto: data/projects/commons-crypto/mutants.yaml
+  big-math: data/projects/big-math/mutants.yaml
+  hipparchus: data/projects/hipparchus/mutants.yaml
+  ojalgo: data/projects/ojalgo/mutants.yaml
+  la4j: data/projects/la4j/mutants.yaml
+  jafama: data/projects/jafama/mutants.yaml
+  commons-math: data/projects/commons-math/mutants.yaml
+  commons-rng: data/projects/commons-rng/mutants.yaml
+  commons-geometry: data/projects/commons-geometry/mutants.yaml
+  jackson-databind: data/projects/jackson-databind/mutants.yaml
+  gson: data/projects/gson/mutants.yaml
+  dsl-json: data/projects/dsl-json/mutants.yaml
+  moshi: data/projects/moshi/mutants.yaml
+  json-java: data/projects/json-java/mutants.yaml
+  json-simple: data/projects/json-simple/mutants.yaml
+  flatbuffers: data/projects/flatbuffers/mutants.yaml
+  avro: data/projects/avro/mutants.yaml
+  jackson-dataformats-binary: data/projects/jackson-dataformats-binary/mutants.yaml
+  commons-csv: data/projects/commons-csv/mutants.yaml
+  fastcsv: data/projects/fastcsv/mutants.yaml
+  jsoup: data/projects/jsoup/mutants.yaml
+  commons-io: data/projects/commons-io/mutants.yaml
+  brics-automaton: data/projects/brics-automaton/mutants.yaml
+  joda-time: data/projects/joda-time/mutants.yaml
+  threeten-extra: data/projects/threeten-extra/mutants.yaml
+  conversant-disruptor: data/projects/conversant-disruptor/mutants.yaml
+  hdrhistogram: data/projects/hdrhistogram/mutants.yaml
+  commons-pool: data/projects/commons-pool/mutants.yaml
+  reactor-core: data/projects/reactor-core/mutants.yaml
+  vertx: data/projects/vertx/mutants.yaml
+  jts: data/projects/jts/mutants.yaml
+  spatial4j: data/projects/spatial4j/mutants.yaml
+  h3-java: data/projects/h3-java/mutants.yaml
+  jgraphx: data/projects/jgraphx/mutants.yaml
+  zxing: data/projects/zxing/mutants.yaml
+  commons-imaging: data/projects/commons-imaging/mutants.yaml
+  jimfs: data/projects/jimfs/mutants.yaml
+  tablesaw: data/projects/tablesaw/mutants.yaml
+  bigqueue: data/projects/bigqueue/mutants.yaml
+  commons-configuration: data/projects/commons-configuration/mutants.yaml
+  commons-validator: data/projects/commons-validator/mutants.yaml
+  commons-beanutils: data/projects/commons-beanutils/mutants.yaml
+  javatuples: data/projects/javatuples/mutants.yaml

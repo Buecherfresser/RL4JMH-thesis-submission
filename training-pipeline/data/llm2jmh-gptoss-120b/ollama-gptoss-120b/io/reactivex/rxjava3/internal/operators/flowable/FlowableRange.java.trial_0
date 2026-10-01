@@ -1,0 +1,138 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableRange;
+import io.reactivex.rxjava3.operators.ConditionalSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.reactivestreams.Subscription;
+import org.reactivestreams.Subscriber;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link FlowableRange}.
+ *
+ * The benchmarks measure the throughput of the fast‑path (unbounded request)
+ * for both the regular {@link Subscriber} and the {@link ConditionalSubscriber}
+ * implementations. The range size is configurable via the {@code count} field.
+ *
+ * Best‑practice notes:
+ * • Use {@link Blackhole} to consume emitted values and prevent dead‑code elimination.
+ * • Request {@code Long.MAX_VALUE} in {@code onSubscribe} to trigger the fast‑path.
+ * • Keep the benchmark state {@code @State(Scope.Thread)} to avoid cross‑thread interference.
+ * • Warm‑up and measurement iterations are defined to let the JIT stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableRangeBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        /** Start of the range (inclusive). */
+        int start = 0;
+        /** Number of items to emit. */
+        int count = 1_000_000;
+
+        /** Flowable that uses the regular Subscriber path. */
+        Flowable<Integer> range;
+
+        /** Flowable that will be subscribed with a ConditionalSubscriber. */
+        Flowable<Integer> rangeConditional;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Directly instantiate the internal FlowableRange.
+            range = new FlowableRange(start, count);
+            rangeConditional = new FlowableRange(start, count);
+        }
+    }
+
+    /** Subscriber that requests Long.MAX_VALUE and forwards items to a Blackhole. */
+    static final class BlackholeSubscriber implements Subscriber<Integer> {
+        private final Blackhole bh;
+        private Subscription upstream;
+
+        BlackholeSubscriber(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            this.upstream = s;
+            // Unbounded request triggers the fast‑path.
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // Errors are not expected in this benchmark.
+            t.printStackTrace();
+        }
+
+        @Override
+        public void onComplete() {
+            // No action needed.
+        }
+    }
+
+    /** ConditionalSubscriber that requests Long.MAX_VALUE and forwards items to a Blackhole. */
+    static final class BlackholeConditionalSubscriber implements ConditionalSubscriber<Integer> {
+        private final Blackhole bh;
+        private Subscription upstream;
+
+        BlackholeConditionalSubscriber(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            this.upstream = s;
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            // This method is not used when the downstream implements ConditionalSubscriber,
+            // but we keep it for completeness.
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            t.printStackTrace();
+        }
+
+        @Override
+        public void onComplete() {
+            // No action needed.
+        }
+
+        @Override
+        public boolean tryOnNext(Integer t) {
+            bh.consume(t);
+            // Returning true signals that the item was "accepted".
+            return true;
+        }
+    }
+
+    @Benchmark
+    public void fastPathRegularSubscriber(BenchmarkState state, Blackhole bh) {
+        state.range.subscribe(new BlackholeSubscriber(bh));
+    }
+
+    @Benchmark
+    public void fastPathConditionalSubscriber(BenchmarkState state, Blackhole bh) {
+        state.rangeConditional.subscribe(new BlackholeConditionalSubscriber(bh));
+    }
+}
+```

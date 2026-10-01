@@ -1,0 +1,578 @@
+diff --git a/com/github/difflib/DiffUtils.java b/com/github/difflib/DiffUtils.java
+index 8448a76..68a2ab7 100644
+--- a/com/github/difflib/DiffUtils.java
++++ b/com/github/difflib/DiffUtils.java
+@@ -44,7 +44,7 @@ public final class DiffUtils {
+ 		 *
+ 		 * @param factory a {@link DiffAlgorithmFactory} representing the new default diff algorithm factory.
+ 		 */
+-		public static void withDefaultDiffAlgorithmFactory(DiffAlgorithmFactory factory) {
++		public static void withDefaultDiffAlgorithmFactory(DiffAlgorithmFactory factory) { com.github.difflib.jmhbench.MutationSwitch.tick(1);
+ 				DEFAULT_DIFF = factory;
+ 		}
+ 
+@@ -58,7 +58,7 @@ public final class DiffUtils {
+ 		 * @return The patch describing the difference between the original and revised sequences. Never {@code null}.
+ 		 */
+ 		public static <T> Patch<T> diff(
+-						List<? extends T> original, List<? extends T> revised, DiffAlgorithmListener progress) {
++						List<? extends T> original, List<? extends T> revised, DiffAlgorithmListener progress) { com.github.difflib.jmhbench.MutationSwitch.tick(6);
+ 				return DiffUtils.diff(original, revised, DEFAULT_DIFF.create(), progress);
+ 		}
+ 
+@@ -70,7 +70,7 @@ public final class DiffUtils {
+ 		 * @param revised a {@link List} representing the revised sequence of elements. Must not be {@code null}.
+ 		 * @return The patch describing the difference between the original and revised sequences. Never {@code null}.
+ 		 */
+-		public static <T> Patch<T> diff(List<? extends T> original, List<? extends T> revised) {
++		public static <T> Patch<T> diff(List<? extends T> original, List<? extends T> revised) { com.github.difflib.jmhbench.MutationSwitch.tick(11);
+ 				return DiffUtils.diff(original, revised, DEFAULT_DIFF.create(), null);
+ 		}
+ 
+diff --git a/com/github/difflib/UnifiedDiffUtils.java b/com/github/difflib/UnifiedDiffUtils.java
+index ca6a34a..321410c 100644
+--- a/com/github/difflib/UnifiedDiffUtils.java
++++ b/com/github/difflib/UnifiedDiffUtils.java
+@@ -44,7 +44,7 @@ public final class UnifiedDiffUtils {
+ 		 * @param diff the text in unified format
+ 		 * @return the patch with deltas.
+ 		 */
+-		public static Patch<String> parseUnifiedDiff(List<String> diff) {
++		public static Patch<String> parseUnifiedDiff(List<String> diff) { com.github.difflib.jmhbench.MutationSwitch.tick(16);
+ 				boolean inPrelude = true;
+ 				List<String[]> rawChunk = new ArrayList<>();
+ 				Patch<String> patch = new Patch<>();
+@@ -146,7 +146,7 @@ public final class UnifiedDiffUtils {
+ 						String revisedFileName,
+ 						List<String> originalLines,
+ 						Patch<String> patch,
+-						int contextSize) {
++						int contextSize) { com.github.difflib.jmhbench.MutationSwitch.tick(21);
+ 				if (!patch.getDeltas().isEmpty()) {
+ 						List<String> ret = new ArrayList<>();
+ 						ret.add("--- " + Optional.ofNullable(originalFileName).orElse(NULL_FILE_INDICATOR));
+@@ -327,7 +327,7 @@ public final class UnifiedDiffUtils {
+ 		 * @param revised  revised file content
+ 		 *
+ 		 */
+-		public static List<String> generateOriginalAndDiff(List<String> original, List<String> revised) {
++		public static List<String> generateOriginalAndDiff(List<String> original, List<String> revised) { com.github.difflib.jmhbench.MutationSwitch.tick(26);
+ 				return generateOriginalAndDiff(original, revised, null, null);
+ 		}
+ 
+diff --git a/com/github/difflib/algorithm/Change.java b/com/github/difflib/algorithm/Change.java
+index 7c2fae8..bf7ae64 100644
+--- a/com/github/difflib/algorithm/Change.java
++++ b/com/github/difflib/algorithm/Change.java
+@@ -37,11 +37,11 @@ public class Change {
+ 				this.endRevised = endRevised;
+ 		}
+ 
+-		public Change withEndOriginal(int endOriginal) {
++		public Change withEndOriginal(int endOriginal) { com.github.difflib.jmhbench.MutationSwitch.tick(2);
+ 				return new Change(deltaType, startOriginal, endOriginal, startRevised, endRevised);
+ 		}
+ 
+-		public Change withEndRevised(int endRevised) {
++		public Change withEndRevised(int endRevised) { com.github.difflib.jmhbench.MutationSwitch.tick(7);
+ 				return new Change(deltaType, startOriginal, endOriginal, startRevised, endRevised);
+ 		}
+ }
+diff --git a/com/github/difflib/algorithm/jgit/HistogramDiff.java b/com/github/difflib/algorithm/jgit/HistogramDiff.java
+index 62ac4b9..77cf22a 100644
+--- a/com/github/difflib/algorithm/jgit/HistogramDiff.java
++++ b/com/github/difflib/algorithm/jgit/HistogramDiff.java
+@@ -37,7 +37,7 @@ public class HistogramDiff<T> implements DiffAlgorithmI<T> {
+ 
+ 		@Override
+ 		public List<Change> computeDiff(
+-						List<? extends T> source, List<? extends T> target, DiffAlgorithmListener progress) {
++						List<? extends T> source, List<? extends T> target, DiffAlgorithmListener progress) { com.github.difflib.jmhbench.MutationSwitch.tick(12);
+ 				Objects.requireNonNull(source, "source list must not be null");
+ 				Objects.requireNonNull(target, "target list must not be null");
+ 				if (progress != null) {
+@@ -86,7 +86,7 @@ class DataListComparator<T> extends SequenceComparator<DataList<T>> {
+ 		}
+ 
+ 		@Override
+-		public int hash(DataList<T> s, int i) {
++		public int hash(DataList<T> s, int i) { com.github.difflib.jmhbench.MutationSwitch.tick(17);
+ 				return s.data.get(i).hashCode();
+ 		}
+ }
+@@ -100,7 +100,7 @@ class DataList<T> extends Sequence {
+ 		}
+ 
+ 		@Override
+-		public int size() {
++		public int size() { com.github.difflib.jmhbench.MutationSwitch.tick(22);
+ 				return data.size();
+ 		}
+ }
+diff --git a/com/github/difflib/algorithm/myers/MyersDiff.java b/com/github/difflib/algorithm/myers/MyersDiff.java
+index c990208..7fb3577 100644
+--- a/com/github/difflib/algorithm/myers/MyersDiff.java
++++ b/com/github/difflib/algorithm/myers/MyersDiff.java
+@@ -49,7 +49,7 @@ public final class MyersDiff<T> implements DiffAlgorithmI<T> {
+ 		 */
+ 		@Override
+ 		public List<Change> computeDiff(
+-						final List<? extends T> source, final List<? extends T> target, DiffAlgorithmListener progress) {
++						final List<? extends T> source, final List<? extends T> target, DiffAlgorithmListener progress) { com.github.difflib.jmhbench.MutationSwitch.tick(27);
+ 				Objects.requireNonNull(source, "source list must not be null");
+ 				Objects.requireNonNull(target, "target list must not be null");
+ 
+@@ -184,10 +184,10 @@ public final class MyersDiff<T> implements DiffAlgorithmI<T> {
+ 		/**
+ 		 * Factory to create instances of this specific diff algorithm.
+ 		 */
+-		public static DiffAlgorithmFactory factory() {
++		public static DiffAlgorithmFactory factory() { com.github.difflib.jmhbench.MutationSwitch.tick(31);
+ 				return new DiffAlgorithmFactory() {
+ 						@Override
+-						public <T> DiffAlgorithmI<T> create() {
++						public <T> DiffAlgorithmI<T> create() { com.github.difflib.jmhbench.MutationSwitch.tick(35);
+ 								return new MyersDiff<>();
+ 						}
+ 
+diff --git a/com/github/difflib/algorithm/myers/MyersDiffWithLinearSpace.java b/com/github/difflib/algorithm/myers/MyersDiffWithLinearSpace.java
+index 2e1a53c..b4e2882 100644
+--- a/com/github/difflib/algorithm/myers/MyersDiffWithLinearSpace.java
++++ b/com/github/difflib/algorithm/myers/MyersDiffWithLinearSpace.java
+@@ -45,7 +45,7 @@ public class MyersDiffWithLinearSpace<T> implements DiffAlgorithmI<T> {
+ 
+ 		@Override
+ 		public List<Change> computeDiff(
+-						List<? extends T> source, List<? extends T> target, DiffAlgorithmListener progress) {
++						List<? extends T> source, List<? extends T> target, DiffAlgorithmListener progress) { com.github.difflib.jmhbench.MutationSwitch.tick(39);
+ 				Objects.requireNonNull(source, "source list must not be null");
+ 				Objects.requireNonNull(target, "target list must not be null");
+ 
+@@ -230,10 +230,10 @@ public class MyersDiffWithLinearSpace<T> implements DiffAlgorithmI<T> {
+ 		/**
+ 		 * Factory to create instances of this specific diff algorithm.
+ 		 */
+-		public static DiffAlgorithmFactory factory() {
++		public static DiffAlgorithmFactory factory() { com.github.difflib.jmhbench.MutationSwitch.tick(43);
+ 				return new DiffAlgorithmFactory() {
+ 						@Override
+-						public <T> DiffAlgorithmI<T> create() {
++						public <T> DiffAlgorithmI<T> create() { com.github.difflib.jmhbench.MutationSwitch.tick(46);
+ 								return new MyersDiffWithLinearSpace<>();
+ 						}
+ 
+diff --git a/com/github/difflib/algorithm/myers/PathNode.java b/com/github/difflib/algorithm/myers/PathNode.java
+index 5504e81..e45a753 100644
+--- a/com/github/difflib/algorithm/myers/PathNode.java
++++ b/com/github/difflib/algorithm/myers/PathNode.java
+@@ -58,7 +58,7 @@ public final class PathNode {
+ 				this.snake = snake;
+ 		}
+ 
+-		public boolean isSnake() {
++		public boolean isSnake() { com.github.difflib.jmhbench.MutationSwitch.tick(49);
+ 				return snake;
+ 		}
+ 
+diff --git a/com/github/difflib/jmhbench/MutationSwitch.java b/com/github/difflib/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..a72bc66
+--- /dev/null
++++ b/com/github/difflib/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.github.difflib.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/github/difflib/patch/ChangeDelta.java b/com/github/difflib/patch/ChangeDelta.java
+index f82f13a..c469a42 100644
+--- a/com/github/difflib/patch/ChangeDelta.java
++++ b/com/github/difflib/patch/ChangeDelta.java
+@@ -39,7 +39,7 @@ public final class ChangeDelta<T> extends AbstractDelta<T> {
+ 		}
+ 
+ 		@Override
+-		protected void applyTo(List<T> target) throws PatchFailedException {
++		protected void applyTo(List<T> target) throws PatchFailedException { com.github.difflib.jmhbench.MutationSwitch.tick(3);
+ 				int position = getSource().getPosition();
+ 				int size = getSource().size();
+ 				for (int i = 0; i < size; i++) {
+@@ -53,7 +53,7 @@ public final class ChangeDelta<T> extends AbstractDelta<T> {
+ 		}
+ 
+ 		@Override
+-		protected void restore(List<T> target) {
++		protected void restore(List<T> target) { com.github.difflib.jmhbench.MutationSwitch.tick(8);
+ 				int position = getTarget().getPosition();
+ 				int size = getTarget().size();
+ 				for (int i = 0; i < size; i++) {
+@@ -66,7 +66,7 @@ public final class ChangeDelta<T> extends AbstractDelta<T> {
+ 				}
+ 		}
+ 
+-		protected void applyFuzzyToAt(List<T> target, int fuzz, int position) throws PatchFailedException {
++		protected void applyFuzzyToAt(List<T> target, int fuzz, int position) throws PatchFailedException { com.github.difflib.jmhbench.MutationSwitch.tick(13);
+ 				int size = getSource().size();
+ 				for (int i = fuzz; i < size - fuzz; i++) {
+ 						target.remove(position + fuzz);
+diff --git a/com/github/difflib/patch/Chunk.java b/com/github/difflib/patch/Chunk.java
+index b5b2f31..321b0ca 100644
+--- a/com/github/difflib/patch/Chunk.java
++++ b/com/github/difflib/patch/Chunk.java
+@@ -94,7 +94,7 @@ public final class Chunk<T> implements Serializable {
+ 		 * @param target the sequence to verify against.
+ 		 * @throws com.github.difflib.patch.PatchFailedException
+ 		 */
+-		public VerifyChunk verifyChunk(List<T> target) throws PatchFailedException {
++		public VerifyChunk verifyChunk(List<T> target) throws PatchFailedException { com.github.difflib.jmhbench.MutationSwitch.tick(18);
+ 				return verifyChunk(target, 0, getPosition());
+ 		}
+ 
+@@ -107,7 +107,7 @@ public final class Chunk<T> implements Serializable {
+ 		 * @param position the position of target
+ 		 * @throws com.github.difflib.patch.PatchFailedException
+ 		 */
+-		public VerifyChunk verifyChunk(List<T> target, int fuzz, int position) throws PatchFailedException {
++		public VerifyChunk verifyChunk(List<T> target, int fuzz, int position) throws PatchFailedException { com.github.difflib.jmhbench.MutationSwitch.tick(23);
+ 				//noinspection UnnecessaryLocalVariable
+ 				int startIndex = fuzz;
+ 				int lastIndex = size() - fuzz;
+@@ -127,7 +127,7 @@ public final class Chunk<T> implements Serializable {
+ 		/**
+ 		 * @return the start position of chunk in the text
+ 		 */
+-		public int getPosition() {
++		public int getPosition() { com.github.difflib.jmhbench.MutationSwitch.tick(28);
+ 				return position;
+ 		}
+ 
+diff --git a/com/github/difflib/patch/DeleteDelta.java b/com/github/difflib/patch/DeleteDelta.java
+index 8a6cda3..828419f 100644
+--- a/com/github/difflib/patch/DeleteDelta.java
++++ b/com/github/difflib/patch/DeleteDelta.java
+@@ -36,7 +36,7 @@ public final class DeleteDelta<T> extends AbstractDelta<T> {
+ 		}
+ 
+ 		@Override
+-		protected void applyTo(List<T> target) throws PatchFailedException {
++		protected void applyTo(List<T> target) throws PatchFailedException { com.github.difflib.jmhbench.MutationSwitch.tick(32);
+ 				int position = getSource().getPosition();
+ 				int size = getSource().size();
+ 				for (int i = 0; i < size; i++) {
+@@ -45,7 +45,7 @@ public final class DeleteDelta<T> extends AbstractDelta<T> {
+ 		}
+ 
+ 		@Override
+-		protected void restore(List<T> target) {
++		protected void restore(List<T> target) { com.github.difflib.jmhbench.MutationSwitch.tick(36);
+ 				int position = this.getTarget().getPosition();
+ 				List<T> lines = this.getSource().getLines();
+ 				for (int i = 0; i < lines.size(); i++) {
+@@ -60,7 +60,7 @@ public final class DeleteDelta<T> extends AbstractDelta<T> {
+ 		}
+ 
+ 		@Override
+-		public AbstractDelta<T> withChunks(Chunk<T> original, Chunk<T> revised) {
++		public AbstractDelta<T> withChunks(Chunk<T> original, Chunk<T> revised) { com.github.difflib.jmhbench.MutationSwitch.tick(40);
+ 				return new DeleteDelta<T>(original, revised);
+ 		}
+ }
+diff --git a/com/github/difflib/patch/EqualDelta.java b/com/github/difflib/patch/EqualDelta.java
+index 98cb561..6868a38 100644
+--- a/com/github/difflib/patch/EqualDelta.java
++++ b/com/github/difflib/patch/EqualDelta.java
+@@ -28,16 +28,16 @@ public class EqualDelta<T> extends AbstractDelta<T> {
+ 		}
+ 
+ 		@Override
+-		protected void applyTo(List<T> target) throws PatchFailedException {}
++		protected void applyTo(List<T> target) throws PatchFailedException { com.github.difflib.jmhbench.MutationSwitch.tick(44);}
+ 
+ 		@Override
+-		protected void restore(List<T> target) {}
++		protected void restore(List<T> target) { com.github.difflib.jmhbench.MutationSwitch.tick(47);}
+ 
+ 		/**
+ 		 * {@inheritDoc}
+ 		 */
+ 		@Override
+-		protected void applyFuzzyToAt(List<T> target, int fuzz, int delta) {
++		protected void applyFuzzyToAt(List<T> target, int fuzz, int delta) { com.github.difflib.jmhbench.MutationSwitch.tick(50);
+ 				// equals so no operations
+ 		}
+ 
+diff --git a/com/github/difflib/text/DiffRow.java b/com/github/difflib/text/DiffRow.java
+index 6ba79be..9b65097 100644
+--- a/com/github/difflib/text/DiffRow.java
++++ b/com/github/difflib/text/DiffRow.java
+@@ -45,21 +45,21 @@ public final class DiffRow implements Serializable {
+ 		/**
+ 		 * @return the tag
+ 		 */
+-		public Tag getTag() {
++		public Tag getTag() { com.github.difflib.jmhbench.MutationSwitch.tick(24);
+ 				return tag;
+ 		}
+ 
+ 		/**
+ 		 * @param tag the tag to set
+ 		 */
+-		public void setTag(Tag tag) {
++		public void setTag(Tag tag) { com.github.difflib.jmhbench.MutationSwitch.tick(29);
+ 				this.tag = tag;
+ 		}
+ 
+ 		/**
+ 		 * @return the oldLine
+ 		 */
+-		public String getOldLine() {
++		public String getOldLine() { com.github.difflib.jmhbench.MutationSwitch.tick(33);
+ 				return oldLine;
+ 		}
+ 
+diff --git a/com/github/difflib/text/DiffRowGenerator.java b/com/github/difflib/text/DiffRowGenerator.java
+index 82a5b94..2a5e7f6 100644
+--- a/com/github/difflib/text/DiffRowGenerator.java
++++ b/com/github/difflib/text/DiffRowGenerator.java
+@@ -90,7 +90,7 @@ public final class DiffRowGenerator {
+ 						deltaMergeInfo -> DeltaMergeUtils.mergeInlineDeltas(deltaMergeInfo, equalities -> equalities.stream()
+ 										.allMatch(s -> s == null || s.replaceAll("\\s+", "").equals("")));
+ 
+-		public static Builder create() {
++		public static Builder create() { com.github.difflib.jmhbench.MutationSwitch.tick(37);
+ 				return new Builder();
+ 		}
+ 
+@@ -98,7 +98,7 @@ public final class DiffRowGenerator {
+ 				return WHITESPACE_PATTERN.matcher(raw.trim()).replaceAll(" ");
+ 		}
+ 
+-		protected static final List<String> splitStringPreserveDelimiter(String str, Pattern SPLIT_PATTERN) {
++		protected static final List<String> splitStringPreserveDelimiter(String str, Pattern SPLIT_PATTERN) { com.github.difflib.jmhbench.MutationSwitch.tick(41);
+ 				List<String> list = new ArrayList<>();
+ 				if (str != null) {
+ 						Matcher matcher = SPLIT_PATTERN.matcher(str);
+@@ -233,7 +233,7 @@ public final class DiffRowGenerator {
+ 		 * @param revised the revised text
+ 		 * @return the DiffRows between original and revised texts
+ 		 */
+-		public List<DiffRow> generateDiffRows(List<String> original, List<String> revised) {
++		public List<DiffRow> generateDiffRows(List<String> original, List<String> revised) { com.github.difflib.jmhbench.MutationSwitch.tick(45);
+ 				return generateDiffRows(original, DiffUtils.diff(original, revised, equalizer));
+ 		}
+ 
+diff --git a/com/github/difflib/text/StringUtils.java b/com/github/difflib/text/StringUtils.java
+index 2a629b1..e557c23 100644
+--- a/com/github/difflib/text/StringUtils.java
++++ b/com/github/difflib/text/StringUtils.java
+@@ -27,15 +27,15 @@ final class StringUtils {
+ 		 * @param str
+ 		 * @return str with some HTML meta characters escaped.
+ 		 */
+-		public static String htmlEntites(String str) {
++		public static String htmlEntites(String str) { com.github.difflib.jmhbench.MutationSwitch.tick(4);
+ 				return str.replace("<", "&lt;").replace(">", "&gt;");
+ 		}
+ 
+-		public static String normalize(String str) {
++		public static String normalize(String str) { com.github.difflib.jmhbench.MutationSwitch.tick(9);
+ 				return htmlEntites(str).replace("\t", "    ");
+ 		}
+ 
+-		public static List<String> wrapText(List<String> list, int columnWidth) {
++		public static List<String> wrapText(List<String> list, int columnWidth) { com.github.difflib.jmhbench.MutationSwitch.tick(14);
+ 				return list.stream().map(line -> wrapText(line, columnWidth)).collect(toList());
+ 		}
+ 
+diff --git a/com/github/difflib/text/deltamerge/DeltaMergeUtils.java b/com/github/difflib/text/deltamerge/DeltaMergeUtils.java
+index 1e68a63..509f563 100644
+--- a/com/github/difflib/text/deltamerge/DeltaMergeUtils.java
++++ b/com/github/difflib/text/deltamerge/DeltaMergeUtils.java
+@@ -30,7 +30,7 @@ import java.util.function.Predicate;
+ public final class DeltaMergeUtils {
+ 
+ 		public static List<AbstractDelta<String>> mergeInlineDeltas(
+-						InlineDeltaMergeInfo deltaMergeInfo, Predicate<List<String>> replaceEquality) {
++						InlineDeltaMergeInfo deltaMergeInfo, Predicate<List<String>> replaceEquality) { com.github.difflib.jmhbench.MutationSwitch.tick(19);
+ 				final List<AbstractDelta<String>> originalDeltas = deltaMergeInfo.getDeltas();
+ 				if (originalDeltas.size() < 2) {
+ 						return originalDeltas;
+diff --git a/com/github/difflib/text/deltamerge/InlineDeltaMergeInfo.java b/com/github/difflib/text/deltamerge/InlineDeltaMergeInfo.java
+index 1c9027f..8fc46fe 100644
+--- a/com/github/difflib/text/deltamerge/InlineDeltaMergeInfo.java
++++ b/com/github/difflib/text/deltamerge/InlineDeltaMergeInfo.java
+@@ -36,7 +36,7 @@ public final class InlineDeltaMergeInfo {
+ 				this.revList = revList;
+ 		}
+ 
+-		public List<AbstractDelta<String>> getDeltas() {
++		public List<AbstractDelta<String>> getDeltas() { com.github.difflib.jmhbench.MutationSwitch.tick(48);
+ 				return deltas;
+ 		}
+ 
+diff --git a/com/github/difflib/unifieddiff/UnifiedDiff.java b/com/github/difflib/unifieddiff/UnifiedDiff.java
+index bc572ae..f3534a7 100644
+--- a/com/github/difflib/unifieddiff/UnifiedDiff.java
++++ b/com/github/difflib/unifieddiff/UnifiedDiff.java
+@@ -31,11 +31,11 @@ public final class UnifiedDiff {
+ 		private String tail;
+ 		private final List<UnifiedDiffFile> files = new ArrayList<>();
+ 
+-		public String getHeader() {
++		public String getHeader() { com.github.difflib.jmhbench.MutationSwitch.tick(5);
+ 				return header;
+ 		}
+ 
+-		public void setHeader(String header) {
++		public void setHeader(String header) { com.github.difflib.jmhbench.MutationSwitch.tick(10);
+ 				this.header = header;
+ 		}
+ 
+@@ -43,7 +43,7 @@ public final class UnifiedDiff {
+ 				files.add(file);
+ 		}
+ 
+-		public List<UnifiedDiffFile> getFiles() {
++		public List<UnifiedDiffFile> getFiles() { com.github.difflib.jmhbench.MutationSwitch.tick(15);
+ 				return Collections.unmodifiableList(files);
+ 		}
+ 
+diff --git a/com/github/difflib/unifieddiff/UnifiedDiffFile.java b/com/github/difflib/unifieddiff/UnifiedDiffFile.java
+index 4fc5418..b254f04 100644
+--- a/com/github/difflib/unifieddiff/UnifiedDiffFile.java
++++ b/com/github/difflib/unifieddiff/UnifiedDiffFile.java
+@@ -45,15 +45,15 @@ public final class UnifiedDiffFile {
+ 		private boolean noNewLineAtTheEndOfTheFile = false;
+ 		private Integer similarityIndex;
+ 
+-		public String getDiffCommand() {
++		public String getDiffCommand() { com.github.difflib.jmhbench.MutationSwitch.tick(20);
+ 				return diffCommand;
+ 		}
+ 
+-		public void setDiffCommand(String diffCommand) {
++		public void setDiffCommand(String diffCommand) { com.github.difflib.jmhbench.MutationSwitch.tick(25);
+ 				this.diffCommand = diffCommand;
+ 		}
+ 
+-		public String getFromFile() {
++		public String getFromFile() { com.github.difflib.jmhbench.MutationSwitch.tick(30);
+ 				return fromFile;
+ 		}
+ 
+diff --git a/com/github/difflib/unifieddiff/UnifiedDiffReader.java b/com/github/difflib/unifieddiff/UnifiedDiffReader.java
+index 9be9b0f..36b7ba8 100644
+--- a/com/github/difflib/unifieddiff/UnifiedDiffReader.java
++++ b/com/github/difflib/unifieddiff/UnifiedDiffReader.java
+@@ -234,7 +234,7 @@ public final class UnifiedDiffReader {
+ 		 * @throws IOException
+ 		 * @throws UnifiedDiffParserException
+ 		 */
+-		public static UnifiedDiff parseUnifiedDiff(InputStream stream) throws IOException, UnifiedDiffParserException {
++		public static UnifiedDiff parseUnifiedDiff(InputStream stream) throws IOException, UnifiedDiffParserException { com.github.difflib.jmhbench.MutationSwitch.tick(34);
+ 				UnifiedDiffReader parser = new UnifiedDiffReader(new BufferedReader(new InputStreamReader(stream)));
+ 				return parser.parse();
+ 		}
+@@ -482,12 +482,12 @@ public final class UnifiedDiffReader {
+ 						this.stopsHeaderParsing = stopsHeaderParsing;
+ 				}
+ 
+-				public boolean validLine(String line) {
++				public boolean validLine(String line) { com.github.difflib.jmhbench.MutationSwitch.tick(38);
+ 						Matcher m = pattern.matcher(line);
+ 						return m.find();
+ 				}
+ 
+-				public boolean processLine(String line) throws UnifiedDiffParserException {
++				public boolean processLine(String line) throws UnifiedDiffParserException { com.github.difflib.jmhbench.MutationSwitch.tick(42);
+ 						Matcher m = pattern.matcher(line);
+ 						if (m.find()) {
+ 								command.accept(m.toMatchResult(), line);

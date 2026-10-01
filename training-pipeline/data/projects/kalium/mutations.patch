@@ -1,0 +1,532 @@
+diff --git a/org/abstractj/kalium/NaCl.java b/org/abstractj/kalium/NaCl.java
+index a1dfbf9..47f8ee7 100644
+--- a/org/abstractj/kalium/NaCl.java
++++ b/org/abstractj/kalium/NaCl.java
+@@ -25,7 +25,7 @@ import jnr.ffi.types.u_int64_t;
+ 
+ public class NaCl {
+ 
+-    public static Sodium sodium() {
++    public static Sodium sodium() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(1);
+         Sodium sodium = SingletonHolder.SODIUM_INSTANCE;
+         checkVersion(sodium);
+         return sodium;
+@@ -507,7 +507,7 @@ public class NaCl {
+      *
+      * Check libsodium's documentation for more info.
+      */
+-    public static synchronized int init() {
++    public static synchronized int init() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(4);
+         return sodium().sodium_init();
+     }
+ }
+diff --git a/org/abstractj/kalium/crypto/Advanced.java b/org/abstractj/kalium/crypto/Advanced.java
+index 8ea84d3..34c7701 100644
+--- a/org/abstractj/kalium/crypto/Advanced.java
++++ b/org/abstractj/kalium/crypto/Advanced.java
+@@ -22,7 +22,7 @@ import static org.abstractj.kalium.crypto.Util.checkLength;
+ 
+ public class Advanced {
+ 
+-    public byte[] crypto_stream_xsalsa20_xor(byte[] message, byte[] nonce, byte[] key) {
++    public byte[] crypto_stream_xsalsa20_xor(byte[] message, byte[] nonce, byte[] key) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(15);
+ 
+         checkLength(nonce, CRYPTO_STREAM_NONCEBYTES);
+         checkLength(key, CRYPTO_STREAM_KEYBYTES);
+diff --git a/org/abstractj/kalium/crypto/Aead.java b/org/abstractj/kalium/crypto/Aead.java
+index 5797f5c..51cdf78 100644
+--- a/org/abstractj/kalium/crypto/Aead.java
++++ b/org/abstractj/kalium/crypto/Aead.java
+@@ -24,7 +24,7 @@ public class Aead {
+         this(encoder.decode(key));
+     }
+ 
+-    public Aead useAesGcm() {
++    public Aead useAesGcm() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(17);
+         if (sodium().crypto_aead_aes256gcm_is_available() != 1) {
+             throw new RuntimeException("AES-GCM requires hardware support");
+         }
+@@ -33,13 +33,13 @@ public class Aead {
+         return this;
+     }
+ 
+-    public byte[] encrypt(byte[] publicNonce, byte[] message, byte[] additionalData) {
++    public byte[] encrypt(byte[] publicNonce, byte[] message, byte[] additionalData) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(19);
+         return aesGcm ?
+                 encryptAesGcm(publicNonce, message, additionalData) :
+                 encryptChaChaPoly(publicNonce, message, additionalData);
+     }
+ 
+-    protected byte[] encryptChaChaPoly(byte[] publicNonce, byte[] message, byte[] additionalData) {
++    protected byte[] encryptChaChaPoly(byte[] publicNonce, byte[] message, byte[] additionalData) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(21);
+         checkLength(publicNonce, CRYPTO_AEAD_CHACHA20POLY1305_NPUBBYTES);
+         byte[] ct = zeros(message.length + CRYPTO_AEAD_CHACHA20POLY1305_ABYTES);
+         isValid(sodium().crypto_aead_chacha20poly1305_encrypt(ct, null,
+@@ -50,7 +50,7 @@ public class Aead {
+         return ct;
+     }
+ 
+-    protected byte[] encryptAesGcm(byte[] publicNonce, byte[] message, byte[] additionalData) {
++    protected byte[] encryptAesGcm(byte[] publicNonce, byte[] message, byte[] additionalData) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(23);
+         checkLength(publicNonce, CRYPTO_AEAD_AES256GCM_NPUBBYTES);
+         byte[] ct = zeros(message.length + CRYPTO_AEAD_AES256GCM_ABYTES);
+         isValid(sodium().crypto_aead_aes256gcm_encrypt(ct, null,
+@@ -61,13 +61,13 @@ public class Aead {
+         return ct;
+     }
+ 
+-    public byte[] decrypt(byte[] publicNonce, byte[] ciphertext, byte[] additionalData) {
++    public byte[] decrypt(byte[] publicNonce, byte[] ciphertext, byte[] additionalData) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(25);
+         return aesGcm ?
+                 decryptAesGcm(publicNonce, ciphertext, additionalData) :
+                 decryptChaChaPoly(publicNonce, ciphertext, additionalData);
+     }
+ 
+-    protected byte[] decryptChaChaPoly(byte[] publicNonce, byte[] ciphertext, byte[] additionalData) {
++    protected byte[] decryptChaChaPoly(byte[] publicNonce, byte[] ciphertext, byte[] additionalData) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(27);
+         checkLength(publicNonce, CRYPTO_AEAD_CHACHA20POLY1305_NPUBBYTES);
+         byte[] msg = zeros(ciphertext.length - CRYPTO_AEAD_CHACHA20POLY1305_ABYTES);
+         isValid(sodium().crypto_aead_chacha20poly1305_decrypt(msg, null,
+diff --git a/org/abstractj/kalium/crypto/Box.java b/org/abstractj/kalium/crypto/Box.java
+index 3489d84..2ce7c0a 100644
+--- a/org/abstractj/kalium/crypto/Box.java
++++ b/org/abstractj/kalium/crypto/Box.java
+@@ -56,7 +56,7 @@ public class Box {
+         this(encoder.decode(publicKey), encoder.decode(privateKey));
+     }
+ 
+-    public byte[] encrypt(byte[] nonce, byte[] message) {
++    public byte[] encrypt(byte[] nonce, byte[] message) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(29);
+         checkLength(nonce, CRYPTO_BOX_CURVE25519XSALSA20POLY1305_NONCEBYTES);
+         byte[] msg = prependZeros(CRYPTO_BOX_CURVE25519XSALSA20POLY1305_ZEROBYTES, message);
+         byte[] ct = new byte[msg.length];
+@@ -65,11 +65,11 @@ public class Box {
+         return removeZeros(CRYPTO_BOX_CURVE25519XSALSA20POLY1305_BOXZEROBYTES, ct);
+     }
+ 
+-    public byte[] encrypt(String nonce, String message, Encoder encoder) {
++    public byte[] encrypt(String nonce, String message, Encoder encoder) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(31);
+         return encrypt(encoder.decode(nonce), encoder.decode(message));
+     }
+ 
+-    public byte[] decrypt(byte[] nonce, byte[] ciphertext) {
++    public byte[] decrypt(byte[] nonce, byte[] ciphertext) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(33);
+         checkLength(nonce, CRYPTO_BOX_CURVE25519XSALSA20POLY1305_NONCEBYTES);
+         byte[] ct = prependZeros(CRYPTO_BOX_CURVE25519XSALSA20POLY1305_BOXZEROBYTES, ciphertext);
+         byte[] message = new byte[ct.length];
+@@ -79,7 +79,7 @@ public class Box {
+         return removeZeros(CRYPTO_BOX_CURVE25519XSALSA20POLY1305_ZEROBYTES, message);
+     }
+ 
+-    public byte[] decrypt(String nonce, String ciphertext, Encoder encoder) {
++    public byte[] decrypt(String nonce, String ciphertext, Encoder encoder) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(35);
+         return decrypt(encoder.decode(nonce), encoder.decode(ciphertext));
+     }
+ }
+diff --git a/org/abstractj/kalium/crypto/Hash.java b/org/abstractj/kalium/crypto/Hash.java
+index ea0bd83..9397fa7 100644
+--- a/org/abstractj/kalium/crypto/Hash.java
++++ b/org/abstractj/kalium/crypto/Hash.java
+@@ -25,36 +25,36 @@ import static org.abstractj.kalium.NaCl.sodium;
+ 
+ public class Hash {
+ 
+-    public byte[] sha256(byte[] message) {
++    public byte[] sha256(byte[] message) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(36);
+         byte[] buffer = new byte[CRYPTO_HASH_SHA256_BYTES];
+         sodium().crypto_hash_sha256(buffer, message, message.length);
+         return buffer;
+     }
+ 
+-    public byte[] sha512(byte[] message) {
++    public byte[] sha512(byte[] message) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(37);
+         byte[] buffer = new byte[CRYPTO_HASH_SHA512_BYTES];
+         sodium().crypto_hash_sha512(buffer, message, message.length);
+         return buffer;
+     }
+ 
+-    public String sha256(String message, Encoder encoder) {
++    public String sha256(String message, Encoder encoder) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(38);
+         byte[] hash = sha256(message.getBytes());
+         return encoder.encode(hash);
+     }
+ 
+-    public String sha512(String message, Encoder encoder) {
++    public String sha512(String message, Encoder encoder) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(39);
+         byte[] hash = sha512(message.getBytes());
+         return encoder.encode(hash);
+     }
+ 
+ 
+-    public byte[] blake2(byte[] message) throws UnsupportedOperationException {
++    public byte[] blake2(byte[] message) throws UnsupportedOperationException { org.abstractj.kalium.jmhbench.MutationSwitch.tick(40);
+         byte[] buffer = new byte[CRYPTO_GENERICHASH_BLAKE2B_BYTES];
+         sodium().crypto_generichash_blake2b(buffer, CRYPTO_GENERICHASH_BLAKE2B_BYTES, message, message.length, null, 0);
+         return buffer;
+     }
+ 
+-    public String blake2(String message, Encoder encoder) throws UnsupportedOperationException {
++    public String blake2(String message, Encoder encoder) throws UnsupportedOperationException { org.abstractj.kalium.jmhbench.MutationSwitch.tick(41);
+         byte[] hash = blake2(message.getBytes());
+         return encoder.encode(hash);
+     }
+diff --git a/org/abstractj/kalium/crypto/Password.java b/org/abstractj/kalium/crypto/Password.java
+index a17dfbd..efedcb2 100644
+--- a/org/abstractj/kalium/crypto/Password.java
++++ b/org/abstractj/kalium/crypto/Password.java
+@@ -9,29 +9,29 @@ public class Password {
+ 
+     public Password() {
+     }
+-    public byte[] deriveKey(int length, byte[] passwd, byte[] salt, int opslimit, long memlimit) {
++    public byte[] deriveKey(int length, byte[] passwd, byte[] salt, int opslimit, long memlimit) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(42);
+         byte[] buffer = new byte[length];
+         sodium().crypto_pwhash_scryptsalsa208sha256(buffer, buffer.length, passwd, passwd.length, salt, opslimit, memlimit);
+         return buffer;
+     }
+ 
+-    public String hash(byte[] passwd, Encoder encoder, byte[] salt, int opslimit, long memlimit) {
++    public String hash(byte[] passwd, Encoder encoder, byte[] salt, int opslimit, long memlimit) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(43);
+         byte[] buffer = deriveKey(CRYPTO_PWHASH_SCRYPTSALSA208SHA256_OUTBYTES, passwd, salt, opslimit, memlimit);
+         return encoder.encode(buffer);
+     }
+ 
+-    public String hash(int length, byte[] passwd, Encoder encoder, byte[] salt, int opslimit, long memlimit) {
++    public String hash(int length, byte[] passwd, Encoder encoder, byte[] salt, int opslimit, long memlimit) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(44);
+         byte[] buffer = deriveKey(length, passwd, salt, opslimit, memlimit);
+         return encoder.encode(buffer);
+     }
+ 
+-    public String hash(byte[] passwd, Encoder encoder, int opslimit, long memlimit) {
++    public String hash(byte[] passwd, Encoder encoder, int opslimit, long memlimit) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(45);
+         byte[] buffer = new byte[CRYPTO_PWHASH_SCRYPTSALSA208SHA256_STRBYTES];
+         sodium().crypto_pwhash_scryptsalsa208sha256_str(buffer, passwd, passwd.length, opslimit, memlimit);
+         return encoder.encode(buffer);
+     }
+ 
+-    public boolean verify(byte[] hashed_passwd, byte[] passwd) {
++    public boolean verify(byte[] hashed_passwd, byte[] passwd) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(46);
+         int result = sodium().crypto_pwhash_scryptsalsa208sha256_str_verify(hashed_passwd, passwd, passwd.length);
+         return result == 0;
+     }
+diff --git a/org/abstractj/kalium/crypto/Point.java b/org/abstractj/kalium/crypto/Point.java
+index 2302b5d..6a92047 100644
+--- a/org/abstractj/kalium/crypto/Point.java
++++ b/org/abstractj/kalium/crypto/Point.java
+@@ -41,13 +41,13 @@ public class Point {
+         this(encoder.decode(point));
+     }
+ 
+-    public Point mult(byte[] n) {
++    public Point mult(byte[] n) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(47);
+         byte[] result = zeros(CRYPTO_SCALARMULT_CURVE25519_SCALARBYTES);
+         sodium().crypto_scalarmult_curve25519(result, n, point);
+         return new Point(result);
+     }
+ 
+-    public Point mult(String n, Encoder encoder) {
++    public Point mult(String n, Encoder encoder) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(48);
+         return mult(encoder.decode(n));
+     }
+ 
+@@ -56,7 +56,7 @@ public class Point {
+         return HEX.encode(point);
+     }
+ 
+-    public byte[] toBytes() {
++    public byte[] toBytes() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(49);
+         return point;
+     }
+ }
+diff --git a/org/abstractj/kalium/crypto/Random.java b/org/abstractj/kalium/crypto/Random.java
+index bf32993..75bf26d 100644
+--- a/org/abstractj/kalium/crypto/Random.java
++++ b/org/abstractj/kalium/crypto/Random.java
+@@ -28,7 +28,7 @@ public class Random {
+      * @param n number or random bytes
+      * @return
+      */
+-    public byte[] randomBytes(int n) {
++    public byte[] randomBytes(int n) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(50);
+         byte[] buffer = new byte[n];
+         sodium().randombytes(buffer, n);
+         return buffer;
+diff --git a/org/abstractj/kalium/crypto/Util.java b/org/abstractj/kalium/crypto/Util.java
+index cd13678..25c62a5 100644
+--- a/org/abstractj/kalium/crypto/Util.java
++++ b/org/abstractj/kalium/crypto/Util.java
+@@ -22,32 +22,32 @@ public class Util {
+ 
+     private static final int DEFAULT_SIZE = 32;
+ 
+-    public static byte[] prependZeros(int n, byte[] message) {
++    public static byte[] prependZeros(int n, byte[] message) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(2);
+         byte[] result = new byte[n + message.length];
+         System.arraycopy(message, 0, result, n, message.length);
+         return result;
+     }
+ 
+-    public static byte[] removeZeros(int n, byte[] message) {
++    public static byte[] removeZeros(int n, byte[] message) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(5);
+         return Arrays.copyOfRange(message, n, message.length);
+     }
+ 
+-    public static void checkLength(byte[] data, int size) {
++    public static void checkLength(byte[] data, int size) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(7);
+         if (data == null || data.length != size)
+             throw new RuntimeException("Invalid size");
+     }
+ 
+-    public static byte[] zeros(int n) {
++    public static byte[] zeros(int n) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(9);
+         return new byte[n];
+     }
+ 
+-    public static boolean isValid(int status, String message) {
++    public static boolean isValid(int status, String message) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(11);
+         if (status != 0)
+             throw new RuntimeException(message);
+         return true;
+     }
+ 
+-    public static byte[] slice(byte[] buffer, int start, int end) {
++    public static byte[] slice(byte[] buffer, int start, int end) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(13);
+         return Arrays.copyOfRange(buffer, start, end);
+     }
+ 
+diff --git a/org/abstractj/kalium/jmhbench/MutationSwitch.java b/org/abstractj/kalium/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..8d460c3
+--- /dev/null
++++ b/org/abstractj/kalium/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.abstractj.kalium.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/abstractj/kalium/keys/AuthenticationKey.java b/org/abstractj/kalium/keys/AuthenticationKey.java
+index 3c5a1f4..7e0c296 100644
+--- a/org/abstractj/kalium/keys/AuthenticationKey.java
++++ b/org/abstractj/kalium/keys/AuthenticationKey.java
+@@ -39,28 +39,28 @@ public class AuthenticationKey implements Key {
+         this(encoder.decode(key));
+     }
+ 
+-    public byte[] sign(byte[] message) {
++    public byte[] sign(byte[] message) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(3);
+         byte[] mac = new byte[CRYPTO_AUTH_HMACSHA512256_BYTES];
+         sodium().crypto_auth_hmacsha512256(mac, message, message.length, key);
+         return mac;
+     }
+ 
+-    public String sign(String message, Encoder encoder) {
++    public String sign(String message, Encoder encoder) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(6);
+         byte[] signature = sign(encoder.decode(message));
+         return encoder.encode(signature);
+     }
+ 
+-    public boolean verify(byte[] message, byte[] signature) {
++    public boolean verify(byte[] message, byte[] signature) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(8);
+         checkLength(signature, CRYPTO_AUTH_HMACSHA512256_BYTES);
+         return isValid(sodium().crypto_auth_hmacsha512256_verify(signature, message, message.length, key), "signature was forged or corrupted");
+     }
+ 
+-    public boolean verify(String message, String signature, Encoder encoder) {
++    public boolean verify(String message, String signature, Encoder encoder) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(10);
+         return verify(encoder.decode(message), encoder.decode(signature));
+     }
+ 
+     @Override
+-    public byte[] toBytes() {
++    public byte[] toBytes() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(12);
+         return key;
+     }
+ 
+diff --git a/org/abstractj/kalium/keys/KeyPair.java b/org/abstractj/kalium/keys/KeyPair.java
+index 61aba74..ac6571c 100644
+--- a/org/abstractj/kalium/keys/KeyPair.java
++++ b/org/abstractj/kalium/keys/KeyPair.java
+@@ -47,11 +47,11 @@ public class KeyPair {
+         this(encoder.decode(secretKey));
+     }
+ 
+-    public PublicKey getPublicKey() {
++    public PublicKey getPublicKey() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(14);
+         return new PublicKey(publicKey);
+     }
+ 
+-    public PrivateKey getPrivateKey() {
++    public PrivateKey getPrivateKey() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(16);
+         return new PrivateKey(secretKey);
+     }
+ }
+diff --git a/org/abstractj/kalium/keys/PrivateKey.java b/org/abstractj/kalium/keys/PrivateKey.java
+index 7bfc7db..506f86e 100644
+--- a/org/abstractj/kalium/keys/PrivateKey.java
++++ b/org/abstractj/kalium/keys/PrivateKey.java
+@@ -35,7 +35,7 @@ public class PrivateKey implements Key {
+     }
+ 
+     @Override
+-    public byte[] toBytes() {
++    public byte[] toBytes() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(18);
+         return secretKey;
+     }
+ 
+diff --git a/org/abstractj/kalium/keys/PublicKey.java b/org/abstractj/kalium/keys/PublicKey.java
+index b657570..73513d9 100644
+--- a/org/abstractj/kalium/keys/PublicKey.java
++++ b/org/abstractj/kalium/keys/PublicKey.java
+@@ -33,7 +33,7 @@ public class PublicKey implements Key {
+         this.publicKey = HEX.decode(publicKey);
+     }
+ 
+-    public byte[] toBytes() {
++    public byte[] toBytes() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(20);
+         return publicKey;
+     }
+ 
+diff --git a/org/abstractj/kalium/keys/SigningKey.java b/org/abstractj/kalium/keys/SigningKey.java
+index fc68934..9afe7f8 100644
+--- a/org/abstractj/kalium/keys/SigningKey.java
++++ b/org/abstractj/kalium/keys/SigningKey.java
+@@ -56,23 +56,23 @@ public class SigningKey {
+         this(encoder.decode(seed));
+     }
+ 
+-    public VerifyKey getVerifyKey() {
++    public VerifyKey getVerifyKey() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(22);
+         return this.verifyKey;
+     }
+ 
+-    public byte[] sign(byte[] message) {
++    public byte[] sign(byte[] message) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(24);
+         byte[] signature = new byte[CRYPTO_SIGN_ED25519_BYTES];
+         LongLongByReference bufferLen = new LongLongByReference(0);
+         sodium().crypto_sign_ed25519_detached(signature, bufferLen, message, message.length, secretKey);
+         return signature;
+     }
+ 
+-    public String sign(String message, Encoder encoder) {
++    public String sign(String message, Encoder encoder) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(26);
+         byte[] signature = sign(encoder.decode(message));
+         return encoder.encode(signature);
+     }
+ 
+-    public byte[] toBytes() {
++    public byte[] toBytes() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(28);
+         return seed;
+     }
+ 
+diff --git a/org/abstractj/kalium/keys/VerifyKey.java b/org/abstractj/kalium/keys/VerifyKey.java
+index 8727996..f349429 100644
+--- a/org/abstractj/kalium/keys/VerifyKey.java
++++ b/org/abstractj/kalium/keys/VerifyKey.java
+@@ -38,16 +38,16 @@ public class VerifyKey {
+         this(encoder.decode(key));
+     }
+ 
+-    public boolean verify(byte[] message, byte[] signature) {
++    public boolean verify(byte[] message, byte[] signature) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(30);
+         checkLength(signature, CRYPTO_SIGN_ED25519_BYTES);
+         return isValid(sodium().crypto_sign_ed25519_verify_detached(signature, message, message.length, key), "signature was forged or corrupted");
+     }
+ 
+-    public boolean verify(String message, String signature, Encoder encoder) {
++    public boolean verify(String message, String signature, Encoder encoder) { org.abstractj.kalium.jmhbench.MutationSwitch.tick(32);
+         return verify(encoder.decode(message), encoder.decode(signature));
+     }
+ 
+-    public byte[] toBytes() {
++    public byte[] toBytes() { org.abstractj.kalium.jmhbench.MutationSwitch.tick(34);
+         return key;
+     }
+ 

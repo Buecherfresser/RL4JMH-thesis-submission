@@ -1,0 +1,73 @@
+```
+package io.reactivex.rxjava3.benchmarks.maybe;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.flowables.Flowable;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeTakeUntilPublisher;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link MaybeTakeUntilPublisher}.
+ *
+ * <p>Two scenarios are measured:
+ * <ul>
+ *   <li>Source emits a value and the other Publisher never emits (normal flow).</li>
+ *   <li>Other Publisher emits a value before the source, causing early termination.</li>
+ * </ul>
+ *
+ * <p>Throughput mode is used to report how many operations per second can be performed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeTakeUntilPublisherBenchmark {
+
+    /** Source that emits a single integer. */
+    private Maybe<Integer> source;
+
+    /** Other Publisher that never emits (used for the happy‑path benchmark). */
+    private Flowable<Integer> otherNever;
+
+    /** Other Publisher that emits immediately (used for the early‑termination benchmark). */
+    private Flowable<Integer> otherImmediate;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        source = Maybe.just(1);
+        otherNever = Flowable.never();
+        otherImmediate = Flowable.just(0);
+    }
+
+    /**
+     * Benchmark the normal path where the source succeeds before the other Publisher emits.
+     *
+     * <p>The operator should forward the source value downstream.
+     */
+    @Benchmark
+    public void takeUntilPublisher_normalPath(Blackhole bh) {
+        // The operator under test
+        Maybe<Integer> maybe = new MaybeTakeUntilPublisher<>(source, otherNever);
+        // blockingGet blocks until the Maybe terminates (either onSuccess or onComplete)
+        Integer result = maybe.blockingGet();
+        bh.consume(result);
+    }
+
+    /**
+     * Benchmark the early‑termination path where the other Publisher emits first.
+     *
+     * <p>The operator should complete without emitting the source value.
+     */
+    @Benchmark
+    public void takeUntilPublisher_earlyTermination(Blackhole bh) {
+        Maybe<Integer> maybe = new MaybeTakeUntilPublisher<>(source, otherImmediate);
+        Integer result = maybe.blockingGet(); // will be null because the Maybe completes without a value
+        bh.consume(result);
+    }
+}
+```

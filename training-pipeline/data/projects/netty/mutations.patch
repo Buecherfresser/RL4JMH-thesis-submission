@@ -1,0 +1,622 @@
+diff --git a/io/netty/bootstrap/Bootstrap.java b/io/netty/bootstrap/Bootstrap.java
+index 3dc906b..6ef1575 100644
+--- a/io/netty/bootstrap/Bootstrap.java
++++ b/io/netty/bootstrap/Bootstrap.java
+@@ -71,7 +71,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
+      *
+      * @see io.netty.resolver.DefaultAddressResolverGroup
+      */
+-    public Bootstrap resolver(AddressResolverGroup<?> resolver) {
++    public Bootstrap resolver(AddressResolverGroup<?> resolver) { io.netty.jmhbench.MutationSwitch.tick(1);
+         externalResolver = resolver == null ? null : new ExternalAddressResolver(resolver);
+         disableResolver = false;
+         return this;
+@@ -81,7 +81,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
+      * Disables address name resolution. Name resolution may be re-enabled with
+      * {@link Bootstrap#resolver(AddressResolverGroup)}
+      */
+-    public Bootstrap disableResolver() {
++    public Bootstrap disableResolver() { io.netty.jmhbench.MutationSwitch.tick(10);
+         externalResolver = null;
+         disableResolver = true;
+         return this;
+diff --git a/io/netty/bootstrap/BootstrapConfig.java b/io/netty/bootstrap/BootstrapConfig.java
+index e80ddb2..dad795f 100644
+--- a/io/netty/bootstrap/BootstrapConfig.java
++++ b/io/netty/bootstrap/BootstrapConfig.java
+@@ -32,7 +32,7 @@ public final class BootstrapConfig extends AbstractBootstrapConfig<Bootstrap, Ch
+     /**
+      * Returns the configured remote address or {@code null} if non is configured yet.
+      */
+-    public SocketAddress remoteAddress() {
++    public SocketAddress remoteAddress() { io.netty.jmhbench.MutationSwitch.tick(19);
+         return bootstrap.remoteAddress();
+     }
+ 
+@@ -40,7 +40,7 @@ public final class BootstrapConfig extends AbstractBootstrapConfig<Bootstrap, Ch
+      * Returns the configured {@link AddressResolverGroup}, {@code null} if resolver was disabled
+      * with {@link Bootstrap#disableResolver()}, or the default if not configured yet.
+      */
+-    public AddressResolverGroup<?> resolver() {
++    public AddressResolverGroup<?> resolver() { io.netty.jmhbench.MutationSwitch.tick(28);
+         return bootstrap.resolver();
+     }
+ 
+diff --git a/io/netty/bootstrap/FailedChannel.java b/io/netty/bootstrap/FailedChannel.java
+index 96ef7c0..c65c075 100644
+--- a/io/netty/bootstrap/FailedChannel.java
++++ b/io/netty/bootstrap/FailedChannel.java
+@@ -34,12 +34,12 @@ final class FailedChannel extends AbstractChannel {
+     }
+ 
+     @Override
+-    protected AbstractUnsafe newUnsafe() {
++    protected AbstractUnsafe newUnsafe() { io.netty.jmhbench.MutationSwitch.tick(37);
+         return new FailedChannelUnsafe();
+     }
+ 
+     @Override
+-    protected boolean isCompatible(EventLoop loop) {
++    protected boolean isCompatible(EventLoop loop) { io.netty.jmhbench.MutationSwitch.tick(46);
+         return false;
+     }
+ 
+diff --git a/io/netty/buffer/AllocateBufferEvent.java b/io/netty/buffer/AllocateBufferEvent.java
+index 83ef220..aa67a1b 100644
+--- a/io/netty/buffer/AllocateBufferEvent.java
++++ b/io/netty/buffer/AllocateBufferEvent.java
+@@ -30,7 +30,7 @@ final class AllocateBufferEvent extends AbstractBufferEvent {
+     /**
+      * Statically check if this event is enabled.
+      */
+-    public static boolean isEventEnabled() {
++    public static boolean isEventEnabled() { io.netty.jmhbench.MutationSwitch.tick(2);
+         return INSTANCE.isEnabled();
+     }
+ 
+diff --git a/io/netty/buffer/ByteBufInputStream.java b/io/netty/buffer/ByteBufInputStream.java
+index 122bd48..7345646 100644
+--- a/io/netty/buffer/ByteBufInputStream.java
++++ b/io/netty/buffer/ByteBufInputStream.java
+@@ -130,12 +130,12 @@ public class ByteBufInputStream extends InputStream implements DataInput {
+     /**
+      * Returns the number of read bytes by this stream so far.
+      */
+-    public int readBytes() {
++    public int readBytes() { io.netty.jmhbench.MutationSwitch.tick(11);
+         return buffer.readerIndex() - startIndex;
+     }
+ 
+     @Override
+-    public void close() throws IOException {
++    public void close() throws IOException { io.netty.jmhbench.MutationSwitch.tick(20);
+         try {
+             super.close();
+         } finally {
+diff --git a/io/netty/buffer/ByteBufOutputStream.java b/io/netty/buffer/ByteBufOutputStream.java
+index 0ddc3c3..35292a6 100644
+--- a/io/netty/buffer/ByteBufOutputStream.java
++++ b/io/netty/buffer/ByteBufOutputStream.java
+@@ -66,7 +66,7 @@ public class ByteBufOutputStream extends OutputStream implements DataOutput {
+     /**
+      * Returns the number of written bytes by this stream so far.
+      */
+-    public int writtenBytes() {
++    public int writtenBytes() { io.netty.jmhbench.MutationSwitch.tick(29);
+         return buffer.writerIndex() - startIndex;
+     }
+ 
+@@ -86,7 +86,7 @@ public class ByteBufOutputStream extends OutputStream implements DataOutput {
+     }
+ 
+     @Override
+-    public void writeBoolean(boolean v) throws IOException {
++    public void writeBoolean(boolean v) throws IOException { io.netty.jmhbench.MutationSwitch.tick(38);
+         buffer.writeBoolean(v);
+     }
+ 
+diff --git a/io/netty/buffer/ByteBufUtil.java b/io/netty/buffer/ByteBufUtil.java
+index 115a086..3b1c921 100644
+--- a/io/netty/buffer/ByteBufUtil.java
++++ b/io/netty/buffer/ByteBufUtil.java
+@@ -61,7 +61,7 @@ public final class ByteBufUtil {
+     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ByteBufUtil.class);
+     private static final FastThreadLocal<byte[]> BYTE_ARRAYS = new FastThreadLocal<byte[]>() {
+         @Override
+-        protected byte[] initialValue() throws Exception {
++        protected byte[] initialValue() throws Exception { io.netty.jmhbench.MutationSwitch.tick(47);
+             return PlatformDependent.allocateUninitializedArray(MAX_TL_ARRAY_LEN);
+         }
+     };
+diff --git a/io/netty/channel/ChannelOutboundBuffer.java b/io/netty/channel/ChannelOutboundBuffer.java
+index 5fb78a4..f667efc 100644
+--- a/io/netty/channel/ChannelOutboundBuffer.java
++++ b/io/netty/channel/ChannelOutboundBuffer.java
+@@ -66,7 +66,7 @@ public final class ChannelOutboundBuffer {
+ 
+     private static final FastThreadLocal<ByteBuffer[]> NIO_BUFFERS = new FastThreadLocal<ByteBuffer[]>() {
+         @Override
+-        protected ByteBuffer[] initialValue() throws Exception {
++        protected ByteBuffer[] initialValue() throws Exception { io.netty.jmhbench.MutationSwitch.tick(3);
+             return new ByteBuffer[1024];
+         }
+     };
+@@ -111,7 +111,7 @@ public final class ChannelOutboundBuffer {
+      * Add given message to this {@link ChannelOutboundBuffer}. The given {@link ChannelPromise} will be notified once
+      * the message was written.
+      */
+-    public void addMessage(Object msg, int size, ChannelPromise promise) {
++    public void addMessage(Object msg, int size, ChannelPromise promise) { io.netty.jmhbench.MutationSwitch.tick(12);
+         Entry entry = Entry.newInstance(msg, size, total(msg), promise);
+         if (tailEntry == null) {
+             flushedEntry = null;
+diff --git a/io/netty/channel/CoalescingBufferQueue.java b/io/netty/channel/CoalescingBufferQueue.java
+index 0f194bd..73fa146 100644
+--- a/io/netty/channel/CoalescingBufferQueue.java
++++ b/io/netty/channel/CoalescingBufferQueue.java
+@@ -65,12 +65,12 @@ public final class CoalescingBufferQueue extends AbstractCoalescingBufferQueue {
+     /**
+      *  Release all buffers in the queue and complete all listeners and promises.
+      */
+-    public void releaseAndFailAll(Throwable cause) {
++    public void releaseAndFailAll(Throwable cause) { io.netty.jmhbench.MutationSwitch.tick(21);
+         releaseAndFailAll(channel, cause);
+     }
+ 
+     @Override
+-    protected ByteBuf compose(ByteBufAllocator alloc, ByteBuf cumulation, ByteBuf next) {
++    protected ByteBuf compose(ByteBufAllocator alloc, ByteBuf cumulation, ByteBuf next) { io.netty.jmhbench.MutationSwitch.tick(30);
+         if (cumulation instanceof CompositeByteBuf) {
+             CompositeByteBuf composite = (CompositeByteBuf) cumulation;
+             composite.addComponent(true, next);
+diff --git a/io/netty/channel/WriteBufferWaterMark.java b/io/netty/channel/WriteBufferWaterMark.java
+index 59c246d..4588c7c 100644
+--- a/io/netty/channel/WriteBufferWaterMark.java
++++ b/io/netty/channel/WriteBufferWaterMark.java
+@@ -74,14 +74,14 @@ public final class WriteBufferWaterMark {
+     /**
+      * Returns the low water mark for the write buffer.
+      */
+-    public int low() {
++    public int low() { io.netty.jmhbench.MutationSwitch.tick(39);
+         return low;
+     }
+ 
+     /**
+      * Returns the high water mark for the write buffer.
+      */
+-    public int high() {
++    public int high() { io.netty.jmhbench.MutationSwitch.tick(48);
+         return high;
+     }
+ 
+diff --git a/io/netty/handler/codec/CodecOutputList.java b/io/netty/handler/codec/CodecOutputList.java
+index 70153b9..c85823b 100644
+--- a/io/netty/handler/codec/CodecOutputList.java
++++ b/io/netty/handler/codec/CodecOutputList.java
+@@ -30,7 +30,7 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
+ 
+     private static final CodecOutputListRecycler NOOP_RECYCLER = new CodecOutputListRecycler() {
+         @Override
+-        public void recycle(CodecOutputList object) {
++        public void recycle(CodecOutputList object) { io.netty.jmhbench.MutationSwitch.tick(4);
+             // drop on the floor and let the GC handle it.
+         }
+     };
+@@ -38,7 +38,7 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
+     private static final FastThreadLocal<CodecOutputLists> CODEC_OUTPUT_LISTS_POOL =
+             new FastThreadLocal<CodecOutputLists>() {
+                 @Override
+-                protected CodecOutputLists initialValue() throws Exception {
++                protected CodecOutputLists initialValue() throws Exception { io.netty.jmhbench.MutationSwitch.tick(13);
+                     // 16 CodecOutputList per Thread are cached.
+                     return new CodecOutputLists(16);
+                 }
+diff --git a/io/netty/handler/codec/DatagramPacketDecoder.java b/io/netty/handler/codec/DatagramPacketDecoder.java
+index c3a7e3d..4709363 100644
+--- a/io/netty/handler/codec/DatagramPacketDecoder.java
++++ b/io/netty/handler/codec/DatagramPacketDecoder.java
+@@ -47,7 +47,7 @@ public class DatagramPacketDecoder extends MessageToMessageDecoder<DatagramPacke
+     }
+ 
+     @Override
+-    public boolean acceptInboundMessage(Object msg) throws Exception {
++    public boolean acceptInboundMessage(Object msg) throws Exception { io.netty.jmhbench.MutationSwitch.tick(22);
+         if (msg instanceof DatagramPacket) {
+             return decoder.acceptInboundMessage(((DatagramPacket) msg).content());
+         }
+@@ -60,7 +60,7 @@ public class DatagramPacketDecoder extends MessageToMessageDecoder<DatagramPacke
+     }
+ 
+     @Override
+-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
++    public void channelRegistered(ChannelHandlerContext ctx) throws Exception { io.netty.jmhbench.MutationSwitch.tick(31);
+         decoder.channelRegistered(ctx);
+     }
+ 
+diff --git a/io/netty/handler/codec/DatagramPacketEncoder.java b/io/netty/handler/codec/DatagramPacketEncoder.java
+index 35f7898..a73a686 100644
+--- a/io/netty/handler/codec/DatagramPacketEncoder.java
++++ b/io/netty/handler/codec/DatagramPacketEncoder.java
+@@ -57,7 +57,7 @@ public class DatagramPacketEncoder<M> extends MessageToMessageEncoder<AddressedE
+     }
+ 
+     @Override
+-    public boolean acceptOutboundMessage(Object msg) throws Exception {
++    public boolean acceptOutboundMessage(Object msg) throws Exception { io.netty.jmhbench.MutationSwitch.tick(40);
+         if (super.acceptOutboundMessage(msg)) {
+             @SuppressWarnings("rawtypes")
+             AddressedEnvelope envelope = (AddressedEnvelope) msg;
+@@ -89,7 +89,7 @@ public class DatagramPacketEncoder<M> extends MessageToMessageEncoder<AddressedE
+     }
+ 
+     @Override
+-    public void bind(ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise) throws Exception {
++    public void bind(ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise) throws Exception { io.netty.jmhbench.MutationSwitch.tick(49);
+         encoder.bind(ctx, localAddress, promise);
+     }
+ 
+diff --git a/io/netty/jmhbench/MutationSwitch.java b/io/netty/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..ddb4ef6
+--- /dev/null
++++ b/io/netty/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.netty.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/io/netty/pkitesting/CertificateBuilder.java b/io/netty/pkitesting/CertificateBuilder.java
+index 0b0b6fd..b00a42b 100644
+--- a/io/netty/pkitesting/CertificateBuilder.java
++++ b/io/netty/pkitesting/CertificateBuilder.java
+@@ -176,7 +176,7 @@ public final class CertificateBuilder {
+      * @param provider The provider instance to use.
+      * @return This certificate builder.
+      */
+-    public CertificateBuilder provider(Provider provider) {
++    public CertificateBuilder provider(Provider provider) { io.netty.jmhbench.MutationSwitch.tick(5);
+         this.provider = provider;
+         return this;
+     }
+@@ -186,7 +186,7 @@ public final class CertificateBuilder {
+      * @param secureRandom The secure random instance to use.
+      * @return This certificate builder.
+      */
+-    public CertificateBuilder secureRandom(SecureRandom secureRandom) {
++    public CertificateBuilder secureRandom(SecureRandom secureRandom) { io.netty.jmhbench.MutationSwitch.tick(14);
+         random = requireNonNull(secureRandom);
+         return this;
+     }
+diff --git a/io/netty/pkitesting/RevocationServer.java b/io/netty/pkitesting/RevocationServer.java
+index ede9694..5f192b3 100644
+--- a/io/netty/pkitesting/RevocationServer.java
++++ b/io/netty/pkitesting/RevocationServer.java
+@@ -58,7 +58,7 @@ public final class RevocationServer {
+      * @return The revocation server instance.
+      * @throws Exception If the server failed to start.
+      */
+-    public static RevocationServer getInstance() throws Exception {
++    public static RevocationServer getInstance() throws Exception { io.netty.jmhbench.MutationSwitch.tick(23);
+         if (instance != null) {
+             return instance;
+         }
+@@ -120,7 +120,7 @@ public final class RevocationServer {
+      * This must be done before CRLs can be served for that issuer, and before any of its certificates can be revoked.
+      * @param issuer The issuer to register.
+      */
+-    public void register(X509Bundle issuer) {
++    public void register(X509Bundle issuer) { io.netty.jmhbench.MutationSwitch.tick(32);
+         register(issuer, null);
+     }
+ 
+diff --git a/io/netty/pkitesting/X509Bundle.java b/io/netty/pkitesting/X509Bundle.java
+index f40ceaa..8480154 100644
+--- a/io/netty/pkitesting/X509Bundle.java
++++ b/io/netty/pkitesting/X509Bundle.java
+@@ -78,7 +78,7 @@ public final class X509Bundle {
+      * @param keyPair The key pair.
+      * @return The new bundle.
+      */
+-    public static X509Bundle fromRootCertificateAuthority(X509Certificate root, KeyPair keyPair) {
++    public static X509Bundle fromRootCertificateAuthority(X509Certificate root, KeyPair keyPair) { io.netty.jmhbench.MutationSwitch.tick(41);
+         requireNonNull(root, "root");
+         requireNonNull(keyPair, "keyPair");
+         X509Bundle bundle = new X509Bundle(new X509Certificate[]{root}, root, keyPair);
+@@ -106,7 +106,7 @@ public final class X509Bundle {
+      * If this bundle is for a certificate authority, then this return the same as {@link #getRootCertificate()}.
+      * @return The leaf certificate.
+      */
+-    public X509Certificate getCertificate() {
++    public X509Certificate getCertificate() { io.netty.jmhbench.MutationSwitch.tick(50);
+         return certPath[0];
+     }
+ 
+diff --git a/io/netty/resolver/HostsFileParser.java b/io/netty/resolver/HostsFileParser.java
+index 8a0b5e9..fca719c 100644
+--- a/io/netty/resolver/HostsFileParser.java
++++ b/io/netty/resolver/HostsFileParser.java
+@@ -38,7 +38,7 @@ public final class HostsFileParser {
+      *
+      * @return a {@link HostsFileEntries}
+      */
+-    public static HostsFileEntries parseSilently() {
++    public static HostsFileEntries parseSilently() { io.netty.jmhbench.MutationSwitch.tick(6);
+         return hostsFileEntries(HostsFileEntriesProvider.parser().parseSilently());
+     }
+ 
+@@ -49,7 +49,7 @@ public final class HostsFileParser {
+      * @param charsets the {@link Charset}s to try as file encodings when parsing.
+      * @return a {@link HostsFileEntries}
+      */
+-    public static HostsFileEntries parseSilently(Charset... charsets) {
++    public static HostsFileEntries parseSilently(Charset... charsets) { io.netty.jmhbench.MutationSwitch.tick(15);
+         return hostsFileEntries(HostsFileEntriesProvider.parser().parseSilently(charsets));
+     }
+ 
+diff --git a/io/netty/resolver/dns/DefaultDnsServerAddressStreamProvider.java b/io/netty/resolver/dns/DefaultDnsServerAddressStreamProvider.java
+index 4b374d1..aa0c1a9 100644
+--- a/io/netty/resolver/dns/DefaultDnsServerAddressStreamProvider.java
++++ b/io/netty/resolver/dns/DefaultDnsServerAddressStreamProvider.java
+@@ -151,7 +151,7 @@ public final class DefaultDnsServerAddressStreamProvider implements DnsServerAdd
+     }
+ 
+     @Override
+-    public DnsServerAddressStream nameServerAddressStream(String hostname) {
++    public DnsServerAddressStream nameServerAddressStream(String hostname) { io.netty.jmhbench.MutationSwitch.tick(24);
+         return DEFAULT_NAME_SERVERS.stream();
+     }
+ 
+@@ -160,7 +160,7 @@ public final class DefaultDnsServerAddressStreamProvider implements DnsServerAdd
+      * addresses from the environment, it will return {@code "8.8.8.8"} and {@code "8.8.4.4"}, the addresses of the
+      * Google public DNS servers.
+      */
+-    public static List<InetSocketAddress> defaultAddressList() {
++    public static List<InetSocketAddress> defaultAddressList() { io.netty.jmhbench.MutationSwitch.tick(33);
+         return DEFAULT_NAME_SERVER_LIST;
+     }
+ 
+diff --git a/io/netty/resolver/dns/DnsNameResolverBuilder.java b/io/netty/resolver/dns/DnsNameResolverBuilder.java
+index 3ac3df9..535af38 100644
+--- a/io/netty/resolver/dns/DnsNameResolverBuilder.java
++++ b/io/netty/resolver/dns/DnsNameResolverBuilder.java
+@@ -102,7 +102,7 @@ public final class DnsNameResolverBuilder {
+      * @param eventLoop the {@link EventLoop}
+      * @return {@code this}
+      */
+-    public DnsNameResolverBuilder eventLoop(EventLoop eventLoop) {
++    public DnsNameResolverBuilder eventLoop(EventLoop eventLoop) { io.netty.jmhbench.MutationSwitch.tick(42);
+         this.eventLoop = eventLoop;
+         return this;
+     }
+diff --git a/io/netty/testsuite/http2/HelloWorldHttp2HandlerBuilder.java b/io/netty/testsuite/http2/HelloWorldHttp2HandlerBuilder.java
+index c67d308..df81237 100644
+--- a/io/netty/testsuite/http2/HelloWorldHttp2HandlerBuilder.java
++++ b/io/netty/testsuite/http2/HelloWorldHttp2HandlerBuilder.java
+@@ -34,7 +34,7 @@ public final class HelloWorldHttp2HandlerBuilder
+     }
+ 
+     @Override
+-    public HelloWorldHttp2Handler build() {
++    public HelloWorldHttp2Handler build() { io.netty.jmhbench.MutationSwitch.tick(7);
+         return super.build();
+     }
+ 
+diff --git a/io/netty/testsuite/transport/socket/CompositeBufferGatheringWriteTest.java b/io/netty/testsuite/transport/socket/CompositeBufferGatheringWriteTest.java
+index e1d09c6..236595e 100644
+--- a/io/netty/testsuite/transport/socket/CompositeBufferGatheringWriteTest.java
++++ b/io/netty/testsuite/transport/socket/CompositeBufferGatheringWriteTest.java
+@@ -45,10 +45,10 @@ public class CompositeBufferGatheringWriteTest extends AbstractSocketTest {
+ 
+     @Test
+     @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+-    public void testSingleCompositeBufferWrite(TestInfo testInfo) throws Throwable {
++    public void testSingleCompositeBufferWrite(TestInfo testInfo) throws Throwable { io.netty.jmhbench.MutationSwitch.tick(16);
+         run(testInfo, new Runner<ServerBootstrap, Bootstrap>() {
+             @Override
+-            public void run(ServerBootstrap serverBootstrap, Bootstrap bootstrap) throws Throwable {
++            public void run(ServerBootstrap serverBootstrap, Bootstrap bootstrap) throws Throwable { io.netty.jmhbench.MutationSwitch.tick(25);
+                 testSingleCompositeBufferWrite(serverBootstrap, bootstrap);
+             }
+         });
+diff --git a/io/netty/testsuite/transport/socket/DatagramUnicastIPv6MappedTest.java b/io/netty/testsuite/transport/socket/DatagramUnicastIPv6MappedTest.java
+index 1615f7d..375e9fb 100644
+--- a/io/netty/testsuite/transport/socket/DatagramUnicastIPv6MappedTest.java
++++ b/io/netty/testsuite/transport/socket/DatagramUnicastIPv6MappedTest.java
+@@ -27,12 +27,12 @@ import java.net.SocketAddress;
+ public class DatagramUnicastIPv6MappedTest extends DatagramUnicastIPv6Test {
+ 
+     @Override
+-    protected SocketAddress newSocketAddress() {
++    protected SocketAddress newSocketAddress() { io.netty.jmhbench.MutationSwitch.tick(34);
+         return new InetSocketAddress(0);
+     }
+ 
+     @Override
+-    protected InetSocketAddress convertAnyAddress(InetSocketAddress serverAddress) {
++    protected InetSocketAddress convertAnyAddress(InetSocketAddress serverAddress) { io.netty.jmhbench.MutationSwitch.tick(43);
+         InetAddress addr = serverAddress.getAddress();
+         if (addr.isAnyLocalAddress()) {
+             return new InetSocketAddress(NetUtil.LOCALHOST4, serverAddress.getPort());
+diff --git a/io/netty/testsuite_jpms/main/Http3HelloWorldServerHandler.java b/io/netty/testsuite_jpms/main/Http3HelloWorldServerHandler.java
+index 7ee5fb9..4fefa55 100644
+--- a/io/netty/testsuite_jpms/main/Http3HelloWorldServerHandler.java
++++ b/io/netty/testsuite_jpms/main/Http3HelloWorldServerHandler.java
+@@ -31,12 +31,12 @@ import java.nio.charset.StandardCharsets;
+ public class Http3HelloWorldServerHandler extends Http3RequestStreamInboundHandler {
+ 
+     @Override
+-    protected void channelRead(ChannelHandlerContext ctx, Http3HeadersFrame frame) {
++    protected void channelRead(ChannelHandlerContext ctx, Http3HeadersFrame frame) { io.netty.jmhbench.MutationSwitch.tick(8);
+         ReferenceCountUtil.release(frame);
+     }
+ 
+     @Override
+-    protected void channelRead(ChannelHandlerContext ctx, Http3DataFrame frame) {
++    protected void channelRead(ChannelHandlerContext ctx, Http3DataFrame frame) { io.netty.jmhbench.MutationSwitch.tick(17);
+         ReferenceCountUtil.release(frame);
+     }
+ 
+diff --git a/io/netty/testsuite_jpms/main/Http3HelloWorldServerInitializer.java b/io/netty/testsuite_jpms/main/Http3HelloWorldServerInitializer.java
+index 935727f..22db389 100644
+--- a/io/netty/testsuite_jpms/main/Http3HelloWorldServerInitializer.java
++++ b/io/netty/testsuite_jpms/main/Http3HelloWorldServerInitializer.java
+@@ -23,13 +23,13 @@ import io.netty.handler.codec.quic.QuicStreamChannel;
+ public class Http3HelloWorldServerInitializer extends ChannelInitializer<QuicChannel> {
+ 
+     @Override
+-    protected void initChannel(QuicChannel ch) {
++    protected void initChannel(QuicChannel ch) { io.netty.jmhbench.MutationSwitch.tick(26);
+         // Called for each connection
+         ch.pipeline().addLast(new Http3ServerConnectionHandler(
+                 new ChannelInitializer<QuicStreamChannel>() {
+                     // Called for each request-stream,
+                     @Override
+-                    protected void initChannel(QuicStreamChannel ch) {
++                    protected void initChannel(QuicStreamChannel ch) { io.netty.jmhbench.MutationSwitch.tick(35);
+                         ch.pipeline().addLast(new Http3HelloWorldServerHandler());
+                     }
+                 }));
+diff --git a/io/netty/testsuite_jpms/main/HttpHelloWorldServer.java b/io/netty/testsuite_jpms/main/HttpHelloWorldServer.java
+index 65aba85..40b7cd3 100644
+--- a/io/netty/testsuite_jpms/main/HttpHelloWorldServer.java
++++ b/io/netty/testsuite_jpms/main/HttpHelloWorldServer.java
+@@ -80,7 +80,7 @@ public final class HttpHelloWorldServer {
+     private HttpHelloWorldServer() {
+     }
+ 
+-    public static void main(String[] args) throws Exception {
++    public static void main(String[] args) throws Exception { io.netty.jmhbench.MutationSwitch.tick(44);
+ 
+         String transport = "nio";
+         boolean ssl = false;
+diff --git a/io/netty/util/AsciiString.java b/io/netty/util/AsciiString.java
+index a5bc21c..d7505f8 100644
+--- a/io/netty/util/AsciiString.java
++++ b/io/netty/util/AsciiString.java
+@@ -258,7 +258,7 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
+      * @return {@code -1} if the processor iterated to or beyond the end of the readable bytes.
+      *         The last-visited index If the {@link ByteProcessor#process(byte)} returned {@code false}.
+      */
+-    public int forEachByte(ByteProcessor visitor) throws Exception {
++    public int forEachByte(ByteProcessor visitor) throws Exception { io.netty.jmhbench.MutationSwitch.tick(9);
+         return forEachByte0(0, length(), visitor);
+     }
+ 
+@@ -269,7 +269,7 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
+      * @return {@code -1} if the processor iterated to or beyond the end of the specified area.
+      *         The last-visited index If the {@link ByteProcessor#process(byte)} returned {@code false}.
+      */
+-    public int forEachByte(int index, int length, ByteProcessor visitor) throws Exception {
++    public int forEachByte(int index, int length, ByteProcessor visitor) throws Exception { io.netty.jmhbench.MutationSwitch.tick(18);
+         if (isOutOfBounds(index, length, length())) {
+             throw new IndexOutOfBoundsException("expected: " + "0 <= index(" + index + ") <= start + length(" + length
+                     + ") <= " + "length(" + length() + ')');
+diff --git a/io/netty/util/CharsetUtil.java b/io/netty/util/CharsetUtil.java
+index 4af9c3a..893cccf 100644
+--- a/io/netty/util/CharsetUtil.java
++++ b/io/netty/util/CharsetUtil.java
+@@ -66,7 +66,7 @@ public final class CharsetUtil {
+     private static final Charset[] CHARSETS = new Charset[]
+             { UTF_16, UTF_16BE, UTF_16LE, UTF_8, ISO_8859_1, US_ASCII };
+ 
+-    public static Charset[] values() {
++    public static Charset[] values() { io.netty.jmhbench.MutationSwitch.tick(27);
+         return CHARSETS;
+     }
+ 
+@@ -74,7 +74,7 @@ public final class CharsetUtil {
+      * @deprecated Use {@link #encoder(Charset)}.
+      */
+     @Deprecated
+-    public static CharsetEncoder getEncoder(Charset charset) {
++    public static CharsetEncoder getEncoder(Charset charset) { io.netty.jmhbench.MutationSwitch.tick(36);
+         return encoder(charset);
+     }
+ 
+diff --git a/io/netty/util/DefaultAttributeMap.java b/io/netty/util/DefaultAttributeMap.java
+index 39a2a28..ea4f629 100644
+--- a/io/netty/util/DefaultAttributeMap.java
++++ b/io/netty/util/DefaultAttributeMap.java
+@@ -86,7 +86,7 @@ public class DefaultAttributeMap implements AttributeMap {
+ 
+     @SuppressWarnings("unchecked")
+     @Override
+-    public <T> Attribute<T> attr(AttributeKey<T> key) {
++    public <T> Attribute<T> attr(AttributeKey<T> key) { io.netty.jmhbench.MutationSwitch.tick(45);
+         ObjectUtil.checkNotNull(key, "key");
+         DefaultAttribute newAttribute = null;
+         for (;;) {

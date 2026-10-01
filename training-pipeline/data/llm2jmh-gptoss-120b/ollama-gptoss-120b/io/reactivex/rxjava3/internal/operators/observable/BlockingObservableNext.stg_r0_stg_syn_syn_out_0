@@ -1,0 +1,87 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link BlockingObservableNext} iterator throughput.
+ *
+ * The benchmark iterates over the entire sequence produced by the underlying
+ * {@link Observable} and consumes each element via {@link Blackhole} to avoid
+ * dead‑code elimination.
+ *
+ * Typical usage:
+ *   mvn clean install -DskipTests
+ *   java -jar target/benchmarks.jar -prof gc
+ */
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class BlockingObservableNextBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     * Adjust to evaluate different workloads.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    private BlockingObservableNext<Integer> blocking;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple deterministic source; can be replaced with more complex streams.
+        Observable<Integer> source = Observable.range(1, size);
+        blocking = new BlockingObservableNext<>(source);
+    }
+
+    /**
+     * Measures the throughput of iterating over the entire sequence.
+     *
+     * @param bh Blackhole to consume values and prevent optimizations.
+     */
+    @Benchmark
+    public void iterate(Blackhole bh) {
+        Iterator<Integer> it = blocking.iterator();
+        while (it.hasNext()) {
+            bh.consume(it.next());
+        }
+    }
+}

@@ -1,0 +1,149 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SingleCache}.
+ *
+ * Measures the throughput of subscribing to a cached {@link Single}.
+ * The benchmark runs in two scenarios:
+ * <ul>
+ *   <li>Cold subscription – the first subscriber triggers the upstream source.</li>
+ *   <li>Hot subscription – subsequent subscribers receive the cached value immediately.</li>
+ * </ul>
+ *
+ * The benchmark follows best practices:
+ * <ul>
+ *   <li>All mutable state is confined to {@link State} objects.</li>
+ *   <li>Blackhole is used to consume results and prevent dead-code elimination.</li>
+ *   <li>Separate {@code @Setup(Level.Trial)} for cold and hot states to avoid cross‑contamination.</li>
+ *   <li>Throughput mode with a fixed time unit for clear ops/second reporting.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+public class SingleCacheBenchmark {
+
+    /**
+     * State for the cold subscription benchmark.
+     * A new {@link SingleCache} is created for each trial, so the first subscription
+     * triggers the upstream {@link Single#just(Object)} source.
+     */
+    @State(Scope.Benchmark)
+    public static class ColdState {
+
+        SingleCache<Integer> cache;
+
+        BenchmarkObserver observer;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Upstream source that emits a single integer.
+            Single<Integer> source = Single.just(42);
+            cache = new SingleCache<>(source);
+            observer = new BenchmarkObserver();
+        }
+    }
+
+    /**
+     * State for the hot subscription benchmark.
+     * The cache is primed once during setup, so all subsequent subscriptions
+     * receive the cached value without invoking the upstream source.
+     */
+    @State(Scope.Benchmark)
+    public static class HotState {
+
+        SingleCache<Integer> cache;
+
+        BenchmarkObserver observer;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            Single<Integer> source = Single.just(42);
+            cache = new SingleCache<>(source);
+            observer = new BenchmarkObserver();
+            // Prime the cache: first subscription triggers the source.
+            cache.subscribe(observer);
+            // Wait for the value to be cached (Single.just completes synchronously).
+            // No additional synchronization needed because Single.just is immediate.
+        }
+    }
+
+    /**
+     * Benchmark observer that captures the {@link Disposable} and forwards the received
+     * value to a {@link Blackhole} to avoid dead‑code elimination.
+     */
+    public static class BenchmarkObserver implements SingleObserver<Integer> {
+
+        volatile Disposable disposable;
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            this.disposable = d;
+        }
+
+        @Override
+        public void onSuccess(Integer value) {
+            // No-op; value is not needed for the throughput measurement.
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // No-op; errors are not expected in this benchmark.
+        }
+    }
+
+    @Benchmark
+    public void coldSubscribe(ColdState state, Blackhole bh) {
+        // Subscribe a fresh observer for each operation.
+        BenchmarkObserver obs = new BenchmarkObserver();
+        state.cache.subscribe(obs);
+        // Consume the disposable to prevent dead‑code elimination.
+        bh.consume(obs.disposable);
+    }
+
+    @Benchmark
+    public void hotSubscribe(HotState state, Blackhole bh) {
+        // Reuse the pre‑created observer; the cache is already primed.
+        BenchmarkObserver obs = new BenchmarkObserver();
+        state.cache.subscribe(obs);
+        bh.consume(obs.disposable);
+    }
+}

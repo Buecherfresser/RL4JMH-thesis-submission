@@ -1,0 +1,62 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@code Observable.buffer(Observable)} which internally uses
+ * {@code ObservableBufferExactBoundary}. The benchmark measures the throughput
+ * of buffering items with a boundary Observable.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Parameterize the number of items and the boundary emission period to explore different workloads.</li>
+ *   <li>Use {@code blockingForEach} to ensure the benchmark waits for the whole stream to complete.</li>
+ *   <li>Consume results with {@link Blackhole} to prevent dead-code elimination.</li>
+ *   <li>Provide warm‑up, measurement, and fork settings for reliable results.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableBufferExactBoundaryBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({"1_000", "10_000", "100_000"})
+    public int itemCount;
+
+    /** Period (in microseconds) between boundary emissions. */
+    @Param({"10", "100", "1_000"})
+    public int boundaryPeriodMicros;
+
+    private Observable<Integer> source;
+    private Observable<Long> boundary;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Source emits a fixed range of integers.
+        source = Observable.range(1, itemCount);
+
+        // Boundary emits a tick every {@code boundaryPeriodMicros} microseconds.
+        // The {@code take(itemCount)} ensures the boundary completes after the source.
+        boundary = Observable.interval(boundaryPeriodMicros, TimeUnit.MICROSECONDS)
+                .take(itemCount);
+    }
+
+    @Benchmark
+    public void bufferExactBoundary(Blackhole bh) {
+        // Apply the buffer operator (which uses ObservableBufferExactBoundary internally)
+        // and consume each emitted collection via Blackhole to avoid dead‑code elimination.
+        source.buffer(boundary)
+              .blockingForEach(bh::consume);
+    }
+}
+```

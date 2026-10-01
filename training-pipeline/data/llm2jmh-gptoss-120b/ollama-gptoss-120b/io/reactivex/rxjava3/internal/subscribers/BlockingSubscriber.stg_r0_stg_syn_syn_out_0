@@ -1,0 +1,159 @@
+package io.reactivex.rxjava3.internal.subscribers;
+
+import org.reactivestreams.Subscription;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmarks for {@link BlockingSubscriber}.
+ *
+ * <p>These benchmarks measure the throughput of the most common
+ * operations: {@code onNext}, {@code onError}, {@code onComplete},
+ * {@code request} and {@code cancel}. The subscriber is exercised
+ * with a {@link ConcurrentLinkedQueue} which is a lock‑free queue
+ * used by RxJava in many places. The benchmarks run in a single
+ * thread to isolate the cost of the subscriber itself.
+ *
+ * <p>JMH best‑practice annotations are used:
+ * <ul>
+ *   <li>Warm‑up iterations to let the JIT stabilize.</li>
+ *   <li>Measurement iterations for reliable results.</li>
+ *   <li>Throughput mode (operations per second).</li>
+ *   <li>Forking to avoid JVM warm‑up effects.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class BlockingSubscriberBenchmark {
+
+    /**
+     * Queue used by the subscriber.
+     */
+    private Queue<Object> queue;
+
+    /**
+     * The subscriber under test.
+     */
+    private BlockingSubscriber<Integer> subscriber;
+
+    /**
+     * A dummy subscription that simply records request calls.
+     */
+    private Subscription dummySubscription;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a lock‑free queue that matches typical RxJava usage.
+        queue = new ConcurrentLinkedQueue<>();
+        // Create the subscriber with the queue.
+        subscriber = new BlockingSubscriber<>(queue);
+        // Prepare a simple Subscription implementation.
+        dummySubscription = new Subscription() {
+
+            @Override
+            public void request(long n) {
+                // No‑op; we only care that the call reaches this point.
+            }
+
+            @Override
+            public void cancel() {
+                // No‑op.
+            }
+        };
+        // Simulate the onSubscribe lifecycle event.
+        subscriber.onSubscribe(dummySubscription);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Ensure the subscriber is cancelled to avoid side effects between forks.
+        subscriber.cancel();
+        queue.clear();
+    }
+
+    /**
+     * Benchmark the cost of delivering a normal onNext signal.
+     */
+    @Benchmark
+    public void onNext() {
+        subscriber.onNext(42);
+        // Drain the queue to keep it from growing unboundedly.
+        queue.poll();
+    }
+
+    /**
+     * Benchmark the cost of delivering an onError signal.
+     */
+    @Benchmark
+    public void onError() {
+        subscriber.onError(new RuntimeException("test"));
+        queue.poll();
+    }
+
+    /**
+     * Benchmark the cost of delivering an onComplete signal.
+     */
+    @Benchmark
+    public void onComplete() {
+        subscriber.onComplete();
+        queue.poll();
+    }
+
+    /**
+     * Benchmark the cost of a request call on the underlying subscription.
+     */
+    @Benchmark
+    public void request() {
+        subscriber.request(1);
+    }
+
+    /**
+     * Benchmark the cost of cancelling the subscriber.
+     */
+    @Benchmark
+    public void cancel() {
+        // Cancel only if not already cancelled to keep the benchmark stable.
+        if (!subscriber.isCancelled()) {
+            subscriber.cancel();
+        }
+    }
+}

@@ -1,0 +1,130 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableCreate}
+ * with different {@link BackpressureStrategy} implementations.
+ *
+ * The benchmark emits a fixed number of integer values synchronously via a
+ * {@link FlowableOnSubscribe} and measures the throughput (items/second)
+ * of the whole reactive chain.
+ *
+ * The benchmark is deliberately simple: it requests {@code Long.MAX_VALUE}
+ * from the downstream to avoid backpressure interference, and consumes
+ * the emitted items with a {@link Blackhole} to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class FlowableCreateBenchmark {
+
+    /**
+     * Number of items emitted per iteration.
+     */
+    @Param({ "1000000" })
+    public int itemCount;
+
+    /**
+     * Backpressure strategy under test.
+     */
+    @Param({ "MISSING", "ERROR", "DROP", "LATEST", "BUFFER" })
+    public BackpressureStrategy strategy;
+
+    private Flowable<Integer> flowable;
+
+    /**
+     * Creates a {@link Flowable} that emits {@code itemCount} integers
+     * synchronously using the selected backpressure strategy.
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        FlowableOnSubscribe<Integer> source = emitter -> {
+            for (int i = 0; i < itemCount; i++) {
+                emitter.onNext(i);
+            }
+            emitter.onComplete();
+        };
+        flowable = Flowable.create(source, strategy);
+    }
+
+    /**
+     * Consumes the flowable and feeds the values into the {@link Blackhole}.
+     *
+     * @param bh Blackhole to consume the emitted items.
+     */
+    @Benchmark
+    public void emitAndConsume(Blackhole bh) {
+        flowable.subscribe(new DefaultSubscriber<Integer>() {
+
+            @Override
+            public void onStart() {
+                // Request an unbounded amount to avoid backpressure throttling.
+                request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Propagate any unexpected error to the benchmark harness.
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // No-op – completion is handled by the benchmark harness.
+            }
+        });
+    }
+
+    /**
+     * Reset RxJavaPlugins after each iteration to avoid side‑effects
+     * from previous runs (e.g., custom error handlers).
+     */
+    @TearDown(Level.Iteration)
+    public void tearDown() {
+        RxJavaPlugins.reset();
+    }
+}

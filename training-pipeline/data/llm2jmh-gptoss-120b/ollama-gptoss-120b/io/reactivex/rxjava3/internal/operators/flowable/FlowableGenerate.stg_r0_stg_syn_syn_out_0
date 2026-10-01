@@ -1,0 +1,95 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableGenerate}.
+ *
+ * The benchmark measures the throughput (operations per second) of generating a configurable
+ * number of items using {@code Flowable.generate}. It uses a simple integer state and a
+ * no‑op dispose function to keep the focus on the core generation logic.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - {@code @Setup(Level.Iteration)} to recreate the Flowable for each iteration,
+ *   ensuring a fresh state and eliminating warm‑up side‑effects.
+ * - {@code Blackhole} to consume emitted items and prevent dead‑code elimination.
+ * - Reasonable warm‑up, measurement, and fork settings.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableGenerateBenchmark {
+
+    /**
+     * Number of items to generate per benchmark invocation.
+     * Adjust to reflect realistic workloads.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    private Flowable<Integer> flowable;
+
+    /**
+     * Re‑creates the Flowable before each measurement iteration.
+     * This guarantees that the internal state starts from zero for every run.
+     */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        Supplier<Integer> stateSupplier = () -> 0;
+        BiFunction<Integer, io.reactivex.rxjava3.core.FlowableGenerate.Emitter<Integer>, Integer> generator = (state, emitter) -> {
+            emitter.onNext(state);
+            return state + 1;
+        };
+        Consumer<Integer> disposeState = s -> {
+            // No resources to clean up in this simple benchmark.
+        };
+        flowable = Flowable.generate(stateSupplier, generator, disposeState);
+    }
+
+    /**
+     * Consumes {@code itemCount} elements from the Flowable.
+     * The {@code Blackhole} prevents the JIT from optimizing away the loop.
+     */
+    @Benchmark
+    public void generateItems(Blackhole bh) {
+        flowable.take(itemCount).blockingForEach(bh::consume);
+    }
+}

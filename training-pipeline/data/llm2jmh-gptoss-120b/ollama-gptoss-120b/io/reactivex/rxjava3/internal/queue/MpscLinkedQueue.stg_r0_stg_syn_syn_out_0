@@ -1,0 +1,163 @@
+package io.reactivex.rxjava3.internal.queue;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link MpscLinkedQueue}.
+ *
+ * <p>These benchmarks focus on throughput of the core operations
+ * {@code offer} and {@code poll} under different contention scenarios.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate state for single‑threaded and multi‑threaded scenarios.</li>
+ *   <li>Use {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Warm‑up and measurement iterations are left to the runner configuration.</li>
+ *   <li>Queue is re‑initialized before each iteration to avoid state leakage.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class MpscLinkedQueueBenchmark {
+
+    /**
+     * State shared by all threads in a multi‑threaded benchmark.
+     * The queue is freshly created for each iteration to avoid
+     * interference from previous runs.
+     */
+    @State(Scope.Benchmark)
+    public static class SharedState {
+
+        MpscLinkedQueue<Integer> queue;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            queue = new MpscLinkedQueue<>();
+        }
+    }
+
+    /**
+     * State used by a single thread benchmark (no contention).
+     */
+    @State(Scope.Thread)
+    public static class ThreadState {
+
+        MpscLinkedQueue<Integer> queue;
+
+        int counter = 0;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            queue = new MpscLinkedQueue<>();
+        }
+
+        int nextValue() {
+            return counter++;
+        }
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Single‑threaded benchmarks                                            */
+    /* --------------------------------------------------------------------- */
+    @Benchmark
+    @Threads(1)
+    public void singleThreadOffer(ThreadState state) {
+        state.queue.offer(state.nextValue());
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void singleThreadPoll(ThreadState state, Blackhole bh) {
+        Integer v = state.queue.poll();
+        if (v != null) {
+            bh.consume(v);
+        }
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void singleThreadOfferAndPoll(ThreadState state, Blackhole bh) {
+        state.queue.offer(state.nextValue());
+        Integer v = state.queue.poll();
+        if (v != null) {
+            bh.consume(v);
+        }
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Multi‑threaded benchmarks (multiple producers, single consumer)      */
+    /* --------------------------------------------------------------------- */
+    @Benchmark
+    // 3 producers + 1 consumer
+    @Threads(4)
+    public void multiProducerSingleConsumer(SharedState state, Blackhole bh) {
+        // Thread 0 acts as the consumer, others as producers.
+        int threadId = (int) Thread.currentThread().getId();
+        if (threadId % 4 == 0) {
+            // Consumer
+            Integer v = state.queue.poll();
+            if (v != null) {
+                bh.consume(v);
+            }
+        } else {
+            // Producer
+            state.queue.offer(threadId);
+        }
+    }
+
+    @Benchmark
+    // 7 producers + 1 consumer
+    @Threads(8)
+    public void highContentionOffer(SharedState state) {
+        // All threads perform offers; a separate consumer can be added in a different benchmark.
+        state.queue.offer((int) Thread.currentThread().getId());
+    }
+
+    @Benchmark
+    // 7 producers + 1 consumer
+    @Threads(8)
+    public void highContentionPoll(SharedState state, Blackhole bh) {
+        // All threads attempt to poll; producers can be added in a complementary benchmark.
+        Integer v = state.queue.poll();
+        if (v != null) {
+            bh.consume(v);
+        }
+    }
+}

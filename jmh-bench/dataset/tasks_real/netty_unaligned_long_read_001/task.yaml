@@ -1,0 +1,27 @@
+instance_id: netty_unaligned_long_read_001
+target_class: bench.LongReader
+expected_input_shapes: []
+tags:
+- bytes
+- netty
+- real-world
+provenance:
+  project: netty/netty
+  url: https://github.com/netty/netty/pull/16207
+  commit: 0ee9723d48e36165fb464d62be8cb1f9efc3783e
+  description: 'Inspired by Netty PR #16207 (Improve multi-byte access
+
+    performance when UNALIGNED availability is unknown). The
+
+    simplified SUT here reads a long via a VarHandle; the full
+
+    real class is not extracted, so the SUT may be expanded
+
+    later by following the linked PR.
+
+    '
+junit_test_path: tests/LongReaderTest.java
+regressions:
+- id: bytewise_long_read
+  patch: regressions/bytewise_long_read.patch
+  description: Assemble the long byte-by-byte with shift+OR.

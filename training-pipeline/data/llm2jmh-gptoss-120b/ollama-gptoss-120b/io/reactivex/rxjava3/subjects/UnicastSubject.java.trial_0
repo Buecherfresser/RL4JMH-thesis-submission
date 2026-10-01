@@ -1,0 +1,79 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.subjects.UnicastSubject;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link UnicastSubject}.
+ *
+ * Measures the throughput of {@code onNext} calls under a single‑threaded subscription.
+ * The benchmark follows best practices:
+ * - State is scoped to a thread to avoid contention.
+ * - Subject is created once per trial to amortize allocation cost.
+ * - A lightweight observer discards received items.
+ * - Blackhole is used only for side‑effects that cannot be eliminated by the JIT.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class UnicastSubjectBenchmark {
+
+    /** Subject under test. */
+    private UnicastSubject<Integer> subject;
+
+    /** Simple observer that does nothing with the received items. */
+    private static final Observer<Integer> DUMMY_OBSERVER = new Observer<Integer>() {
+        @Override public void onSubscribe(Disposable d) { /* no‑op */ }
+        @Override public void onNext(Integer t) { /* no‑op */ }
+        @Override public void onError(Throwable e) { /* no‑op */ }
+        @Override public void onComplete() { /* no‑op */ }
+    };
+
+    /** Counter used to generate distinct values for onNext. */
+    private int counter;
+
+    /** Initialise the subject once per trial and subscribe the dummy observer. */
+    @Setup(Level.Trial)
+    public void setUp() {
+        subject = UnicastSubject.create();
+        subject.subscribe(DUMMY_OBSERVER);
+        counter = 0;
+    }
+
+    /** Reset the counter before each iteration to avoid integer overflow. */
+    @Setup(Level.Iteration)
+    public void resetCounter() {
+        counter = 0;
+    }
+
+    /** Benchmark the throughput of a single {@code onNext} call. */
+    @Benchmark
+    public void onNext() {
+        subject.onNext(counter++);
+    }
+
+    /** Benchmark the combined cost of {@code onNext} followed by {@code onComplete}. */
+    @Benchmark
+    public void onNextThenComplete(Blackhole bh) {
+        subject.onNext(counter++);
+        // The observer does nothing, but we still need to ensure the call is not eliminated.
+        bh.consume(subject);
+        subject.onComplete();
+    }
+
+    /** Clean up after the trial to avoid leaking resources. */
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        subject.onComplete();
+    }
+}
+```

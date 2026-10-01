@@ -1,0 +1,71 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableWindow}.
+ *
+ * The benchmark measures the throughput (items per second) of the window operator
+ * under different configurations (size, skip, bufferSize) and source sizes.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Param for configurable parameters.
+ * - @Setup to create immutable source Flowable once per iteration.
+ * - Blackhole consumption to prevent dead-code elimination.
+ * - Warmup and measurement iterations, multiple forks, and a reasonable timeout.
+ */
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@Threads(1)
+public class FlowableWindowBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int // total number of items emitted by the source
+    totalElements;
+
+    @Param({ "10", "100", "1000" })
+    public int // window size
+    size;
+
+    @Param({ "10", "100", "1000" })
+    public int // window skip (distance between window starts)
+    skip;
+
+    @Param({ "128", "1024" })
+    public int // internal buffer size for UnicastProcessor
+    bufferSize;
+
+    private Flowable<Integer> source;
+
+    @Setup(Level.Iteration)
+    public void setUp() {
+        // Create a cold source that emits a fixed number of integers.
+        // Using range ensures deterministic behavior and avoids external I/O.
+        source = Flowable.range(1, totalElements)
+                .subscribeOn(Schedulers.computation())
+                .hide(); // hide to prevent fusion optimizations that would bypass windowing
+    }
+
+    @Benchmark
+    public void windowThroughput(Blackhole bh) {
+        // Apply the window operator with the configured parameters.
+        // The downstream flatMap flattens the windows back to items so that the
+        // benchmark measures the cost of window creation, management, and emission.
+        source.window(size, skip, bufferSize)
+                .flatMap(w -> w) // flatten windows to individual items
+                .subscribe(bh::consume, bh::consume, () -> {});
+        // The subscription is synchronous for the range source, so the method
+        // returns only after all items have been processed.
+    }
+}
+```

@@ -1,0 +1,89 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jmhgen"
+version = "0.1.0"
+description = "Training pipeline for JMH benchmark generation under verifiable rewards (SFT / RFT / GRPO)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Jonas" }]
+dependencies = [
+    "jinja2>=3.1",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+]
+
+# Heavy ML dependencies intentionally live in profile projects under ``profiles/``.  The
+# Gemma CUDA-13 and Qwen CUDA-12.8 stacks contain incompatible compiled extensions, so keeping
+# them out of this shared core package prevents accidental mixed installations on reward workers.
+[project.optional-dependencies]
+viz = [
+    "matplotlib>=3.9",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "types-PyYAML>=6.0",
+]
+
+[project.scripts]
+jmh-run = "jmhgen.cli.run_benchmark:main"
+jmh-build-sft = "jmhgen.cli.build_sft:main"
+jmh-scrape-external = "jmhgen.cli.scrape_external:main"
+jmh-extract-snippets = "jmhgen.cli.extract_snippets:main"
+jmh-curate-snippets = "jmhgen.cli.curate_snippets:main"
+jmh-provision-classpath = "jmhgen.cli.provision_classpath:main"
+jmh-make-mutants = "jmhgen.cli.make_mutants:main"
+jmh-provision-mutants = "jmhgen.cli.provision_mutants:main"
+jmh-train-sft = "jmhgen.training.sft:main"
+jmh-merge-lora = "jmhgen.models.merge:main"
+jmh-train-rft = "jmhgen.training.rft:main"
+jmh-train-grpo = "jmhgen.training.grpo:main"
+jmh-plot-grpo-metrics = "jmhgen.cli.plot_grpo_metrics:main"
+jmh-dashboard = "jmhgen.cli.dashboard:main"
+jmh-train-remote = "jmhgen.remote.ssh:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jmhgen"]
+
+[tool.uv]
+package = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "scripts", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W", "C4", "SIM"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+
+[tool.mypy]
+python_version = "3.11"
+packages = ["jmhgen"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+
+# Optional heavy training dependencies are profile-only; ignore their missing stubs rather than
+# failing type checks in the core environment.
+[[tool.mypy.overrides]]
+module = ["torch.*", "transformers.*", "trl.*", "datasets.*", "accelerate.*", "peft.*", "bitsandbytes.*", "ray.*", "numpy.*", "safetensors.*", "huggingface_hub.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+    "integration: tests that shell out to a real Maven/JVM toolchain (may be slow, need network on first run).",
+]

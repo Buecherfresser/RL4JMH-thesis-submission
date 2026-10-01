@@ -1,0 +1,492 @@
+diff --git a/com/github/davidmoten/bplustree/BPlusTree.java b/com/github/davidmoten/bplustree/BPlusTree.java
+index db97df8..01165fa 100644
+--- a/com/github/davidmoten/bplustree/BPlusTree.java
++++ b/com/github/davidmoten/bplustree/BPlusTree.java
+@@ -44,11 +44,11 @@ public final class BPlusTree<K, V> implements AutoCloseable {
+         factory.root(root);
+     }
+ 
+-    public static Builder memory() {
++    public static Builder memory() { com.github.davidmoten.jmhbench.MutationSwitch.tick(8);
+         return new Builder();
+     }
+ 
+-    public static BuilderFile file() {
++    public static BuilderFile file() { com.github.davidmoten.jmhbench.MutationSwitch.tick(9);
+         return new BuilderFile();
+     }
+ 
+@@ -58,12 +58,12 @@ public final class BPlusTree<K, V> implements AutoCloseable {
+             // restrict visibility
+         }
+ 
+-        public BuilderFile2 directory(String directory) {
++        public BuilderFile2 directory(String directory) { com.github.davidmoten.jmhbench.MutationSwitch.tick(10);
+             Preconditions.checkNotNull(directory);
+             return directory(new File(directory));
+         }
+ 
+-        public BuilderFile2 directory(File directory) {
++        public BuilderFile2 directory(File directory) { com.github.davidmoten.jmhbench.MutationSwitch.tick(11);
+             Preconditions.checkNotNull(directory);
+             return new BuilderFile2(directory);
+         }
+@@ -82,7 +82,7 @@ public final class BPlusTree<K, V> implements AutoCloseable {
+             this.directory = directory;
+         }
+ 
+-        public BuilderFile2 clearDirectory() {
++        public BuilderFile2 clearDirectory() { com.github.davidmoten.jmhbench.MutationSwitch.tick(12);
+             clearDirectory(directory);
+             return this;
+         }
+@@ -97,7 +97,7 @@ public final class BPlusTree<K, V> implements AutoCloseable {
+             }
+         }
+ 
+-        public BuilderFile2 segmentSizeBytes(int size) {
++        public BuilderFile2 segmentSizeBytes(int size) { com.github.davidmoten.jmhbench.MutationSwitch.tick(13);
+             Preconditions.checkArgument(size > 0);
+             this.segmentSizeBytes = size;
+             return this;
+diff --git a/com/github/davidmoten/bplustree/Entry.java b/com/github/davidmoten/bplustree/Entry.java
+index 6c1c470..1b6c8e5 100644
+--- a/com/github/davidmoten/bplustree/Entry.java
++++ b/com/github/davidmoten/bplustree/Entry.java
+@@ -10,15 +10,15 @@ public final class Entry<K, V> {
+         this.value = value;
+     }
+ 
+-    public static <K, V> Entry<K, V> create(K key, V value) {
++    public static <K, V> Entry<K, V> create(K key, V value) { com.github.davidmoten.jmhbench.MutationSwitch.tick(14);
+         return new Entry<K, V>(key, value);
+     }
+ 
+-    public K key() {
++    public K key() { com.github.davidmoten.jmhbench.MutationSwitch.tick(15);
+         return key;
+     }
+ 
+-    public V value() {
++    public V value() { com.github.davidmoten.jmhbench.MutationSwitch.tick(16);
+         return value;
+     }
+ 
+diff --git a/com/github/davidmoten/bplustree/internal/LargeMappedByteBuffer.java b/com/github/davidmoten/bplustree/internal/LargeMappedByteBuffer.java
+index 7483c9e..0ab7aaf 100644
+--- a/com/github/davidmoten/bplustree/internal/LargeMappedByteBuffer.java
++++ b/com/github/davidmoten/bplustree/internal/LargeMappedByteBuffer.java
+@@ -106,7 +106,7 @@ public final class LargeMappedByteBuffer implements AutoCloseable, LargeByteBuff
+     }
+ 
+     @Override
+-    public void position(long newPosition) {
++    public void position(long newPosition) { com.github.davidmoten.jmhbench.MutationSwitch.tick(1);
+         this.position = newPosition;
+     }
+ 
+@@ -175,7 +175,7 @@ public final class LargeMappedByteBuffer implements AutoCloseable, LargeByteBuff
+     }
+ 
+     @Override
+-    public void putInt(int value) {
++    public void putInt(int value) { com.github.davidmoten.jmhbench.MutationSwitch.tick(2);
+         long p = position;
+         if (segmentNumber(p) == segmentNumber(p + Integer.BYTES)) {
+             bb(p).putInt(value);
+@@ -198,7 +198,7 @@ public final class LargeMappedByteBuffer implements AutoCloseable, LargeByteBuff
+     }
+ 
+     @Override
+-    public void putLong(long value) {
++    public void putLong(long value) { com.github.davidmoten.jmhbench.MutationSwitch.tick(3);
+         long p = position;
+         if (segmentNumber(p) == segmentNumber(p + Long.BYTES)) {
+             position += Long.BYTES;
+@@ -209,12 +209,12 @@ public final class LargeMappedByteBuffer implements AutoCloseable, LargeByteBuff
+     }
+ 
+     @Override
+-    public long position() {
++    public long position() { com.github.davidmoten.jmhbench.MutationSwitch.tick(4);
+         return position;
+     }
+ 
+     @Override
+-    public short getShort() {
++    public short getShort() { com.github.davidmoten.jmhbench.MutationSwitch.tick(5);
+         long p = position;
+         if (segmentNumber(p) == segmentNumber(p + Short.BYTES)) {
+             position += Short.BYTES;
+@@ -226,7 +226,7 @@ public final class LargeMappedByteBuffer implements AutoCloseable, LargeByteBuff
+     }
+ 
+     @Override
+-    public void putShort(short value) {
++    public void putShort(short value) { com.github.davidmoten.jmhbench.MutationSwitch.tick(6);
+         long p = position;
+         if (segmentNumber(p) == segmentNumber(p + Short.BYTES)) {
+             bb(p).putShort(value);
+diff --git a/com/github/davidmoten/bplustree/internal/Options.java b/com/github/davidmoten/bplustree/internal/Options.java
+index b865066..0d50893 100644
+--- a/com/github/davidmoten/bplustree/internal/Options.java
++++ b/com/github/davidmoten/bplustree/internal/Options.java
+@@ -30,23 +30,23 @@ public final class Options<K, V> {
+         this.factoryProvider = factoryProvider;
+     }
+ 
+-    public int maxLeafKeys() {
++    public int maxLeafKeys() { com.github.davidmoten.jmhbench.MutationSwitch.tick(17);
+         return maxLeafKeys;
+     }
+ 
+-    public int maxNonLeafKeys() {
++    public int maxNonLeafKeys() { com.github.davidmoten.jmhbench.MutationSwitch.tick(18);
+         return maxNonLeafKeys;
+     }
+ 
+-    public Comparator<? super K> comparator() {
++    public Comparator<? super K> comparator() { com.github.davidmoten.jmhbench.MutationSwitch.tick(19);
+         return comparator;
+     }
+ 
+-    public boolean uniqueKeys() {
++    public boolean uniqueKeys() { com.github.davidmoten.jmhbench.MutationSwitch.tick(20);
+         return uniqueKeys;
+     }
+     
+-    public FactoryProvider<K, V> factoryProvider() {
++    public FactoryProvider<K, V> factoryProvider() { com.github.davidmoten.jmhbench.MutationSwitch.tick(21);
+         return factoryProvider;
+     }
+ 
+diff --git a/com/github/davidmoten/bplustree/internal/file/FactoryFile.java b/com/github/davidmoten/bplustree/internal/file/FactoryFile.java
+index 852c18e..dac021d 100644
+--- a/com/github/davidmoten/bplustree/internal/file/FactoryFile.java
++++ b/com/github/davidmoten/bplustree/internal/file/FactoryFile.java
+@@ -69,7 +69,7 @@ public final class FactoryFile<K, V> implements Factory<K, V> {
+     }
+ 
+     @Override
+-    public Leaf<K, V> createLeaf() {
++    public Leaf<K, V> createLeaf() { com.github.davidmoten.jmhbench.MutationSwitch.tick(22);
+         return getLeaf(leafNextPosition());
+     }
+ 
+@@ -102,23 +102,23 @@ public final class FactoryFile<K, V> implements Factory<K, V> {
+         return NODE_TYPE_BYTES + NUM_KEYS_BYTES + i * (keySerializer.maxSize() + POSITION_BYTES);
+     }
+ 
+-    public K leafKey(long position, int i) {
++    public K leafKey(long position, int i) { com.github.davidmoten.jmhbench.MutationSwitch.tick(23);
+         long p = position + relativeLeafKeyPosition(i);
+         bb.position(p);
+         return keySerializer.read(bb);
+     }
+ 
+-    public int leafNumKeys(long position) {
++    public int leafNumKeys(long position) { com.github.davidmoten.jmhbench.MutationSwitch.tick(24);
+         bb.position(position + NODE_TYPE_BYTES);
+         return bb.get() & 0xFF;
+     }
+ 
+-    public void leafSetNumKeys(long position, int numKeys) {
++    public void leafSetNumKeys(long position, int numKeys) { com.github.davidmoten.jmhbench.MutationSwitch.tick(25);
+         bb.position(position + NODE_TYPE_BYTES);
+         bb.put((byte) numKeys);
+     }
+     
+-    public V leafValue(long position, int i) {
++    public V leafValue(long position, int i) { com.github.davidmoten.jmhbench.MutationSwitch.tick(26);
+         long p = position + relativeLeafKeyPosition(i) + keySerializer.maxSize();
+         bb.position(p);
+         long valuePos = bb.getLong();
+@@ -126,7 +126,7 @@ public final class FactoryFile<K, V> implements Factory<K, V> {
+         return valueSerializer.read(values);
+     }
+ 
+-    public void leafSetValue(long position, int i, V value) {
++    public void leafSetValue(long position, int i, V value) { com.github.davidmoten.jmhbench.MutationSwitch.tick(27);
+         long p = position + relativeLeafKeyPosition(i) + keySerializer.maxSize();
+         bb.position(p);
+         bb.putLong(valuesIndex);
+diff --git a/com/github/davidmoten/bplustree/internal/file/LeafFile.java b/com/github/davidmoten/bplustree/internal/file/LeafFile.java
+index 1359ebe..7cca1cb 100644
+--- a/com/github/davidmoten/bplustree/internal/file/LeafFile.java
++++ b/com/github/davidmoten/bplustree/internal/file/LeafFile.java
+@@ -14,32 +14,32 @@ public class LeafFile<K, V> implements Leaf<K, V>, NodeFile {
+     }
+ 
+     @Override
+-    public K key(int i) {
++    public K key(int i) { com.github.davidmoten.jmhbench.MutationSwitch.tick(28);
+         return factory.leafKey(position, i);
+     }
+ 
+     @Override
+-    public int numKeys() {
++    public int numKeys() { com.github.davidmoten.jmhbench.MutationSwitch.tick(29);
+         return factory.leafNumKeys(position);
+     }
+ 
+     @Override
+-    public FactoryFile<K, V> factory() {
++    public FactoryFile<K, V> factory() { com.github.davidmoten.jmhbench.MutationSwitch.tick(30);
+         return factory;
+     }
+ 
+     @Override
+-    public Options<K, V> options() {
++    public Options<K, V> options() { com.github.davidmoten.jmhbench.MutationSwitch.tick(31);
+         return factory.options();
+     }
+ 
+     @Override
+-    public V value(int index) {
++    public V value(int index) { com.github.davidmoten.jmhbench.MutationSwitch.tick(32);
+         return factory.leafValue(position, index);
+     }
+ 
+     @Override
+-    public void setNumKeys(int numKeys) {
++    public void setNumKeys(int numKeys) { com.github.davidmoten.jmhbench.MutationSwitch.tick(33);
+         factory.leafSetNumKeys(position, numKeys);
+     }
+ 
+diff --git a/com/github/davidmoten/bplustree/internal/file/NonLeafFile.java b/com/github/davidmoten/bplustree/internal/file/NonLeafFile.java
+index 2e53297..8cad44a 100644
+--- a/com/github/davidmoten/bplustree/internal/file/NonLeafFile.java
++++ b/com/github/davidmoten/bplustree/internal/file/NonLeafFile.java
+@@ -16,32 +16,32 @@ public final class NonLeafFile<K, V> implements NonLeaf<K, V>, NodeFile {
+     }
+ 
+     @Override
+-    public Options<K, V> options() {
++    public Options<K, V> options() { com.github.davidmoten.jmhbench.MutationSwitch.tick(34);
+         return factory.options();
+     }
+ 
+     @Override
+-    public Factory<K, V> factory() {
++    public Factory<K, V> factory() { com.github.davidmoten.jmhbench.MutationSwitch.tick(35);
+         return factory;
+     }
+ 
+     @Override
+-    public void setNumKeys(int numKeys) {
++    public void setNumKeys(int numKeys) { com.github.davidmoten.jmhbench.MutationSwitch.tick(36);
+         factory.nonLeafSetNumKeys(position, numKeys);
+     }
+ 
+     @Override
+-    public int numKeys() {
++    public int numKeys() { com.github.davidmoten.jmhbench.MutationSwitch.tick(37);
+         return factory.nonLeafNumKeys(position);
+     }
+ 
+     @Override
+-    public void setChild(int index, Node<K, V> node) {
++    public void setChild(int index, Node<K, V> node) { com.github.davidmoten.jmhbench.MutationSwitch.tick(38);
+         factory.nonLeafSetChild(position, index, (NodeFile) node);
+     }
+ 
+     @Override
+-    public Node<K, V> child(int index) {
++    public Node<K, V> child(int index) { com.github.davidmoten.jmhbench.MutationSwitch.tick(39);
+         return factory.nonLeafChild(position, index);
+     }
+ 
+diff --git a/com/github/davidmoten/bplustree/internal/memory/FactoryMemory.java b/com/github/davidmoten/bplustree/internal/memory/FactoryMemory.java
+index 696a2db..b8798fb 100644
+--- a/com/github/davidmoten/bplustree/internal/memory/FactoryMemory.java
++++ b/com/github/davidmoten/bplustree/internal/memory/FactoryMemory.java
+@@ -15,32 +15,32 @@ public final class FactoryMemory<K, V> implements Factory<K, V> {
+     }
+ 
+     @Override
+-    public Leaf<K, V> createLeaf() {
++    public Leaf<K, V> createLeaf() { com.github.davidmoten.jmhbench.MutationSwitch.tick(40);
+         return new LeafMemory<K, V>(options, this);
+     }
+ 
+     @Override
+-    public NonLeaf<K, V> createNonLeaf() {
++    public NonLeaf<K, V> createNonLeaf() { com.github.davidmoten.jmhbench.MutationSwitch.tick(41);
+         return new NonLeafMemory<K, V>(options, this);
+     }
+ 
+     @Override
+-    public void close() throws Exception {
++    public void close() throws Exception { com.github.davidmoten.jmhbench.MutationSwitch.tick(42);
+         // do nothing
+     }
+ 
+     @Override
+-    public void commit() {
++    public void commit() { com.github.davidmoten.jmhbench.MutationSwitch.tick(43);
+         // do nothing
+     }
+ 
+     @Override
+-    public void root(Node<K, V> node) {
++    public void root(Node<K, V> node) { com.github.davidmoten.jmhbench.MutationSwitch.tick(44);
+         // do nothing
+     }
+ 
+     @Override
+-    public Node<K, V> loadOrCreateRoot() {
++    public Node<K, V> loadOrCreateRoot() { com.github.davidmoten.jmhbench.MutationSwitch.tick(45);
+         return createLeaf();
+     }
+ 
+diff --git a/com/github/davidmoten/bplustree/internal/memory/LeafMemory.java b/com/github/davidmoten/bplustree/internal/memory/LeafMemory.java
+index 1ed3159..51d5098 100644
+--- a/com/github/davidmoten/bplustree/internal/memory/LeafMemory.java
++++ b/com/github/davidmoten/bplustree/internal/memory/LeafMemory.java
+@@ -24,22 +24,22 @@ public final class LeafMemory<K, V> implements Leaf<K, V> {
+     }
+ 
+     @Override
+-    public V value(int index) {
++    public V value(int index) { com.github.davidmoten.jmhbench.MutationSwitch.tick(46);
+         return values[index];
+     }
+ 
+     @Override
+-    public K key(int index) {
++    public K key(int index) { com.github.davidmoten.jmhbench.MutationSwitch.tick(47);
+         return keys[index];
+     }
+ 
+     @Override
+-    public int numKeys() {
++    public int numKeys() { com.github.davidmoten.jmhbench.MutationSwitch.tick(48);
+         return numKeys;
+     }
+ 
+     @Override
+-    public void move(int start, int length, Leaf<K, V> other) {
++    public void move(int start, int length, Leaf<K, V> other) { com.github.davidmoten.jmhbench.MutationSwitch.tick(49);
+         other.setNumKeys(length);
+         System.arraycopy(keys, start, ((LeafMemory<K, V>) other).keys, 0, length);
+         System.arraycopy(values, start, ((LeafMemory<K, V>) other).values, 0, length);
+@@ -47,7 +47,7 @@ public final class LeafMemory<K, V> implements Leaf<K, V> {
+     }
+ 
+     @Override
+-    public void setNumKeys(int numKeys) {
++    public void setNumKeys(int numKeys) { com.github.davidmoten.jmhbench.MutationSwitch.tick(50);
+         this.numKeys = numKeys;
+     }
+ 
+diff --git a/com/github/davidmoten/bplustree/internal/util/LazyList.java b/com/github/davidmoten/bplustree/internal/util/LazyList.java
+index a20fe21..ca52d8b 100644
+--- a/com/github/davidmoten/bplustree/internal/util/LazyList.java
++++ b/com/github/davidmoten/bplustree/internal/util/LazyList.java
+@@ -33,7 +33,7 @@ public final class LazyList<T> {
+         }
+     }
+ 
+-    public int size() {
++    public int size() { com.github.davidmoten.jmhbench.MutationSwitch.tick(7);
+         return size;
+     }
+ 
+diff --git a/com/github/davidmoten/jmhbench/MutationSwitch.java b/com/github/davidmoten/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..a466150
+--- /dev/null
++++ b/com/github/davidmoten/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.github.davidmoten.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

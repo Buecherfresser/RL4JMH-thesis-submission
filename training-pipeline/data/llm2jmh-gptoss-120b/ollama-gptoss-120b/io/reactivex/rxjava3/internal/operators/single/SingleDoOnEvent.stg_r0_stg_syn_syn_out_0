@@ -1,0 +1,92 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@code Single.doOnEvent} which internally uses {@code SingleDoOnEvent}.
+ *
+ * The benchmark measures the throughput of a simple {@code Single.just(...)} pipeline
+ * with a no‑op {@code BiConsumer}. The {@link Blackhole} is used to consume the result
+ * and to prevent dead‑code elimination.
+ *
+ * Best‑practice JMH settings:
+ * - Warm‑up iterations to let the JIT stabilize.
+ * - Measurement iterations for reliable numbers.
+ * - Single fork to isolate JVM launch overhead.
+ * - Scope.Thread state to avoid sharing mutable objects across threads.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class SingleDoOnEventBenchmark {
+
+    /**
+     * The {@code Single} under test.
+     */
+    private Single<Integer> single;
+
+    /**
+     * A no‑op {@code BiConsumer} used by {@code doOnEvent}.
+     */
+    private BiConsumer<Integer, Throwable> consumer;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Minimal work consumer – just a placeholder to trigger the operator.
+        consumer = (value, error) -> {
+            // No side effects; keep it as cheap as possible.
+        };
+        // Build the pipeline once per trial.
+        single = Single.just(1).doOnEvent(consumer);
+    }
+
+    /**
+     * Executes the {@code Single} and consumes the result.
+     *
+     * @param bh Blackhole to consume the emitted value and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void doOnEventThroughput(Blackhole bh) {
+        // blockingGet forces subscription and emission synchronously,
+        // giving a clear measurement of the operator overhead.
+        int result = single.blockingGet();
+        bh.consume(result);
+    }
+}

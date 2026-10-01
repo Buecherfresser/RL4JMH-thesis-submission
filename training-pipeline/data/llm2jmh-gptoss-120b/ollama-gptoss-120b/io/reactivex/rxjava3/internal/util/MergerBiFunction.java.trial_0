@@ -1,0 +1,62 @@
+```java
+package io.reactivex.rxjava3.internal.util.benchmark;
+
+import io.reactivex.rxjava3.internal.util.MergerBiFunction;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link MergerBiFunction}.
+ *
+ * Measures the throughput of merging two sorted lists of integers.
+ * The benchmark varies the size of the input lists to observe scaling behavior.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class MergerBiFunctionBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        @Param({"10", "100", "1000", "10000"})
+        public int size;
+
+        public MergerBiFunction<Integer> merger;
+        public List<Integer> listA;
+        public List<Integer> listB;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Comparator for natural ordering of integers
+            Comparator<Integer> comparator = Integer::compareTo;
+            merger = new MergerBiFunction<>(comparator);
+
+            // Prepare two sorted lists of the given size
+            listA = generateSortedList(size, 0);
+            listB = generateSortedList(size, size); // offset to keep overall ordering realistic
+        }
+
+        private List<Integer> generateSortedList(int length, int offset) {
+            List<Integer> list = new ArrayList<>(length);
+            Random rnd = new Random(12345L + offset);
+            for (int i = 0; i < length; i++) {
+                // Generate values that are already sorted
+                list.add(offset + i + rnd.nextInt(5));
+            }
+            Collections.sort(list);
+            return list;
+        }
+    }
+
+    @Benchmark
+    public List<Integer> merge(BenchmarkState state) {
+        // The result is returned to the JMH harness; no need for Blackhole
+        return state.merger.apply(state.listA, state.listB);
+    }
+}
+```

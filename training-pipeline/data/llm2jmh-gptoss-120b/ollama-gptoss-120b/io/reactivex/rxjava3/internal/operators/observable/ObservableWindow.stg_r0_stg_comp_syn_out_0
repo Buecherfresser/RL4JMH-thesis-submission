@@ -1,0 +1,108 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link ObservableWindow}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * {@code window} operator under different configurations.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source Observable in @Setup to exclude its construction cost.
+ * - Use Blackhole to consume all emitted items and prevent dead‑code elimination.
+ * - Parameterize count, skip and capacityHint to cover the exact and skip
+ *   variants of the operator.
+ * - Keep the benchmark method simple: apply the operator, flatten the windows,
+ *   and consume the items.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ObservableWindowBenchmark {
+
+    /**
+     * Total number of items emitted by the source Observable.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int totalElements;
+
+    /**
+     * Size of each window.
+     */
+    @Param({ "10", "100", "1000" })
+    public long count;
+
+    /**
+     * Distance between the start of consecutive windows.
+     */
+    @Param({ "10", "20", "100" })
+    public long skip;
+
+    /**
+     * Capacity hint for the underlying UnicastSubject.
+     */
+    @Param({ "16", "64", "256" })
+    public int capacityHint;
+
+    /**
+     * Source Observable that emits a range of integers.
+     */
+    private Observable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits a deterministic sequence.
+        source = Observable.range(1, totalElements);
+    }
+
+    /**
+     * Benchmark that applies the {@code window} operator and then flattens the
+     * windows back into a single stream, consuming each element with a Blackhole.
+     *
+     * The flattening step ensures that the benchmark measures the full cost of
+     * window creation, emission, and completion.
+     */
+    @Benchmark
+    public void windowAndFlatten(Blackhole bh) {
+        source.window(count, skip, capacityHint).flatMap(w -> w).subscribe(bh::consume, bh::consume, () -> {
+        });
+    }
+}

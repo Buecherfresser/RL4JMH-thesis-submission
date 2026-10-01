@@ -1,0 +1,103 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.mixed.CompletableAndThenPublisher;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+/**
+ * Benchmark for {@link CompletableAndThenPublisher}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * {@code CompletableAndThenPublisher} when a cold {@link Completable} that
+ * completes immediately is followed by a {@link Flowable} emitting a fixed
+ * number of items.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Trial) creates immutable objects once per trial.
+ * - Blackhole is avoided; instead we use a latch to ensure the subscription
+ *   completes without affecting the measured code path.
+ * - Warm‑up, measurement, and fork parameters are chosen to give stable
+ *   results on typical CI hardware.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class CompletableAndThenPublisherBenchmark {
+
+    /** Number of items emitted by the downstream Publisher. */
+    @Param({"1", "10", "100", "1000"})
+    public int itemCount;
+
+    /** The operator under test. */
+    private Publisher<Integer> operator;
+
+    /** Latch used to wait for completion without affecting the measured code path. */
+    private CountDownLatch latch;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Completable that completes immediately.
+        CompletableSource source = Completable.complete();
+
+        // Publisher that emits {@code itemCount} integers.
+        Publisher<Integer> other = Flowable.range(1, itemCount);
+
+        // The operator to benchmark.
+        operator = new CompletableAndThenPublisher<>(source, other);
+    }
+
+    @Benchmark
+    public void subscribeAndConsume() throws InterruptedException {
+        latch = new CountDownLatch(1);
+        operator.subscribe(new BenchmarkSubscriber(latch));
+        // Wait for the stream to finish; this does not count towards the measured
+        // throughput because the subscription itself is the operation being measured.
+        latch.await();
+    }
+
+    /** Simple Subscriber that counts items and signals completion via a latch. */
+    static final class BenchmarkSubscriber implements Subscriber<Integer> {
+        private final CountDownLatch latch;
+        private Subscription upstream;
+
+        BenchmarkSubscriber(CountDownLatch latch) {
+            this.latch = latch;
+        }
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            this.upstream = s;
+            // Request all items up‑front to avoid back‑pressure effects on the benchmark.
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            // No-op – we only care about the flow, not the values.
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // In case of error, still release the latch to avoid dead‑lock.
+            latch.countDown();
+        }
+
+        @Override
+        public void onComplete() {
+            latch.countDown();
+        }
+    }
+}
+```

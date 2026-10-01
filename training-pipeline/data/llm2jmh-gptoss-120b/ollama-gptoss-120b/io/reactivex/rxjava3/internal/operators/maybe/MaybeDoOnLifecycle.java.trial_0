@@ -1,0 +1,64 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@code Maybe.doOnLifecycle} (which internally uses {@code MaybeDoOnLifecycle}).
+ *
+ * The benchmark measures the throughput (operations per second) of a simple {@code Maybe.just}
+ * source with and without the lifecycle callbacks. The callbacks are no‑ops to isolate the
+ * overhead introduced by the operator itself.
+ *
+ * Best practices applied:
+ * • Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * • Perform a warm‑up phase to let the JIT compile the code.
+ * • Use multiple measurement iterations and forks for reliable results.
+ * • Keep the benchmark body small (a single {@code blockingGet()} call) to focus on the
+ *   operator overhead.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3)
+@Threads(1)
+public class MaybeDoOnLifecycleBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        // No‑op callbacks
+        final Consumer<Object> onSubscribe = d -> { /* no‑op */ };
+        final Action onDispose = () -> { /* no‑op */ };
+
+        // Baseline: plain Maybe.just(1)
+        Maybe<Integer> baseline;
+
+        // Subject under test: Maybe.just(1).doOnLifecycle(...)
+        Maybe<Integer> withLifecycle;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            baseline = Maybe.just(1);
+            withLifecycle = Maybe.just(1)
+                    .doOnLifecycle(onSubscribe, onDispose);
+        }
+    }
+
+    @Benchmark
+    public int baseline(BenchmarkState state) {
+        // blockingGet forces subscription and termination synchronously
+        return state.baseline.blockingGet();
+    }
+
+    @Benchmark
+    public int withLifecycle(BenchmarkState state) {
+        return state.withLifecycle.blockingGet();
+    }
+}
+```

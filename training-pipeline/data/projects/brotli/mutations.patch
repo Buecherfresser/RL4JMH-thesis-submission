@@ -1,0 +1,636 @@
+diff --git a/org/brotli/dec/BitReaderTest.java b/org/brotli/dec/BitReaderTest.java
+index 6a66c6b..760c045 100644
+--- a/org/brotli/dec/BitReaderTest.java
++++ b/org/brotli/dec/BitReaderTest.java
+@@ -20,7 +20,7 @@ import org.junit.runners.JUnit4;
+ public class BitReaderTest {
+ 
+   @Test
+-  public void testReadAfterEos() {
++  public void testReadAfterEos() { org.brotli.jmhbench.MutationSwitch.tick(19);
+     State reader = new State();
+     reader.input = new ByteArrayInputStream(new byte[1]);
+     Decode.initState(reader);
+@@ -35,7 +35,7 @@ public class BitReaderTest {
+   }
+ 
+   @Test
+-  public void testAccumulatorUnderflowDetected() {
++  public void testAccumulatorUnderflowDetected() { org.brotli.jmhbench.MutationSwitch.tick(21);
+     State reader = new State();
+     reader.input = new ByteArrayInputStream(new byte[8]);
+     Decode.initState(reader);
+diff --git a/org/brotli/dec/BrotliInputStream.java b/org/brotli/dec/BrotliInputStream.java
+index 628a417..ee8184a 100644
+--- a/org/brotli/dec/BrotliInputStream.java
++++ b/org/brotli/dec/BrotliInputStream.java
+@@ -95,12 +95,12 @@ public class BrotliInputStream extends InputStream {
+   }
+ 
+   /** Attach "RAW" dictionary (chunk) to decoder. */
+-  public void attachDictionaryChunk(byte[] data) {
++  public void attachDictionaryChunk(byte[] data) { org.brotli.jmhbench.MutationSwitch.tick(1);
+     Decode.attachDictionaryChunk(state, data);
+   }
+ 
+   /** Request decoder to produce output as soon as it is available. */
+-  public void enableEagerOutput() {
++  public void enableEagerOutput() { org.brotli.jmhbench.MutationSwitch.tick(5);
+     Decode.enableEagerOutput(state);
+   }
+ 
+diff --git a/org/brotli/dec/CompoundDictionaryTest.java b/org/brotli/dec/CompoundDictionaryTest.java
+index 087704f..f496bce 100644
+--- a/org/brotli/dec/CompoundDictionaryTest.java
++++ b/org/brotli/dec/CompoundDictionaryTest.java
+@@ -30,7 +30,7 @@ public class CompoundDictionaryTest {
+   private static final String TEXT = "Kot lomom kolol slona!";
+ 
+   @Test
+-  public void testNoDictionary() throws IOException {
++  public void testNoDictionary() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(23);
+     try (BrotliInputStream decoder = new BrotliInputStream(new ByteArrayInputStream(ONE_COPY))) {
+         byte[] buffer = new byte[32];
+         int length = decoder.read(buffer, 0, buffer.length);
+@@ -41,7 +41,7 @@ public class CompoundDictionaryTest {
+   }
+ 
+   @Test
+-  public void testOnePieceDictionary() throws IOException {
++  public void testOnePieceDictionary() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(25);
+     try (BrotliInputStream decoder = new BrotliInputStream(new ByteArrayInputStream(ONE_COPY))) {
+         decoder.attachDictionaryChunk(TEXT.getBytes("US-ASCII"));
+         byte[] buffer = new byte[32];
+diff --git a/org/brotli/dec/DecodeTest.java b/org/brotli/dec/DecodeTest.java
+index 6fc70e7..fec8a76 100644
+--- a/org/brotli/dec/DecodeTest.java
++++ b/org/brotli/dec/DecodeTest.java
+@@ -61,12 +61,12 @@ public class DecodeTest {
+   }
+ 
+   @Test
+-  public void testEmpty() throws IOException {
++  public void testEmpty() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(27);
+     checkDecodeResource("", "\u0006");
+   }
+ 
+   @Test
+-  public void testX() throws IOException {
++  public void testX() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(29);
+     checkDecodeResource("X", "\u000B\u0000\u0080X\u0003");
+   }
+ 
+diff --git a/org/brotli/dec/Decoder.java b/org/brotli/dec/Decoder.java
+index b9d848f..cd7d861 100644
+--- a/org/brotli/dec/Decoder.java
++++ b/org/brotli/dec/Decoder.java
+@@ -41,7 +41,7 @@ public class Decoder {
+   }
+ 
+   /** CLI entry point. */
+-  public static void main(String... args) throws IOException {
++  public static void main(String... args) throws IOException { org.brotli.jmhbench.MutationSwitch.tick(8);
+     if (args.length != 2 && args.length != 3) {
+       System.out.println("Usage: decoder <compressed_in> <decompressed_out> [repeat]");
+       return;
+diff --git a/org/brotli/dec/Dictionary.java b/org/brotli/dec/Dictionary.java
+index 8be850d..62ccde0 100644
+--- a/org/brotli/dec/Dictionary.java
++++ b/org/brotli/dec/Dictionary.java
+@@ -42,7 +42,7 @@ public final class Dictionary {
+   private static final int DICTIONARY_DEBUG = Utils.isDebugMode();
+ 
+   /** Initialize static dictionary. */
+-  public static void setData(ByteBuffer newData, int[] newSizeBits) {
++  public static void setData(ByteBuffer newData, int[] newSizeBits) { org.brotli.jmhbench.MutationSwitch.tick(31);
+     if (DICTIONARY_DEBUG != 0) {
+       if ((Utils.isDirect(newData) == 0) || (Utils.isReadOnly(newData) == 0)) {
+         throw new BrotliRuntimeException("newData must be a direct read-only byte buffer");
+diff --git a/org/brotli/dec/DictionaryTest.java b/org/brotli/dec/DictionaryTest.java
+index b2ea04b..8e2931c 100644
+--- a/org/brotli/dec/DictionaryTest.java
++++ b/org/brotli/dec/DictionaryTest.java
+@@ -32,7 +32,7 @@ public class DictionaryTest {
+   }
+ 
+   @Test
+-  public void testGetData() {
++  public void testGetData() { org.brotli.jmhbench.MutationSwitch.tick(33);
+     assertEquals(37084801881332636L, crc64(Dictionary.getData()));
+   }
+ }
+diff --git a/org/brotli/dec/EagerStreamTest.java b/org/brotli/dec/EagerStreamTest.java
+index 8e079c0..f3a30cf 100644
+--- a/org/brotli/dec/EagerStreamTest.java
++++ b/org/brotli/dec/EagerStreamTest.java
+@@ -365,7 +365,7 @@ public class EagerStreamTest {
+   }
+ 
+   @Test
+-  public void testEagerStream() throws IOException {
++  public void testEagerStream() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(11);
+     ProxyStream ps = new ProxyStream(new ByteArrayInputStream(DATA));
+     BrotliInputStream reader = new BrotliInputStream(ps, 1);
+     byte[] buffer = new byte[1];
+diff --git a/org/brotli/dec/SetDictionaryTest.java b/org/brotli/dec/SetDictionaryTest.java
+index d49a8f0..8123720 100644
+--- a/org/brotli/dec/SetDictionaryTest.java
++++ b/org/brotli/dec/SetDictionaryTest.java
+@@ -40,7 +40,7 @@ public class SetDictionaryTest {
+     };
+ 
+   @Test
+-  public void testSetDictionary() throws IOException {
++  public void testSetDictionary() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(14);
+     byte[] buffer = new byte[16];
+     BrotliInputStream decoder;
+ 
+diff --git a/org/brotli/dec/SynthTest.java b/org/brotli/dec/SynthTest.java
+index 7f2efe9..4fc68c8 100644
+--- a/org/brotli/dec/SynthTest.java
++++ b/org/brotli/dec/SynthTest.java
+@@ -66,7 +66,7 @@ public class SynthTest {
+ /* GENERATED CODE START */
+ 
+   @Test
+-  public void testAllTransforms10() {
++  public void testAllTransforms10() { org.brotli.jmhbench.MutationSwitch.tick(35);
+     byte[] compressed = {
+       (byte) 0x1b, (byte) 0xfc, (byte) 0x05, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80,
+       (byte) 0xe3, (byte) 0xb4, (byte) 0x0d, (byte) 0x00, (byte) 0x00, (byte) 0x07, (byte) 0x5b,
+@@ -307,7 +307,7 @@ public class SynthTest {
+   }
+ 
+   @Test
+-  public void testAllTransforms4() {
++  public void testAllTransforms4() { org.brotli.jmhbench.MutationSwitch.tick(37);
+     byte[] compressed = {
+       (byte) 0x1b, (byte) 0x40, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80,
+       (byte) 0xe3, (byte) 0xb4, (byte) 0x0d, (byte) 0x00, (byte) 0x00, (byte) 0x07, (byte) 0x5b,
+diff --git a/org/brotli/dec/TestUtils.java b/org/brotli/dec/TestUtils.java
+index 797c1d1..6c666ea 100644
+--- a/org/brotli/dec/TestUtils.java
++++ b/org/brotli/dec/TestUtils.java
+@@ -9,7 +9,7 @@ import java.lang.reflect.Constructor;
+  */
+ public final class TestUtils {
+ 
+-  public static InputStream newBrotliInputStream(InputStream input) throws IOException {
++  public static InputStream newBrotliInputStream(InputStream input) throws IOException { org.brotli.jmhbench.MutationSwitch.tick(17);
+     String brotliClass = System.getProperty("BROTLI_INPUT_STREAM");
+     if (brotliClass == null) {
+       return new BrotliInputStream(input);
+diff --git a/org/brotli/dec/TransformTest.java b/org/brotli/dec/TransformTest.java
+index 6e04f0d..0e3b9b6 100644
+--- a/org/brotli/dec/TransformTest.java
++++ b/org/brotli/dec/TransformTest.java
+@@ -33,7 +33,7 @@ public class TransformTest {
+   }
+ 
+   @Test
+-  public void testTrimAll() {
++  public void testTrimAll() { org.brotli.jmhbench.MutationSwitch.tick(39);
+     byte[] output = new byte[0];
+     byte[] input = {119, 111, 114, 100}; // "word"
+     Transform.transformDictionaryWord(output, 0,
+@@ -43,7 +43,7 @@ public class TransformTest {
+   }
+ 
+   @Test
+-  public void testCapitalize() {
++  public void testCapitalize() { org.brotli.jmhbench.MutationSwitch.tick(41);
+     byte[] output = new byte[6];
+     byte[] input = {113, -61, -90, -32, -92, -86}; // "qæप"
+     Transform.transformDictionaryWord(output, 0,
+diff --git a/org/brotli/enc/PreparedDictionaryGenerator.java b/org/brotli/enc/PreparedDictionaryGenerator.java
+index 3813429..8f6ec86 100644
+--- a/org/brotli/enc/PreparedDictionaryGenerator.java
++++ b/org/brotli/enc/PreparedDictionaryGenerator.java
+@@ -36,7 +36,7 @@ public class PreparedDictionaryGenerator {
+   // Disallow instantiation.
+   private PreparedDictionaryGenerator() { }
+ 
+-  public static PreparedDictionary generate(ByteBuffer src) {
++  public static PreparedDictionary generate(ByteBuffer src) { org.brotli.jmhbench.MutationSwitch.tick(2);
+     return generate(src, 17, 3, 40, 5);
+   }
+ 
+diff --git a/org/brotli/integration/Benchmark.java b/org/brotli/integration/Benchmark.java
+index d44e161..d965afe 100644
+--- a/org/brotli/integration/Benchmark.java
++++ b/org/brotli/integration/Benchmark.java
+@@ -46,7 +46,7 @@ public class Benchmark {
+     return totalOut;
+   }
+ 
+-  public static void main(String... args) throws IOException {
++  public static void main(String... args) throws IOException { org.brotli.jmhbench.MutationSwitch.tick(3);
+     if (args.length == 0) {
+       System.out.println("Usage: benchmark <corpus>");
+       return;
+diff --git a/org/brotli/integration/BundleChecker.java b/org/brotli/integration/BundleChecker.java
+index 3be98ef..47761f8 100644
+--- a/org/brotli/integration/BundleChecker.java
++++ b/org/brotli/integration/BundleChecker.java
+@@ -43,7 +43,7 @@ public class BundleChecker implements Runnable {
+     /* Do not allow entry readers to close the whole ZipInputStream. */
+     FilterInputStream entryStream = new FilterInputStream(input) {
+       @Override
+-      public void close() {}
++      public void close() { org.brotli.jmhbench.MutationSwitch.tick(6);}
+     };
+ 
+     InputStream decompressedStream = newBrotliInputStream(entryStream);
+@@ -57,7 +57,7 @@ public class BundleChecker implements Runnable {
+   }
+ 
+   @Override
+-  public void run() {
++  public void run() { org.brotli.jmhbench.MutationSwitch.tick(9);
+     String entryName = "";
+     ZipInputStream zis = new ZipInputStream(input);
+     try {
+diff --git a/org/brotli/integration/BundleHelper.java b/org/brotli/integration/BundleHelper.java
+index 0eab7bc..b930965 100644
+--- a/org/brotli/integration/BundleHelper.java
++++ b/org/brotli/integration/BundleHelper.java
+@@ -21,7 +21,7 @@ import java.util.zip.ZipInputStream;
+ public class BundleHelper {
+   private BundleHelper() { }
+ 
+-  public static List<String> listEntries(InputStream input) throws IOException {
++  public static List<String> listEntries(InputStream input) throws IOException { org.brotli.jmhbench.MutationSwitch.tick(12);
+     List<String> result = new ArrayList<String>();
+     ZipInputStream zis = new ZipInputStream(input);
+     ZipEntry entry;
+@@ -38,7 +38,7 @@ public class BundleHelper {
+     return result;
+   }
+ 
+-  public static byte[] readStream(InputStream input) throws IOException {
++  public static byte[] readStream(InputStream input) throws IOException { org.brotli.jmhbench.MutationSwitch.tick(15);
+     ByteArrayOutputStream result = new ByteArrayOutputStream();
+     byte[] buffer = new byte[65536];
+     int bytesRead;
+diff --git a/org/brotli/jmhbench/MutationSwitch.java b/org/brotli/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..bf358c9
+--- /dev/null
++++ b/org/brotli/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.brotli.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/brotli/wrapper/common/SetRfcDictionaryTest.java b/org/brotli/wrapper/common/SetRfcDictionaryTest.java
+index a986eae..5f36826 100644
+--- a/org/brotli/wrapper/common/SetRfcDictionaryTest.java
++++ b/org/brotli/wrapper/common/SetRfcDictionaryTest.java
+@@ -28,7 +28,7 @@ import org.junit.runners.JUnit4;
+ public class SetRfcDictionaryTest extends BrotliJniTestBase {
+ 
+   @Test
+-  public void testRfcDictionaryChecksums() throws NoSuchAlgorithmException {
++  public void testRfcDictionaryChecksums() throws NoSuchAlgorithmException { org.brotli.jmhbench.MutationSwitch.tick(4);
+     System.err.println(Dictionary.getData().slice().remaining());
+     MessageDigest md5 = MessageDigest.getInstance("MD5");
+     md5.update(Dictionary.getData().slice());
+@@ -44,7 +44,7 @@ public class SetRfcDictionaryTest extends BrotliJniTestBase {
+   }
+ 
+   @Test
+-  public void testSetRfcDictionary() throws IOException {
++  public void testSetRfcDictionary() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(7);
+     /* "leftdatadataleft" encoded with dictionary words. */
+     byte[] data = {27, 15, 0, 0, 0, 0, -128, -29, -76, 13, 0, 0, 7, 91, 38, 49, 64, 2, 0, -32, 78,
+         27, 65, -128, 32, 80, 16, 36, 8, 6};
+diff --git a/org/brotli/wrapper/common/SetZeroDictionaryTest.java b/org/brotli/wrapper/common/SetZeroDictionaryTest.java
+index 669939c..fbc9942 100644
+--- a/org/brotli/wrapper/common/SetZeroDictionaryTest.java
++++ b/org/brotli/wrapper/common/SetZeroDictionaryTest.java
+@@ -24,7 +24,7 @@ import org.junit.runners.JUnit4;
+ public class SetZeroDictionaryTest extends BrotliJniTestBase {
+ 
+   @Test
+-  public void testZeroDictionary() throws IOException {
++  public void testZeroDictionary() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(10);
+     /* "leftdatadataleft" encoded with dictionary words. */
+     byte[] data = {27, 15, 0, 0, 0, 0, -128, -29, -76, 13, 0, 0, 7, 91, 38, 49, 64, 2, 0, -32, 78,
+         27, 65, -128, 32, 80, 16, 36, 8, 6};
+diff --git a/org/brotli/wrapper/dec/BrotliDecoderChannel.java b/org/brotli/wrapper/dec/BrotliDecoderChannel.java
+index 30f6f1d..eabb5b9 100644
+--- a/org/brotli/wrapper/dec/BrotliDecoderChannel.java
++++ b/org/brotli/wrapper/dec/BrotliDecoderChannel.java
+@@ -36,12 +36,12 @@ public class BrotliDecoderChannel extends Decoder implements ReadableByteChannel
+   }
+ 
+   @Override
+-  public void attachDictionary(ByteBuffer dictionary) throws IOException {
++  public void attachDictionary(ByteBuffer dictionary) throws IOException { org.brotli.jmhbench.MutationSwitch.tick(13);
+     super.attachDictionary(dictionary);
+   }
+ 
+   @Override
+-  public boolean isOpen() {
++  public boolean isOpen() { org.brotli.jmhbench.MutationSwitch.tick(16);
+     synchronized (mutex) {
+       return !closed;
+     }
+diff --git a/org/brotli/wrapper/dec/BrotliDecoderChannelTest.java b/org/brotli/wrapper/dec/BrotliDecoderChannelTest.java
+index 71d8f68..612a790 100644
+--- a/org/brotli/wrapper/dec/BrotliDecoderChannelTest.java
++++ b/org/brotli/wrapper/dec/BrotliDecoderChannelTest.java
+@@ -31,7 +31,7 @@ public class BrotliDecoderChannelTest extends BrotliJniTestBase {
+   }
+ 
+   /** Creates a test suite. */
+-  public static TestSuite suite() throws IOException {
++  public static TestSuite suite() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(18);
+     TestSuite suite = new TestSuite();
+     InputStream bundle = getBundle();
+     try {
+@@ -54,7 +54,7 @@ public class BrotliDecoderChannelTest extends BrotliJniTestBase {
+     }
+ 
+     @Override
+-    protected void runTest() throws Throwable {
++    protected void runTest() throws Throwable { org.brotli.jmhbench.MutationSwitch.tick(20);
+       BrotliDecoderChannelTest.run(entryName);
+     }
+   }
+diff --git a/org/brotli/wrapper/dec/BrotliInputStream.java b/org/brotli/wrapper/dec/BrotliInputStream.java
+index 9c0d54a..31b3299 100644
+--- a/org/brotli/wrapper/dec/BrotliInputStream.java
++++ b/org/brotli/wrapper/dec/BrotliInputStream.java
+@@ -35,11 +35,11 @@ public class BrotliInputStream extends InputStream {
+     this(source, DEFAULT_BUFFER_SIZE);
+   }
+ 
+-  public void attachDictionary(ByteBuffer dictionary) throws IOException {
++  public void attachDictionary(ByteBuffer dictionary) throws IOException { org.brotli.jmhbench.MutationSwitch.tick(22);
+     decoder.attachDictionary(dictionary);
+   }
+ 
+-  public void enableEagerOutput() {
++  public void enableEagerOutput() { org.brotli.jmhbench.MutationSwitch.tick(24);
+     decoder.enableEagerOutput();
+   }
+ 
+diff --git a/org/brotli/wrapper/dec/BrotliInputStreamTest.java b/org/brotli/wrapper/dec/BrotliInputStreamTest.java
+index 5da7115..311e285 100644
+--- a/org/brotli/wrapper/dec/BrotliInputStreamTest.java
++++ b/org/brotli/wrapper/dec/BrotliInputStreamTest.java
+@@ -29,7 +29,7 @@ public class BrotliInputStreamTest extends BrotliJniTestBase {
+   }
+ 
+   /** Creates a test suite. */
+-  public static TestSuite suite() throws IOException {
++  public static TestSuite suite() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(26);
+     TestSuite suite = new TestSuite();
+     InputStream bundle = getBundle();
+     try {
+@@ -52,7 +52,7 @@ public class BrotliInputStreamTest extends BrotliJniTestBase {
+     }
+ 
+     @Override
+-    protected void runTest() throws Throwable {
++    protected void runTest() throws Throwable { org.brotli.jmhbench.MutationSwitch.tick(28);
+       BrotliInputStreamTest.run(entryName);
+     }
+   }
+diff --git a/org/brotli/wrapper/dec/Decoder.java b/org/brotli/wrapper/dec/Decoder.java
+index 24c7a27..45eaf80 100644
+--- a/org/brotli/wrapper/dec/Decoder.java
++++ b/org/brotli/wrapper/dec/Decoder.java
+@@ -56,7 +56,7 @@ public class Decoder implements AutoCloseable {
+     }
+   }
+ 
+-  public void enableEagerOutput() {
++  public void enableEagerOutput() { org.brotli.jmhbench.MutationSwitch.tick(30);
+     this.eager = true;
+   }
+ 
+@@ -130,7 +130,7 @@ public class Decoder implements AutoCloseable {
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(32);
+     if (closed) {
+       return;
+     }
+diff --git a/org/brotli/wrapper/dec/DecoderJNI.java b/org/brotli/wrapper/dec/DecoderJNI.java
+index 01e07ba..7ae7a47 100644
+--- a/org/brotli/wrapper/dec/DecoderJNI.java
++++ b/org/brotli/wrapper/dec/DecoderJNI.java
+@@ -41,7 +41,7 @@ public class DecoderJNI {
+       }
+     }
+ 
+-    public boolean attachDictionary(ByteBuffer dictionary) {
++    public boolean attachDictionary(ByteBuffer dictionary) { org.brotli.jmhbench.MutationSwitch.tick(34);
+       if (!dictionary.isDirect()) {
+         throw new IllegalArgumentException("only direct buffers allowed");
+       }
+@@ -54,7 +54,7 @@ public class DecoderJNI {
+       return nativeAttachDictionary(context, dictionary);
+     }
+ 
+-    public void push(int length) {
++    public void push(int length) { org.brotli.jmhbench.MutationSwitch.tick(36);
+       if (length < 0) {
+         throw new IllegalArgumentException("negative block length");
+       }
+diff --git a/org/brotli/wrapper/dec/DecoderJNITest.java b/org/brotli/wrapper/dec/DecoderJNITest.java
+index 99faf8f..1e690f0 100644
+--- a/org/brotli/wrapper/dec/DecoderJNITest.java
++++ b/org/brotli/wrapper/dec/DecoderJNITest.java
+@@ -23,7 +23,7 @@ import org.junit.runners.JUnit4;
+ public class DecoderJNITest extends BrotliJniTestBase {
+ 
+   @Test
+-  public void testPushLengthExceedingInputBufferIsRejected() throws IOException {
++  public void testPushLengthExceedingInputBufferIsRejected() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(38);
+     DecoderJNI.Wrapper decoder = new DecoderJNI.Wrapper(1);
+     try {
+       decoder.getInputBuffer().put(0, (byte) 0);
+@@ -39,7 +39,7 @@ public class DecoderJNITest extends BrotliJniTestBase {
+   }
+ 
+   @Test
+-  public void testPushNegativeLengthIsRejected() throws IOException {
++  public void testPushNegativeLengthIsRejected() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(40);
+     DecoderJNI.Wrapper decoder = new DecoderJNI.Wrapper(4);
+     try {
+       try {
+diff --git a/org/brotli/wrapper/dec/DecoderTest.java b/org/brotli/wrapper/dec/DecoderTest.java
+index 74b77d3..c2c8e48 100644
+--- a/org/brotli/wrapper/dec/DecoderTest.java
++++ b/org/brotli/wrapper/dec/DecoderTest.java
+@@ -29,7 +29,7 @@ public class DecoderTest extends BrotliJniTestBase {
+   }
+ 
+   /** Creates a test suite. */
+-  public static TestSuite suite() throws IOException {
++  public static TestSuite suite() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(42);
+     TestSuite suite = new TestSuite();
+     InputStream bundle = getBundle();
+     try {
+@@ -52,7 +52,7 @@ public class DecoderTest extends BrotliJniTestBase {
+     }
+ 
+     @Override
+-    protected void runTest() throws Throwable {
++    protected void runTest() throws Throwable { org.brotli.jmhbench.MutationSwitch.tick(43);
+       DecoderTest.run(entryName);
+     }
+   }
+diff --git a/org/brotli/wrapper/dec/EagerStreamTest.java b/org/brotli/wrapper/dec/EagerStreamTest.java
+index 919f6e3..1ea0d32 100644
+--- a/org/brotli/wrapper/dec/EagerStreamTest.java
++++ b/org/brotli/wrapper/dec/EagerStreamTest.java
+@@ -20,7 +20,7 @@ import org.junit.runners.JUnit4;
+ public class EagerStreamTest extends BrotliJniTestBase {
+ 
+   @Test
+-  public void testEagerReading() throws IOException {
++  public void testEagerReading() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(44);
+     final StringBuilder log = new StringBuilder();
+     final byte[] data = {0, 0, 16, 42, 3};
+     InputStream source = new InputStream() {
+diff --git a/org/brotli/wrapper/enc/BrotliEncoderChannel.java b/org/brotli/wrapper/enc/BrotliEncoderChannel.java
+index 2ee2ba6..62680a1 100644
+--- a/org/brotli/wrapper/enc/BrotliEncoderChannel.java
++++ b/org/brotli/wrapper/enc/BrotliEncoderChannel.java
+@@ -44,12 +44,12 @@ public class BrotliEncoderChannel extends Encoder implements WritableByteChannel
+   }
+ 
+   @Override
+-  public void attachDictionary(PreparedDictionary dictionary) throws IOException {
++  public void attachDictionary(PreparedDictionary dictionary) throws IOException { org.brotli.jmhbench.MutationSwitch.tick(45);
+     super.attachDictionary(dictionary);
+   }
+ 
+   @Override
+-  public boolean isOpen() {
++  public boolean isOpen() { org.brotli.jmhbench.MutationSwitch.tick(46);
+     synchronized (mutex) {
+       return !closed;
+     }
+diff --git a/org/brotli/wrapper/enc/BrotliEncoderChannelTest.java b/org/brotli/wrapper/enc/BrotliEncoderChannelTest.java
+index 27e1a8a..decdfdd 100644
+--- a/org/brotli/wrapper/enc/BrotliEncoderChannelTest.java
++++ b/org/brotli/wrapper/enc/BrotliEncoderChannelTest.java
+@@ -36,7 +36,7 @@ public class BrotliEncoderChannelTest extends BrotliJniTestBase {
+   }
+ 
+   /** Creates a test suite. */
+-  public static TestSuite suite() throws IOException {
++  public static TestSuite suite() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(47);
+     TestSuite suite = new TestSuite();
+     InputStream bundle = getBundle();
+     try {
+@@ -62,7 +62,7 @@ public class BrotliEncoderChannelTest extends BrotliJniTestBase {
+     }
+ 
+     @Override
+-    protected void runTest() throws Throwable {
++    protected void runTest() throws Throwable { org.brotli.jmhbench.MutationSwitch.tick(48);
+       BrotliEncoderChannelTest.run(entryName, mode);
+     }
+   }
+diff --git a/org/brotli/wrapper/enc/BrotliOutputStream.java b/org/brotli/wrapper/enc/BrotliOutputStream.java
+index fe3596d..e130edb 100644
+--- a/org/brotli/wrapper/enc/BrotliOutputStream.java
++++ b/org/brotli/wrapper/enc/BrotliOutputStream.java
+@@ -42,14 +42,14 @@ public class BrotliOutputStream extends OutputStream {
+     this(destination, new Encoder.Parameters());
+   }
+ 
+-  public void attachDictionary(PreparedDictionary dictionary) throws IOException {
++  public void attachDictionary(PreparedDictionary dictionary) throws IOException { org.brotli.jmhbench.MutationSwitch.tick(49);
+     synchronized (lock) {
+       encoder.attachDictionary(dictionary);
+     }
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { org.brotli.jmhbench.MutationSwitch.tick(50);
+     synchronized (lock) {
+       encoder.close();
+     }

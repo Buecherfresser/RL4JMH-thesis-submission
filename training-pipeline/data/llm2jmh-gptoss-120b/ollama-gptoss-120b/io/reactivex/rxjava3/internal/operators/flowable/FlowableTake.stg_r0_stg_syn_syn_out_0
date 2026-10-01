@@ -1,0 +1,100 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableTake}.
+ *
+ * The benchmark measures the throughput (operations per time unit) of the
+ * {@code take} operator under different source sizes and take counts.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source Flowable and the operator in @Setup to exclude
+ *   allocation overhead from the measured section.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Configure warm‑up, measurement iterations and forks for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, warmups = 1)
+@State(Scope.Thread)
+public class FlowableTakeBenchmark {
+
+    /**
+     * Number of items the source Flowable will emit.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int sourceSize;
+
+    /**
+     * Number of items to take from the source.
+     * Includes edge cases (0, 1) and typical usage.
+     */
+    @Param({ "0", "1", "10", "1000" })
+    public long takeCount;
+
+    private Flowable<Integer> source;
+
+    private Flowable<Integer> takeFlowable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple synchronous source emitting a range of integers.
+        source = Flowable.range(1, sourceSize);
+        // Apply the take operator with the configured count.
+        takeFlowable = source.take(takeCount);
+    }
+
+    /**
+     * Benchmark that subscribes to the {@code take} Flowable and consumes all
+     * emitted items using {@link Blackhole}. The subscription is performed
+     * synchronously via {@code blockingSubscribe} to ensure the benchmark
+     * measures the complete processing of the stream.
+     *
+     * @param bh Blackhole to consume items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void takeAndConsume(Blackhole bh) {
+        // blockingSubscribe guarantees that the method returns only after
+        // the upstream has completed, giving a clean measurement of the
+        // whole pipeline.
+        takeFlowable.blockingSubscribe(bh::consume);
+    }
+}

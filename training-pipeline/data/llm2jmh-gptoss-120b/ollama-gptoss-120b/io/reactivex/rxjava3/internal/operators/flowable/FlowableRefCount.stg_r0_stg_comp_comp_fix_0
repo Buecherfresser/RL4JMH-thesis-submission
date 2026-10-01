@@ -1,0 +1,146 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.flowables.ConnectableFlowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.schedulers.Scheduler;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+/**
+ * JMH benchmark for {@link FlowableRefCount}.
+ *
+ * The benchmarks focus on the most common usage patterns:
+ * <ul>
+ *   <li>Subscribe to a ref-counted flowable and immediately cancel (tests subscription/cancellation overhead).</li>
+ *   <li>Subscribe and consume a small number of items (tests the full subscription path including request propagation).</li>
+ * </ul>
+ *
+ * The benchmark runs in {@link Mode#Throughput} to measure how many operations per second can be performed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@Threads(Threads.MAX)
+@State(Scope.Benchmark)
+public class FlowableRefCountBenchmark {
+
+    /**
+     * Source flowable that emits a finite range of integers.
+     * It is turned into a {@link ConnectableFlowable} via {@code publish()}.
+     */
+    private ConnectableFlowable<Integer> connectable;
+
+    /**
+     * The ref‑counted wrapper under test.
+     */
+    private Flowable<Integer> refCounted;
+
+    /**
+     * Scheduler used for timeout handling (null means no timeout).
+     */
+    private Scheduler scheduler;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A simple hot source that can be shared among many subscribers.
+        // Using a small range keeps the benchmark fast while still exercising the operator.
+        Flowable<Integer> source = Flowable.range(1, 1000);
+        connectable = source.publish();
+
+        // No timeout for the baseline measurement; can be changed to test timeout paths.
+        scheduler = Schedulers.single();
+
+        // Wrap the connectable flowable with the default ref‑count (n = 1, no timeout).
+        refCounted = new FlowableRefCount<>(connectable);
+    }
+
+    /**
+     * Benchmark that subscribes to the ref‑counted flowable and immediately cancels.
+     * This measures the overhead of subscription management, synchronization,
+     * and cancellation logic without the cost of processing items.
+     *
+     * @param bh Blackhole to consume the subscription reference and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void subscribeAndCancel(Blackhole bh) {
+        // Subscribe with a no‑op subscriber that cancels right away.
+        refCounted.subscribe(new Subscriber<Integer>() {
+
+            private Subscription upstream;
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                // Cancel immediately to trigger the RefCount cancellation path.
+                s.cancel();
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+                // never called
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // ignore
+            }
+
+            @Override
+            public void onComplete() {
+                // ignore
+            }
+        });
+        // Prevent the JIT from optimizing away the subscription.
+        bh.consume(refCounted);
+    }
+
+    /**
+     * Benchmark that subscribes, requests a small number of items, and consumes them.
+     * This exercises the full subscription path, request propagation, and onNext handling.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        refCounted.subscribe(new Subscriber<Integer>() {
+
+            private Subscription upstream;
+            private int remaining = 10; // consume only a subset to keep the benchmark short
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                // Request a small batch of items.
+                s.request(remaining);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+                if (--remaining == 0) {
+                    // stop after the desired number of items
+                    upstream.cancel();
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // ignore
+            }
+
+            @Override
+            public void onComplete() {
+                // ignore
+            }
+        });
+    }
+}
+```

@@ -1,0 +1,539 @@
+diff --git a/com/spotify/dns/AggregatingChangeNotifier.java b/com/spotify/dns/AggregatingChangeNotifier.java
+index 3810020..f488527 100644
+--- a/com/spotify/dns/AggregatingChangeNotifier.java
++++ b/com/spotify/dns/AggregatingChangeNotifier.java
+@@ -48,12 +48,12 @@ class AggregatingChangeNotifier<T> extends AbstractChangeNotifier<T> {
+   }
+ 
+   @Override
+-  public Set<T> current() {
++  public Set<T> current() { com.spotify.dns.jmhbench.MutationSwitch.tick(1);
+     return records;
+   }
+ 
+   @Override
+-  protected void closeImplementation() {
++  protected void closeImplementation() { com.spotify.dns.jmhbench.MutationSwitch.tick(2);
+     for (ChangeNotifier<T> provider : changeNotifiers) {
+       provider.close();
+     }
+diff --git a/com/spotify/dns/CachingLookupFactory.java b/com/spotify/dns/CachingLookupFactory.java
+index 2482186..5658977 100644
+--- a/com/spotify/dns/CachingLookupFactory.java
++++ b/com/spotify/dns/CachingLookupFactory.java
+@@ -41,7 +41,7 @@ class CachingLookupFactory implements LookupFactory {
+   }
+ 
+   @Override
+-  public Lookup forName(final String fqdn) {
++  public Lookup forName(final String fqdn) { com.spotify.dns.jmhbench.MutationSwitch.tick(3);
+     try {
+       return cacheHolder.get().get(
+           fqdn,
+@@ -55,7 +55,7 @@ class CachingLookupFactory implements LookupFactory {
+   }
+ 
+   @Override
+-  public LookupSession sessionForName(String fqdn) {
++  public LookupSession sessionForName(String fqdn) { com.spotify.dns.jmhbench.MutationSwitch.tick(4);
+     throw new java.lang.UnsupportedOperationException("Session not supported with caching lookup");
+   }
+ }
+diff --git a/com/spotify/dns/ChangeNotifiers.java b/com/spotify/dns/ChangeNotifiers.java
+index af23b57..7fbc22e 100644
+--- a/com/spotify/dns/ChangeNotifiers.java
++++ b/com/spotify/dns/ChangeNotifiers.java
+@@ -49,7 +49,7 @@ public final class ChangeNotifiers {
+    * @param set
+    * @return true if the input is an initially empty set.
+    */
+-  public static <T> boolean isInitialEmptyData(Set<T> set) {
++  public static <T> boolean isInitialEmptyData(Set<T> set) { com.spotify.dns.jmhbench.MutationSwitch.tick(5);
+     return set == INITIAL_EMPTY_DATA;
+   }
+ 
+@@ -72,11 +72,11 @@ public final class ChangeNotifiers {
+    * @param <T>        The record type
+    * @return A notifier with the described behaviour
+    */
+-  public static <T> ChangeNotifier<T> aggregate(ChangeNotifier<T>... notifiers) {
++  public static <T> ChangeNotifier<T> aggregate(ChangeNotifier<T>... notifiers) { com.spotify.dns.jmhbench.MutationSwitch.tick(6);
+     return aggregate(Arrays.asList(notifiers));
+   }
+ 
+-  public static <T> ChangeNotifier<T> aggregate(Iterable<ChangeNotifier<T>> notifiers) {
++  public static <T> ChangeNotifier<T> aggregate(Iterable<ChangeNotifier<T>> notifiers) { com.spotify.dns.jmhbench.MutationSwitch.tick(7);
+     return new AggregatingChangeNotifier<>(notifiers);
+   }
+ 
+@@ -92,11 +92,11 @@ public final class ChangeNotifiers {
+    * @param <T>      The record type
+    * @return A notifier with a static set of records
+    */
+-  public static <T> ChangeNotifier<T> staticRecords(T... records) {
++  public static <T> ChangeNotifier<T> staticRecords(T... records) { com.spotify.dns.jmhbench.MutationSwitch.tick(8);
+     return staticRecords(Sets.newHashSet(records));
+   }
+ 
+-  public static <T> ChangeNotifier<T> staticRecords(Set<T> records) {
++  public static <T> ChangeNotifier<T> staticRecords(Set<T> records) { com.spotify.dns.jmhbench.MutationSwitch.tick(9);
+     return new StaticChangeNotifier<>(records);
+   }
+ 
+@@ -114,7 +114,7 @@ public final class ChangeNotifiers {
+    * @param <T>              The record type
+    * @return A runnable notifier
+    */
+-  public static <T> RunnableChangeNotifier<T> direct(Supplier<Set<T>> recordsSupplier) {
++  public static <T> RunnableChangeNotifier<T> direct(Supplier<Set<T>> recordsSupplier) { com.spotify.dns.jmhbench.MutationSwitch.tick(10);
+     return new DirectChangeNotifier<>(recordsSupplier);
+   }
+ 
+@@ -122,11 +122,11 @@ public final class ChangeNotifiers {
+    * @deprecated Use {@link #direct(java.util.function.Supplier)}
+    * deprecated since version 3.2.0
+    */
+-  public static <T> RunnableChangeNotifier<T> direct(com.google.common.base.Supplier<Set<T>> recordsSupplier) {
++  public static <T> RunnableChangeNotifier<T> direct(com.google.common.base.Supplier<Set<T>> recordsSupplier) { com.spotify.dns.jmhbench.MutationSwitch.tick(11);
+     return new DirectChangeNotifier<>(recordsSupplier);
+   }
+ 
+-  public static <T> RunnableChangeNotifier<T> direct(AtomicReference<Set<T>> recordsHolder) {
++  public static <T> RunnableChangeNotifier<T> direct(AtomicReference<Set<T>> recordsHolder) { com.spotify.dns.jmhbench.MutationSwitch.tick(12);
+     return new DirectChangeNotifier<>(supplierFromRef(recordsHolder));
+   }
+ 
+diff --git a/com/spotify/dns/DirectChangeNotifier.java b/com/spotify/dns/DirectChangeNotifier.java
+index b675a2b..2812209 100644
+--- a/com/spotify/dns/DirectChangeNotifier.java
++++ b/com/spotify/dns/DirectChangeNotifier.java
+@@ -34,17 +34,17 @@ class DirectChangeNotifier<T> extends AbstractChangeNotifier<T>
+   }
+ 
+   @Override
+-  protected void closeImplementation() {
++  protected void closeImplementation() { com.spotify.dns.jmhbench.MutationSwitch.tick(13);
+     run = false;
+   }
+ 
+   @Override
+-  public Set<T> current() {
++  public Set<T> current() { com.spotify.dns.jmhbench.MutationSwitch.tick(14);
+     return records;
+   }
+ 
+   @Override
+-  public void run() {
++  public void run() { com.spotify.dns.jmhbench.MutationSwitch.tick(15);
+     if (!run) {
+       return;
+     }
+diff --git a/com/spotify/dns/DnsSrvResolvers.java b/com/spotify/dns/DnsSrvResolvers.java
+index 2c20cba..7f10210 100644
+--- a/com/spotify/dns/DnsSrvResolvers.java
++++ b/com/spotify/dns/DnsSrvResolvers.java
+@@ -37,7 +37,7 @@ public final class DnsSrvResolvers {
+   private static final int DEFAULT_DNS_TIMEOUT_SECONDS = 5;
+   private static final int DEFAULT_RETENTION_DURATION_HOURS = 2;
+ 
+-  public static DnsSrvResolverBuilder newBuilder() {
++  public static DnsSrvResolverBuilder newBuilder() { com.spotify.dns.jmhbench.MutationSwitch.tick(16);
+     return new DnsSrvResolverBuilder();
+   }
+ 
+@@ -78,7 +78,7 @@ public final class DnsSrvResolvers {
+       this.executor = executor;
+     }
+ 
+-    public DnsSrvResolver build() {
++    public DnsSrvResolver build() { com.spotify.dns.jmhbench.MutationSwitch.tick(17);
+       Resolver resolver;
+       try {
+         // If the user specified DNS servers, create a new ExtendedResolver which uses them.
+@@ -115,12 +115,12 @@ public final class DnsSrvResolvers {
+       return result;
+     }
+ 
+-    public DnsSrvResolverBuilder metered(DnsReporter reporter) {
++    public DnsSrvResolverBuilder metered(DnsReporter reporter) { com.spotify.dns.jmhbench.MutationSwitch.tick(18);
+       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
+                                        retentionDurationMillis, servers, executor);
+     }
+ 
+-    public DnsSrvResolverBuilder retainingDataOnFailures(boolean retainData) {
++    public DnsSrvResolverBuilder retainingDataOnFailures(boolean retainData) { com.spotify.dns.jmhbench.MutationSwitch.tick(19);
+       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
+                                        retentionDurationMillis, servers, executor);
+     }
+@@ -130,22 +130,22 @@ public final class DnsSrvResolvers {
+      * CachingLookups will be removed in the future as it doesn't work with `resolveAsync`
+      */
+     @Deprecated
+-    public DnsSrvResolverBuilder cachingLookups(boolean cacheLookups) {
++    public DnsSrvResolverBuilder cachingLookups(boolean cacheLookups) { com.spotify.dns.jmhbench.MutationSwitch.tick(20);
+       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
+                                        retentionDurationMillis, servers, executor);
+     }
+ 
+-    public DnsSrvResolverBuilder dnsLookupTimeoutMillis(long dnsLookupTimeoutMillis) {
++    public DnsSrvResolverBuilder dnsLookupTimeoutMillis(long dnsLookupTimeoutMillis) { com.spotify.dns.jmhbench.MutationSwitch.tick(21);
+       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
+                                        retentionDurationMillis, servers, executor);
+     }
+ 
+-    public DnsSrvResolverBuilder retentionDurationMillis(long retentionDurationMillis) {
++    public DnsSrvResolverBuilder retentionDurationMillis(long retentionDurationMillis) { com.spotify.dns.jmhbench.MutationSwitch.tick(22);
+       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
+                                        retentionDurationMillis, servers, executor);
+     }
+ 
+-    public DnsSrvResolverBuilder executor(Executor executor) {
++    public DnsSrvResolverBuilder executor(Executor executor) { com.spotify.dns.jmhbench.MutationSwitch.tick(23);
+       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
+               retentionDurationMillis, servers, executor);
+     }
+@@ -159,7 +159,7 @@ public final class DnsSrvResolvers {
+      * @param servers the DNS servers to use
+      * @return this builder
+      */
+-    public DnsSrvResolverBuilder servers(List<String> servers) {
++    public DnsSrvResolverBuilder servers(List<String> servers) { com.spotify.dns.jmhbench.MutationSwitch.tick(24);
+       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
+                                        retentionDurationMillis, servers, executor);
+     }
+diff --git a/com/spotify/dns/DnsSrvWatchers.java b/com/spotify/dns/DnsSrvWatchers.java
+index 6de65a2..a66d6f1 100644
+--- a/com/spotify/dns/DnsSrvWatchers.java
++++ b/com/spotify/dns/DnsSrvWatchers.java
+@@ -44,7 +44,7 @@ public final class DnsSrvWatchers {
+    * @param resolver The resolver to use for lookups
+    * @return a builder for further configuring the watcher
+    */
+-  public static DnsSrvWatcherBuilder<LookupResult> newBuilder(DnsSrvResolver resolver) {
++  public static DnsSrvWatcherBuilder<LookupResult> newBuilder(DnsSrvResolver resolver) { com.spotify.dns.jmhbench.MutationSwitch.tick(25);
+     requireNonNull(resolver, "resolver");
+ 
+     return new DnsSrvWatcherBuilder<>(resolver, Function.identity());
+@@ -66,7 +66,7 @@ public final class DnsSrvWatchers {
+    */
+   public static <T> DnsSrvWatcherBuilder<T> newBuilder(
+       DnsSrvResolver resolver,
+-      Function<LookupResult, T> resultTransformer) {
++      Function<LookupResult, T> resultTransformer) { com.spotify.dns.jmhbench.MutationSwitch.tick(26);
+ 
+     requireNonNull(resolver, "resolver");
+     requireNonNull(resultTransformer, "resultTransformer");
+@@ -80,7 +80,7 @@ public final class DnsSrvWatchers {
+    */
+   public static <T> DnsSrvWatcherBuilder<T> newBuilder(
+       DnsSrvResolver resolver,
+-      com.google.common.base.Function<LookupResult, T> resultTransformer) {
++      com.google.common.base.Function<LookupResult, T> resultTransformer) { com.spotify.dns.jmhbench.MutationSwitch.tick(27);
+ 
+     requireNonNull(resolver, "resolver");
+     requireNonNull(resultTransformer, "resultTransformer");
+@@ -128,7 +128,7 @@ public final class DnsSrvWatchers {
+       this.scheduledExecutorService = scheduledExecutorService;
+     }
+ 
+-    public DnsSrvWatcher<T> build() {
++    public DnsSrvWatcher<T> build() { com.spotify.dns.jmhbench.MutationSwitch.tick(28);
+       checkState(polling ^ dnsSrvWatcherFactory != null, "specify either polling or custom trigger");
+ 
+       DnsSrvWatcherFactory<T> watcherFactory;
+@@ -154,7 +154,7 @@ public final class DnsSrvWatchers {
+       return watcherFactory.create(changeNotifierFactory);
+     }
+ 
+-    public DnsSrvWatcherBuilder<T> polling(long pollingInterval, TimeUnit pollingIntervalUnit) {
++    public DnsSrvWatcherBuilder<T> polling(long pollingInterval, TimeUnit pollingIntervalUnit) { com.spotify.dns.jmhbench.MutationSwitch.tick(29);
+       checkArgument(pollingInterval > 0);
+       requireNonNull(pollingIntervalUnit, "pollingIntervalUnit");
+ 
+@@ -163,13 +163,13 @@ public final class DnsSrvWatchers {
+                                          scheduledExecutorService);
+     }
+ 
+-    public DnsSrvWatcherBuilder<T> usingExecutor(ScheduledExecutorService scheduledExecutorService) {
++    public DnsSrvWatcherBuilder<T> usingExecutor(ScheduledExecutorService scheduledExecutorService) { com.spotify.dns.jmhbench.MutationSwitch.tick(30);
+       return new DnsSrvWatcherBuilder<T>(resolver, resultTransformer, polling, pollingInterval,
+                                          pollingIntervalUnit, errorHandler, dnsSrvWatcherFactory,
+                                          scheduledExecutorService);
+     }
+ 
+-    public DnsSrvWatcherBuilder<T> customTrigger(DnsSrvWatcherFactory<T> watcherFactory) {
++    public DnsSrvWatcherBuilder<T> customTrigger(DnsSrvWatcherFactory<T> watcherFactory) { com.spotify.dns.jmhbench.MutationSwitch.tick(31);
+       requireNonNull(watcherFactory, "watcherFactory");
+ 
+       return new DnsSrvWatcherBuilder<T>(resolver, resultTransformer, true, pollingInterval,
+@@ -177,7 +177,7 @@ public final class DnsSrvWatchers {
+                                          scheduledExecutorService);
+     }
+ 
+-    public DnsSrvWatcherBuilder<T> withErrorHandler(ErrorHandler errorHandler) {
++    public DnsSrvWatcherBuilder<T> withErrorHandler(ErrorHandler errorHandler) { com.spotify.dns.jmhbench.MutationSwitch.tick(32);
+       requireNonNull(errorHandler, "errorHandler");
+ 
+       return new DnsSrvWatcherBuilder<T>(resolver, resultTransformer, true, pollingInterval,
+diff --git a/com/spotify/dns/LookupResult.java b/com/spotify/dns/LookupResult.java
+index a67d444..3566adf 100644
+--- a/com/spotify/dns/LookupResult.java
++++ b/com/spotify/dns/LookupResult.java
+@@ -22,27 +22,27 @@ public class LookupResult {
+     this.ttl = ttl;
+   }
+ 
+-  public static LookupResult create(String host, int port, int priority, int weight, long ttl) {
++  public static LookupResult create(String host, int port, int priority, int weight, long ttl) { com.spotify.dns.jmhbench.MutationSwitch.tick(33);
+     return new LookupResult(host, port, priority, weight, ttl);
+   }
+ 
+-  public String host() {
++  public String host() { com.spotify.dns.jmhbench.MutationSwitch.tick(34);
+     return host;
+   }
+ 
+-  public int port() {
++  public int port() { com.spotify.dns.jmhbench.MutationSwitch.tick(35);
+     return port;
+   }
+ 
+-  public int priority() {
++  public int priority() { com.spotify.dns.jmhbench.MutationSwitch.tick(36);
+     return priority;
+   }
+ 
+-  public int weight() {
++  public int weight() { com.spotify.dns.jmhbench.MutationSwitch.tick(37);
+     return weight;
+   }
+ 
+-  public long ttl() {
++  public long ttl() { com.spotify.dns.jmhbench.MutationSwitch.tick(38);
+     return ttl;
+   }
+ 
+diff --git a/com/spotify/dns/MeteredDnsSrvResolver.java b/com/spotify/dns/MeteredDnsSrvResolver.java
+index 6ab8335..9a1aedf 100644
+--- a/com/spotify/dns/MeteredDnsSrvResolver.java
++++ b/com/spotify/dns/MeteredDnsSrvResolver.java
+@@ -38,7 +38,7 @@ class MeteredDnsSrvResolver implements DnsSrvResolver {
+   }
+ 
+     @Override
+-    public List<LookupResult> resolve(String fqdn) {
++    public List<LookupResult> resolve(String fqdn) { com.spotify.dns.jmhbench.MutationSwitch.tick(39);
+         // Only catch and report RuntimeException to avoid Error's since that would
+         // most likely only aggravate any condition that causes them to be thrown.
+ 
+@@ -63,7 +63,7 @@ class MeteredDnsSrvResolver implements DnsSrvResolver {
+     }
+ 
+   @Override
+-  public CompletionStage<List<LookupResult>> resolveAsync(String fqdn) {
++  public CompletionStage<List<LookupResult>> resolveAsync(String fqdn) { com.spotify.dns.jmhbench.MutationSwitch.tick(40);
+     // Only catch and report RuntimeException to avoid Error's since that would
+     // most likely only aggravate any condition that causes them to be thrown.
+ 
+diff --git a/com/spotify/dns/PollingDnsSrvWatcher.java b/com/spotify/dns/PollingDnsSrvWatcher.java
+index 81bacaf..d7a946f 100644
+--- a/com/spotify/dns/PollingDnsSrvWatcher.java
++++ b/com/spotify/dns/PollingDnsSrvWatcher.java
+@@ -44,7 +44,7 @@ class PollingDnsSrvWatcher<T> implements DnsSrvWatcher<T> {
+   }
+ 
+   @Override
+-  public ChangeNotifier<T> watch(String fqdn) {
++  public ChangeNotifier<T> watch(String fqdn) { com.spotify.dns.jmhbench.MutationSwitch.tick(41);
+     final RunnableChangeNotifier<T> changeNotifier = changeNotifierFactory.create(fqdn);
+ 
+     final ScheduledFuture<?> updaterFuture =
+@@ -54,7 +54,7 @@ class PollingDnsSrvWatcher<T> implements DnsSrvWatcher<T> {
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { com.spotify.dns.jmhbench.MutationSwitch.tick(42);
+     executor.shutdownNow();
+   }
+ }
+diff --git a/com/spotify/dns/RetainingDnsSrvResolver.java b/com/spotify/dns/RetainingDnsSrvResolver.java
+index f2a16c9..8cf8e81 100644
+--- a/com/spotify/dns/RetainingDnsSrvResolver.java
++++ b/com/spotify/dns/RetainingDnsSrvResolver.java
+@@ -47,7 +47,7 @@ class RetainingDnsSrvResolver implements DnsSrvResolver {
+   }
+ 
+   @Override
+-  public List<LookupResult> resolve(final String fqdn) {
++  public List<LookupResult> resolve(final String fqdn) { com.spotify.dns.jmhbench.MutationSwitch.tick(43);
+     requireNonNull(fqdn, "fqdn");
+ 
+     try {
+@@ -73,7 +73,7 @@ class RetainingDnsSrvResolver implements DnsSrvResolver {
+   }
+ 
+   @Override
+-  public CompletionStage<List<LookupResult>> resolveAsync(final String fqdn) {
++  public CompletionStage<List<LookupResult>> resolveAsync(final String fqdn) { com.spotify.dns.jmhbench.MutationSwitch.tick(44);
+     requireNonNull(fqdn, "fqdn");
+     return delegate.resolveAsync(fqdn).handle((nodes, e) -> {
+       if (e == null){
+diff --git a/com/spotify/dns/ServiceResolvingChangeNotifier.java b/com/spotify/dns/ServiceResolvingChangeNotifier.java
+index 82fdfeb..97af063 100644
+--- a/com/spotify/dns/ServiceResolvingChangeNotifier.java
++++ b/com/spotify/dns/ServiceResolvingChangeNotifier.java
+@@ -72,17 +72,17 @@ class ServiceResolvingChangeNotifier<T> extends AbstractChangeNotifier<T>
+   }
+ 
+   @Override
+-  protected void closeImplementation() {
++  protected void closeImplementation() { com.spotify.dns.jmhbench.MutationSwitch.tick(45);
+     run = false;
+   }
+ 
+   @Override
+-  public Set<T> current() {
++  public Set<T> current() { com.spotify.dns.jmhbench.MutationSwitch.tick(46);
+     return records;
+   }
+ 
+   @Override
+-  public void run() {
++  public void run() { com.spotify.dns.jmhbench.MutationSwitch.tick(47);
+     if (!run) {
+       return;
+     }
+diff --git a/com/spotify/dns/SimpleLookupFactory.java b/com/spotify/dns/SimpleLookupFactory.java
+index 533cc22..d86de41 100644
+--- a/com/spotify/dns/SimpleLookupFactory.java
++++ b/com/spotify/dns/SimpleLookupFactory.java
+@@ -63,7 +63,7 @@ public class SimpleLookupFactory implements LookupFactory {
+   }
+ 
+   @Override
+-  public Lookup forName(String fqdn) {
++  public Lookup forName(String fqdn) { com.spotify.dns.jmhbench.MutationSwitch.tick(48);
+     try {
+       final Lookup lookup = new Lookup(fqdn, Type.SRV, DClass.IN);
+       if (resolver != null) {
+@@ -76,7 +76,7 @@ public class SimpleLookupFactory implements LookupFactory {
+   }
+ 
+   @Override
+-  public LookupSession sessionForName(String fqdn) {
++  public LookupSession sessionForName(String fqdn) { com.spotify.dns.jmhbench.MutationSwitch.tick(49);
+     return session;
+   }
+ }
+diff --git a/com/spotify/dns/StaticChangeNotifier.java b/com/spotify/dns/StaticChangeNotifier.java
+index 0b65608..212c96f 100644
+--- a/com/spotify/dns/StaticChangeNotifier.java
++++ b/com/spotify/dns/StaticChangeNotifier.java
+@@ -37,7 +37,7 @@ class StaticChangeNotifier<T> extends AbstractChangeNotifier<T> {
+   }
+ 
+   @Override
+-  public Set<T> current() {
++  public Set<T> current() { com.spotify.dns.jmhbench.MutationSwitch.tick(50);
+     return records;
+   }
+ 
+diff --git a/com/spotify/dns/jmhbench/MutationSwitch.java b/com/spotify/dns/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..ffe6d9c
+--- /dev/null
++++ b/com/spotify/dns/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.spotify.dns.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

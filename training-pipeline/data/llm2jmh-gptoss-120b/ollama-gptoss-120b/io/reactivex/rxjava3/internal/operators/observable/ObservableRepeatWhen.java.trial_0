@@ -1,0 +1,53 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Observable;
+
+/**
+ * Benchmark for {@code Observable.repeatWhen} operator.
+ *
+ * The benchmark measures the throughput (operations per second) of an
+ * Observable that repeats a simple source a fixed number of times.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Initialize the Observable once per trial in @Setup to exclude construction cost.
+ * - Consume the emitted items with Blackhole to prevent dead-code elimination.
+ * - Configure warm‑up, measurement, and fork parameters for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableRepeatWhenBenchmark {
+
+    /** Number of repetitions for the repeatWhen operator. */
+    @Param({"10", "100", "1000"})
+    public int repeatCount;
+
+    /** The Observable under test. */
+    private Observable<Integer> repeatWhenObservable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source that emits a single integer.
+        Observable<Integer> source = Observable.just(1);
+
+        // repeatWhen handler that repeats the source {@code repeatCount} times.
+        repeatWhenObservable = source.repeatWhen(completed -> completed.take(repeatCount));
+    }
+
+    @Benchmark
+    public void repeatWhen(Blackhole bh) {
+        // Subscribe and consume all items; blockingForEach ensures the whole sequence is processed.
+        repeatWhenObservable.blockingForEach(bh::consume);
+    }
+}
+```

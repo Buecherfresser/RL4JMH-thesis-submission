@@ -1,0 +1,64 @@
+# Curated performance-mutation sites for roaringbitmap (GRPO RL corpus).
+#
+# Hand-picked from good_classes.yaml: concrete classes and hot ~once-per-call public
+# methods (encode/decode/hash/aggregate/set-algebra kernels) that a JMH benchmark drives
+# once per invocation. Several methods per class => ``killed / in-class mutants`` rewards
+# benchmark coverage of the subject's core operations.
+#
+# Regenerate with:
+#   jmh-make-mutants roaringbitmap --source data/external-src/roaringbitmap/RoaringBitmap \
+#       --sites data/projects/roaringbitmap/mutation_sites.yaml
+
+package_root: org.roaringbitmap
+
+sites:
+  - {class: org.roaringbitmap.RoaringBitmap, method: and, match: "(final RoaringBitmap x1, final RoaringBitmap x2)", note: "RoaringBitmap.and"}
+  - {class: org.roaringbitmap.RoaringBitmap, method: andNot, match: "(final RoaringBitmap x1, final RoaringBitmap x2)", note: "RoaringBitmap.andNot"}
+  - {class: org.roaringbitmap.RoaringBitmap, method: lazyor, match: "(final RoaringBitmap x1, final RoaringBitmap x2)", note: "RoaringBitmap.lazyor"}
+  - {class: org.roaringbitmap.FastRankRoaringBitmap, method: and, match: "(RoaringBitmap x2)", note: "FastRankRoaringBitmap.and"}
+  - {class: org.roaringbitmap.FastRankRoaringBitmap, method: andNot, match: "(RoaringBitmap x2)", note: "FastRankRoaringBitmap.andNot"}
+  - {class: org.roaringbitmap.FastRankRoaringBitmap, method: or, match: "(RoaringBitmap x2)", note: "FastRankRoaringBitmap.or"}
+  - {class: org.roaringbitmap.RoaringBitSet, method: and, match: "(BitSet set)", note: "RoaringBitSet.and"}
+  - {class: org.roaringbitmap.RoaringBitSet, method: andNot, match: "(BitSet set)", note: "RoaringBitSet.andNot"}
+  - {class: org.roaringbitmap.RoaringBitSet, method: or, match: "(BitSet set)", note: "RoaringBitSet.or"}
+  - {class: org.roaringbitmap.buffer.MutableRoaringBitmap, method: and, match: "( final MutableRoaringBitmap x1, final MutableRoaringBitmap x2)", note: "MutableRoaringBitmap.and"}
+  - {class: org.roaringbitmap.buffer.MutableRoaringBitmap, method: andNot, match: "( final MutableRoaringBitmap x1, final MutableRoaringBitmap x2)", note: "MutableRoaringBitmap.andNot"}
+  - {class: org.roaringbitmap.buffer.MutableRoaringBitmap, method: lazyor, match: "(final ImmutableRoaringBitmap x2)", note: "MutableRoaringBitmap.lazyor"}
+  - {class: org.roaringbitmap.buffer.ImmutableRoaringBitmap, method: and, match: "( final Iterator<? extends ImmutableRoaringBitmap> bitmaps, final long rangeStart, final long rangeEnd)", note: "ImmutableRoaringBitmap.and"}
+  - {class: org.roaringbitmap.buffer.ImmutableRoaringBitmap, method: andNot, match: "( final ImmutableRoaringBitmap x1, final ImmutableRoaringBitmap x2, long rangeStart, long rangeEnd)", note: "ImmutableRoaringBitmap.andNot"}
+  - {class: org.roaringbitmap.buffer.ImmutableRoaringBitmap, method: lazyor, match: "( final ImmutableRoaringBitmap x1, final ImmutableRoaringBitmap x2)", note: "ImmutableRoaringBitmap.lazyor"}
+  - {class: org.roaringbitmap.longlong.Roaring64Bitmap, method: and, match: "(final Roaring64Bitmap x2)", note: "Roaring64Bitmap.and"}
+  - {class: org.roaringbitmap.longlong.Roaring64Bitmap, method: andNot, match: "(final Roaring64Bitmap x2)", note: "Roaring64Bitmap.andNot"}
+  - {class: org.roaringbitmap.longlong.Roaring64Bitmap, method: or, match: "(final Roaring64Bitmap x2)", note: "Roaring64Bitmap.or"}
+  - {class: org.roaringbitmap.longlong.Roaring64NavigableMap, method: and, match: "(final Roaring64NavigableMap x2)", note: "Roaring64NavigableMap.and"}
+  - {class: org.roaringbitmap.longlong.Roaring64NavigableMap, method: andNot, match: "(final Roaring64NavigableMap x2)", note: "Roaring64NavigableMap.andNot"}
+  - {class: org.roaringbitmap.longlong.Roaring64NavigableMap, method: or, match: "(final Roaring64NavigableMap x2)", note: "Roaring64NavigableMap.or"}
+  - {class: org.roaringbitmap.RangeBitmap, method: and, match: "(MappeableContainer container)", note: "RangeBitmap.and"}
+  - {class: org.roaringbitmap.RangeBitmap, method: between, match: "(long min, long max)", note: "RangeBitmap.between"}
+  - {class: org.roaringbitmap.RangeBitmap, method: betweenCardinality, match: "(long min, long max)", note: "RangeBitmap.betweenCardinality"}
+  - {class: org.roaringbitmap.FastAggregation, method: and, match: "(Iterator<? extends RoaringBitmap> bitmaps)", note: "FastAggregation.and"}
+  - {class: org.roaringbitmap.FastAggregation, method: naive_or, match: "(Iterator<? extends RoaringBitmap> bitmaps)", note: "FastAggregation.naive_or"}
+  - {class: org.roaringbitmap.FastAggregation, method: or, match: "(Iterator<? extends RoaringBitmap> bitmaps)", note: "FastAggregation.or"}
+  - {class: org.roaringbitmap.ParallelAggregation, method: or, match: "(RoaringBitmap... bitmaps)", note: "ParallelAggregation.or"}
+  - {class: org.roaringbitmap.ParallelAggregation, method: xor, match: "(RoaringBitmap... bitmaps)", note: "ParallelAggregation.xor"}
+  - {class: org.roaringbitmap.ParallelAggregation, method: groupByKey, match: "(RoaringBitmap... bitmaps)", note: "ParallelAggregation.groupByKey"}
+  - {class: org.roaringbitmap.ArrayContainer, method: and, match: "(final ArrayContainer value2)", note: "ArrayContainer.and"}
+  - {class: org.roaringbitmap.ArrayContainer, method: andNot, match: "(final ArrayContainer value2)", note: "ArrayContainer.andNot"}
+  - {class: org.roaringbitmap.ArrayContainer, method: lazyor, match: "(ArrayContainer value2)", note: "ArrayContainer.lazyor"}
+  - {class: org.roaringbitmap.BitmapContainer, method: and, match: "(final ArrayContainer value2)", note: "BitmapContainer.and"}
+  - {class: org.roaringbitmap.BitmapContainer, method: andNot, match: "(final ArrayContainer value2)", note: "BitmapContainer.andNot"}
+  - {class: org.roaringbitmap.BitmapContainer, method: lazyor, match: "(ArrayContainer value2)", note: "BitmapContainer.lazyor"}
+  - {class: org.roaringbitmap.RunContainer, method: and, match: "(ArrayContainer x)", note: "RunContainer.and"}
+  - {class: org.roaringbitmap.RunContainer, method: andNot, match: "(ArrayContainer x)", note: "RunContainer.andNot"}
+  - {class: org.roaringbitmap.RunContainer, method: lazyor, match: "(ArrayContainer x)", note: "RunContainer.lazyor"}
+  - {class: org.roaringbitmap.Util, method: unsignedBinarySearch, match: "( final char[] array, final int begin, final int end, final char k)", note: "Util.unsignedBinarySearch"}
+  - {class: org.roaringbitmap.Util, method: advanceUntil, match: "(char[] array, int pos, int length, char min)", note: "Util.advanceUntil"}
+  - {class: org.roaringbitmap.Util, method: branchyUnsignedBinarySearch, match: "( final char[] array, final int begin, final int end, final char k)", note: "Util.branchyUnsignedBinarySearch"}
+  - {class: org.roaringbitmap.BitSetUtil, method: arrayContainerBufferOf, match: "( final int from, final int to, final int cardinality, final long[] words)", note: "BitSetUtil.arrayContainerBufferOf"}
+  - {class: org.roaringbitmap.ArrayContainer, method: or, match: "(final ArrayContainer value2)", note: "ArrayContainer.or"}
+  - {class: org.roaringbitmap.ArrayContainer, method: repairAfterLazy, match: "()", note: "ArrayContainer.repairAfterLazy"}
+  - {class: org.roaringbitmap.ArrayContainer, method: runOptimize, match: "()", note: "ArrayContainer.runOptimize"}
+  - {class: org.roaringbitmap.ArrayContainer, method: xor, match: "(final ArrayContainer value2)", note: "ArrayContainer.xor"}
+  - {class: org.roaringbitmap.BitmapContainer, method: or, match: "(final ArrayContainer value2)", note: "BitmapContainer.or"}
+  - {class: org.roaringbitmap.BitmapContainer, method: repairAfterLazy, match: "()", note: "BitmapContainer.repairAfterLazy"}
+  - {class: org.roaringbitmap.BitmapContainer, method: runOptimize, match: "()", note: "BitmapContainer.runOptimize"}

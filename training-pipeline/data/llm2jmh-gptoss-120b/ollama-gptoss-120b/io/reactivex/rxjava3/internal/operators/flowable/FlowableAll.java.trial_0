@@ -1,0 +1,71 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for the {@code Flowable.all} operator which internally uses {@code FlowableAll}.
+ * Measures the throughput of evaluating a predicate over a stream of integers.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class FlowableAllBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the source Flowable. */
+        @Param({"1000", "10000", "100000"})
+        public int size;
+
+        /** Predicate used by the all operator. */
+        public Predicate<Integer> predicate;
+
+        /** Source Flowable emitting a range of integers. */
+        public Flowable<Integer> source;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Simple predicate that always returns true; change to false for different paths.
+            predicate = v -> true;
+            source = Flowable.range(1, size);
+        }
+    }
+
+    /**
+     * Executes the {@code all} operator and consumes the resulting Boolean.
+     *
+     * @param state   benchmark state containing the source and predicate
+     * @param bh      blackhole to prevent dead-code elimination
+     */
+    @Benchmark
+    public void allTrue(BenchmarkState state, Blackhole bh) {
+        // Flowable.all returns a Single<Boolean>; blockingGet forces evaluation.
+        boolean result = state.source.all(state.predicate).blockingGet();
+        bh.consume(result);
+    }
+
+    /**
+     * Variant where the predicate fails on the first element to exercise the short‑circuit path.
+     *
+     * @param state   benchmark state containing the source
+     * @param bh      blackhole to prevent dead-code elimination
+     */
+    @Benchmark
+    public void allFalseFirst(BenchmarkState state, Blackhole bh) {
+        // Predicate fails immediately, causing early cancellation.
+        Predicate<Integer> falseFirst = v -> false;
+        boolean result = state.source.all(falseFirst).blockingGet();
+        bh.consume(result);
+    }
+}
+```

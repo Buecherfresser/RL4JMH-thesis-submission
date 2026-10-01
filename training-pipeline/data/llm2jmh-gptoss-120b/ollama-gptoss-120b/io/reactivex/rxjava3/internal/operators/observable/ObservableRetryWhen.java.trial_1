@@ -1,0 +1,47 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+
+@State(Scope.Benchmark)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+public class ObservableRetryWhenBenchmark {
+
+    @Param({ "10", "100", "1000" })
+    public int size;
+
+    private Observable<Integer> observable;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Source that emits half of the requested items and then fails.
+        Observable<Integer> source = Observable.create(emitter -> {
+            for (int i = 0; i < size / 2; i++) {
+                emitter.onNext(i);
+            }
+            emitter.onError(new RuntimeException("forced failure"));
+        });
+
+        // Handler that retries a fixed number of times (3 retries).
+        Function<Observable<Throwable>, ObservableSource<?>> handler = attempts ->
+                attempts.take(3).map(t -> new Object());
+
+        observable = source.retryWhen(handler);
+    }
+
+    @Benchmark
+    public long testRetryWhen() {
+        AtomicInteger counter = new AtomicInteger();
+        observable.blockingForEach(i -> counter.incrementAndGet());
+        return counter.get();
+    }
+}
+```

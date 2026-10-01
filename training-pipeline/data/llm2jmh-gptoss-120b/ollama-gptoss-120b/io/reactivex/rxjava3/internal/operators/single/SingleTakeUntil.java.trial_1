@@ -1,0 +1,83 @@
+```java
+package io.reactivex.rxjava3.internal.operators.single;
+
+import org.reactivestreams.Publisher;
+import java.util.concurrent.TimeUnit;
+import java.util.List;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.flowables.Flowable;
+import io.reactivex.rxjava3.observers.TestObserver;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link SingleTakeUntil}.
+ *
+ * Two scenarios are measured:
+ * 1. The {@code other} Publisher never emits, so the upstream Single succeeds.
+ * 2. The {@code other} Publisher emits immediately, causing the operator to cancel the upstream.
+ *
+ * Throughput mode is used to report how many operations per second can be performed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class SingleTakeUntilBenchmark {
+
+    /** Upstream Single that emits a constant value. */
+    private Single<Integer> source;
+
+    /** Publisher that never emits – used for the success scenario. */
+    private Publisher<Object> neverOther;
+
+    /** Publisher that emits a single item immediately – used for the cancellation scenario. */
+    private Publisher<Object> immediateOther;
+
+    /** Operator instance for the success scenario (re‑created each invocation to avoid state leakage). */
+    private Single<Integer> successOperator;
+
+    /** Operator instance for the cancellation scenario (re‑created each invocation). */
+    private Single<Integer> cancelOperator;
+
+    @Setup(Level.Trial)
+    public void globalSetup() {
+        source = Single.just(1);
+        neverOther = Flowable.never();
+        immediateOther = Flowable.just(new Object());
+    }
+
+    @Setup(Level.Invocation)
+    public void perInvocationSetup() {
+        // Create fresh operator instances for each benchmark invocation.
+        successOperator = new SingleTakeUntil<>(source, neverOther);
+        cancelOperator = new SingleTakeUntil<>(source, immediateOther);
+    }
+
+    /**
+     * Measures the throughput when the {@code other} Publisher never emits,
+     * allowing the upstream Single to complete normally.
+     */
+    @Benchmark
+    public void takeUntilSuccess(Blackhole bh) {
+        TestObserver<Integer> observer = new TestObserver<>();
+        successOperator.subscribe(observer);
+        observer.awaitDone(5, TimeUnit.SECONDS);
+        // Consume the emitted value(s) to prevent dead‑code elimination.
+        bh.consume(observer.values());
+    }
+
+    /**
+     * Measures the throughput when the {@code other} Publisher emits immediately,
+     * causing the operator to cancel the upstream Single.
+     */
+    @Benchmark
+    public void takeUntilCancelled(Blackhole bh) {
+        TestObserver<Integer> observer = new TestObserver<>();
+        cancelOperator.subscribe(observer);
+        observer.awaitDone(5, TimeUnit.SECONDS);
+        // Consume the error(s) (CancellationException) to prevent dead‑code elimination.
+        List<Throwable> errors = observer.errors();
+        bh.consume(errors);
+    }
+}
+```

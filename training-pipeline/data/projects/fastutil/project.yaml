@@ -1,0 +1,35 @@
+# Mutation-track metadata for fastutil (consumed by jmh-provision-mutants).
+# The vendored source is the expanded (generated) Java from the Maven Central sources jar:
+#   mkdir -p data/external-src/fastutil/src/main/java
+#   curl -fsSL -o /tmp/fastutil-sources.jar \
+#     https://repo1.maven.org/maven2/it/unimi/dsi/fastutil/8.5.15/fastutil-8.5.15-sources.jar
+#   (cd data/external-src/fastutil/src/main/java && unzip -oq /tmp/fastutil-sources.jar -x 'META-INF/*')
+#   find data/external-src/fastutil/src/main/java -type f ! -name '*.java' -delete
+# Then regenerate the mutation artefacts from the curated site list (mutation_sites.yaml):
+#   jmh-make-mutants fastutil --source data/external-src/fastutil \
+#       --sites data/projects/fastutil/mutation_sites.yaml
+name: fastutil
+display_name: fastutil
+version: "8.5.15"
+package_root: it.unimi.dsi.fastutil
+
+source_dir: data/external-src/fastutil/src/main/java
+
+mutations_patch: mutations.patch
+mutants_registry: mutants.yaml
+snippets: snippets.jsonl
+
+# fastutil has zero runtime dependencies.
+java_release: 17
+dependencies: []
+
+mutation:
+  switch_class: it.unimi.dsi.fastutil.jmhbench.MutationSwitch
+  arm_property: jmhbench.mutant
+  record_property: jmhbench.record
+
+provenance:
+  project: fastutil
+  url: https://github.com/vigna/fastutil
+  release: "8.5.15"
+  source: "Maven Central fastutil-8.5.15-sources.jar (expanded generic sources)"

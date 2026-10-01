@@ -1,0 +1,66 @@
+name: commons-compress
+display_name: Apache Commons Compress
+version: 1.28.0
+
+# Where the pristine, vendored subject-under-test lives (relative to this dir).
+# The upstream pom is kept as pom.upstream.xml for provenance only; the JMH-Bench
+# project runner builds the SUT with java-runner/project-template/pom.xml instead.
+source_dir: src/main/java
+
+provenance:
+  project: Apache Commons Compress
+  url: https://github.com/apache/commons-compress/tree/rel/commons-compress-1.28.0
+  tag: rel/commons-compress-1.28.0
+  released: 2025-07-26
+
+# The single patch that bakes in 100 independent, runtime-armable performance
+# mutants (see mutants.yaml for the hidden ground-truth registry).
+mutations_patch: mutations.patch
+mutants_registry: mutants.yaml
+
+# Harness-facing context: a curated public-API digest. Deliberately does NOT
+# reveal where the mutants are. Shown in full each call in per-class mode (for
+# orientation) and as the sole context in digest mode.
+api_surface: api_surface.md
+
+# How the subject-under-test is shown to a source-driven (LLM) harness.
+#   per_class (default): the harness is called once per real SUT class - it sees
+#     that class's full source and writes a benchmark class covering it; the
+#     per-class files are merged into one suite. This is the realistic setting
+#     (the model reads the actual code, class by class) and yields broad coverage.
+#   digest: a single call with api_surface.md only (cheaper; the project_suite.j2
+#     prompt). Use --input-mode digest to opt in per run.
+# Class selection (per_class): public, concrete classes in include_packages whose
+# simple name matches name_filter. Override with --max-classes or an explicit list.
+harness_input:
+  mode: per_class
+  include_packages: [archivers, compressors, utils, parallel, "(root)"]
+  # Every archive/compression format lives in its own sub-package, so label
+  # components two levels deep (archivers/zip, compressors/gzip) instead of
+  # lumping all of them under `archivers` / `compressors`.
+  component_groups: [archivers, compressors]
+  name_filter: "(InputStream|OutputStream|File|Factory|Parameters|Archive|Compressor|Entry|Utils)"
+  # classes: []          # optional explicit FQCN allow-list (overrides discovery)
+  # max_classes: 60      # optional cap (CLI --max-classes wins)
+  # max_tokens: 16384    # completion budget per LLM call (CLI -o max_tokens= wins)
+  # compile_check: false # compile each class during project-gen; feed errors to LLM
+  # compile_check_retries: 2
+
+# Compile + runtime dependencies of the SUT and the generated suite. Injected
+# into the JMH suite pom template (java-runner/project-template/pom.xml).
+dependencies:
+  - {groupId: commons-codec, artifactId: commons-codec, version: "1.19.0"}
+  - {groupId: commons-io, artifactId: commons-io, version: "2.20.0"}
+  - {groupId: org.apache.commons, artifactId: commons-lang3, version: "3.18.0"}
+  - {groupId: org.tukaani, artifactId: xz, version: "1.10"}
+  - {groupId: com.github.luben, artifactId: zstd-jni, version: "1.5.7-4"}
+  - {groupId: org.brotli, artifactId: dec, version: "0.1.2"}
+  - {groupId: org.ow2.asm, artifactId: asm, version: "9.7.1"}
+
+# How mutants are armed/observed at runtime (see MutationSwitch, added by the patch).
+mutation:
+  switch_class: org.apache.commons.compress.jmhbench.MutationSwitch
+  arm_property: jmhbench.mutant          # -Djmhbench.mutant=<id> arms exactly one mutant
+  record_property: jmhbench.record       # -Djmhbench.record=true enables coverage recording
+  record_file_property: jmhbench.record.file  # absolute path the record dump is written to
+  count: 100

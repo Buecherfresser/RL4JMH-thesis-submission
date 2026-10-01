@@ -1,0 +1,99 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmark for {@link FlowableAnySingle}.
+ *
+ * <p>Measures the throughput (operations per second) of the {@code any} operator
+ * when applied to a {@link Flowable} of integers with a simple predicate.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate state per thread to avoid contention.</li>
+ *   <li>Warm‑up and measurement iterations to let the JIT stabilize.</li>
+ *   <li>Use {@link Blackhole} to consume results and prevent dead‑code elimination.</li>
+ *   <li>Parameterize the source size to explore scaling behavior.</li>
+ *   <li>Fork the JVM to isolate benchmark runs.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableAnySingleBenchmark {
+
+    /**
+     * Number of items emitted by the source {@link Flowable}.
+     * Typical values: 1, 10, 1000, 1_000_000.
+     */
+    @Param({ "1", "10", "1000", "1000000" })
+    public int size;
+
+    private Flowable<Integer> source;
+
+    private Predicate<Integer> predicate;
+
+    private FlowableAnySingle<Integer> anySingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a hot source that emits a range of integers.
+        source = Flowable.range(1, size);
+        // Simple predicate: true for even numbers.
+        predicate = i -> (i & 1) == 0;
+        // Directly instantiate the operator under test.
+        anySingle = new FlowableAnySingle<>(source, predicate);
+    }
+
+    /**
+     * Executes the {@code any} operator and consumes the result.
+     *
+     * @param bh Blackhole to prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void anySingleThroughput(Blackhole bh) {
+        // The operator returns a {@link Single<Boolean>}; we block to obtain the value.
+        // Blocking is acceptable in a microbenchmark because we measure the whole
+        // reactive chain, including subscription and termination.
+        Single<Boolean> resultSingle = anySingle;
+        boolean result = resultSingle.blockingGet();
+        bh.consume(result);
+    }
+}

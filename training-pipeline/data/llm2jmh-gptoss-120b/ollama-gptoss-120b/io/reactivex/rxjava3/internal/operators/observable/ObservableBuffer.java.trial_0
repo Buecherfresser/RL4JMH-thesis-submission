@@ -1,0 +1,72 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable.jmh;
+
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Observable;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableBuffer}.
+ * Measures throughput of the buffer operator with different count/skip configurations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ObservableBufferBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items per buffer.
+         */
+        @Param({"1", "10", "100", "1000"})
+        public int count;
+
+        /**
+         * Skip value – when equal to {@code count} the operator works in exact mode,
+         * otherwise it works in skip mode (overlapping or gapped buffers).
+         */
+        @Param({"1", "5", "10"})
+        public int skip;
+
+        /**
+         * Size of the source sequence for each benchmark iteration.
+         */
+        @Param({"1000", "10000", "100000"})
+        public int sourceSize;
+
+        /**
+         * The source Observable emitting a deterministic range of integers.
+         */
+        public Observable<Integer> source;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // A simple finite range; each benchmark iteration will consume the whole range.
+            source = Observable.range(0, sourceSize);
+        }
+    }
+
+    /**
+     * Benchmark that applies the buffer operator and consumes all emitted collections.
+     * The buffer supplier creates a new {@link ArrayList} for each buffer.
+     *
+     * @param state shared benchmark state
+     * @param bh    JMH blackhole to consume the buffered collections
+     */
+    @Benchmark
+    public void bufferOperator(BenchmarkState state, Blackhole bh) {
+        state.source
+                .buffer(state.count, state.skip, ArrayList::new)
+                .blockingSubscribe(bh::consume);
+    }
+}
+```

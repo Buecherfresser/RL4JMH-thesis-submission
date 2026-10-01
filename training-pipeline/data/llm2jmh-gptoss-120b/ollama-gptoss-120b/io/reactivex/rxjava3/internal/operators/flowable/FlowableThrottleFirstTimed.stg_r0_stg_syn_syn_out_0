@@ -1,0 +1,91 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link FlowableThrottleFirstTimed}.
+ * Measures the throughput (items per second) when applying the throttle-first operator
+ * to a hot source emitting a large number of items.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Perform heavy setup in @Setup to exclude it from measurement.
+ * - Use Blackhole to consume emitted items and prevent dead-code elimination.
+ * - Configure warm‑up, measurement iterations and forks for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableThrottleFirstTimedBenchmark {
+
+    /**
+     * Number of items emitted by the source in each benchmark iteration.
+     */
+    @Param({ "1000000" })
+    public int itemCount;
+
+    /**
+     * Timeout for the throttleFirst operator (in milliseconds).
+     */
+    @Param({ "1" })
+    public long timeoutMs;
+
+    private Flowable<Integer> source;
+
+    private Flowable<Integer> throttled;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A hot source that emits a known number of items as fast as possible.
+        source = Flowable.range(1, itemCount).subscribeOn(Schedulers.computation());
+        // Apply the throttleFirstTimed operator with the configured timeout.
+        throttled = source.throttleFirst(timeoutMs, TimeUnit.MILLISECONDS, Schedulers.computation(), // onDropped consumer (null = no side‑effect)
+        null);
+    }
+
+    /**
+     * Benchmark method that subscribes to the throttled Flowable and consumes all emitted items.
+     * The Blackhole ensures that the consumed values are not optimized away.
+     */
+    @Benchmark
+    public void throttleFirstTimed(Blackhole bh) {
+        throttled.blockingSubscribe(bh::consume);
+    }
+}

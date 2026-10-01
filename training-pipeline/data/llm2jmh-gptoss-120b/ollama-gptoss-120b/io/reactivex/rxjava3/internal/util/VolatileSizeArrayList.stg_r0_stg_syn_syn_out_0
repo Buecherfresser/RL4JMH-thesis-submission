@@ -1,0 +1,178 @@
+package io.reactivex.rxjava3.internal.util;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link VolatileSizeArrayList}.
+ *
+ * The benchmarks focus on the most common operations:
+ * - add (append)
+ * - get (random access)
+ * - size (volatile read)
+ * - remove (by index)
+ * - iteration
+ *
+ * A baseline using {@link java.util.ArrayList} is also provided for comparison.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class VolatileSizeArrayListBenchmark {
+
+    /**
+     * Size of the pre‑filled list for read‑only benchmarks.
+     */
+    private static final int PREPOPULATED_SIZE = 10_000;
+
+    /**
+     * List under test – VolatileSizeArrayList.
+     */
+    private VolatileSizeArrayList<Integer> volatileList;
+
+    /**
+     * Baseline list – regular ArrayList.
+     */
+    private List<Integer> arrayList;
+
+    /**
+     * Index used for random‑access get benchmark (cycled).
+     */
+    private int getIndex;
+
+    /**
+     * Index used for remove benchmark (cycled).
+     */
+    private int removeIndex;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        volatileList = new VolatileSizeArrayList<>(PREPOPULATED_SIZE);
+        arrayList = new ArrayList<>(PREPOPULATED_SIZE);
+        for (int i = 0; i < PREPOPULATED_SIZE; i++) {
+            volatileList.add(i);
+            arrayList.add(i);
+        }
+        getIndex = 0;
+        removeIndex = 0;
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*                     Benchmarks for VolatileSizeArrayList              */
+    /* --------------------------------------------------------------------- */
+    @Benchmark
+    public boolean volatileAdd() {
+        // Adding at the end; the list grows beyond the pre‑populated size.
+        // The element value is irrelevant for throughput measurement.
+        return volatileList.add(42);
+    }
+
+    @Benchmark
+    public int volatileGet() {
+        // Cycle through the list to avoid constant cache hits.
+        int value = volatileList.get(getIndex);
+        getIndex = (getIndex + 1) % volatileList.size();
+        return value;
+    }
+
+    @Benchmark
+    public int volatileSize() {
+        // Simple volatile read of the size.
+        return volatileList.size();
+    }
+
+    @Benchmark
+    public int volatileRemove() {
+        // Remove at a rotating index; re‑insert the removed element to keep size stable.
+        int idx = removeIndex % volatileList.size();
+        Integer removed = volatileList.remove(idx);
+        volatileList.add(idx, removed);
+        removeIndex = (removeIndex + 1) % volatileList.size();
+        return idx;
+    }
+
+    @Benchmark
+    public long volatileIterate() {
+        long sum = 0;
+        for (Integer i : volatileList) {
+            sum += i;
+        }
+        return sum;
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*                     Baseline Benchmarks for java.util.ArrayList       */
+    /* --------------------------------------------------------------------- */
+    @Benchmark
+    public boolean arrayListAdd() {
+        return arrayList.add(42);
+    }
+
+    @Benchmark
+    public int arrayListGet() {
+        int value = arrayList.get(getIndex);
+        getIndex = (getIndex + 1) % arrayList.size();
+        return value;
+    }
+
+    @Benchmark
+    public int arrayListSize() {
+        return arrayList.size();
+    }
+
+    @Benchmark
+    public int arrayListRemove() {
+        int idx = removeIndex % arrayList.size();
+        Integer removed = arrayList.remove(idx);
+        arrayList.add(idx, removed);
+        removeIndex = (removeIndex + 1) % arrayList.size();
+        return idx;
+    }
+
+    @Benchmark
+    public long arrayListIterate() {
+        long sum = 0;
+        for (Integer i : arrayList) {
+            sum += i;
+        }
+        return sum;
+    }
+}

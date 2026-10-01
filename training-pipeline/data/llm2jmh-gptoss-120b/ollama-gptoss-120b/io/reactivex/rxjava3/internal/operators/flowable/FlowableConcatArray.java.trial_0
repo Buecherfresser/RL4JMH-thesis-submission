@@ -1,0 +1,84 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableConcatArray;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableConcatArray}.
+ *
+ * Measures the throughput (items per second) when concatenating a configurable number of
+ * {@link Flowable}s, each emitting a configurable number of items.
+ *
+ * The benchmark follows best practices:
+ * - Separate state for parameters and reusable objects.
+ * - Warm‑up and measurement iterations.
+ * - Multiple forks to reduce JVM warm‑up effects.
+ * - Blackhole consumption via {@link TestSubscriber} to avoid dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class FlowableConcatArrayBenchmark {
+
+    /** Number of inner publishers to concatenate. */
+    @Param({"1", "10", "100"})
+    public int sourceCount;
+
+    /** Number of items each inner publisher emits. */
+    @Param({"1", "100", "1000"})
+    public int itemsPerSource;
+
+    /** Whether the operator should delay errors. */
+    @Param({"true", "false"})
+    public boolean delayError;
+
+    /** Cached array of sources used for each benchmark iteration. */
+    private Flowable<Integer>[] sources;
+
+    /** Cached FlowableConcatArray instance (re‑created each iteration to avoid state leakage). */
+    private FlowableConcatArray<Integer> concatArray;
+
+    @Setup(Level.Trial)
+    @SuppressWarnings("unchecked")
+    public void setUp() {
+        // Build an array of simple Flowables that emit a range of integers.
+        sources = new Flowable[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            int start = i * itemsPerSource;
+            sources[i] = Flowable.range(start, itemsPerSource);
+        }
+    }
+
+    @Setup(Level.Iteration)
+    public void createConcatArray() {
+        // Create a fresh operator for each iteration to ensure no hidden caching.
+        concatArray = new FlowableConcatArray<>(sources, delayError);
+    }
+
+    @Benchmark
+    public void concatArrayThroughput(TestSubscriber<Integer> subscriber) {
+        // Subscribe with a TestSubscriber that requests an unbounded amount.
+        // The TestSubscriber internally consumes all items, preventing dead‑code elimination.
+        concatArray.subscribe(subscriber);
+        // Wait for completion to ensure the benchmark measures the full pipeline.
+        subscriber.awaitDone(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        // Reset the subscriber for the next iteration.
+        subscriber.cancel();
+        subscriber.clear();
+    }
+
+    @TearDown(Level.Iteration)
+    public void resetSubscriber(TestSubscriber<Integer> subscriber) {
+        // Ensure the subscriber is in a clean state for the next iteration.
+        subscriber.dispose();
+    }
+}
+```

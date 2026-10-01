@@ -1,0 +1,74 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableSequenceEqualSingle;
+
+/**
+ * Benchmark for {@link FlowableSequenceEqualSingle} measuring the throughput of
+ * sequence equality checks between two Flowables.
+ *
+ * The benchmark uses a fixed size source (default 10_000 items) and a simple
+ * {@code Objects.equals} comparer. Adjust the {@code size} parameter to explore
+ * different workloads.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 1, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Benchmark)
+public class FlowableSequenceEqualBenchmark {
+
+    /** Number of elements in each source Flowable. */
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    /** Prefetch size used by the operator (default RxJava value). */
+    @Param({"32"})
+    public int prefetch;
+
+    private Flowable<Integer> source1;
+    private Flowable<Integer> source2;
+    private FlowableSequenceEqualSingle<Integer> operator;
+    private BiPredicate<Integer, Integer> comparer = Integer::equals;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create two identical finite sources.
+        source1 = Flowable.range(1, size);
+        source2 = Flowable.range(1, size);
+
+        // Instantiate the operator under test.
+        operator = new FlowableSequenceEqualSingle<>(source1, source2, comparer, prefetch);
+    }
+
+    /**
+     * Executes the sequence‑equal operation and blocks until the result is
+     * available. The returned boolean is consumed by JMH to prevent dead‑code
+     * elimination.
+     *
+     * @return {@code true} if the sequences are equal, {@code false} otherwise.
+     */
+    @Benchmark
+    public boolean sequenceEqual() {
+        // Single<Boolean> returned by the operator; block to get the result.
+        Single<Boolean> single = operator;
+        return single.blockingGet();
+    }
+
+    /**
+     * Main method to run the benchmark from an IDE without using the JMH
+     * command‑line launcher.
+     */
+    public static void main(String[] args) throws Exception {
+        org.openjdk.jmh.Main.main(args);
+    }
+}
+```

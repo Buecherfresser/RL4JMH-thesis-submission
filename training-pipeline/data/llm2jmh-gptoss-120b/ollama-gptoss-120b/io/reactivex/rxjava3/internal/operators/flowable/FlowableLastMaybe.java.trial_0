@@ -1,0 +1,65 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableLastMaybe}.
+ *
+ * Measures the throughput of retrieving the last element from a {@link Flowable}
+ * via the {@code FlowableLastMaybe} operator.
+ *
+ * The benchmark varies the size of the source {@code Flowable} to assess
+ * scalability. Results are consumed by {@link Blackhole} to prevent dead‑code
+ * elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableLastMaybeBenchmark {
+
+    /**
+     * Number of items emitted by the source {@link Flowable}.
+     * Typical values cover small, medium and large streams.
+     */
+    @Param({"1", "10", "1000", "100000"})
+    public int size;
+
+    private Flowable<Integer> source;
+
+    /**
+     * Prepare the source {@link Flowable} before each trial.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Using a simple range as the upstream publisher.
+        source = Flowable.range(1, size);
+    }
+
+    /**
+     * Benchmark the throughput of {@code FlowableLastMaybe}.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void lastMaybeThroughput(Blackhole bh) {
+        // Create the operator instance.
+        Maybe<Integer> maybe = new FlowableLastMaybe<>(source);
+
+        // Execute the flow and block until completion.
+        // blockingGet() returns the last element or {@code null} if the source is empty.
+        Integer result = maybe.blockingGet();
+
+        // Consume the result so the JIT cannot optimize the call away.
+        bh.consume(result);
+    }
+}
+```

@@ -1,0 +1,147 @@
+package io.reactivex.rxjava3.internal.observers;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link DisposableLambdaObserver}.
+ *
+ * The benchmark measures the throughput of the most common operations:
+ * - {@code onNext}
+ * - {@code dispose}
+ *
+ * The downstream observer and the callbacks are no‑ops to isolate the overhead
+ * of {@code DisposableLambdaObserver} itself.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Thread)
+public class DisposableLambdaObserverBenchmark {
+
+    /**
+     * Simple downstream observer that does nothing.
+     */
+    static final class NoOpObserver<T> implements Observer<T> {
+
+        @Override
+        public void onSubscribe(Disposable d) {
+        }
+
+        @Override
+        public void onNext(T t) {
+        }
+
+        @Override
+        public void onError(Throwable e) {
+        }
+
+        @Override
+        public void onComplete() {
+        }
+    }
+
+    /**
+     * No‑op {@link Disposable} used for {@code onSubscribe}.
+     */
+    static final class NoOpDisposable implements Disposable {
+
+        @Override
+        public void dispose() {
+        }
+
+        @Override
+        public boolean isDisposed() {
+            return false;
+        }
+    }
+
+    /**
+     * Instance under test.
+     */
+    private DisposableLambdaObserver<Integer> observer;
+
+    /**
+     * A disposable that will be passed to {@code onSubscribe}.
+     */
+    private final Disposable upstream = new NoOpDisposable();
+
+    /**
+     * Setup executed once per thread before the benchmark runs.
+     */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        Consumer<Disposable> onSubscribe = d -> {
+            /* no‑op */
+        };
+        Action onDispose = () -> {
+            /* no‑op */
+        };
+        observer = new DisposableLambdaObserver<>(new NoOpObserver<>(), onSubscribe, onDispose);
+        // Simulate the subscription lifecycle.
+        observer.onSubscribe(upstream);
+    }
+
+    /**
+     * Benchmark the cost of a single {@code onNext} call.
+     */
+    @Benchmark
+    public void benchmarkOnNext(Blackhole bh) {
+        // Use a constant value; the downstream does nothing, so we just ensure the call is made.
+        observer.onNext(42);
+        // Prevent dead‑code elimination.
+        bh.consume(observer);
+    }
+
+    /**
+     * Benchmark the cost of disposing the observer.
+     */
+    @Benchmark
+    public void benchmarkDispose(Blackhole bh) {
+        // Dispose may be called multiple times; the implementation guards against double disposal.
+        observer.dispose();
+        bh.consume(observer);
+    }
+
+    /**
+     * Benchmark a full lifecycle: onNext followed by dispose.
+     */
+    @Benchmark
+    public void benchmarkOnNextThenDispose(Blackhole bh) {
+        observer.onNext(1);
+        observer.dispose();
+        bh.consume(observer);
+    }
+}

@@ -1,0 +1,67 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Scheduler;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Microbenchmark for {@link io.reactivex.rxjava3.internal.operators.maybe.MaybeObserveOn}
+ * measuring the throughput of the {@code observeOn} operator when used with a
+ * single‑threaded scheduler.
+ *
+ * The benchmark subscribes to a {@code Maybe.just(1)} source, applies
+ * {@code observeOn}, and blocks until the terminal event is received.
+ *
+ * Best practices applied:
+ * - Warm‑up and measurement iterations to let the JVM reach a steady state.
+ * - Multiple forks to reduce the impact of JVM start‑up and JIT compilation.
+ * - Use of {@link Blackhole} to prevent dead‑code elimination.
+ * - Scheduler is created once per thread state to avoid measuring scheduler creation overhead.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class MaybeObserveOnBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        // Source that emits a single integer value.
+        Maybe<Integer> source;
+
+        // Scheduler used by the observeOn operator.
+        Scheduler scheduler;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Maybe.just(1);
+            // Single‑threaded scheduler to isolate the overhead of the operator.
+            scheduler = Schedulers.single();
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            // Shut down the scheduler to release resources after the benchmark.
+            scheduler.shutdown();
+        }
+    }
+
+    @Benchmark
+    public void observeOnThroughput(BenchmarkState state, Blackhole bh) {
+        // Apply observeOn and block until the Maybe terminates.
+        Integer result = state.source
+                .observeOn(state.scheduler)
+                .blockingGet();
+
+        // Consume the result to prevent dead‑code elimination.
+        bh.consume(result);
+    }
+}
+```

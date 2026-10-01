@@ -1,0 +1,131 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.FlowableSubscriber;
+import io.reactivex.rxjava3.internal.subscribers.BoundedSubscriber;
+import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Subscription;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+/**
+ * JMH benchmark for {@link BoundedSubscriber}.
+ *
+ * The benchmark measures the throughput of {@code onNext} calls under a
+ * typical usage pattern: a subscriber with a bounded buffer size receives
+ * items and periodically requests more from upstream when the internal
+ * consumption limit is reached.
+ *
+ * Best‑practice JMH settings are used:
+ * - Warm‑up iterations to let the JVM reach a steady state.
+ * - Measurement iterations for stable results.
+ * - Multiple forks to reduce the impact of JVM start‑up and JIT compilation.
+ * - Blackhole to avoid dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class BoundedSubscriberBenchmark {
+
+    /** Simple {@link Subscription} implementation that records request counts. */
+    static final class MockSubscription implements Subscription {
+        final AtomicLong requested = new AtomicLong();
+
+        @Override
+        public void request(long n) {
+            // Guard against overflow – JMH runs with long values.
+            if (n <= 0) {
+                throw new IllegalArgumentException("n > 0 required");
+            }
+            requested.addAndGet(n);
+        }
+
+        @Override
+        public void cancel() {
+            // No‑op for the benchmark.
+        }
+    }
+
+    /** Payload used in the benchmark. */
+    @Param({"1", "42", "12345"})
+    public int payload;
+
+    /** Buffer size for the BoundedSubscriber (typical RxJava default is 128). */
+    @Param({"32", "128", "1024"})
+    public int bufferSize;
+
+    /** The subscriber under test. */
+    BoundedSubscriber<Integer> subscriber;
+
+    /** Mock upstream subscription. */
+    MockSubscription upstream;
+
+    /** Value emitted to {@code onNext}. */
+    Integer value;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // No‑op consumers to isolate the overhead of BoundedSubscriber itself.
+        Consumer<Integer> onNext = v -> { /* intentionally empty */ };
+        Consumer<Throwable> onError = e -> { /* intentionally empty */ };
+        Action onComplete = () -> { /* intentionally empty */ };
+        Consumer<Subscription> onSubscribe = s -> { /* intentionally empty */ };
+
+        subscriber = new BoundedSubscriber<>(onNext, onError, onComplete, onSubscribe, bufferSize);
+        upstream = new MockSubscription();
+
+        // Simulate the subscription handshake.
+        subscriber.onSubscribe(upstream);
+
+        // Prepare a reusable payload object.
+        value = payload;
+    }
+
+    /**
+     * Benchmark the {@code onNext} path.
+     *
+     * The method is deliberately tiny; the Blackhole ensures the value is
+     * considered used, preventing the JIT from eliding the call.
+     */
+    @Benchmark
+    public void onNext(Blackhole bh) {
+        subscriber.onNext(value);
+        // Consume the internal request counter to avoid dead‑code elimination.
+        bh.consume(upstream.requested.get());
+    }
+
+    /**
+     * Benchmark the {@code request} method directly.
+     *
+     * This isolates the cost of the upstream request forwarding logic.
+     */
+    @Benchmark
+    public void request() {
+        subscriber.request(1);
+    }
+
+    /**
+     * Benchmark the full lifecycle: onSubscribe → many onNext → onComplete.
+     *
+     * This gives a more realistic picture of end‑to‑end throughput.
+     */
+    @Benchmark
+    public void fullLifecycle(Blackhole bh) {
+        // Reset state for each iteration.
+        subscriber.onSubscribe(upstream);
+        for (int i = 0; i < bufferSize; i++) {
+            subscriber.onNext(i);
+        }
+        subscriber.onComplete();
+        bh.consume(upstream.requested.get());
+    }
+}
+```

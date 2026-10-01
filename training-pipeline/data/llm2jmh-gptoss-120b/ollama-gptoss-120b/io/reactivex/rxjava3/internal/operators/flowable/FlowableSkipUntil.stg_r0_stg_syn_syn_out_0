@@ -1,0 +1,101 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableSkipUntil}
+ * measuring the throughput of the operator when skipping items until a trigger
+ * publisher emits.
+ *
+ * The benchmark creates a hot source Flowable emitting a configurable number of
+ * integers and a trigger Flowable that emits a single item after a short delay.
+ * The {@code skipUntil} operator is applied and the resulting stream is
+ * consumed via {@code blockingSubscribe}. Throughput is reported as the number
+ * of items processed per second.
+ *
+ * Best‑practice JMH settings are used:
+ * - 5 warm‑up iterations
+ * - 10 measurement iterations
+ * - 3 forks
+ * - Single thread per fork (default)
+ * - Throughput mode with results expressed in operations/second
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(3)
+@State(Scope.Thread)
+public class FlowableSkipUntilBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable per benchmark invocation.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * Delay before the trigger publisher emits, in milliseconds.
+     */
+    @Param({ "0", "1", "5" })
+    public int triggerDelayMs;
+
+    private Flowable<Integer> source;
+
+    private Flowable<Object> trigger;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Create a cold source that emits a range of integers on the computation scheduler.
+        source = Flowable.range(1, itemCount).subscribeOn(Schedulers.computation());
+        // Trigger publisher: either emits immediately (delay 0) or after a short timer.
+        if (triggerDelayMs == 0) {
+            trigger = Flowable.just(new Object()).subscribeOn(Schedulers.computation());
+        } else {
+            trigger = Flowable.timer(triggerDelayMs, TimeUnit.MILLISECONDS, Schedulers.computation()).map(t -> new Object());
+        }
+    }
+
+    /**
+     * Benchmark method that applies {@code skipUntil} and consumes the resulting
+     * stream. The {@link Blackhole} is used to prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void skipUntilThroughput(Blackhole bh) {
+        source.skipUntil(trigger).blockingSubscribe(bh::consume);
+    }
+}

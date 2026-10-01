@@ -1,0 +1,119 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableJoin}.
+ * The benchmark measures the throughput (operations per second) of the join operator
+ * when joining two finite streams of integers.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Trial) prepares immutable sources once per trial.
+ * - @BenchmarkMode(Mode.Throughput) reports operations per second.
+ * - Warm‑up and measurement iterations are defined via JMH defaults (can be overridden on CLI).
+ * - Blackhole is not needed because we consume the stream with a TestObserver that
+ *   asserts no errors and awaits completion, ensuring the whole pipeline is executed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableJoinBenchmark {
+
+    /**
+     * Number of items emitted by the left source.
+     */
+    @Param({ "500", "1000", "2000" })
+    public int leftSize;
+
+    /**
+     * Number of items emitted by the right source.
+     */
+    @Param({ "500", "1000", "2000" })
+    public int rightSize;
+
+    /**
+     * Left source observable (immutable).
+     */
+    private Observable<Integer> leftSource;
+
+    /**
+     * Right source observable (immutable).
+     */
+    private Observable<Integer> rightSource;
+
+    /**
+     * Function that defines the left window end – never closes to keep all left items alive.
+     */
+    private Function<Integer, ObservableSource<Object>> leftEnd;
+
+    /**
+     * Function that defines the right window end – never closes to keep all right items alive.
+     */
+    private Function<Integer, ObservableSource<Object>> rightEnd;
+
+    /**
+     * Result selector – simply creates a Pair object (or any placeholder).
+     */
+    private BiFunction<Integer, Integer, Object> resultSelector;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create finite synchronous sources.
+        leftSource = Observable.range(1, leftSize);
+        rightSource = Observable.range(1, rightSize);
+        // Windows never close, forcing the join to emit every possible pair.
+        leftEnd = v -> Observable.never();
+        rightEnd = v -> Observable.never();
+        // Simple selector that creates a dummy object; we don't care about the actual value.
+        resultSelector = (l, r) -> new Object();
+    }
+
+    @Benchmark
+    public void joinAndConsume() {
+        TestObserver<Object> to = new TestObserver<>();
+        leftSource.join(rightSource, leftEnd, rightEnd, resultSelector).subscribe(to);
+        // Block until the stream completes to ensure the whole pipeline is exercised.
+        to.awaitDone(1, TimeUnit.MINUTES);
+        // Verify that no error occurred (helps JIT not to eliminate the pipeline).
+        if (to.errors().size() > 0) {
+            throw new AssertionError(to.errors().get(0));
+        }
+    }
+}

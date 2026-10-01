@@ -1,0 +1,660 @@
+diff --git a/org/openstreetmap/atlas/event/EventService.java b/org/openstreetmap/atlas/event/EventService.java
+index b21a194..d642182 100644
+--- a/org/openstreetmap/atlas/event/EventService.java
++++ b/org/openstreetmap/atlas/event/EventService.java
+@@ -61,7 +61,7 @@ public final class EventService<T extends Event> implements EventServiceable<T>
+      */
+     @Override
+     public void complete()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(1);
+         if (!this.completed.compareAndSet(false, true))
+         {
+             logger.warn("EventService is already completed. Skipping completion.");
+@@ -80,7 +80,7 @@ public final class EventService<T extends Event> implements EventServiceable<T>
+      */
+     @Override
+     public void post(final T event)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(9);
+         if (event == null)
+         {
+             logger.warn("EventService received a null event. Skipping posting.");
+diff --git a/org/openstreetmap/atlas/exception/CoreException.java b/org/openstreetmap/atlas/exception/CoreException.java
+index 2046922..67f3c97 100644
+--- a/org/openstreetmap/atlas/exception/CoreException.java
++++ b/org/openstreetmap/atlas/exception/CoreException.java
+@@ -52,12 +52,12 @@ public class CoreException extends RuntimeException
+                     : Optional.empty();
+ 
+     public static Supplier<CoreException> supplier(final String message)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(2);
+         return () -> new CoreException(message);
+     }
+ 
+     public static Supplier<CoreException> supplier(final String message, final Object... arguments)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(10);
+         return () -> new CoreException(message, arguments);
+     }
+ 
+diff --git a/org/openstreetmap/atlas/exception/ExceptionSearch.java b/org/openstreetmap/atlas/exception/ExceptionSearch.java
+index f8870d9..0e7350c 100644
+--- a/org/openstreetmap/atlas/exception/ExceptionSearch.java
++++ b/org/openstreetmap/atlas/exception/ExceptionSearch.java
+@@ -14,7 +14,7 @@ public final class ExceptionSearch<T extends Throwable>
+     private final Class<T> target;
+ 
+     public static <T extends Throwable> ExceptionSearch<T> find(final Class<T> target)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(17);
+         if (target == null)
+         {
+             throw new IllegalArgumentException("target is null");
+@@ -28,7 +28,7 @@ public final class ExceptionSearch<T extends Throwable>
+     }
+ 
+     public Optional<T> within(final Throwable source)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(24);
+         if (this.target == null)
+         {
+             throw new IllegalStateException("target is null");
+diff --git a/org/openstreetmap/atlas/exception/LoadAtlasFromResourceException.java b/org/openstreetmap/atlas/exception/LoadAtlasFromResourceException.java
+index cb2fe63..ee79bc6 100644
+--- a/org/openstreetmap/atlas/exception/LoadAtlasFromResourceException.java
++++ b/org/openstreetmap/atlas/exception/LoadAtlasFromResourceException.java
+@@ -42,7 +42,7 @@ public class LoadAtlasFromResourceException extends CoreException
+     }
+ 
+     public Resource getResource()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(31);
+         return this.resource;
+     }
+ }
+diff --git a/org/openstreetmap/atlas/exception/change/FeatureChangeMergeException.java b/org/openstreetmap/atlas/exception/change/FeatureChangeMergeException.java
+index 009bde8..bacd022 100644
+--- a/org/openstreetmap/atlas/exception/change/FeatureChangeMergeException.java
++++ b/org/openstreetmap/atlas/exception/change/FeatureChangeMergeException.java
+@@ -82,7 +82,7 @@ public class FeatureChangeMergeException extends CoreException
+      *         the index is out of bounds
+      */
+     public MergeFailureType failureAtFrameIndex(final int index)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(38);
+         if (index >= this.failureTypeTrace.size())
+         {
+             return topLevelFailure();
+@@ -96,7 +96,7 @@ public class FeatureChangeMergeException extends CoreException
+      * @return the number of {@link MergeFailureType}s in the failure trace
+      */
+     public int failureTraceSize()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(44);
+         return this.failureTypeTrace.size();
+     }
+ 
+diff --git a/org/openstreetmap/atlas/exception/change/MergeFailureType.java b/org/openstreetmap/atlas/exception/change/MergeFailureType.java
+index 302237f..a6ddf78 100644
+--- a/org/openstreetmap/atlas/exception/change/MergeFailureType.java
++++ b/org/openstreetmap/atlas/exception/change/MergeFailureType.java
+@@ -75,7 +75,7 @@ public enum MergeFailureType
+     }
+ 
+     public String getDescription()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(50);
+         return this.description;
+     }
+ }
+diff --git a/org/openstreetmap/atlas/geography/StringCompressedPolyLine.java b/org/openstreetmap/atlas/geography/StringCompressedPolyLine.java
+index 1afcd4d..c915a9b 100644
+--- a/org/openstreetmap/atlas/geography/StringCompressedPolyLine.java
++++ b/org/openstreetmap/atlas/geography/StringCompressedPolyLine.java
+@@ -88,7 +88,7 @@ public class StringCompressedPolyLine implements Serializable
+     }
+ 
+     public PolyLine asPolyLine()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(3);
+         if (this.encoding[0] == WKB_SENTINEL)
+         {
+             final byte[] strippedEncoding = new byte[this.encoding.length - 1];
+@@ -113,7 +113,7 @@ public class StringCompressedPolyLine implements Serializable
+     }
+ 
+     public byte[] getEncoding()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(11);
+         return this.encoding;
+     }
+ 
+diff --git a/org/openstreetmap/atlas/geography/StringCompressedPolygon.java b/org/openstreetmap/atlas/geography/StringCompressedPolygon.java
+index e97a157..52b3044 100644
+--- a/org/openstreetmap/atlas/geography/StringCompressedPolygon.java
++++ b/org/openstreetmap/atlas/geography/StringCompressedPolygon.java
+@@ -20,7 +20,7 @@ public class StringCompressedPolygon extends StringCompressedPolyLine
+     }
+ 
+     public Polygon asPolygon()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(18);
+         return new Polygon(asPolyLine());
+     }
+ }
+diff --git a/org/openstreetmap/atlas/geography/atlas/builder/GeoJsonAtlasBuilder.java b/org/openstreetmap/atlas/geography/atlas/builder/GeoJsonAtlasBuilder.java
+index 6718acb..ca5fd34 100644
+--- a/org/openstreetmap/atlas/geography/atlas/builder/GeoJsonAtlasBuilder.java
++++ b/org/openstreetmap/atlas/geography/atlas/builder/GeoJsonAtlasBuilder.java
+@@ -44,12 +44,12 @@ public class GeoJsonAtlasBuilder
+         }
+ 
+         public long getIdentifier()
+-        {
++        { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(25);
+             return this.identifier;
+         }
+ 
+         public PolyLine getPolyLine()
+-        {
++        { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(32);
+             return this.polyLine;
+         }
+ 
+diff --git a/org/openstreetmap/atlas/geography/atlas/builder/text/TextAtlasBuilder.java b/org/openstreetmap/atlas/geography/atlas/builder/text/TextAtlasBuilder.java
+index 2ec7091..2f31f18 100644
+--- a/org/openstreetmap/atlas/geography/atlas/builder/text/TextAtlasBuilder.java
++++ b/org/openstreetmap/atlas/geography/atlas/builder/text/TextAtlasBuilder.java
+@@ -59,7 +59,7 @@ public class TextAtlasBuilder
+         private final String header;
+ 
+         protected static WriteMode forHeader(final String header)
+-        {
++        { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(39);
+             switch (header)
+             {
+                 case NODES_HEADER:
+@@ -85,7 +85,7 @@ public class TextAtlasBuilder
+         }
+ 
+         protected String getHeader()
+-        {
++        { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(45);
+             return this.header;
+         }
+     }
+diff --git a/org/openstreetmap/atlas/jmhbench/MutationSwitch.java b/org/openstreetmap/atlas/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c14f4e3
+--- /dev/null
++++ b/org/openstreetmap/atlas/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.openstreetmap.atlas.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/openstreetmap/atlas/locale/IsoCountry.java b/org/openstreetmap/atlas/locale/IsoCountry.java
+index 19c71bf..49d5fbc 100644
+--- a/org/openstreetmap/atlas/locale/IsoCountry.java
++++ b/org/openstreetmap/atlas/locale/IsoCountry.java
+@@ -112,7 +112,7 @@ public final class IsoCountry implements Serializable
+      * @return Set of country codes
+      */
+     public static Set<String> allCountryCodes()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(4);
+         return ALL_COUNTRY_CODES;
+     }
+ 
+@@ -122,7 +122,7 @@ public final class IsoCountry implements Serializable
+      * @return Set of country long names
+      */
+     public static Set<String> allDisplayCountries()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(12);
+         return ALL_DISPLAY_COUNTRIES;
+     }
+ 
+diff --git a/org/openstreetmap/atlas/locale/IsoCountryFuzzyMatcher.java b/org/openstreetmap/atlas/locale/IsoCountryFuzzyMatcher.java
+index ee94572..7491988 100644
+--- a/org/openstreetmap/atlas/locale/IsoCountryFuzzyMatcher.java
++++ b/org/openstreetmap/atlas/locale/IsoCountryFuzzyMatcher.java
+@@ -36,7 +36,7 @@ public final class IsoCountryFuzzyMatcher
+      */
+     public static List<IsoCountry> forDisplayCountryTopMatches(final int number,
+             final String displayCountry)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(19);
+         if (displayCountry != null)
+         {
+             final List<IsoCountry> results = new ArrayList<>();
+diff --git a/org/openstreetmap/atlas/locale/IsoLanguage.java b/org/openstreetmap/atlas/locale/IsoLanguage.java
+index 06bcb8b..1e4e00d 100644
+--- a/org/openstreetmap/atlas/locale/IsoLanguage.java
++++ b/org/openstreetmap/atlas/locale/IsoLanguage.java
+@@ -53,7 +53,7 @@ public final class IsoLanguage implements Comparable<IsoLanguage>, Serializable
+      * @return a stream of IsoLanguage objects
+      */
+     public static Stream<IsoLanguage> all()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(26);
+         return ISO_LANGUAGES.values().stream();
+     }
+ 
+@@ -64,7 +64,7 @@ public final class IsoLanguage implements Comparable<IsoLanguage>, Serializable
+      * @return Set of language codes
+      */
+     public static Set<String> allLanguageCodes()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(33);
+         return ALL_LANGUAGE_CODES;
+     }
+ 
+diff --git a/org/openstreetmap/atlas/proto/adapters/ProtoByteArrayOfArraysAdapter.java b/org/openstreetmap/atlas/proto/adapters/ProtoByteArrayOfArraysAdapter.java
+index e8be9ef..4db307c 100644
+--- a/org/openstreetmap/atlas/proto/adapters/ProtoByteArrayOfArraysAdapter.java
++++ b/org/openstreetmap/atlas/proto/adapters/ProtoByteArrayOfArraysAdapter.java
+@@ -19,7 +19,7 @@ public class ProtoByteArrayOfArraysAdapter implements ProtoAdapter
+ {
+     @Override
+     public ProtoSerializable deserialize(final byte[] byteArray)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(5);
+         ProtoByteArrayOfArrays protoByteArrayOfArrays = null;
+         try
+         {
+@@ -49,7 +49,7 @@ public class ProtoByteArrayOfArraysAdapter implements ProtoAdapter
+ 
+     @Override
+     public byte[] serialize(final ProtoSerializable serializable)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(13);
+         if (!(serializable instanceof ByteArrayOfArrays))
+         {
+             throw new CoreException(
+diff --git a/org/openstreetmap/atlas/proto/adapters/ProtoIntegerArrayOfArraysAdapter.java b/org/openstreetmap/atlas/proto/adapters/ProtoIntegerArrayOfArraysAdapter.java
+index 5ed0fc0..f98362a 100644
+--- a/org/openstreetmap/atlas/proto/adapters/ProtoIntegerArrayOfArraysAdapter.java
++++ b/org/openstreetmap/atlas/proto/adapters/ProtoIntegerArrayOfArraysAdapter.java
+@@ -20,7 +20,7 @@ public class ProtoIntegerArrayOfArraysAdapter implements ProtoAdapter
+ 
+     @Override
+     public ProtoSerializable deserialize(final byte[] byteArray)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(20);
+         ProtoIntegerArrayOfArrays protoIntegerArrayOfArrays = null;
+         try
+         {
+@@ -40,7 +40,7 @@ public class ProtoIntegerArrayOfArraysAdapter implements ProtoAdapter
+ 
+     @Override
+     public byte[] serialize(final ProtoSerializable serializable)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(27);
+         if (!(serializable instanceof IntegerArrayOfArrays))
+         {
+             throw new CoreException(
+diff --git a/org/openstreetmap/atlas/proto/adapters/ProtoIntegerStringDictionaryAdapter.java b/org/openstreetmap/atlas/proto/adapters/ProtoIntegerStringDictionaryAdapter.java
+index 6968727..48e670b 100644
+--- a/org/openstreetmap/atlas/proto/adapters/ProtoIntegerStringDictionaryAdapter.java
++++ b/org/openstreetmap/atlas/proto/adapters/ProtoIntegerStringDictionaryAdapter.java
+@@ -38,7 +38,7 @@ public class ProtoIntegerStringDictionaryAdapter implements ProtoAdapter
+ 
+     @Override
+     public ProtoSerializable deserialize(final byte[] byteArray)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(34);
+         ProtoIntegerStringDictionary protoIntegerStringDictionary = null;
+         try
+         {
+@@ -120,7 +120,7 @@ public class ProtoIntegerStringDictionaryAdapter implements ProtoAdapter
+     @Override
+     @SuppressWarnings("unchecked")
+     public byte[] serialize(final ProtoSerializable serializable)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(40);
+         if (!(serializable instanceof IntegerDictionary))
+         {
+             throw new CoreException(
+diff --git a/org/openstreetmap/atlas/proto/adapters/ProtoLongArrayAdapter.java b/org/openstreetmap/atlas/proto/adapters/ProtoLongArrayAdapter.java
+index 3bf8df0..7659765 100644
+--- a/org/openstreetmap/atlas/proto/adapters/ProtoLongArrayAdapter.java
++++ b/org/openstreetmap/atlas/proto/adapters/ProtoLongArrayAdapter.java
+@@ -17,7 +17,7 @@ public class ProtoLongArrayAdapter implements ProtoAdapter
+ {
+     @Override
+     public ProtoSerializable deserialize(final byte[] byteArray)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(46);
+         ProtoLongArray protoLongArray = null;
+         try
+         {
+diff --git a/org/openstreetmap/atlas/streaming/CounterOutputStream.java b/org/openstreetmap/atlas/streaming/CounterOutputStream.java
+index 46a93d9..a7cb43b 100644
+--- a/org/openstreetmap/atlas/streaming/CounterOutputStream.java
++++ b/org/openstreetmap/atlas/streaming/CounterOutputStream.java
+@@ -15,12 +15,12 @@ public class CounterOutputStream extends OutputStream
+ 
+     @Override
+     public void close()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(6);
+         this.closed = true;
+     }
+ 
+     public long getCount()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(14);
+         if (!this.closed)
+         {
+             throw new CoreException("Cannot get the counts when the stream has not been closed.");
+diff --git a/org/openstreetmap/atlas/streaming/NotifyingIOUtils.java b/org/openstreetmap/atlas/streaming/NotifyingIOUtils.java
+index 52fd4c7..ef834e0 100644
+--- a/org/openstreetmap/atlas/streaming/NotifyingIOUtils.java
++++ b/org/openstreetmap/atlas/streaming/NotifyingIOUtils.java
+@@ -88,7 +88,7 @@ public class NotifyingIOUtils
+     }
+ 
+     public NotifyingIOUtils withBufferSize(final int bufferSize)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(21);
+         if (bufferSize <= 0)
+         {
+             throw new CoreException("Buffer size must be larger than zero: {}", bufferSize);
+@@ -98,7 +98,7 @@ public class NotifyingIOUtils
+     }
+ 
+     public NotifyingIOUtils withListener(final IOProgressListener listener)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(28);
+         this.progessListener = Optional.ofNullable(listener);
+         return this;
+     }
+diff --git a/org/openstreetmap/atlas/streaming/SplittableInputStream.java b/org/openstreetmap/atlas/streaming/SplittableInputStream.java
+index 7f93481..3aa6105 100644
+--- a/org/openstreetmap/atlas/streaming/SplittableInputStream.java
++++ b/org/openstreetmap/atlas/streaming/SplittableInputStream.java
+@@ -85,7 +85,7 @@ public class SplittableInputStream extends InputStream
+          * @return The new reader identifier.
+          */
+         protected int addSource(final int splitIdentifier)
+-        {
++        { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(35);
+             this.readPositions
+                     .add(splitIdentifier == -1 ? 0 : this.readPositions.get(splitIdentifier));
+             return this.readPositions.size() - 1;
+@@ -157,7 +157,7 @@ public class SplittableInputStream extends InputStream
+      * @return a new InputStream that will read bytes from this position onwards.
+      */
+     public SplittableInputStream split()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(41);
+         return new SplittableInputStream(this.multiSource, this.myId);
+     }
+ }
+diff --git a/org/openstreetmap/atlas/streaming/Streams.java b/org/openstreetmap/atlas/streaming/Streams.java
+index c3642d3..8175997 100644
+--- a/org/openstreetmap/atlas/streaming/Streams.java
++++ b/org/openstreetmap/atlas/streaming/Streams.java
+@@ -19,7 +19,7 @@ public final class Streams
+      *            The stream to close.
+      */
+     public static void close(final Closeable stream)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(47);
+         if (stream == null)
+         {
+             return;
+diff --git a/org/openstreetmap/atlas/tags/AccessTag.java b/org/openstreetmap/atlas/tags/AccessTag.java
+index 46d89b7..483ce1c 100644
+--- a/org/openstreetmap/atlas/tags/AccessTag.java
++++ b/org/openstreetmap/atlas/tags/AccessTag.java
+@@ -42,12 +42,12 @@ public enum AccessTag
+             RESTRICTED, PROHIBITED);
+ 
+     public static boolean isNo(final Taggable taggable)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(29);
+         return Validators.isOfType(taggable, AccessTag.class, AccessTag.NO);
+     }
+ 
+     public static boolean isPrivate(final Taggable taggable)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(36);
+         final Optional<AccessTag> access = Validators.from(AccessTag.class, taggable);
+         return access.isPresent() && PRIVATE_ACCESS.contains(access.get());
+     }
+diff --git a/org/openstreetmap/atlas/tags/BarrierTag.java b/org/openstreetmap/atlas/tags/BarrierTag.java
+index 8047f3c..92a21af 100644
+--- a/org/openstreetmap/atlas/tags/BarrierTag.java
++++ b/org/openstreetmap/atlas/tags/BarrierTag.java
+@@ -85,7 +85,7 @@ public enum BarrierTag
+             PROPERTY_BOUNDARY, NO, CABLE_BARRIER, RAILING, SUMP_BUSTER, SUMPBUSTER);
+ 
+     public static boolean isBarrier(final Taggable taggable)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(42);
+         final Optional<BarrierTag> barrier = Validators.from(BarrierTag.class, taggable);
+         return barrier.isPresent() && BARRIERS.contains(barrier.get());
+     }
+diff --git a/org/openstreetmap/atlas/tags/BoundaryTag.java b/org/openstreetmap/atlas/tags/BoundaryTag.java
+index 6881424..fda8be4 100644
+--- a/org/openstreetmap/atlas/tags/BoundaryTag.java
++++ b/org/openstreetmap/atlas/tags/BoundaryTag.java
+@@ -25,7 +25,7 @@ public enum BoundaryTag
+     public static final String KEY = "boundary";
+ 
+     public static boolean isAdministrative(final Taggable taggable)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(48);
+         return Validators.isOfType(taggable, BoundaryTag.class, ADMINISTRATIVE);
+     }
+ }
+diff --git a/org/openstreetmap/atlas/tags/annotations/extraction/NonEmptyStringExtractor.java b/org/openstreetmap/atlas/tags/annotations/extraction/NonEmptyStringExtractor.java
+index 0e0ccd1..73fc145 100644
+--- a/org/openstreetmap/atlas/tags/annotations/extraction/NonEmptyStringExtractor.java
++++ b/org/openstreetmap/atlas/tags/annotations/extraction/NonEmptyStringExtractor.java
+@@ -14,7 +14,7 @@ public final class NonEmptyStringExtractor
+     private static final NonEmptyStringValidator VALIDATOR = new NonEmptyStringValidator();
+ 
+     public static Optional<String> validateAndExtract(final String value)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(7);
+         if (VALIDATOR.isValid(value))
+         {
+             return Optional.of(value);
+diff --git a/org/openstreetmap/atlas/tags/annotations/validation/NonEmptyStringValidator.java b/org/openstreetmap/atlas/tags/annotations/validation/NonEmptyStringValidator.java
+index babb47a..39c9fb7 100644
+--- a/org/openstreetmap/atlas/tags/annotations/validation/NonEmptyStringValidator.java
++++ b/org/openstreetmap/atlas/tags/annotations/validation/NonEmptyStringValidator.java
+@@ -9,7 +9,7 @@ public class NonEmptyStringValidator implements TagValidator
+ {
+     @Override
+     public boolean isValid(final String value)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(15);
+         return value.trim().length() > 0;
+     }
+ }
+diff --git a/org/openstreetmap/atlas/tags/filters/matcher/parsing/Parser.java b/org/openstreetmap/atlas/tags/filters/matcher/parsing/Parser.java
+index 49f90f0..118fb95 100644
+--- a/org/openstreetmap/atlas/tags/filters/matcher/parsing/Parser.java
++++ b/org/openstreetmap/atlas/tags/filters/matcher/parsing/Parser.java
+@@ -102,7 +102,7 @@ public class Parser
+     }
+ 
+     public ASTNode parse()
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(22);
+         BinaryOperator.clearIdentifierCounter();
+         UnaryOperator.clearIdentifierCounter();
+         Operand.clearIdentifierCounter();
+diff --git a/org/openstreetmap/atlas/utilities/arrays/Arrays.java b/org/openstreetmap/atlas/utilities/arrays/Arrays.java
+index f256b87..295b55f 100644
+--- a/org/openstreetmap/atlas/utilities/arrays/Arrays.java
++++ b/org/openstreetmap/atlas/utilities/arrays/Arrays.java
+@@ -10,7 +10,7 @@ import java.util.Collection;
+ public final class Arrays
+ {
+     public static int[] addNewItem(final int[] existing, final int newValue)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(8);
+         final int[] result = new int[existing.length + 1];
+         for (int i = 0; i < existing.length; i++)
+         {
+@@ -21,7 +21,7 @@ public final class Arrays
+     }
+ 
+     public static long[] addNewItem(final long[] existing, final long newValue)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(16);
+         final long[] result = new long[existing.length + 1];
+         for (int i = 0; i < existing.length; i++)
+         {
+diff --git a/org/openstreetmap/atlas/utilities/arrays/BitArray.java b/org/openstreetmap/atlas/utilities/arrays/BitArray.java
+index 294a593..4584862 100644
+--- a/org/openstreetmap/atlas/utilities/arrays/BitArray.java
++++ b/org/openstreetmap/atlas/utilities/arrays/BitArray.java
+@@ -30,7 +30,7 @@ public class BitArray extends LargeArray<Boolean>
+ 
+         @Override
+         public PrimitiveArray<Boolean> getNewArray(final int size)
+-        {
++        { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(23);
+             return new BitPrimitiveArray(size);
+         }
+ 
+@@ -55,7 +55,7 @@ public class BitArray extends LargeArray<Boolean>
+ 
+     @Override
+     protected PrimitiveArray<Boolean> getNewArray(final int size)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(30);
+         return new BitPrimitiveArray(size);
+     }
+ }
+diff --git a/org/openstreetmap/atlas/utilities/arrays/BooleanArray.java b/org/openstreetmap/atlas/utilities/arrays/BooleanArray.java
+index f5fc355..b67e573 100644
+--- a/org/openstreetmap/atlas/utilities/arrays/BooleanArray.java
++++ b/org/openstreetmap/atlas/utilities/arrays/BooleanArray.java
+@@ -30,7 +30,7 @@ public class BooleanArray extends LargeArray<Boolean>
+ 
+         @Override
+         public PrimitiveArray<Boolean> getNewArray(final int size)
+-        {
++        { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(37);
+             return new BooleanPrimitiveArray(size);
+         }
+ 
+@@ -55,7 +55,7 @@ public class BooleanArray extends LargeArray<Boolean>
+ 
+     @Override
+     protected PrimitiveArray<Boolean> getNewArray(final int size)
+-    {
++    { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(43);
+         return new BooleanPrimitiveArray(size);
+     }
+ }
+diff --git a/org/openstreetmap/atlas/utilities/arrays/ByteArray.java b/org/openstreetmap/atlas/utilities/arrays/ByteArray.java
+index cb0113f..0f7d3f8 100644
+--- a/org/openstreetmap/atlas/utilities/arrays/ByteArray.java
++++ b/org/openstreetmap/atlas/utilities/arrays/ByteArray.java
+@@ -30,7 +30,7 @@ public class ByteArray extends LargeArray<Byte>
+ 
+         @Override
+         public PrimitiveArray<Byte> getNewArray(final int size)
+-        {
++        { org.openstreetmap.atlas.jmhbench.MutationSwitch.tick(49);
+             return new BytePrimitiveArray(size);
+         }
+ 

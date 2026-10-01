@@ -1,0 +1,620 @@
+diff --git a/com/fasterxml/jackson/datatype/jdk8/DoubleStreamSerializer.java b/com/fasterxml/jackson/datatype/jdk8/DoubleStreamSerializer.java
+index 88f80fc..11e4d34 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/DoubleStreamSerializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/DoubleStreamSerializer.java
+@@ -31,7 +31,7 @@ public class DoubleStreamSerializer extends StdSerializer<DoubleStream>
+     }
+ 
+     @Override
+-    public void serialize(DoubleStream stream, JsonGenerator jgen, SerializerProvider provider) throws IOException {
++    public void serialize(DoubleStream stream, JsonGenerator jgen, SerializerProvider provider) throws IOException { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(1);
+         
+         try(DoubleStream ds = stream) {
+             jgen.writeStartArray();
+diff --git a/com/fasterxml/jackson/datatype/jdk8/IntStreamSerializer.java b/com/fasterxml/jackson/datatype/jdk8/IntStreamSerializer.java
+index 33df186..8b0b112 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/IntStreamSerializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/IntStreamSerializer.java
+@@ -31,7 +31,7 @@ public class IntStreamSerializer extends StdSerializer<IntStream>
+     }
+ 
+     @Override
+-    public void serialize(IntStream stream, JsonGenerator jgen, SerializerProvider provider) throws IOException {
++    public void serialize(IntStream stream, JsonGenerator jgen, SerializerProvider provider) throws IOException { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(3);
+ 
+         try(IntStream is = stream) {
+             jgen.writeStartArray();
+diff --git a/com/fasterxml/jackson/datatype/jdk8/Jdk8BeanSerializerModifier.java b/com/fasterxml/jackson/datatype/jdk8/Jdk8BeanSerializerModifier.java
+index 832b145..4d09bc5 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/Jdk8BeanSerializerModifier.java
++++ b/com/fasterxml/jackson/datatype/jdk8/Jdk8BeanSerializerModifier.java
+@@ -24,7 +24,7 @@ public class Jdk8BeanSerializerModifier extends BeanSerializerModifier
+     public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
+             BeanDescription beanDesc,
+             List<BeanPropertyWriter> beanProperties)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(14);
+         for (int i = 0; i < beanProperties.size(); ++i) {
+             final BeanPropertyWriter writer = beanProperties.get(i);
+             JavaType type = writer.getType();
+diff --git a/com/fasterxml/jackson/datatype/jdk8/Jdk8Deserializers.java b/com/fasterxml/jackson/datatype/jdk8/Jdk8Deserializers.java
+index 5e46b9f..fcf26a2 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/Jdk8Deserializers.java
++++ b/com/fasterxml/jackson/datatype/jdk8/Jdk8Deserializers.java
+@@ -31,7 +31,7 @@ public class Jdk8Deserializers
+     public JsonDeserializer<?> findReferenceDeserializer(ReferenceType refType,
+             DeserializationConfig config, BeanDescription beanDesc,
+             TypeDeserializer contentTypeDeserializer, JsonDeserializer<?> contentDeserializer)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(15);
+         if (refType.hasRawClass(Optional.class)) {
+             return new OptionalDeserializer(refType, null,
+                     contentTypeDeserializer,contentDeserializer,
+@@ -58,7 +58,7 @@ public class Jdk8Deserializers
+     public JsonDeserializer<?> findBeanDeserializer(JavaType type,
+             DeserializationConfig config, BeanDescription beanDesc)
+         throws JsonMappingException
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(16);
+         // 25-Jul-2025, tatu: [modules-java8#372] - work-around for misconfigured
+         //   `TypeFactory` that does not use `Jdk8TypeModifier`
+         if (type.hasRawClass(Optional.class)) {
+diff --git a/com/fasterxml/jackson/datatype/jdk8/Jdk8Module.java b/com/fasterxml/jackson/datatype/jdk8/Jdk8Module.java
+index 1ea0429..6413196 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/Jdk8Module.java
++++ b/com/fasterxml/jackson/datatype/jdk8/Jdk8Module.java
+@@ -35,7 +35,7 @@ public class Jdk8Module extends Module
+     protected boolean _cfgReadAbsentAsNull = DEFAULT_READ_ABSENT_AS_NULL;
+ 
+     @Override
+-    public void setupModule(SetupContext context) {
++    public void setupModule(SetupContext context) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(17);
+         context.addSerializers(new Jdk8Serializers());
+         context.addDeserializers(new Jdk8Deserializers(_cfgReadAbsentAsNull));
+         // And to fully support Optionals, need to modify type info:
+@@ -48,7 +48,7 @@ public class Jdk8Module extends Module
+     }
+ 
+     @Override
+-    public Version version() {
++    public Version version() { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(18);
+         return PackageVersion.VERSION;
+     }
+ 
+diff --git a/com/fasterxml/jackson/datatype/jdk8/Jdk8OptionalBeanPropertyWriter.java b/com/fasterxml/jackson/datatype/jdk8/Jdk8OptionalBeanPropertyWriter.java
+index bfe22e0..1f5dcbe 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/Jdk8OptionalBeanPropertyWriter.java
++++ b/com/fasterxml/jackson/datatype/jdk8/Jdk8OptionalBeanPropertyWriter.java
+@@ -29,12 +29,12 @@ public class Jdk8OptionalBeanPropertyWriter extends BeanPropertyWriter
+     }
+ 
+     @Override
+-    protected BeanPropertyWriter _new(PropertyName newName) {
++    protected BeanPropertyWriter _new(PropertyName newName) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(19);
+         return new Jdk8OptionalBeanPropertyWriter(this, newName);
+     }
+ 
+     @Override
+-    public BeanPropertyWriter unwrappingWriter(NameTransformer unwrapper) {
++    public BeanPropertyWriter unwrappingWriter(NameTransformer unwrapper) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(20);
+         return new Jdk8UnwrappingOptionalBeanPropertyWriter(this, unwrapper, _empty);
+     }
+ 
+diff --git a/com/fasterxml/jackson/datatype/jdk8/Jdk8Serializers.java b/com/fasterxml/jackson/datatype/jdk8/Jdk8Serializers.java
+index 8c313dc..d2e7bd5 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/Jdk8Serializers.java
++++ b/com/fasterxml/jackson/datatype/jdk8/Jdk8Serializers.java
+@@ -24,7 +24,7 @@ public class Jdk8Serializers extends Serializers.Base
+     public JsonSerializer<?> findReferenceSerializer(SerializationConfig config,
+             ReferenceType refType, BeanDescription beanDesc,
+             TypeSerializer contentTypeSerializer, JsonSerializer<Object> contentValueSerializer)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(21);
+         final Class<?> raw = refType.getRawClass();
+         if (Optional.class.isAssignableFrom(raw)) {
+             boolean staticTyping = (contentTypeSerializer == null)
+@@ -47,7 +47,7 @@ public class Jdk8Serializers extends Serializers.Base
+     @Override
+     public JsonSerializer<?> findSerializer(SerializationConfig config, JavaType type,
+             BeanDescription beanDesc)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(22);
+         Class<?> raw = type.getRawClass();
+         if (LongStream.class.isAssignableFrom(raw)) {
+             return LongStreamSerializer.INSTANCE;
+diff --git a/com/fasterxml/jackson/datatype/jdk8/Jdk8TypeModifier.java b/com/fasterxml/jackson/datatype/jdk8/Jdk8TypeModifier.java
+index 915912a..bd62466 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/Jdk8TypeModifier.java
++++ b/com/fasterxml/jackson/datatype/jdk8/Jdk8TypeModifier.java
+@@ -19,7 +19,7 @@ public class Jdk8TypeModifier extends TypeModifier
+ 
+     @Override
+     public JavaType modifyType(JavaType type, Type jdkType, TypeBindings bindings, TypeFactory typeFactory)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(23);
+         if (type.isReferenceType() || type.isContainerType()) {
+             return type;
+         }
+diff --git a/com/fasterxml/jackson/datatype/jdk8/Jdk8UnwrappingOptionalBeanPropertyWriter.java b/com/fasterxml/jackson/datatype/jdk8/Jdk8UnwrappingOptionalBeanPropertyWriter.java
+index 07b1e7a..f75371d 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/Jdk8UnwrappingOptionalBeanPropertyWriter.java
++++ b/com/fasterxml/jackson/datatype/jdk8/Jdk8UnwrappingOptionalBeanPropertyWriter.java
+@@ -30,13 +30,13 @@ public class Jdk8UnwrappingOptionalBeanPropertyWriter extends UnwrappingBeanProp
+ 
+     @Override
+     protected UnwrappingBeanPropertyWriter _new(NameTransformer transformer, SerializedString newName)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(24);
+         return new Jdk8UnwrappingOptionalBeanPropertyWriter(this, transformer, newName);
+     }
+ 
+     @Override
+     public void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(25);
+         if (_nullSerializer == null) {
+             Object value = get(bean);
+             if (value == null || value.equals(_empty)) {
+diff --git a/com/fasterxml/jackson/datatype/jdk8/LongStreamSerializer.java b/com/fasterxml/jackson/datatype/jdk8/LongStreamSerializer.java
+index 271544f..d4279fe 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/LongStreamSerializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/LongStreamSerializer.java
+@@ -30,7 +30,7 @@ public class LongStreamSerializer extends StdSerializer<LongStream>
+     }
+ 
+     @Override
+-    public void serialize(LongStream stream, JsonGenerator jgen, SerializerProvider provider) throws IOException {
++    public void serialize(LongStream stream, JsonGenerator jgen, SerializerProvider provider) throws IOException { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(5);
+ 
+         try(LongStream ls = stream) {
+             jgen.writeStartArray();
+diff --git a/com/fasterxml/jackson/datatype/jdk8/OptionalDeserializer.java b/com/fasterxml/jackson/datatype/jdk8/OptionalDeserializer.java
+index 08a6c8a..a589af2 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/OptionalDeserializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/OptionalDeserializer.java
+@@ -50,13 +50,13 @@ final class OptionalDeserializer
+      */
+ 
+     @Override
+-    public OptionalDeserializer withResolved(TypeDeserializer typeDeser, JsonDeserializer<?> valueDeser) {
++    public OptionalDeserializer withResolved(TypeDeserializer typeDeser, JsonDeserializer<?> valueDeser) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(26);
+         return new OptionalDeserializer(_fullType, _valueInstantiator,
+                 typeDeser, valueDeser, _cfgReadAbsentAsNull);
+     }
+ 
+     @Override
+-    public Optional<?> getNullValue(DeserializationContext ctxt) throws JsonMappingException {
++    public Optional<?> getNullValue(DeserializationContext ctxt) throws JsonMappingException { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(27);
+         // 07-May-2019, tatu: [databind#2303], needed for nested ReferenceTypes
+         return Optional.ofNullable(_valueDeserializer.getNullValue(ctxt));
+     }
+diff --git a/com/fasterxml/jackson/datatype/jdk8/OptionalDoubleDeserializer.java b/com/fasterxml/jackson/datatype/jdk8/OptionalDoubleDeserializer.java
+index a3dd9ac..0ee77fe 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/OptionalDoubleDeserializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/OptionalDoubleDeserializer.java
+@@ -21,10 +21,10 @@ class OptionalDoubleDeserializer extends BaseScalarOptionalDeserializer<Optional
+     }
+ 
+     @Override
+-    public LogicalType logicalType() { return LogicalType.Float; }
++    public LogicalType logicalType() { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(28); return LogicalType.Float; }
+     
+     @Override
+-    public OptionalDouble deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
++    public OptionalDouble deserialize(JsonParser p, DeserializationContext ctxt) throws IOException { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(29);
+         // minor optimization, first, for common case
+         if (p.hasToken(JsonToken.VALUE_NUMBER_FLOAT)) {
+             return OptionalDouble.of(p.getDoubleValue());
+diff --git a/com/fasterxml/jackson/datatype/jdk8/OptionalDoubleSerializer.java b/com/fasterxml/jackson/datatype/jdk8/OptionalDoubleSerializer.java
+index 684f97e..a567984 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/OptionalDoubleSerializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/OptionalDoubleSerializer.java
+@@ -23,13 +23,13 @@ public class OptionalDoubleSerializer extends StdScalarSerializer<OptionalDouble
+     }
+ 
+     @Override
+-    public boolean isEmpty(SerializerProvider provider, OptionalDouble value) {
++    public boolean isEmpty(SerializerProvider provider, OptionalDouble value) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(30);
+         return (value == null) || !value.isPresent();
+     }
+ 
+     @Override
+     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor,
+-            JavaType typeHint) throws JsonMappingException {
++            JavaType typeHint) throws JsonMappingException { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(31);
+         JsonNumberFormatVisitor v2 = visitor.expectNumberFormat(typeHint);
+         if (v2 != null) {
+             v2.numberType(JsonParser.NumberType.DOUBLE);
+diff --git a/com/fasterxml/jackson/datatype/jdk8/OptionalIntDeserializer.java b/com/fasterxml/jackson/datatype/jdk8/OptionalIntDeserializer.java
+index 2a3d1e8..827dd89 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/OptionalIntDeserializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/OptionalIntDeserializer.java
+@@ -22,10 +22,10 @@ public class OptionalIntDeserializer extends BaseScalarOptionalDeserializer<Opti
+     }
+ 
+     @Override
+-    public LogicalType logicalType() { return LogicalType.Integer; }
++    public LogicalType logicalType() { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(32); return LogicalType.Integer; }
+ 
+     @Override
+-    public OptionalInt deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
++    public OptionalInt deserialize(JsonParser p, DeserializationContext ctxt) throws IOException { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(33);
+         // minor optimization, first, for common case
+         if (p.hasToken(JsonToken.VALUE_NUMBER_INT)) {
+             return OptionalInt.of(p.getIntValue());
+diff --git a/com/fasterxml/jackson/datatype/jdk8/OptionalIntSerializer.java b/com/fasterxml/jackson/datatype/jdk8/OptionalIntSerializer.java
+index 32716bd..eb2005c 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/OptionalIntSerializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/OptionalIntSerializer.java
+@@ -23,13 +23,13 @@ final class OptionalIntSerializer extends StdScalarSerializer<OptionalInt>
+     }
+ 
+     @Override
+-    public boolean isEmpty(SerializerProvider provider, OptionalInt value) {
++    public boolean isEmpty(SerializerProvider provider, OptionalInt value) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(34);
+         return (value == null) || !value.isPresent();
+     }
+ 
+     @Override
+     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor,
+-            JavaType typeHint) throws JsonMappingException {
++            JavaType typeHint) throws JsonMappingException { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(35);
+         JsonIntegerFormatVisitor v2 = visitor
+                 .expectIntegerFormat(typeHint);
+         if (v2 != null) {
+diff --git a/com/fasterxml/jackson/datatype/jdk8/OptionalLongDeserializer.java b/com/fasterxml/jackson/datatype/jdk8/OptionalLongDeserializer.java
+index 915bd0a..b205ae0 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/OptionalLongDeserializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/OptionalLongDeserializer.java
+@@ -22,11 +22,11 @@ public class OptionalLongDeserializer extends BaseScalarOptionalDeserializer<Opt
+     }
+ 
+     @Override
+-    public LogicalType logicalType() { return LogicalType.Integer; }
++    public LogicalType logicalType() { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(36); return LogicalType.Integer; }
+ 
+     @Override
+     public OptionalLong deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(37);
+         // minor optimization, first, for common case
+         if (p.hasToken(JsonToken.VALUE_NUMBER_INT)) {
+             return OptionalLong.of(p.getLongValue());
+diff --git a/com/fasterxml/jackson/datatype/jdk8/OptionalLongSerializer.java b/com/fasterxml/jackson/datatype/jdk8/OptionalLongSerializer.java
+index 2f425e4..c692cf4 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/OptionalLongSerializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/OptionalLongSerializer.java
+@@ -24,13 +24,13 @@ final class OptionalLongSerializer extends StdScalarSerializer<OptionalLong>
+ 
+     // @since 2.6
+     @Override
+-    public boolean isEmpty(SerializerProvider provider, OptionalLong value) {
++    public boolean isEmpty(SerializerProvider provider, OptionalLong value) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(38);
+         return (value == null) || !value.isPresent();
+     }
+ 
+     @Override
+     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor,
+-            JavaType typeHint) throws JsonMappingException {
++            JavaType typeHint) throws JsonMappingException { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(39);
+         JsonIntegerFormatVisitor v2 = visitor
+                 .expectIntegerFormat(typeHint);
+         if (v2 != null) {
+diff --git a/com/fasterxml/jackson/datatype/jdk8/OptionalSerializer.java b/com/fasterxml/jackson/datatype/jdk8/OptionalSerializer.java
+index 77ec0ed..76a9907 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/OptionalSerializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/OptionalSerializer.java
+@@ -37,7 +37,7 @@ public class OptionalSerializer
+     protected ReferenceTypeSerializer<Optional<?>> withResolved(BeanProperty prop,
+             TypeSerializer vts, JsonSerializer<?> valueSer,
+             NameTransformer unwrapper)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(40);
+         return new OptionalSerializer(this, prop, vts, valueSer, unwrapper,
+                 _suppressableValue, _suppressNulls);
+     }
+@@ -45,7 +45,7 @@ public class OptionalSerializer
+     @Override
+     public ReferenceTypeSerializer<Optional<?>> withContentInclusion(Object suppressableValue,
+             boolean suppressNulls)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(41);
+         return new OptionalSerializer(this, _property, _valueTypeSerializer,
+                 _valueSerializer, _unwrapper,
+                 suppressableValue, suppressNulls);
+diff --git a/com/fasterxml/jackson/datatype/jdk8/StreamSerializer.java b/com/fasterxml/jackson/datatype/jdk8/StreamSerializer.java
+index 0358db8..c1b0c98 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/StreamSerializer.java
++++ b/com/fasterxml/jackson/datatype/jdk8/StreamSerializer.java
+@@ -51,7 +51,7 @@ public class StreamSerializer extends StdSerializer<Stream<?>> implements Contex
+ 
+     @Override
+     public JsonSerializer<?> createContextual(SerializerProvider provider, BeanProperty property) throws JsonMappingException
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(7);
+         if (!elemType.hasRawClass(Object.class)
+                 && (provider.isEnabled(MapperFeature.USE_STATIC_TYPING) || elemType.isFinal())) {
+             return new StreamSerializer(
+@@ -64,7 +64,7 @@ public class StreamSerializer extends StdSerializer<Stream<?>> implements Contex
+ 
+     @Override
+     public void serialize(Stream<?> stream, JsonGenerator jgen, SerializerProvider provider) throws IOException
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(9);
+         try(Stream<?> s = stream) {
+             jgen.writeStartArray();
+             
+diff --git a/com/fasterxml/jackson/datatype/jdk8/WrappedIOException.java b/com/fasterxml/jackson/datatype/jdk8/WrappedIOException.java
+index 9e43f05..cffb9d8 100644
+--- a/com/fasterxml/jackson/datatype/jdk8/WrappedIOException.java
++++ b/com/fasterxml/jackson/datatype/jdk8/WrappedIOException.java
+@@ -27,7 +27,7 @@ public class WrappedIOException extends RuntimeException
+      * @return the wrapped {@link IOException}
+      */
+     @Override
+-    public IOException getCause() {
++    public IOException getCause() { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(42);
+         return (IOException) super.getCause();
+     }
+ }
+diff --git a/com/fasterxml/jackson/datatype/jsr310/DecimalUtils.java b/com/fasterxml/jackson/datatype/jsr310/DecimalUtils.java
+index a76c013..dae9983 100644
+--- a/com/fasterxml/jackson/datatype/jsr310/DecimalUtils.java
++++ b/com/fasterxml/jackson/datatype/jsr310/DecimalUtils.java
+@@ -33,7 +33,7 @@ public final class DecimalUtils
+     private DecimalUtils() { }
+ 
+     public static String toDecimal(long seconds, int nanoseconds)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(10);
+         StringBuilder sb = new StringBuilder(20)
+             .append(seconds)
+             .append('.');
+@@ -83,7 +83,7 @@ public final class DecimalUtils
+      * @since 2.8
+      */
+     public static BigDecimal toBigDecimal(long seconds, int nanoseconds)
+-    {
++    { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(11);
+         // [modules-java8#359] For negative seconds with positive nanos (times before epoch),
+         // we need to compute the proper decimal value: seconds + (nanos / 1_000_000_000)
+         // Example: Instant{epochSecond=-1, nano=999000000} represents -0.001 seconds
+diff --git a/com/fasterxml/jackson/datatype/jsr310/JSR310Module.java b/com/fasterxml/jackson/datatype/jsr310/JSR310Module.java
+index d12cc11..91024f3 100644
+--- a/com/fasterxml/jackson/datatype/jsr310/JSR310Module.java
++++ b/com/fasterxml/jackson/datatype/jsr310/JSR310Module.java
+@@ -161,13 +161,13 @@ public final class JSR310Module extends SimpleModule
+     }
+     
+     @Override
+-    public void setupModule(SetupContext context) {
++    public void setupModule(SetupContext context) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(43);
+         super.setupModule(context);
+         context.addValueInstantiators(new ValueInstantiators.Base() {
+             @Override
+             public ValueInstantiator findValueInstantiator(DeserializationConfig config,
+                     BeanDescription beanDesc, ValueInstantiator defaultInstantiator)
+-            {
++            { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(44);
+                 JavaType type = beanDesc.getType();
+                 Class<?> raw = type.getRawClass();
+                 // 15-May-2015, tatu: In theory not safe, but in practice we do need to do "fuzzy" matching
+diff --git a/com/fasterxml/jackson/datatype/jsr310/JavaTimeFeature.java b/com/fasterxml/jackson/datatype/jsr310/JavaTimeFeature.java
+index b509af6..cb707b4 100644
+--- a/com/fasterxml/jackson/datatype/jsr310/JavaTimeFeature.java
++++ b/com/fasterxml/jackson/datatype/jsr310/JavaTimeFeature.java
+@@ -67,10 +67,10 @@ public enum JavaTimeFeature implements JacksonFeature
+     }
+ 
+     @Override
+-    public boolean enabledByDefault() { return _defaultState; }
++    public boolean enabledByDefault() { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(45); return _defaultState; }
+ 
+     @Override
+-    public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
++    public boolean enabledIn(int flags) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(46); return (flags & _mask) != 0; }
+ 
+     @Override
+     public int getMask() { return _mask; }
+diff --git a/com/fasterxml/jackson/datatype/jsr310/JavaTimeModule.java b/com/fasterxml/jackson/datatype/jsr310/JavaTimeModule.java
+index ae95338..6e40878 100644
+--- a/com/fasterxml/jackson/datatype/jsr310/JavaTimeModule.java
++++ b/com/fasterxml/jackson/datatype/jsr310/JavaTimeModule.java
+@@ -106,12 +106,12 @@ public final class JavaTimeModule
+         _features = JacksonFeatureSet.fromDefaults(JavaTimeFeature.values());
+     }
+ 
+-    public JavaTimeModule enable(JavaTimeFeature f) {
++    public JavaTimeModule enable(JavaTimeFeature f) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(47);
+         _features = _features.with(f);
+         return this;
+     }
+ 
+-    public JavaTimeModule disable(JavaTimeFeature f) {
++    public JavaTimeModule disable(JavaTimeFeature f) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(48);
+         _features = _features.without(f);
+         return this;
+     }
+diff --git a/com/fasterxml/jackson/datatype/jsr310/deser/DurationDeserializer.java b/com/fasterxml/jackson/datatype/jsr310/deser/DurationDeserializer.java
+index 79a1fc2..2db816c 100644
+--- a/com/fasterxml/jackson/datatype/jsr310/deser/DurationDeserializer.java
++++ b/com/fasterxml/jackson/datatype/jsr310/deser/DurationDeserializer.java
+@@ -106,11 +106,11 @@ public class DurationDeserializer extends JSR310DeserializerBase<Duration>
+     }
+ 
+     @Override
+-    protected DurationDeserializer withLeniency(Boolean leniency) {
++    protected DurationDeserializer withLeniency(Boolean leniency) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(49);
+         return new DurationDeserializer(this, leniency);
+     }
+ 
+-    protected DurationDeserializer withConverter(DurationUnitConverter converter) {
++    protected DurationDeserializer withConverter(DurationUnitConverter converter) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(50);
+         return new DurationDeserializer(this, converter);
+     }
+ 
+diff --git a/com/fasterxml/jackson/datatype/jsr310/deser/JSR310StringParsableDeserializer.java b/com/fasterxml/jackson/datatype/jsr310/deser/JSR310StringParsableDeserializer.java
+index 96596a3..d146604 100644
+--- a/com/fasterxml/jackson/datatype/jsr310/deser/JSR310StringParsableDeserializer.java
++++ b/com/fasterxml/jackson/datatype/jsr310/deser/JSR310StringParsableDeserializer.java
+@@ -83,12 +83,12 @@ public class JSR310StringParsableDeserializer
+     }
+ 
+     @SuppressWarnings("unchecked")
+-    protected static <T> JsonDeserializer<T> createDeserializer(Class<T> type, int typeId) {
++    protected static <T> JsonDeserializer<T> createDeserializer(Class<T> type, int typeId) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(12);
+         return (JsonDeserializer<T>) new JSR310StringParsableDeserializer(type, typeId);
+     }
+ 
+     @Override
+-    protected JSR310StringParsableDeserializer withLeniency(Boolean leniency) {
++    protected JSR310StringParsableDeserializer withLeniency(Boolean leniency) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(13);
+         if (_isLenient == !Boolean.FALSE.equals(leniency)) {
+             return this;
+         }
+diff --git a/com/fasterxml/jackson/jmhbench/MutationSwitch.java b/com/fasterxml/jackson/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..13b673d
+--- /dev/null
++++ b/com/fasterxml/jackson/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.fasterxml.jackson.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/fasterxml/jackson/module/paramnames/ParameterExtractor.java b/com/fasterxml/jackson/module/paramnames/ParameterExtractor.java
+index 7a2aec4..0c516c9 100644
+--- a/com/fasterxml/jackson/module/paramnames/ParameterExtractor.java
++++ b/com/fasterxml/jackson/module/paramnames/ParameterExtractor.java
+@@ -6,7 +6,7 @@ import java.lang.reflect.Parameter;
+ class ParameterExtractor implements java.io.Serializable {
+     private static final long serialVersionUID = 1L;
+ 
+-    public Parameter[] getParameters(Executable executable) {
++    public Parameter[] getParameters(Executable executable) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(2);
+         return executable.getParameters();
+     }
+ }
+diff --git a/com/fasterxml/jackson/module/paramnames/ParameterNamesAnnotationIntrospector.java b/com/fasterxml/jackson/module/paramnames/ParameterNamesAnnotationIntrospector.java
+index 2b56352..46ecb34 100644
+--- a/com/fasterxml/jackson/module/paramnames/ParameterNamesAnnotationIntrospector.java
++++ b/com/fasterxml/jackson/module/paramnames/ParameterNamesAnnotationIntrospector.java
+@@ -29,7 +29,7 @@ public class ParameterNamesAnnotationIntrospector extends NopAnnotationIntrospec
+     }
+ 
+     @Override
+-    public String findImplicitPropertyName(AnnotatedMember m) {
++    public String findImplicitPropertyName(AnnotatedMember m) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(4);
+         if (m instanceof AnnotatedParameter) {
+             return findParameterName((AnnotatedParameter) m);
+         }
+@@ -67,7 +67,7 @@ public class ParameterNamesAnnotationIntrospector extends NopAnnotationIntrospec
+      */
+ 
+     @Override
+-    public JsonCreator.Mode findCreatorAnnotation(MapperConfig<?> config, Annotated a) {
++    public JsonCreator.Mode findCreatorAnnotation(MapperConfig<?> config, Annotated a) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(6);
+         JsonCreator ann = _findAnnotation(a, JsonCreator.class);
+         if (ann != null) {
+             JsonCreator.Mode mode = ann.mode();
+diff --git a/com/fasterxml/jackson/module/paramnames/ParameterNamesModule.java b/com/fasterxml/jackson/module/paramnames/ParameterNamesModule.java
+index 0b7d60c..3fdd150 100644
+--- a/com/fasterxml/jackson/module/paramnames/ParameterNamesModule.java
++++ b/com/fasterxml/jackson/module/paramnames/ParameterNamesModule.java
+@@ -20,7 +20,7 @@ public class ParameterNamesModule extends SimpleModule
+     }
+ 
+     @Override
+-    public void setupModule(SetupContext context) {
++    public void setupModule(SetupContext context) { com.fasterxml.jackson.jmhbench.MutationSwitch.tick(8);
+         super.setupModule(context);
+         context.insertAnnotationIntrospector(new ParameterNamesAnnotationIntrospector(creatorBinding, new ParameterExtractor()));
+     }

@@ -1,0 +1,59 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableCountSingle;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link ObservableCountSingle} measuring throughput of counting
+ * a stream of items emitted by {@link Observable#range(int, int)}.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@code @State} for thread‑local data.</li>
+ *   <li>Parameterized input size to explore scaling.</li>
+ *   <li>Warm‑up and measurement iterations with stable time units.</li>
+ *   <li>Use of {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Blocking subscription only for benchmark purposes to obtain the result.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableCountSingleBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        /**
+         * Number of items emitted by the source Observable.
+         * Adjust to evaluate different workloads.
+         */
+        @Param({"1000", "10000", "100000"})
+        public int size;
+
+        /** The operator under test. */
+        ObservableCountSingle<Integer> countSingle;
+
+        /** Prepare a fresh operator instance for each invocation to avoid cross‑iteration state. */
+        @Setup(Level.Invocation)
+        public void setUp() {
+            // Observable.range emits a deterministic sequence of integers.
+            // It implements ObservableSource<Integer>, which is accepted by ObservableCountSingle.
+            countSingle = new ObservableCountSingle<>(Observable.range(1, size));
+        }
+    }
+
+    @Benchmark
+    public void countSingle(BenchmarkState state, Blackhole bh) {
+        // blockingGet forces the Single to execute and emit the final count.
+        long result = state.countSingle.blockingGet();
+        bh.consume(result);
+    }
+}
+```

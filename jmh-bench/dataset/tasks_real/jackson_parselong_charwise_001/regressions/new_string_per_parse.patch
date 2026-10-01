@@ -1,0 +1,23 @@
+--- a/bench/LongParser.java
++++ b/bench/LongParser.java
+@@ -4,18 +4,8 @@
+ 
+     private LongParser() {}
+ 
++    // Regressed: build a fresh String per call and delegate to Long.parseLong.
+     public static long parse(char[] buf, int off, int len) {
+-        long result = 0;
+-        boolean neg = false;
+-        int i = off;
+-        int end = off + len;
+-        if (len > 0 && buf[off] == '-') {
+-            neg = true;
+-            i++;
+-        }
+-        for (; i < end; i++) {
+-            result = result * 10 + (buf[i] - '0');
+-        }
+-        return neg ? -result : result;
++        return Long.parseLong(new String(buf, off, len));
+     }
+ }

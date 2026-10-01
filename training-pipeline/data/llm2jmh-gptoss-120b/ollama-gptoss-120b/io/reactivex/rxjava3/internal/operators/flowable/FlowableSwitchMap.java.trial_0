@@ -1,0 +1,81 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.operators.flowable;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableSwitchMap;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link FlowableSwitchMap}.
+ *
+ * The benchmark measures the throughput of a {@code Flowable.switchMap} chain
+ * under a hot source emitting a large number of items. The mapper creates a
+ * simple {@code Flowable.just} for each upstream value, which mimics the
+ * typical use‑case where the inner source is cheap and the operator's
+ * coordination logic dominates the cost.
+ *
+ * The benchmark is written in {@code Mode.Throughput} (operations per second)
+ * and uses a {@code Blackhole} to consume the downstream values without
+ * affecting JIT optimizations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableSwitchMapThroughputBenchmark {
+
+    /** Number of items emitted by the upstream source. */
+    @Param({"1000", "10000", "100000"})
+    public int upstreamItemCount;
+
+    /** Buffer size used by the switchMap operator. */
+    @Param({"16", "128", "1024"})
+    public int bufferSize;
+
+    /** Whether the operator delays errors. */
+    @Param({"true", "false"})
+    public boolean delayErrors;
+
+    /** The source Flowable used in the benchmark. */
+    private Flowable<Integer> source;
+
+    /** Mapper function used by switchMap. */
+    private Function<Integer, Publisher<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Upstream emits a range of integers synchronously.
+        source = Flowable.range(1, upstreamItemCount)
+                // Run on a dedicated scheduler to avoid blocking the benchmark thread.
+                .subscribeOn(Schedulers.single());
+
+        // Simple mapper that returns a Flowable.just for each upstream value.
+        mapper = v -> Flowable.just(v);
+    }
+
+    /**
+     * Benchmark the switchMap operator in a hot chain.
+     *
+     * @param bh Blackhole to consume the downstream values.
+     */
+    @Benchmark
+    public void switchMapThroughput(Blackhole bh) {
+        source
+                .compose(upstream -> new FlowableSwitchMap<>(
+                        (Flowable<Integer>) upstream,
+                        mapper,
+                        bufferSize,
+                        delayErrors))
+                .subscribe(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer value) {
+                        // Consume the value via Blackhole to prevent dead‑code elimination.
+                        bh.consume(value);
+                    }
+                });
+    }
+}
+```

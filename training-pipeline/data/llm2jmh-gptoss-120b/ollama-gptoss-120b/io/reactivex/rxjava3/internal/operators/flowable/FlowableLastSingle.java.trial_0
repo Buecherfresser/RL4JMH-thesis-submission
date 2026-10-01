@@ -1,0 +1,70 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableLastSingle;
+
+/**
+ * Benchmark for {@link FlowableLastSingle}.
+ *
+ * Measures the throughput (operations per second) of retrieving the last element
+ * from a {@link Flowable} using the {@code FlowableLastSingle} operator.
+ *
+ * The benchmark varies the size of the source {@code Flowable} to assess
+ * scalability. The {@code blockingGet()} call forces the subscription to
+ * complete synchronously, ensuring that the measured time includes the full
+ * processing of the source.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source {@code Flowable} and the operator in @Setup to exclude
+ *   allocation overhead from the measured section.
+ * - Use @Param to explore different input sizes.
+ * - Run in Mode.Throughput with a reasonable time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableLastSingleBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     * Typical values: small (1), medium (1_000), large (1_000_000).
+     */
+    @Param({"1", "1000", "1000000"})
+    public int size;
+
+    /** The source Flowable that emits a range of integers. */
+    private Flowable<Integer> source;
+
+    /** The operator under test. */
+    private FlowableLastSingle<Integer> operator;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a Flowable that emits a sequential range of integers.
+        source = Flowable.range(1, size);
+        // No default item; we expect the source to always emit at least one element.
+        operator = new FlowableLastSingle<>(source, null);
+    }
+
+    /**
+     * Executes the benchmark: subscribes to the operator and blocks until the
+     * last element (or error) is received.
+     *
+     * @return the last integer emitted by the source Flowable
+     */
+    @Benchmark
+    public Integer lastSingleBlockingGet() {
+        // blockingGet forces the subscription to run to completion and returns the result.
+        return operator.blockingGet();
+    }
+}
+```

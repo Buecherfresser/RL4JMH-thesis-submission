@@ -1,0 +1,113 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for the internal operator FlowableMergeWithSingle.
+ * The benchmark merges a Flowable emitting a configurable number of items
+ * with a Single emitting a single value. Throughput (items per second) is measured.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Iteration) recreates sources for each iteration to avoid cross‑iteration effects.
+ * - Blackhole is used to consume emitted items, preventing dead‑code elimination.
+ * - CountDownLatch synchronises onComplete to ensure the benchmark measures the full stream.
+ * - Warm‑up, measurement, and fork settings follow typical JMH recommendations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableMergeWithSingleBenchmark {
+
+    /**
+     * Number of items emitted by the Flowable source.
+     * Typical values are chosen to exercise both fast-path and backpressure paths.
+     */
+    @Param({ "1", "100", "1000", "10000" })
+    public int sourceSize;
+
+    private Flowable<Integer> mergedFlowable;
+
+    @Setup(Level.Iteration)
+    public void setUp() {
+        // Flowable source emitting a range of integers.
+        Flowable<Integer> source = Flowable.range(1, sourceSize);
+        // Single source emitting a single integer (e.g., 0).
+        Single<Integer> other = Single.just(0);
+        // The public API that internally uses FlowableMergeWithSingle.
+        mergedFlowable = source.mergeWith(other);
+    }
+
+    @Benchmark
+    public void mergeWithSingle(Blackhole bh) throws InterruptedException {
+        // Latch to wait for onComplete.
+        CountDownLatch latch = new CountDownLatch(1);
+        mergedFlowable.subscribe(new DefaultSubscriber<Integer>() {
+
+            @Override
+            public void onStart() {
+                // Request an unbounded number of items to avoid backpressure interference.
+                request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                // Consume the item via Blackhole to prevent dead‑code elimination.
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are unexpected in this benchmark; rethrow as unchecked.
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        // Wait for the stream to finish; timeout guards against hangs.
+        if (!latch.await(5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Benchmark stream did not complete in time");
+        }
+    }
+}

@@ -1,0 +1,145 @@
+package io.reactivex.rxjava3.internal.schedulers;
+
+import io.reactivex.rxjava3.internal.schedulers.ExecutorScheduler.ExecutorWorker;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link ExecutorScheduler} and its {@link ExecutorWorker}.
+ * Measures throughput of various scheduling operations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(4)
+public class ExecutorSchedulerBenchmark {
+
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+
+        Scheduler scheduler;
+
+        ExecutorWorker worker;
+
+        ExecutorService executorService;
+
+        Runnable noop;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // a simple cached thread pool to avoid queueing delays
+            executorService = Executors.newCachedThreadPool(r -> {
+                Thread t = new Thread(r);
+                t.setDaemon(true);
+                return t;
+            });
+            // interruptible = false, fair = false – typical configuration
+            scheduler = new ExecutorScheduler(executorService, false, false);
+            worker = (ExecutorWorker) scheduler.createWorker();
+            // a minimal runnable that does virtually no work
+            noop = () -> {
+                // intentionally empty
+            };
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            worker.dispose();
+            // Scheduler implements Disposable; shutdown releases resources
+            scheduler.shutdown();
+            executorService.shutdownNow();
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Direct scheduling without delay
+    // -----------------------------------------------------------------------
+    @Benchmark
+    public Disposable scheduleDirectNoDelay(BenchmarkState state) {
+        return state.scheduler.scheduleDirect(state.noop);
+    }
+
+    // -----------------------------------------------------------------------
+    // Direct scheduling with a tiny delay (1 µs) – still uses the same path
+    // -----------------------------------------------------------------------
+    @Benchmark
+    public Disposable scheduleDirectWithDelay(BenchmarkState state) {
+        return state.scheduler.scheduleDirect(state.noop, 1, TimeUnit.MICROSECONDS);
+    }
+
+    // -----------------------------------------------------------------------
+    // Periodic scheduling (fixed rate) – measures overhead of recurring tasks
+    // -----------------------------------------------------------------------
+    @Benchmark
+    public Disposable schedulePeriodicallyDirect(BenchmarkState state) {
+        // period of 10 ms keeps the system from being overwhelmed while still measuring overhead
+        return state.scheduler.schedulePeriodicallyDirect(state.noop, 0, 10, TimeUnit.MILLISECONDS);
+    }
+
+    // -----------------------------------------------------------------------
+    // Worker scheduling without delay (the most common path in RxJava)
+    // -----------------------------------------------------------------------
+    @Benchmark
+    public Disposable workerScheduleNoDelay(BenchmarkState state) {
+        return state.worker.schedule(state.noop);
+    }
+
+    // -----------------------------------------------------------------------
+    // Worker scheduling with a small delay – triggers the delayed path
+    // -----------------------------------------------------------------------
+    @Benchmark
+    public Disposable workerScheduleWithDelay(BenchmarkState state) {
+        return state.worker.schedule(state.noop, 1, TimeUnit.MICROSECONDS);
+    }
+
+    // -----------------------------------------------------------------------
+    // Worker run loop – schedule a batch of tasks and let the worker drain them.
+    // This benchmark measures the cost of the runEager() loop.
+    // -----------------------------------------------------------------------
+    @Benchmark
+    public void workerRunEagerLoop(BenchmarkState state) {
+        // schedule a small batch (e.g., 10 tasks) to be executed in the same run
+        for (int i = 0; i < 10; i++) {
+            state.worker.schedule(state.noop);
+        }
+        // The worker will automatically execute when tasks are queued.
+        // No explicit call needed; the benchmark measures the time until all tasks are processed.
+    }
+}

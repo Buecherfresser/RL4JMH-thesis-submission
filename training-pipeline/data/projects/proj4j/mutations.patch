@@ -1,0 +1,617 @@
+diff --git a/org/locationtech/proj4j/BasicCoordinateTransform.java b/org/locationtech/proj4j/BasicCoordinateTransform.java
+index ad20219..edc7cf8 100644
+--- a/org/locationtech/proj4j/BasicCoordinateTransform.java
++++ b/org/locationtech/proj4j/BasicCoordinateTransform.java
+@@ -125,12 +125,12 @@ public class BasicCoordinateTransform implements CoordinateTransform {
+     }
+ 
+     @Override
+-	public CoordinateReferenceSystem getSourceCRS() {
++	public CoordinateReferenceSystem getSourceCRS() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(1);
+         return srcCRS;
+     }
+ 
+     @Override
+-	public CoordinateReferenceSystem getTargetCRS() {
++	public CoordinateReferenceSystem getTargetCRS() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(10);
+         return tgtCRS;
+     }
+ 
+diff --git a/org/locationtech/proj4j/CRSFactory.java b/org/locationtech/proj4j/CRSFactory.java
+index 7aef589..de0b98a 100644
+--- a/org/locationtech/proj4j/CRSFactory.java
++++ b/org/locationtech/proj4j/CRSFactory.java
+@@ -46,7 +46,7 @@ public class CRSFactory {
+      *
+      * @return the Registry
+      */
+-    public Registry getRegistry() {
++    public Registry getRegistry() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(19);
+         return registry;
+     }
+ 
+@@ -79,7 +79,7 @@ public class CRSFactory {
+      * @throws UnknownAuthorityCodeException if the authority code cannot be found
+      */
+     public CoordinateReferenceSystem createFromName(String name)
+-            throws UnsupportedParameterException, InvalidValueException, UnknownAuthorityCodeException {
++            throws UnsupportedParameterException, InvalidValueException, UnknownAuthorityCodeException { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(27);
+         String[] params = csReader.getParameters(name);
+         if (params == null)
+             throw new UnknownAuthorityCodeException(name);
+diff --git a/org/locationtech/proj4j/CoordinateReferenceSystem.java b/org/locationtech/proj4j/CoordinateReferenceSystem.java
+index bb6ef36..73d0537 100644
+--- a/org/locationtech/proj4j/CoordinateReferenceSystem.java
++++ b/org/locationtech/proj4j/CoordinateReferenceSystem.java
+@@ -69,11 +69,11 @@ public class CoordinateReferenceSystem implements java.io.Serializable {
+         }
+     }
+ 
+-    public String getName() {
++    public String getName() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(35);
+         return name;
+     }
+ 
+-    public String[] getParameters() {
++    public String[] getParameters() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(43);
+         return params;
+     }
+ 
+diff --git a/org/locationtech/proj4j/CoordinateTransformFactory.java b/org/locationtech/proj4j/CoordinateTransformFactory.java
+index 6dc9e12..e449d08 100644
+--- a/org/locationtech/proj4j/CoordinateTransformFactory.java
++++ b/org/locationtech/proj4j/CoordinateTransformFactory.java
+@@ -34,7 +34,7 @@ public class CoordinateTransformFactory {
+      * @param targetCRS the target CoordinateReferenceSystem
+      * @return a tranformation from the source CRS to the target CRS
+      */
+-    public CoordinateTransform createTransform(CoordinateReferenceSystem sourceCRS, CoordinateReferenceSystem targetCRS) {
++    public CoordinateTransform createTransform(CoordinateReferenceSystem sourceCRS, CoordinateReferenceSystem targetCRS) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(50);
+         return new BasicCoordinateTransform(sourceCRS, targetCRS);
+     }
+ }
+diff --git a/org/locationtech/proj4j/datum/AxisOrder.java b/org/locationtech/proj4j/datum/AxisOrder.java
+index 8c6da20..732eae4 100644
+--- a/org/locationtech/proj4j/datum/AxisOrder.java
++++ b/org/locationtech/proj4j/datum/AxisOrder.java
+@@ -22,10 +22,10 @@ import org.locationtech.proj4j.ProjCoordinate;
+ public final class AxisOrder implements Serializable {
+     public static enum Axis {
+         Easting {
+-            public double fromENU(ProjCoordinate c) {
++            public double fromENU(ProjCoordinate c) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(2);
+                 return c.x;
+             }
+-            public void toENU(double x, ProjCoordinate c) {
++            public void toENU(double x, ProjCoordinate c) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(11);
+                 c.x = x;
+             }
+         },
+diff --git a/org/locationtech/proj4j/datum/CTABLEV2.java b/org/locationtech/proj4j/datum/CTABLEV2.java
+index 1278504..1d809ca 100644
+--- a/org/locationtech/proj4j/datum/CTABLEV2.java
++++ b/org/locationtech/proj4j/datum/CTABLEV2.java
+@@ -30,11 +30,11 @@ public final class CTABLEV2 {
+ 
+     private static final byte[] magic = "CTABLE V2".getBytes(StandardCharsets.US_ASCII);
+ 
+-    public static boolean testHeader(byte[] header) {
++    public static boolean testHeader(byte[] header) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(20);
+         return containsAt(magic, header, 0);
+     }
+ 
+-    public static Grid.ConversionTable init(DataInputStream definition) throws IOException {
++    public static Grid.ConversionTable init(DataInputStream definition) throws IOException { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(28);
+         byte[] header = new byte[160];
+         definition.readFully(header);
+         if (!containsAt(magic, header, 0)) throw new Error("Not a CTABLE V2 file");
+diff --git a/org/locationtech/proj4j/datum/Datum.java b/org/locationtech/proj4j/datum/Datum.java
+index ecefbd7..48e665e 100644
+--- a/org/locationtech/proj4j/datum/Datum.java
++++ b/org/locationtech/proj4j/datum/Datum.java
+@@ -126,11 +126,11 @@ public class Datum implements java.io.Serializable {
+         this.transform = transform;
+     }
+ 
+-    public String getCode() {
++    public String getCode() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(36);
+         return code;
+     }
+ 
+-    public String getName() {
++    public String getName() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(44);
+         return name;
+     }
+ 
+diff --git a/org/locationtech/proj4j/geoapi/Alias.java b/org/locationtech/proj4j/geoapi/Alias.java
+index c0a17e9..e8c14c5 100644
+--- a/org/locationtech/proj4j/geoapi/Alias.java
++++ b/org/locationtech/proj4j/geoapi/Alias.java
+@@ -68,12 +68,12 @@ final class Alias implements LocalName, NameSpace, Serializable {
+      * {@return the global namespace}.
+      */
+     @Override
+-    public NameSpace scope() {
++    public NameSpace scope() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(21);
+         return this;
+     }
+ 
+     @Override
+-    public int depth() {
++    public int depth() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(29);
+         return 1;
+     }
+ 
+diff --git a/org/locationtech/proj4j/geoapi/AuthorityFactoryWrapper.java b/org/locationtech/proj4j/geoapi/AuthorityFactoryWrapper.java
+index a37ae78..5eef9b0 100644
+--- a/org/locationtech/proj4j/geoapi/AuthorityFactoryWrapper.java
++++ b/org/locationtech/proj4j/geoapi/AuthorityFactoryWrapper.java
+@@ -69,7 +69,7 @@ final class AuthorityFactoryWrapper extends Wrapper implements CRSAuthorityFacto
+      * {@return the factory name}.
+      */
+     @Override
+-    public String getCode() {
++    public String getCode() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(37);
+         return "PROJ4J";
+     }
+ 
+@@ -78,7 +78,7 @@ final class AuthorityFactoryWrapper extends Wrapper implements CRSAuthorityFacto
+      * This is not the authority (EPSG, ESRI, <i>etc</i>).
+      */
+     @Override
+-    public Citation getVendor() {
++    public Citation getVendor() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(45);
+         return SimpleCitation.PROJ4J;
+     }
+ 
+diff --git a/org/locationtech/proj4j/geoapi/LocalizedString.java b/org/locationtech/proj4j/geoapi/LocalizedString.java
+index 8c10476..a219f38 100644
+--- a/org/locationtech/proj4j/geoapi/LocalizedString.java
++++ b/org/locationtech/proj4j/geoapi/LocalizedString.java
+@@ -69,12 +69,12 @@ final class LocalizedString implements InternationalString, Serializable {
+     }
+ 
+     @Override
+-    public int length() {
++    public int length() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(3);
+         return text.length();
+     }
+ 
+     @Override
+-    public char charAt(int index) {
++    public char charAt(int index) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(12);
+         return text.charAt(index);
+     }
+ 
+diff --git a/org/locationtech/proj4j/geodesic/GeoMath.java b/org/locationtech/proj4j/geodesic/GeoMath.java
+index d3505d1..3e2f309 100644
+--- a/org/locationtech/proj4j/geodesic/GeoMath.java
++++ b/org/locationtech/proj4j/geodesic/GeoMath.java
+@@ -26,7 +26,7 @@ public class GeoMath {
+      * @param x the argument.
+      * @return <i>x</i><sup>2</sup>.
+      **********************************************************************/
+-    public static double sq(double x) { return x * x; }
++    public static double sq(double x) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(4); return x * x; }
+ 
+     /**
+      * The inverse hyperbolic tangent function.  This is defined in terms of
+@@ -36,7 +36,7 @@ public class GeoMath {
+      * @param x the argument.
+      * @return atanh(<i>x</i>).
+      **********************************************************************/
+-    public static double atanh(double x)  {
++    public static double atanh(double x)  { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(13);
+         double y = Math.abs(x);     // Enforce odd parity
+         y = Math.log1p(2 * y/(1 - y))/2;
+         return x > 0 ? y : (x < 0 ? -y : x);
+diff --git a/org/locationtech/proj4j/geodesic/Geodesic.java b/org/locationtech/proj4j/geodesic/Geodesic.java
+index e19501d..ff16b8d 100644
+--- a/org/locationtech/proj4j/geodesic/Geodesic.java
++++ b/org/locationtech/proj4j/geodesic/Geodesic.java
+@@ -312,7 +312,7 @@ public class Geodesic {
+      * path: the longitudinal extent must not exceed of 180&deg;.)
+      **********************************************************************/
+     public GeodesicData Direct(double lat1, double lon1,
+-                               double azi1, double s12) {
++                               double azi1, double s12) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(22);
+         return Direct(lat1, lon1, azi1, false, s12, GeodesicMask.STANDARD);
+     }
+     /**
+@@ -336,7 +336,7 @@ public class Geodesic {
+      * includes the {@link GeodesicMask#LONG_UNROLL} flag.
+      **********************************************************************/
+     public GeodesicData Direct(double lat1, double lon1,
+-                               double azi1, double s12, int outmask) {
++                               double azi1, double s12, int outmask) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(30);
+         return Direct(lat1, lon1, azi1, false, s12, outmask);
+     }
+ 
+diff --git a/org/locationtech/proj4j/geodesic/GeodesicLine.java b/org/locationtech/proj4j/geodesic/GeodesicLine.java
+index cac95de..9e17fbf 100644
+--- a/org/locationtech/proj4j/geodesic/GeodesicLine.java
++++ b/org/locationtech/proj4j/geodesic/GeodesicLine.java
+@@ -310,7 +310,7 @@ public class GeodesicLine {
+      * The GeodesicLine object <i>must</i> have been constructed with <i>caps</i>
+      * |= {@link GeodesicMask#DISTANCE_IN}; otherwise no parameters are set.
+      **********************************************************************/
+-    public GeodesicData Position(double s12) {
++    public GeodesicData Position(double s12) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(38);
+         return Position(false, s12, GeodesicMask.STANDARD);
+     }
+     /**
+@@ -333,7 +333,7 @@ public class GeodesicLine {
+      * the quantity <i>lon2</i> &minus; <i>lon1</i> indicates how many times and
+      * in what sense the geodesic encircles the ellipsoid.
+      **********************************************************************/
+-    public GeodesicData Position(double s12, int outmask) {
++    public GeodesicData Position(double s12, int outmask) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(46);
+         return Position(false, s12, outmask);
+     }
+ 
+diff --git a/org/locationtech/proj4j/io/Proj4FileReader.java b/org/locationtech/proj4j/io/Proj4FileReader.java
+index b727712..7a20803 100644
+--- a/org/locationtech/proj4j/io/Proj4FileReader.java
++++ b/org/locationtech/proj4j/io/Proj4FileReader.java
+@@ -33,7 +33,7 @@ public class Proj4FileReader {
+     }
+ 
+     public String[] readParametersFromFile(String authorityCode, String name)
+-            throws IOException {
++            throws IOException { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(5);
+         // TODO: read comment preceding CS string as CS description
+         // TODO: use simpler parser than StreamTokenizer for speed and flexibility
+         // TODO: parse CSes line-at-a-time (this allows preserving CS param string for later access)
+@@ -110,7 +110,7 @@ public class Proj4FileReader {
+      * @param crsName the name of the coordinate system
+      * @return the PROJ.4 projection parameters which define the coordinate system
+      */
+-    public String[] getParameters(String crsName) {
++    public String[] getParameters(String crsName) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(14);
+         try {
+             int p = crsName.indexOf(':');
+             if (p >= 0) {
+diff --git a/org/locationtech/proj4j/jmhbench/MutationSwitch.java b/org/locationtech/proj4j/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..7105282
+--- /dev/null
++++ b/org/locationtech/proj4j/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.locationtech.proj4j.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/locationtech/proj4j/parser/DatumParameters.java b/org/locationtech/proj4j/parser/DatumParameters.java
+index b84d3a7..0972ecf 100644
+--- a/org/locationtech/proj4j/parser/DatumParameters.java
++++ b/org/locationtech/proj4j/parser/DatumParameters.java
+@@ -56,7 +56,7 @@ public class DatumParameters {
+ //    setDatum(Datum.WGS84);
+     }
+ 
+-    public Datum getDatum() {
++    public Datum getDatum() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(15);
+         if (datum != null)
+             return datum;
+         // if no ellipsoid was specified, return WGS84 as the default
+@@ -75,7 +75,7 @@ public class DatumParameters {
+         return !(Double.isNaN(a) || Double.isNaN(es));
+     }
+ 
+-    public Ellipsoid getEllipsoid() {
++    public Ellipsoid getEllipsoid() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(23);
+         if (ellipsoid != null)
+             return ellipsoid;
+         return new Ellipsoid("user", a, es, "User-defined");
+diff --git a/org/locationtech/proj4j/parser/Proj4Keyword.java b/org/locationtech/proj4j/parser/Proj4Keyword.java
+index 6c84c86..670d1b3 100644
+--- a/org/locationtech/proj4j/parser/Proj4Keyword.java
++++ b/org/locationtech/proj4j/parser/Proj4Keyword.java
+@@ -72,7 +72,7 @@ public class Proj4Keyword {
+ 
+     private static Set<String> supportedParams = null;
+ 
+-    public static synchronized Set supportedParameters() {
++    public static synchronized Set supportedParameters() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(31);
+         if (supportedParams == null) {
+             supportedParams = new TreeSet<String>();
+ 
+@@ -121,7 +121,7 @@ public class Proj4Keyword {
+         return supportedParams;
+     }
+ 
+-    public static boolean isSupported(String paramKey) {
++    public static boolean isSupported(String paramKey) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(39);
+         return supportedParameters().contains(paramKey);
+     }
+ 
+diff --git a/org/locationtech/proj4j/parser/Proj4Parser.java b/org/locationtech/proj4j/parser/Proj4Parser.java
+index b15950b..ced5a93 100644
+--- a/org/locationtech/proj4j/parser/Proj4Parser.java
++++ b/org/locationtech/proj4j/parser/Proj4Parser.java
+@@ -40,7 +40,7 @@ public class Proj4Parser {
+         this.registry = registry;
+     }
+ 
+-    public CoordinateReferenceSystem parse(String name, String[] args) {
++    public CoordinateReferenceSystem parse(String name, String[] args) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(6);
+         if (args == null)
+             return null;
+ 
+diff --git a/org/locationtech/proj4j/proj/AiryProjection.java b/org/locationtech/proj4j/proj/AiryProjection.java
+index a8dd2f3..75ced9a 100644
+--- a/org/locationtech/proj4j/proj/AiryProjection.java
++++ b/org/locationtech/proj4j/proj/AiryProjection.java
+@@ -46,7 +46,7 @@ public class AiryProjection extends Projection {
+ 		initialize();
+ 	}
+ 
+-	public ProjCoordinate project(double lplam, double lpphi, ProjCoordinate out) {
++	public ProjCoordinate project(double lplam, double lpphi, ProjCoordinate out) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(24);
+ 		double sinlam, coslam, cosphi, sinphi, t, s, Krho, cosz;
+ 
+ 		sinlam = Math.sin(lplam);
+@@ -92,7 +92,7 @@ public class AiryProjection extends Projection {
+ 		return out;
+ 	}
+ 
+-	public void initialize() { // airy
++	public void initialize() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(32); // airy
+ 		super.initialize();
+ 
+ 		double beta;
+diff --git a/org/locationtech/proj4j/proj/AitoffProjection.java b/org/locationtech/proj4j/proj/AitoffProjection.java
+index 1df7218..a3a373f 100644
+--- a/org/locationtech/proj4j/proj/AitoffProjection.java
++++ b/org/locationtech/proj4j/proj/AitoffProjection.java
+@@ -40,7 +40,7 @@ public class AitoffProjection extends PseudoCylindricalProjection {
+ 		winkel = type == WINKEL;
+ 	}
+ 
+-	public ProjCoordinate project(double lplam, double lpphi, ProjCoordinate out) {
++	public ProjCoordinate project(double lplam, double lpphi, ProjCoordinate out) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(40);
+ 		double c = 0.5 * lplam;
+ 		double d = Math.acos(Math.cos(lpphi) * Math.cos(c));
+ 
+@@ -56,7 +56,7 @@ public class AitoffProjection extends PseudoCylindricalProjection {
+ 		return out;
+ 	}
+ 
+-	public void initialize() {
++	public void initialize() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(47);
+ 		super.initialize();
+ 		if (winkel) {
+ //FIXME
+diff --git a/org/locationtech/proj4j/proj/NewZealandMapGridProjection.java b/org/locationtech/proj4j/proj/NewZealandMapGridProjection.java
+index bfcd40e..40e4fbe 100644
+--- a/org/locationtech/proj4j/proj/NewZealandMapGridProjection.java
++++ b/org/locationtech/proj4j/proj/NewZealandMapGridProjection.java
+@@ -57,7 +57,7 @@ public class NewZealandMapGridProjection extends Projection {
+ 	}
+ 	
+     @Override
+-	public ProjCoordinate project(double lplam, double lpphi, ProjCoordinate out) {
++	public ProjCoordinate project(double lplam, double lpphi, ProjCoordinate out) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(7);
+         Complex p = new Complex(0, 0);
+ 
+         lpphi = (lpphi - projectionLatitude) * RAD_TO_SECS;
+@@ -72,7 +72,7 @@ public class NewZealandMapGridProjection extends Projection {
+     }
+ 
+     @Override
+-    protected ProjCoordinate projectInverse(double x, double y, ProjCoordinate dst) {
++    protected ProjCoordinate projectInverse(double x, double y, ProjCoordinate dst) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(16);
+         int nn, i;
+         Complex p = new Complex(y, x), f, fp = new Complex(0,0), dp = new Complex(0,0);
+         double den;
+diff --git a/org/locationtech/proj4j/units/Angle.java b/org/locationtech/proj4j/units/Angle.java
+index 7680f6a..2752ab1 100644
+--- a/org/locationtech/proj4j/units/Angle.java
++++ b/org/locationtech/proj4j/units/Angle.java
+@@ -41,7 +41,7 @@ public class Angle
+      */
+     public static double parse(String text)
+         throws NumberFormatException
+-    {
++    { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(8);
+         double d = 0, m = 0, s = 0;
+         double result;
+         boolean negate = false;
+diff --git a/org/locationtech/proj4j/units/AngleFormat.java b/org/locationtech/proj4j/units/AngleFormat.java
+index 2ea86d0..2afc650 100644
+--- a/org/locationtech/proj4j/units/AngleFormat.java
++++ b/org/locationtech/proj4j/units/AngleFormat.java
+@@ -67,11 +67,11 @@ public class AngleFormat extends NumberFormat {
+         format.setGroupingUsed(false);
+     }
+ 
+-    public StringBuffer format(long number, StringBuffer result, FieldPosition fieldPosition) {
++    public StringBuffer format(long number, StringBuffer result, FieldPosition fieldPosition) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(17);
+         return format((double)number, result, fieldPosition);
+     }
+ 
+-    public StringBuffer format(double number, StringBuffer result, FieldPosition fieldPosition) {
++    public StringBuffer format(double number, StringBuffer result, FieldPosition fieldPosition) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(25);
+         int length = pattern.length();
+         int f;
+         boolean negative = false;
+diff --git a/org/locationtech/proj4j/units/DegreeUnit.java b/org/locationtech/proj4j/units/DegreeUnit.java
+index dad07f3..7fec0f7 100644
+--- a/org/locationtech/proj4j/units/DegreeUnit.java
++++ b/org/locationtech/proj4j/units/DegreeUnit.java
+@@ -27,7 +27,7 @@ public class DegreeUnit extends Unit {
+         super("degree", "degrees", "deg", 1);
+     }
+ 
+-    public double parse(String s) throws NumberFormatException {
++    public double parse(String s) throws NumberFormatException { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(33);
+         try {
+             return format.parse(s).doubleValue();
+         }
+@@ -36,7 +36,7 @@ public class DegreeUnit extends Unit {
+         }
+     }
+ 
+-    public String format(double n) {
++    public String format(double n) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(41);
+         return format.format(n)+" "+abbreviation;
+     }
+ 
+diff --git a/org/locationtech/proj4j/units/Unit.java b/org/locationtech/proj4j/units/Unit.java
+index 7bff6ec..cb24584 100644
+--- a/org/locationtech/proj4j/units/Unit.java
++++ b/org/locationtech/proj4j/units/Unit.java
+@@ -46,7 +46,7 @@ public class Unit implements Serializable {
+         this.value = value;
+     }
+ 
+-    public double toBase(double n) {
++    public double toBase(double n) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(48);
+         return n * value;
+     }
+ 
+diff --git a/org/locationtech/proj4j/util/CRSCache.java b/org/locationtech/proj4j/util/CRSCache.java
+index 4f0bcef..28ccd9a 100644
+--- a/org/locationtech/proj4j/util/CRSCache.java
++++ b/org/locationtech/proj4j/util/CRSCache.java
+@@ -37,14 +37,14 @@ public class CRSCache {
+     }
+ 
+     public CoordinateReferenceSystem createFromName(String name)
+-            throws UnsupportedParameterException, InvalidValueException, UnknownAuthorityCodeException {
++            throws UnsupportedParameterException, InvalidValueException, UnknownAuthorityCodeException { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(26);
+         CoordinateReferenceSystem res = crsCache.get(name);
+         if(res != null) return res;
+         return crsCache.computeIfAbsent(name, k -> crsFactory.createFromName(name));
+     }
+ 
+     public CoordinateReferenceSystem createFromParameters(String name, String paramStr)
+-            throws UnsupportedParameterException, InvalidValueException {
++            throws UnsupportedParameterException, InvalidValueException { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(34);
+         String nonNullName = name == null ? "" : name;
+         String key = nonNullName + paramStr;
+         CoordinateReferenceSystem res = crsCache.get(key);
+diff --git a/org/locationtech/proj4j/util/Pair.java b/org/locationtech/proj4j/util/Pair.java
+index 63b61a4..d54d52b 100644
+--- a/org/locationtech/proj4j/util/Pair.java
++++ b/org/locationtech/proj4j/util/Pair.java
+@@ -31,11 +31,11 @@ public class Pair<A, B> {
+         this.second = second;
+     }
+ 
+-    public A fst() {
++    public A fst() { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(42);
+         return first;
+     }
+ 
+-    public void setFirst(A first) {
++    public void setFirst(A first) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(49);
+         this.first = first;
+     }
+ 
+diff --git a/org/locationtech/proj4j/util/ProjectionMath.java b/org/locationtech/proj4j/util/ProjectionMath.java
+index 9f662a4..b975f38 100644
+--- a/org/locationtech/proj4j/util/ProjectionMath.java
++++ b/org/locationtech/proj4j/util/ProjectionMath.java
+@@ -41,11 +41,11 @@ public class ProjectionMath {
+     /**
+      * Degree versions of trigonometric functions
+      */
+-    public static double sind(double v) {
++    public static double sind(double v) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(9);
+         return Math.sin(v * DTR);
+     }
+ 
+-    public static double cosd(double v) {
++    public static double cosd(double v) { org.locationtech.proj4j.jmhbench.MutationSwitch.tick(18);
+         return Math.cos(v * DTR);
+     }
+ 

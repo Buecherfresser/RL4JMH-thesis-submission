@@ -1,0 +1,65 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.internal.operators.single.SingleDelay;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
+/**
+ * Benchmark for {@link SingleDelay} measuring the throughput of a delayed Single
+ * when the delay is effectively zero (to isolate operator overhead).
+ *
+ * The benchmark subscribes to the Single and blocks until the value is emitted.
+ * Using {@code Schedulers.trampoline()} ensures the scheduled Runnable runs on the
+ * calling thread, eliminating thread‑context‑switch noise while still exercising
+ * the scheduling path inside {@code SingleDelay}.
+ *
+ * JMH best‑practice annotations are applied:
+ * - Warm‑up iterations to let the JIT stabilize.
+ * - Measurement iterations for reliable results.
+ * - Forks to isolate JVM state.
+ * - Blackhole to consume the result and prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class SingleDelayThroughputBenchmark {
+
+    /** Source Single emitting a constant value. */
+    private Single<Integer> source;
+
+    /** SingleDelay instance under test. */
+    private Single<Integer> delayed;
+
+    /** Scheduler used by the operator – trampoline runs tasks on the current thread. */
+    private static final io.reactivex.rxjava3.core.Scheduler TRAMPOLINE = Schedulers.trampoline();
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source that immediately emits 1.
+        source = Single.just(1);
+
+        // Delay of 0 nanoseconds to focus on operator overhead.
+        delayed = new SingleDelay<>(source, 0, TimeUnit.NANOSECONDS, TRAMPOLINE, false);
+    }
+
+    /**
+     * Benchmark method that subscribes to the delayed Single and blocks
+     * until the value is received. The result is consumed by Blackhole.
+     */
+    @Benchmark
+    public void delayedSingleThroughput(Blackhole bh) {
+        // blockingGet() will wait for onSuccess; with zero delay this is effectively immediate.
+        Integer result = delayed.blockingGet();
+        bh.consume(result);
+    }
+}
+```

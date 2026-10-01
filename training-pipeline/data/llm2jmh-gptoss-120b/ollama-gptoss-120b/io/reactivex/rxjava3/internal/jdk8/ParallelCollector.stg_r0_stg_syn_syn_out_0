@@ -1,0 +1,86 @@
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Throughput benchmark for {@code ParallelCollector}.
+ *
+ * The benchmark creates a {@link Flowable} of integers, turns it into a {@link io.reactivex.rxjava3.parallel.ParallelFlowable},
+ * applies the internal {@code ParallelCollector} via the public {@code collect} operator and blocks
+ * for the final result. The throughput (operations per second) is measured.
+ *
+ * Best‑practice notes:
+ * • Use {@code @State(Scope.Benchmark)} to share the source between iterations.
+ * • Parameterise the number of items and parallelism to explore scaling.
+ * • Run the benchmark with enough warm‑up iterations to let JIT optimisations settle.
+ * • Use {@code Blackhole} to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Benchmark)
+public class ParallelCollectorBenchmark {
+
+    @Param({ "1_000", "10_000", "100_000" })
+    public int itemCount;
+
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    private Flowable<Integer> source;
+
+    private Collector<Integer, ?, Integer> collector;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a range Flowable and parallelise it.
+        source = Flowable.range(1, itemCount).parallel(parallelism).runOn(Schedulers.computation());
+        // Simple summing collector; any collector can be used.
+        collector = Collectors.summingInt(i -> i);
+    }
+
+    @Benchmark
+    public void parallelCollect(Blackhole bh) {
+        // Apply the ParallelCollector via the public API and block for the result.
+        int result = source.collect(collector).blockingFirst();
+        bh.consume(result);
+    }
+}

@@ -1,0 +1,59 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableTakeLastOne}.
+ *
+ * The benchmark measures the throughput of the {@code takeLast(1)} operator when
+ * applied to a hot source emitting a configurable number of items.
+ *
+ * Best practices applied:
+ * - Use @State with Scope.Thread to avoid sharing mutable state across threads.
+ * - Perform all allocations in @Setup to keep the measured method focused on the
+ *   operation under test.
+ * - Use Blackhole to consume the emitted value and prevent dead‑code elimination.
+ * - Configure warm‑up, measurement iterations and forks to obtain stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class FlowableTakeLastOneBenchmark {
+
+    /** Number of items emitted by the source Flowable before the takeLast(1) operator. */
+    @Param({"1000", "10000", "100000", "1000000"})
+    public int itemCount;
+
+    /** The source Flowable with the takeLast(1) operator applied. */
+    private Flowable<Integer> flowable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a Flowable that emits a range of integers and then applies takeLast(1).
+        // The takeLast(1) operator is implemented by FlowableTakeLastOne.
+        flowable = Flowable.range(1, itemCount).takeLast(1);
+    }
+
+    /**
+     * Subscribes to the Flowable and consumes the emitted item.
+     *
+     * Each invocation creates a fresh subscription, which reflects the typical
+     * usage pattern of the operator in real applications.
+     *
+     * @param bh Blackhole to consume the emitted value and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void takeLastOne(Blackhole bh) {
+        flowable.subscribe(bh::consume);
+    }
+}
+```

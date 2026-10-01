@@ -1,0 +1,71 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableSource;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Microbenchmark for {@code Completable.ambArray} (which internally uses {@code CompletableAmb}).
+ * Measures the throughput of subscribing to an {@code amb} of several already completed sources.
+ *
+ * The benchmark follows JMH best practices:
+ * - Use @State to share immutable test data across iterations.
+ * - Parameterize the number of sources to see scaling behavior.
+ * - Warm‑up and measurement iterations are defined.
+ * - Forking isolates JVM state.
+ * - The benchmark method performs the operation and blocks until completion to ensure
+ *   the whole reactive chain is executed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class CompletableAmbThroughputBenchmark {
+
+    /**
+     * Number of Completable sources participating in the amb operation.
+     * Typical values cover small to moderate fan‑in scenarios.
+     */
+    @Param({"1", "2", "4", "8", "16", "32", "64", "128"})
+    public int sourceCount;
+
+    /**
+     * Array of already completed Completable sources.
+     * Created once per thread state to avoid allocation overhead during the benchmark.
+     */
+    private CompletableSource[] sources;
+
+    /**
+     * Pre‑built Completable that represents the amb of the {@code sources} array.
+     * The same instance can be reused because each subscription creates a fresh
+     * internal state.
+     */
+    private Completable ambCompletable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        sources = new CompletableSource[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            // Each source completes immediately; this isolates the overhead of the amb operator.
+            sources[i] = Completable.complete();
+        }
+        // Build the amb Completable once; the internal operator is stateless with respect to sources.
+        ambCompletable = Completable.ambArray(sources);
+    }
+
+    /**
+     * Benchmark method that subscribes to the amb Completable and blocks until it terminates.
+     * Blocking ensures the whole reactive chain (including disposal logic) is exercised.
+     */
+    @Benchmark
+    public void ambThroughput() {
+        // blockingAwait() returns when the Completable terminates (either onComplete or onError).
+        ambCompletable.blockingAwait();
+    }
+}
+```

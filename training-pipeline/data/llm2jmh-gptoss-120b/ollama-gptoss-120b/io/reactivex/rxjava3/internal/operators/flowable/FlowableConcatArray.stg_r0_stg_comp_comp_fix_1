@@ -1,0 +1,59 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import org.openjdk.jmh.annotations.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableConcatArrayBenchmark {
+
+    @Param({ "1", "10", "100" })
+    public int sourceCount;
+
+    @Param({ "1", "100", "1000" })
+    public int itemsPerSource;
+
+    @Param({ "true", "false" })
+    public boolean delayError;
+
+    private Flowable<Integer>[] sources;
+    private FlowableConcatArray<Integer> concatArray;
+    private TestSubscriber<Integer> subscriber;
+
+    @Setup(Level.Trial)
+    @SuppressWarnings("unchecked")
+    public void setUp() {
+        sources = new Flowable[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            int start = i * itemsPerSource;
+            sources[i] = Flowable.range(start, itemsPerSource);
+        }
+    }
+
+    @Setup(Level.Iteration)
+    public void createConcatArrayAndSubscriber() {
+        concatArray = new FlowableConcatArray<>(sources, delayError);
+        subscriber = new TestSubscriber<>();
+    }
+
+    @Benchmark
+    public void concatArrayThroughput() {
+        concatArray.subscribe(subscriber);
+        subscriber.awaitDone(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        // Reset for the next benchmark iteration
+        subscriber.cancel();
+    }
+
+    @TearDown(Level.Iteration)
+    public void resetSubscriber() {
+        // No explicit disposal needed; a new TestSubscriber is created each iteration.
+    }
+}
+```

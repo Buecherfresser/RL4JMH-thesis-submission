@@ -1,0 +1,147 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableSubscriber;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableCache;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * Benchmark for {@link FlowableCache} measuring the throughput of replaying cached items
+ * to a configurable number of subscribers.
+ *
+ * The benchmark creates a source {@link Flowable} that emits a fixed number of integers,
+ * caches them using {@code FlowableCache}, and then subscribes a set of subscribers that
+ * request all items. The {@link Blackhole} consumes the emitted values to prevent dead‑code
+ * elimination.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Benchmark) for immutable configuration.
+ * - Parameterize item count, subscriber count and cache capacity.
+ * - Perform all allocations in @Setup to avoid measuring allocation overhead.
+ * - Use a lightweight {@link FlowableSubscriber} that forwards items to Blackhole.
+ * - Run in {@code Mode.Throughput} with a time unit of seconds.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableCacheThroughputBenchmark {
+
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the source Flowable. */
+        @Param({"1000", "10000", "100000"})
+        public int itemCount;
+
+        /** Number of concurrent subscribers that will replay the cache. */
+        @Param({"1", "4", "8"})
+        public int subscriberCount;
+
+        /** Capacity hint for the internal cache nodes. */
+        @Param({"128", "1024"})
+        public int capacityHint;
+
+        /** The cached Flowable instance used in the benchmark. */
+        FlowableCache<Integer> cachedFlowable;
+
+        /** A reusable array of subscribers to avoid allocation during the benchmark. */
+        FlowableSubscriber<Integer>[] subscribers;
+
+        @SuppressWarnings("unchecked")
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a source Flowable that emits a range of integers.
+            Flowable<Integer> source = Flowable.range(1, itemCount);
+
+            // Wrap the source with FlowableCache using the configured capacity hint.
+            cachedFlowable = new FlowableCache<>(source, capacityHint);
+
+            // Pre‑create the subscriber instances.
+            subscribers = new FlowableSubscriber[subscriberCount];
+            for (int i = 0; i < subscriberCount; i++) {
+                subscribers[i] = new BlackholeSubscriber();
+            }
+
+            // Prime the cache: subscribe a single subscriber that consumes all items.
+            // This ensures the cache is fully populated before the measured phase.
+            cachedFlowable.subscribe(new BlackholeSubscriber());
+        }
+
+        /**
+         * Subscriber that forwards each received item to the JMH {@link Blackhole}.
+         * It requests {@code Long.MAX_VALUE} on subscription to avoid back‑pressure
+         * interference during the benchmark.
+         */
+        static final class BlackholeSubscriber extends DisposableSubscriber<Integer> {
+            @Override
+            public void onNext(Integer t) {
+                // No-op; the value is consumed by the benchmark method via Blackhole.
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are not expected in this benchmark.
+                t.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+                // No action needed.
+            }
+
+            @Override
+            protected void onStart() {
+                request(Long.MAX_VALUE);
+            }
+        }
+    }
+
+    /**
+     * Benchmark method that subscribes the configured number of subscribers to the
+     * cached Flowable and consumes all emitted items. The method measures how many
+     * complete subscription cycles can be performed per second.
+     *
+     * @param state shared benchmark state
+     * @param bh    JMH blackhole to consume emitted values
+     */
+    @Benchmark
+    public void replayCache(BenchmarkState state, Blackhole bh) {
+        // Subscribe all pre‑created subscribers.
+        for (FlowableSubscriber<Integer> subscriber : state.subscribers) {
+            // Wrap the subscriber to forward items to the blackhole.
+            FlowableSubscriber<Integer> bhSubscriber = new FlowableSubscriber<Integer>() {
+                @Override
+                public void onSubscribe(org.reactivestreams.Subscription s) {
+                    subscriber.onSubscribe(s);
+                    s.request(Long.MAX_VALUE);
+                }
+
+                @Override
+                public void onNext(Integer t) {
+                    bh.consume(t);
+                    subscriber.onNext(t);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    subscriber.onError(t);
+                }
+
+                @Override
+                public void onComplete() {
+                    subscriber.onComplete();
+                }
+            };
+            state.cachedFlowable.subscribe(bhSubscriber);
+        }
+    }
+}
+```

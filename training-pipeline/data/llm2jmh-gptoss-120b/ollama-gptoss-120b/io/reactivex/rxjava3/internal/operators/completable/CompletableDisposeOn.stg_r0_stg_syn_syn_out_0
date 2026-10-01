@@ -1,0 +1,96 @@
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link CompletableDisposeOn}.
+ *
+ * Measures the throughput of subscribing to a Completable that never completes
+ * and immediately disposing it, where the disposal is scheduled on a given Scheduler.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * - Warm‑up and measurement iterations
+ * - Multiple forks to avoid JVM warm‑up effects
+ * - Scoped state per thread to eliminate contention
+ * - Use of Blackhole to consume callbacks and prevent dead‑code elimination
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class CompletableDisposeOnBenchmark {
+
+    /**
+     * Completable that never terminates, wrapped with disposeOn.
+     */
+    private Completable completable;
+
+    /**
+     * Scheduler on which disposal is performed.
+     */
+    private Scheduler scheduler;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a single‑threaded scheduler to avoid thread‑pool noise.
+        scheduler = Schedulers.single();
+        // Completable.never() never calls onComplete/onError; we only care about disposal.
+        completable = Completable.never().disposeOn(scheduler);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Shut down the scheduler to release resources between forks.
+        scheduler.shutdown();
+    }
+
+    /**
+     * Subscribes to the Completable and immediately disposes the subscription.
+     *
+     * The Blackhole consumes the onError callback (which should never be invoked)
+     * to prevent the JIT from optimizing the lambda away.
+     */
+    @Benchmark
+    public void disposeOn(Blackhole bh) {
+        // Subscribe with no‑op onComplete and a Blackhole‑consumed onError.
+        // The returned Disposable is disposed right away, triggering the scheduled disposal.
+        completable.subscribe(() -> {
+            /* onComplete – never called */
+        }, bh::consume).dispose();
+    }
+}

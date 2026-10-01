@@ -1,0 +1,69 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.operators.maybe;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeCount;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Micro‑benchmark for {@link MaybeCount} measuring the throughput of the
+ * {@code blockingGet()} path. The benchmark compares the raw {@code Maybe.just}
+ * emission with the same source wrapped by {@code MaybeCount}.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Allocate objects in {@code @Setup} to exclude allocation cost from the measured section.</li>
+ *   <li>Use {@code Blackhole} to consume results and prevent dead‑code elimination.</li>
+ *   <li>Configure warm‑up, measurement, and fork parameters to obtain stable results.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class MaybeCountBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        /** Source that emits a single value. */
+        Maybe<Integer> source;
+
+        /** MaybeCount operator wrapping the source. */
+        Single<Long> countSingle;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Maybe.just(1);
+            // MaybeCount is a Single<Long>, so we can reuse the same instance.
+            countSingle = new MaybeCount<>(source);
+        }
+    }
+
+    /**
+     * Baseline: directly block on the source {@code Maybe.just(1)}.
+     * This measures the cost of a simple Maybe emission without any operator.
+     */
+    @Benchmark
+    public void baseline(BenchmarkState state, Blackhole bh) {
+        // blockingGet returns the emitted Integer; we consume it via Blackhole.
+        bh.consume(state.source.blockingGet());
+    }
+
+    /**
+     * Measures the throughput of {@link MaybeCount} when applied to a source that
+     * emits exactly one item. The operator should emit {@code 1L}.
+     */
+    @Benchmark
+    public void maybeCount(BenchmarkState state, Blackhole bh) {
+        // blockingGet returns the counted Long; we consume it via Blackhole.
+        bh.consume(state.countSingle.blockingGet());
+    }
+}
+```

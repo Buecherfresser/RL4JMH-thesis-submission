@@ -1,0 +1,39 @@
+```
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.util.ErrorMode;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableConcatMapSingleBenchmark {
+
+    @Param({ "1000" })
+    public int itemCount;
+
+    @Param({ "32", "64", "128" })
+    public int prefetch;
+
+    public ErrorMode errorMode = ErrorMode.IMMEDIATE;
+
+    private Flowable<Integer> source;
+    private Function<Integer, SingleSource<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        source = Flowable.range(1, itemCount);
+        mapper = v -> Single.just(v * 2);
+    }
+
+    @Benchmark
+    public void concatMapSingleThroughput(Blackhole bh) {
+        source.concatMapSingle(mapper, prefetch)
+              .blockingSubscribe(bh::consume);
+    }
+}
+```

@@ -1,0 +1,102 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.operators.maybe;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.MaybeSource;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeConcatArrayDelayError;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Throughput benchmark for {@link MaybeConcatArrayDelayError}.
+ *
+ * The benchmark creates an array of {@code MaybeSource}s (either {@code Maybe.just}
+ * or {@code Maybe.empty}) and concatenates them with delay‑error semantics.
+ * A simple {@link Subscriber} requests {@code Long.MAX_VALUE} and counts the
+ * received items using a {@link CountDownLatch} to await termination.
+ *
+ * The benchmark measures how many concatenations can be completed per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class MaybeConcatArrayDelayErrorBenchmark {
+
+    /** Number of Maybe sources to concatenate. */
+    @Param({"1", "10", "100", "1000"})
+    public int sourceCount;
+
+    /** Whether the sources emit a value (true) or are empty (false). */
+    @Param({"true", "false"})
+    public boolean emitValue;
+
+    private MaybeSource<Integer>[] sources;
+    private MaybeConcatArrayDelayError<Integer> flowable;
+
+    @Setup(Level.Trial)
+    @SuppressWarnings("unchecked")
+    public void setUp() {
+        sources = new MaybeSource[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            if (emitValue) {
+                sources[i] = Maybe.just(i);
+            } else {
+                sources[i] = Maybe.empty();
+            }
+        }
+        flowable = new MaybeConcatArrayDelayError<>(sources);
+    }
+
+    @Benchmark
+    public void concatArrayDelayError(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        flowable.subscribe(new BenchmarkSubscriber(latch, bh));
+        // Wait for the whole concatenation to finish.
+        // A timeout guards against dead‑locks in case of bugs.
+        latch.await(30, TimeUnit.SECONDS);
+    }
+
+    /** Simple Subscriber that requests unbounded demand and forwards items to Blackhole. */
+    static final class BenchmarkSubscriber implements Subscriber<Integer> {
+
+        private final CountDownLatch latch;
+        private final Blackhole bh;
+        private Subscription upstream;
+
+        BenchmarkSubscriber(CountDownLatch latch, Blackhole bh) {
+            this.latch = latch;
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            this.upstream = s;
+            // Request as many items as possible.
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // Errors are counted as part of the benchmark; forward to Blackhole.
+            bh.consume(t);
+            latch.countDown();
+        }
+
+        @Override
+        public void onComplete() {
+            latch.countDown();
+        }
+    }
+}
+```

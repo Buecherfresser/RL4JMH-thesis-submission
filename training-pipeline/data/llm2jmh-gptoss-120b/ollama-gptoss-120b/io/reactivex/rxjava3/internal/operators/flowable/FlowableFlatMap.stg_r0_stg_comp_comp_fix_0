@@ -1,0 +1,67 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Publisher;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableFlatMap}
+ * measuring throughput of the flatMap operator under different concurrency and buffer settings.
+ *
+ * The benchmark creates a finite source Flowable emitting {@code sourceSize} integers.
+ * Each integer is mapped to an inner Flowable emitting {@code innerSize} integers.
+ * The flatMap operator is then applied with configurable {@code maxConcurrency},
+ * {@code bufferSize} and {@code delayErrors} flags.
+ *
+ * Throughput is reported as the number of complete flatMap executions per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class FlowableFlatMapBenchmark {
+
+    @Param({ "1000", "10000" })
+    public int sourceSize;
+
+    @Param({ "10", "100" })
+    public int innerSize;
+
+    @Param({ "1", "8", "Integer.MAX_VALUE" })
+    public String maxConcurrencyStr;
+
+    @Param({ "16", "128" })
+    public int bufferSize;
+
+    @Param({ "true", "false" })
+    public boolean delayErrors;
+
+    private int maxConcurrency;
+
+    private Function<Integer, Publisher<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        if ("Integer.MAX_VALUE".equals(maxConcurrencyStr)) {
+            maxConcurrency = Integer.MAX_VALUE;
+        } else {
+            maxConcurrency = Integer.parseInt(maxConcurrencyStr);
+        }
+        mapper = i -> Flowable.range(i * innerSize, innerSize);
+    }
+
+    @Benchmark
+    public void flatMapThroughput(Blackhole bh) {
+        Flowable<Integer> source = Flowable.range(0, sourceSize);
+        source
+            .flatMap(mapper, delayErrors, maxConcurrency, bufferSize)
+            .blockingSubscribe(bh::consume);
+    }
+}
+```

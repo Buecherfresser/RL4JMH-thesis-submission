@@ -1,0 +1,104 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.schedulers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableObserveOn}.
+ *
+ * The benchmark measures the throughput (items per second) of the observeOn operator
+ * under different configurations:
+ *
+ * <ul>
+ *   <li>prefetch size (queue capacity)</li>
+ *   <li>delayError flag</li>
+ *   <li>source type (synchronous vs asynchronous)</li>
+ * </ul>
+ *
+ * The benchmark uses a simple {@link Flowable#range} as the upstream source.
+ * For the asynchronous case we schedule the source on a separate scheduler.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableObserveOnBenchmark {
+
+    /** Number of items emitted by the source Flowable. */
+    @Param({ "1000", "100000" })
+    public int itemCount;
+
+    /** Prefetch size for the observeOn operator. */
+    @Param({ "32", "128", "1024" })
+    public int prefetch;
+
+    /** Whether errors should be delayed until the queue is drained. */
+    @Param({ "true", "false" })
+    public boolean delayError;
+
+    /** Source type: {@code sync} uses a plain range, {@code async} schedules the source on a separate thread. */
+    @Param({ "sync", "async" })
+    public String sourceType;
+
+    /** Scheduler used for observeOn. */
+    private Scheduler observeOnScheduler;
+
+    /** The Flowable under test. */
+    private Flowable<Integer> flowable;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Use a single-threaded scheduler for observeOn to avoid interference from other threads.
+        observeOnScheduler = Schedulers.single();
+
+        Flowable<Integer> source;
+        if ("async".equals(sourceType)) {
+            // Emit items on a computation scheduler to make the source asynchronous.
+            source = Flowable.range(1, itemCount)
+                    .subscribeOn(Schedulers.computation());
+        } else {
+            // Synchronous source.
+            source = Flowable.range(1, itemCount);
+        }
+
+        // Apply observeOn with the configured parameters.
+        flowable = source.observeOn(observeOnScheduler, delayError, prefetch);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Shut down the scheduler to avoid thread leaks.
+        if (observeOnScheduler != null) {
+            observeOnScheduler.shutdown();
+        }
+    }
+
+    /**
+     * Benchmark method that subscribes to the Flowable and drains all items.
+     * The {@link Blackhole} consumes the items to prevent dead-code elimination.
+     */
+    @Benchmark
+    public void observeOnThroughput(Blackhole bh) {
+        flowable.subscribe(new DisposableSubscriber<Integer>() {
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are not expected in this benchmark; rethrow to fail fast.
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // No-op; completion is handled by the benchmark harness.
+            }
+        });
+    }
+}
+```

@@ -1,0 +1,93 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableSingleSingle;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link ObservableSingleSingle}.
+ *
+ * <p>These benchmarks measure the throughput (operations per second) of the operator
+ * in typical success scenarios:
+ *
+ * <ul>
+ *   <li>Empty source with a non‑null default value.</li>
+ *   <li>Source containing exactly one element.</li>
+ * </ul>
+ *
+ * <p>Best practices applied:
+ *
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable objects between threads.</li>
+ *   <li>Perform all heavyweight setup in {@code @Setup(Level.Trial)} to exclude it from measurement.</li>
+ *   <li>Consume results with {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Configure warm‑up, measurement iterations and forks to obtain stable results.</li>
+ *   <li>Run in {@link Mode#Throughput} with {@link TimeUnit#SECONDS} as the output unit.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, warmups = 1)
+@State(Scope.Thread)
+public class ObservableSingleSingleBenchmark {
+
+    /** Empty source used for the default‑value scenario. */
+    private Observable<Integer> emptySource;
+
+    /** Source that emits exactly one element. */
+    private Observable<Integer> singleElementSource;
+
+    /** {@link ObservableSingleSingle} for the empty‑source + default‑value case. */
+    private ObservableSingleSingle<Integer> emptyWithDefault;
+
+    /** {@link ObservableSingleSingle} for the single‑element case (no default). */
+    private ObservableSingleSingle<Integer> singleElement;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Empty observable – will complete without emitting any items.
+        emptySource = Observable.empty();
+
+        // Observable that emits a single integer.
+        singleElementSource = Observable.just(1);
+
+        // Operator under test: empty source with a non‑null default value (e.g., 42).
+        emptyWithDefault = new ObservableSingleSingle<>(emptySource, 42);
+
+        // Operator under test: source with exactly one element, no default value.
+        singleElement = new ObservableSingleSingle<>(singleElementSource, null);
+    }
+
+    /**
+     * Benchmark the throughput of {@code ObservableSingleSingle} when the upstream
+     * is empty and a default value is supplied.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void emptySourceWithDefault(Blackhole bh) {
+        // blockingGet() triggers subscription and returns the default value.
+        Integer result = emptyWithDefault.blockingGet();
+        bh.consume(result);
+    }
+
+    /**
+     * Benchmark the throughput of {@code ObservableSingleSingle} when the upstream
+     * emits exactly one element.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void singleElementSource(Blackhole bh) {
+        // blockingGet() triggers subscription and returns the emitted element.
+        Integer result = singleElement.blockingGet();
+        bh.consume(result);
+    }
+}
+```

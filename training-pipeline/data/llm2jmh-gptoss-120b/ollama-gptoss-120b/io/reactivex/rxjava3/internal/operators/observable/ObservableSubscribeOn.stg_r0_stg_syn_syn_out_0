@@ -1,0 +1,99 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableSubscribeOn}.
+ *
+ * Measures the throughput of subscribing to an Observable with and without the
+ * {@code subscribeOn} operator. The benchmark uses a simple {@code Observable.range}
+ * source to keep the workload deterministic.
+ *
+ * Best practices applied:
+ * - @State with Scope.Thread to avoid sharing mutable state between threads.
+ * - Warm‑up and measurement iterations to let the JVM reach a steady state.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Use of a single‑threaded Scheduler to isolate the overhead of the operator
+ *   from thread‑creation costs.
+ * - Throughput mode (operations per time unit) which is appropriate for
+ *   measuring how many subscriptions can be processed per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableSubscribeOnBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Source Observable emitting a fixed number of integers.
+         */
+        Observable<Integer> source;
+
+        /**
+         * Scheduler used for the {@code subscribeOn} operator.
+         */
+        Scheduler scheduler;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // A deterministic source; size chosen to keep the benchmark short yet non‑trivial.
+            source = Observable.range(1, 1_000);
+            // Single‑threaded scheduler isolates the operator overhead from thread‑pool dynamics.
+            scheduler = Schedulers.single();
+        }
+    }
+
+    /**
+     * Baseline: subscribe to the source without any scheduling indirection.
+     */
+    @Benchmark
+    public void baseline(BenchmarkState state, Blackhole bh) {
+        state.source.blockingSubscribe(bh::consume);
+    }
+
+    /**
+     * Variant using {@code subscribeOn} to shift subscription onto the provided scheduler.
+     */
+    @Benchmark
+    public void withSubscribeOn(BenchmarkState state, Blackhole bh) {
+        state.source.subscribeOn(state.scheduler).blockingSubscribe(bh::consume);
+    }
+}

@@ -1,0 +1,141 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link FlowableElementAtSingle}.
+ *
+ * <p>These benchmarks measure the throughput of the {@code elementAt} operator
+ * under different scenarios:
+ *
+ * <ul>
+ *   <li>index at the beginning of the stream</li>
+ *   <li>index in the middle of the stream</li>
+ *   <li>index beyond the stream length with a default value</li>
+ *   <li>index beyond the stream length without a default value (error path)</li>
+ * </ul>
+ *
+ * <p>Best practices applied:
+ *
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Pre‑create the {@link Flowable} source in {@code @Setup} to exclude allocation cost.</li>
+ *   <li>Consume the result with {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Run in {@link Mode#Throughput} with a fixed time unit for clear comparison.</li>
+ *   <li>Specify {@code @Warmup} and {@code @Measurement} iterations to obtain stable results.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class FlowableElementAtSingleBenchmark {
+
+    /**
+     * Size of the source Flowable used for all benchmarks.
+     */
+    private static final int SOURCE_SIZE = 1_000_000;
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * A Flowable emitting a range of integers from 0 to {@link #SOURCE_SIZE}‑1.
+         */
+        Flowable<Integer> source;
+
+        /**
+         * Pre‑computed Single for index 0 (first element).
+         */
+        Single<Integer> elementAtZero;
+
+        /**
+         * Pre‑computed Single for index in the middle of the stream.
+         */
+        Single<Integer> elementAtMiddle;
+
+        /**
+         * Pre‑computed Single for an out‑of‑range index with a default value.
+         */
+        Single<Integer> elementAtOutOfRangeWithDefault;
+
+        /**
+         * Pre‑computed Single for an out‑of‑range index without a default value (error path).
+         */
+        Single<Integer> elementAtOutOfRangeNoDefault;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Flowable.range(0, SOURCE_SIZE);
+            // index 0 – fastest path (first element)
+            elementAtZero = new FlowableElementAtSingle<>(source, 0, null);
+            // index in the middle – requires traversing half of the stream
+            elementAtMiddle = new FlowableElementAtSingle<>(source, SOURCE_SIZE / 2, null);
+            // out‑of‑range with default – triggers onComplete path and emits default
+            elementAtOutOfRangeWithDefault = new FlowableElementAtSingle<>(source, SOURCE_SIZE + 10, -1);
+            // out‑of‑range without default – triggers onComplete path and emits NoSuchElementException
+            elementAtOutOfRangeNoDefault = new FlowableElementAtSingle<>(source, SOURCE_SIZE + 10, null);
+        }
+    }
+
+    @Benchmark
+    public void elementAtZero(BenchmarkState state, Blackhole bh) {
+        // blockingGet is acceptable for a micro‑benchmark; it forces the Single to complete.
+        bh.consume(state.elementAtZero.blockingGet());
+    }
+
+    @Benchmark
+    public void elementAtMiddle(BenchmarkState state, Blackhole bh) {
+        bh.consume(state.elementAtMiddle.blockingGet());
+    }
+
+    @Benchmark
+    public void elementAtOutOfRangeWithDefault(BenchmarkState state, Blackhole bh) {
+        bh.consume(state.elementAtOutOfRangeWithDefault.blockingGet());
+    }
+
+    @Benchmark
+    public void elementAtOutOfRangeNoDefault(BenchmarkState state, Blackhole bh) {
+        try {
+            state.elementAtOutOfRangeNoDefault.blockingGet();
+        } catch (Throwable t) {
+            // Expected error path; consume the exception to avoid dead‑code elimination.
+            bh.consume(t);
+        }
+    }
+}

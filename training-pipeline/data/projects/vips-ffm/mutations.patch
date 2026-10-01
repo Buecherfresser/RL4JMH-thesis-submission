@@ -1,0 +1,619 @@
+diff --git a/app/photofox/vipsffm/VBlob.java b/app/photofox/vipsffm/VBlob.java
+index dc54382..0ca37af 100644
+--- a/app/photofox/vipsffm/VBlob.java
++++ b/app/photofox/vipsffm/VBlob.java
+@@ -37,7 +37,7 @@ public final class VBlob {
+     ///
+     /// @param arena An arena constraining the lifetime of this blob
+     /// @param bytes The bytes to wrap
+-    public static VBlob newFromBytes(Arena arena, byte[] bytes) throws VipsError {
++    public static VBlob newFromBytes(Arena arena, byte[] bytes) throws VipsError { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(1);
+         var offHeapSegment = arena.allocateFrom(ValueLayout.JAVA_BYTE, bytes);
+         return newFromDataSegment(arena, offHeapSegment);
+     }
+@@ -59,7 +59,7 @@ public final class VBlob {
+     ///
+     /// Usage of the memory address is strongly discouraged, but it is available if some functionality is missing and you
+     /// need to use it with [VipsHelper]
+-    public MemorySegment getUnsafeStructAddress() throws VipsError {
++    public MemorySegment getUnsafeStructAddress() throws VipsError { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(4);
+         return this.address;
+     }
+ 
+diff --git a/app/photofox/vipsffm/VCustomSource.java b/app/photofox/vipsffm/VCustomSource.java
+index 8793482..a3ad171 100644
+--- a/app/photofox/vipsffm/VCustomSource.java
++++ b/app/photofox/vipsffm/VCustomSource.java
+@@ -49,7 +49,7 @@ public final class VCustomSource extends VSource {
+ 
+         private final int value;
+ 
+-        public static SeekWhence fromValue(int value) {
++        public static SeekWhence fromValue(int value) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(7);
+             return switch (value) {
+                 case 0 -> SEEK_SET;
+                 case 1 -> SEEK_CUR;
+@@ -62,7 +62,7 @@ public final class VCustomSource extends VSource {
+             this.value = value;
+         }
+ 
+-        public int getValue() {
++        public int getValue() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(10);
+             return value;
+         }
+     }
+diff --git a/app/photofox/vipsffm/VCustomTarget.java b/app/photofox/vipsffm/VCustomTarget.java
+index f3a2daf..6741908 100644
+--- a/app/photofox/vipsffm/VCustomTarget.java
++++ b/app/photofox/vipsffm/VCustomTarget.java
+@@ -50,7 +50,7 @@ public final class VCustomTarget extends VTarget {
+                 MemorySegment data,
+                 long length,
+                 MemorySegment handle
+-            ) {
++            ) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(13);
+                 var segment = data.asSlice(0, length);
+                 return writeCallback.write(segment);
+             }
+@@ -77,7 +77,7 @@ public final class VCustomTarget extends VTarget {
+             public int apply(
+                 MemorySegment source,
+                 MemorySegment handle
+-            ) {
++            ) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(16);
+                 return endCallback.end();
+             }
+         };
+diff --git a/app/photofox/vipsffm/VImage.java b/app/photofox/vipsffm/VImage.java
+index 292461f..895432b 100644
+--- a/app/photofox/vipsffm/VImage.java
++++ b/app/photofox/vipsffm/VImage.java
+@@ -93,7 +93,7 @@ public final class VImage {
+   /// The memory address' lifetime is bound to the scope of the [#arena]
+   ///
+   /// Usage of the memory address is strongly discouraged, but it is available if some functionality is missing and you need to use it with [VipsHelper]
+-  public MemorySegment getUnsafeStructAddress() {
++  public MemorySegment getUnsafeStructAddress() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(19);
+     return this.address;
+   }
+ 
+@@ -101,7 +101,7 @@ public final class VImage {
+   ///
+   /// See also: [VImage#LCh2CMC]
+   /// @param args Array of VipsOption to apply to this operation
+-  public VImage CMC2LCh(VipsOption... args) throws VipsError {
++  public VImage CMC2LCh(VipsOption... args) throws VipsError { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(22);
+     var inOption = VipsOption.Image("in", this);
+     var outOption = VipsOption.Image("out");
+     var callArgs = new ArrayList<>(Arrays.asList(args));
+diff --git a/app/photofox/vipsffm/VInterpolate.java b/app/photofox/vipsffm/VInterpolate.java
+index 28ddf5f..5701e53 100644
+--- a/app/photofox/vipsffm/VInterpolate.java
++++ b/app/photofox/vipsffm/VInterpolate.java
+@@ -34,11 +34,11 @@ public class VInterpolate {
+     ///
+     /// Usage of the memory address is strongly discouraged, but it is available if some functionality is missing, and
+     /// you need to use it with [VipsHelper]
+-    public MemorySegment getUnsafeStructAddress() {
++    public MemorySegment getUnsafeStructAddress() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(25);
+         return this.address;
+     }
+ 
+-    public static VInterpolate newFromName(Arena arena, String name) throws VipsError {
++    public static VInterpolate newFromName(Arena arena, String name) throws VipsError { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(28);
+         var address = VipsHelper.interpolate_new(arena, name);
+         return new VInterpolate(address);
+     }
+diff --git a/app/photofox/vipsffm/VSource.java b/app/photofox/vipsffm/VSource.java
+index 2a30f28..22af0f5 100644
+--- a/app/photofox/vipsffm/VSource.java
++++ b/app/photofox/vipsffm/VSource.java
+@@ -42,12 +42,12 @@ public sealed class VSource permits VCustomSource {
+     ///
+     /// Usage of the memory address is strongly discouraged, but it is available if some functionality is missing, and
+     /// you need to use it with [VipsHelper]
+-    public MemorySegment getUnsafeStructAddress() {
++    public MemorySegment getUnsafeStructAddress() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(31);
+         return this.address;
+     }
+ 
+     /// Create a new VSource from a file descriptor
+-    public static VSource newFromDescriptor(Arena arena, int descriptor) throws VipsError {
++    public static VSource newFromDescriptor(Arena arena, int descriptor) throws VipsError { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(34);
+         var pointer = VipsHelper.source_new_from_descriptor(arena, descriptor);
+         return new VSource(arena, pointer);
+     }
+diff --git a/app/photofox/vipsffm/VTarget.java b/app/photofox/vipsffm/VTarget.java
+index 308f2c6..57989a9 100644
+--- a/app/photofox/vipsffm/VTarget.java
++++ b/app/photofox/vipsffm/VTarget.java
+@@ -46,14 +46,14 @@ public sealed class VTarget permits VCustomTarget {
+     ///
+     /// Usage of the memory address is strongly discouraged, but it is available if some functionality is missing, and
+     /// you need to use it with [VipsHelper]
+-    public MemorySegment getUnsafeStructAddress() {
++    public MemorySegment getUnsafeStructAddress() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(37);
+         return this.address;
+     }
+ 
+     /// Create a new target pointed at a file descriptor
+     ///
+     /// This target can be used with (for example) [VImage#writeToTarget]
+-    public static VTarget newToDescriptor(Arena arena, int descriptor) throws VipsError {
++    public static VTarget newToDescriptor(Arena arena, int descriptor) throws VipsError { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(40);
+         var pointer = VipsHelper.target_new_to_descriptor(arena, descriptor);
+         return new VTarget(arena, pointer);
+     }
+diff --git a/app/photofox/vipsffm/Vips.java b/app/photofox/vipsffm/Vips.java
+index f9beb2e..84802f8 100644
+--- a/app/photofox/vipsffm/Vips.java
++++ b/app/photofox/vipsffm/Vips.java
+@@ -18,14 +18,14 @@ public class Vips {
+ 
+     /// Note that you do not usually need to call [Vips#init] yourself, as initialisation is performed
+     /// automatically when vips-ffm classes are used
+-    public static void init() {
++    public static void init() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(43);
+         initOnce();
+     }
+ 
+     /// @deprecated Please migrate to using [Vips#allowUntrustedOperations] and [Vips#enableLeakDetection], and note
+     /// that calling [Vips#init] is no longer required
+     @Deprecated(forRemoval = true)
+-    public static void init(boolean allowUntrusted, boolean detectLeaks) {
++    public static void init(boolean allowUntrusted, boolean detectLeaks) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(46);
+         initOnce();
+         if (allowUntrusted) {
+             Vips.allowUntrustedOperations();
+diff --git a/app/photofox/vipsffm/VipsHelper.java b/app/photofox/vipsffm/VipsHelper.java
+index 2686df9..78f32ca 100644
+--- a/app/photofox/vipsffm/VipsHelper.java
++++ b/app/photofox/vipsffm/VipsHelper.java
+@@ -16,7 +16,7 @@ public final class VipsHelper {
+     Vips.autoInit();
+   }
+ 
+-  public static void init(Arena arena) {
++  public static void init(Arena arena) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(49);
+     var nameCString = arena.allocateFrom("vips-ffm");
+     var result = VipsRaw.vips_init(nameCString);
+     if (!VipsValidation.isValidResult(result)) {
+diff --git a/app/photofox/vipsffm/enums/VipsAccess.java b/app/photofox/vipsffm/enums/VipsAccess.java
+index bee930f..75aeee9 100644
+--- a/app/photofox/vipsffm/enums/VipsAccess.java
++++ b/app/photofox/vipsffm/enums/VipsAccess.java
+@@ -37,12 +37,12 @@ public enum VipsAccess implements VNamedEnum {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(20);
+     return this.vipsName;
+   }
+ 
+   @Override
+-  public String getNickname() {
++  public String getNickname() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(23);
+     return this.vipsNickname;
+   }
+ 
+diff --git a/app/photofox/vipsffm/enums/VipsAlign.java b/app/photofox/vipsffm/enums/VipsAlign.java
+index 70b3b7f..0e4ea1a 100644
+--- a/app/photofox/vipsffm/enums/VipsAlign.java
++++ b/app/photofox/vipsffm/enums/VipsAlign.java
+@@ -36,12 +36,12 @@ public enum VipsAlign implements VNamedEnum {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(26);
+     return this.vipsName;
+   }
+ 
+   @Override
+-  public String getNickname() {
++  public String getNickname() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(29);
+     return this.vipsNickname;
+   }
+ 
+diff --git a/app/photofox/vipsffm/enums/VipsAngle.java b/app/photofox/vipsffm/enums/VipsAngle.java
+index 5a38fff..5509d15 100644
+--- a/app/photofox/vipsffm/enums/VipsAngle.java
++++ b/app/photofox/vipsffm/enums/VipsAngle.java
+@@ -38,12 +38,12 @@ public enum VipsAngle implements VNamedEnum {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(32);
+     return this.vipsName;
+   }
+ 
+   @Override
+-  public String getNickname() {
++  public String getNickname() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(35);
+     return this.vipsNickname;
+   }
+ 
+diff --git a/app/photofox/vipsffm/enums/VipsAngle45.java b/app/photofox/vipsffm/enums/VipsAngle45.java
+index 2f55497..d7744e1 100644
+--- a/app/photofox/vipsffm/enums/VipsAngle45.java
++++ b/app/photofox/vipsffm/enums/VipsAngle45.java
+@@ -50,12 +50,12 @@ public enum VipsAngle45 implements VNamedEnum {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(38);
+     return this.vipsName;
+   }
+ 
+   @Override
+-  public String getNickname() {
++  public String getNickname() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(41);
+     return this.vipsNickname;
+   }
+ 
+diff --git a/app/photofox/vipsffm/enums/VipsBandFormat.java b/app/photofox/vipsffm/enums/VipsBandFormat.java
+index 2c7f9a5..e27d62b 100644
+--- a/app/photofox/vipsffm/enums/VipsBandFormat.java
++++ b/app/photofox/vipsffm/enums/VipsBandFormat.java
+@@ -57,12 +57,12 @@ public enum VipsBandFormat implements VNamedEnum {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(44);
+     return this.vipsName;
+   }
+ 
+   @Override
+-  public String getNickname() {
++  public String getNickname() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(47);
+     return this.vipsNickname;
+   }
+ 
+diff --git a/app/photofox/vipsffm/enums/VipsBlendMode.java b/app/photofox/vipsffm/enums/VipsBlendMode.java
+index 8a469a5..ef7ca44 100644
+--- a/app/photofox/vipsffm/enums/VipsBlendMode.java
++++ b/app/photofox/vipsffm/enums/VipsBlendMode.java
+@@ -103,7 +103,7 @@ public enum VipsBlendMode implements VNamedEnum {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(50);
+     return this.vipsName;
+   }
+ 
+diff --git a/app/photofox/vipsffm/enums/VipsForeignHeifEncoder.java b/app/photofox/vipsffm/enums/VipsForeignHeifEncoder.java
+index bf8770f..eb1e762 100644
+--- a/app/photofox/vipsffm/enums/VipsForeignHeifEncoder.java
++++ b/app/photofox/vipsffm/enums/VipsForeignHeifEncoder.java
+@@ -38,12 +38,12 @@ public enum VipsForeignHeifEncoder implements VNamedEnum {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(2);
+     return this.vipsName;
+   }
+ 
+   @Override
+-  public String getNickname() {
++  public String getNickname() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(5);
+     return this.vipsNickname;
+   }
+ 
+diff --git a/app/photofox/vipsffm/enums/VipsOperationMath.java b/app/photofox/vipsffm/enums/VipsOperationMath.java
+index bdee99b..6cecb9f 100644
+--- a/app/photofox/vipsffm/enums/VipsOperationMath.java
++++ b/app/photofox/vipsffm/enums/VipsOperationMath.java
+@@ -70,12 +70,12 @@ public enum VipsOperationMath implements VNamedEnum {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(8);
+     return this.vipsName;
+   }
+ 
+   @Override
+-  public String getNickname() {
++  public String getNickname() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(11);
+     return this.vipsNickname;
+   }
+ 
+diff --git a/app/photofox/vipsffm/enums/VipsOperationMath2.java b/app/photofox/vipsffm/enums/VipsOperationMath2.java
+index 7be2474..deba27a 100644
+--- a/app/photofox/vipsffm/enums/VipsOperationMath2.java
++++ b/app/photofox/vipsffm/enums/VipsOperationMath2.java
+@@ -31,12 +31,12 @@ public enum VipsOperationMath2 implements VNamedEnum {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(14);
+     return this.vipsName;
+   }
+ 
+   @Override
+-  public String getNickname() {
++  public String getNickname() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(17);
+     return this.vipsNickname;
+   }
+ 
+diff --git a/app/photofox/vipsffm/jextract/CustomStreamEndCallback.java b/app/photofox/vipsffm/jextract/CustomStreamEndCallback.java
+index 1d19be1..7c8f614 100644
+--- a/app/photofox/vipsffm/jextract/CustomStreamEndCallback.java
++++ b/app/photofox/vipsffm/jextract/CustomStreamEndCallback.java
+@@ -39,7 +39,7 @@ public class CustomStreamEndCallback {
+     /**
+      * The descriptor of this function pointer
+      */
+-    public static FunctionDescriptor descriptor() {
++    public static FunctionDescriptor descriptor() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(3);
+         return $DESC;
+     }
+ 
+@@ -49,7 +49,7 @@ public class CustomStreamEndCallback {
+      * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
+      * The lifetime of the returned segment is managed by {@code arena}
+      */
+-    public static MemorySegment allocate(CustomStreamEndCallback.Function fi, Arena arena) {
++    public static MemorySegment allocate(CustomStreamEndCallback.Function fi, Arena arena) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(6);
+         return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
+     }
+ 
+diff --git a/app/photofox/vipsffm/jextract/CustomStreamReadCallback.java b/app/photofox/vipsffm/jextract/CustomStreamReadCallback.java
+index 8a3da85..85dd573 100644
+--- a/app/photofox/vipsffm/jextract/CustomStreamReadCallback.java
++++ b/app/photofox/vipsffm/jextract/CustomStreamReadCallback.java
+@@ -41,7 +41,7 @@ public class CustomStreamReadCallback {
+     /**
+      * The descriptor of this function pointer
+      */
+-    public static FunctionDescriptor descriptor() {
++    public static FunctionDescriptor descriptor() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(9);
+         return $DESC;
+     }
+ 
+@@ -51,7 +51,7 @@ public class CustomStreamReadCallback {
+      * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
+      * The lifetime of the returned segment is managed by {@code arena}
+      */
+-    public static MemorySegment allocate(CustomStreamReadCallback.Function fi, Arena arena) {
++    public static MemorySegment allocate(CustomStreamReadCallback.Function fi, Arena arena) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(12);
+         return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
+     }
+ 
+diff --git a/app/photofox/vipsffm/jextract/CustomStreamSeekCallback.java b/app/photofox/vipsffm/jextract/CustomStreamSeekCallback.java
+index adbeef2..7f1052a 100644
+--- a/app/photofox/vipsffm/jextract/CustomStreamSeekCallback.java
++++ b/app/photofox/vipsffm/jextract/CustomStreamSeekCallback.java
+@@ -41,7 +41,7 @@ public class CustomStreamSeekCallback {
+     /**
+      * The descriptor of this function pointer
+      */
+-    public static FunctionDescriptor descriptor() {
++    public static FunctionDescriptor descriptor() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(15);
+         return $DESC;
+     }
+ 
+@@ -51,7 +51,7 @@ public class CustomStreamSeekCallback {
+      * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
+      * The lifetime of the returned segment is managed by {@code arena}
+      */
+-    public static MemorySegment allocate(CustomStreamSeekCallback.Function fi, Arena arena) {
++    public static MemorySegment allocate(CustomStreamSeekCallback.Function fi, Arena arena) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(18);
+         return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
+     }
+ 
+diff --git a/app/photofox/vipsffm/jextract/CustomStreamWriteCallback.java b/app/photofox/vipsffm/jextract/CustomStreamWriteCallback.java
+index f2631be..d37b749 100644
+--- a/app/photofox/vipsffm/jextract/CustomStreamWriteCallback.java
++++ b/app/photofox/vipsffm/jextract/CustomStreamWriteCallback.java
+@@ -41,7 +41,7 @@ public class CustomStreamWriteCallback {
+     /**
+      * The descriptor of this function pointer
+      */
+-    public static FunctionDescriptor descriptor() {
++    public static FunctionDescriptor descriptor() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(21);
+         return $DESC;
+     }
+ 
+@@ -51,7 +51,7 @@ public class CustomStreamWriteCallback {
+      * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
+      * The lifetime of the returned segment is managed by {@code arena}
+      */
+-    public static MemorySegment allocate(CustomStreamWriteCallback.Function fi, Arena arena) {
++    public static MemorySegment allocate(CustomStreamWriteCallback.Function fi, Arena arena) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(24);
+         return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
+     }
+ 
+diff --git a/app/photofox/vipsffm/jextract/VipsImageMapFn.java b/app/photofox/vipsffm/jextract/VipsImageMapFn.java
+index 07fdbf7..83d3b67 100644
+--- a/app/photofox/vipsffm/jextract/VipsImageMapFn.java
++++ b/app/photofox/vipsffm/jextract/VipsImageMapFn.java
+@@ -41,7 +41,7 @@ public class VipsImageMapFn {
+     /**
+      * The descriptor of this function pointer
+      */
+-    public static FunctionDescriptor descriptor() {
++    public static FunctionDescriptor descriptor() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(27);
+         return $DESC;
+     }
+ 
+@@ -51,7 +51,7 @@ public class VipsImageMapFn {
+      * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
+      * The lifetime of the returned segment is managed by {@code arena}
+      */
+-    public static MemorySegment allocate(VipsImageMapFn.Function fi, Arena arena) {
++    public static MemorySegment allocate(VipsImageMapFn.Function fi, Arena arena) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(30);
+         return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
+     }
+ 
+diff --git a/app/photofox/vipsffm/jextract/VipsTypeMap2Fn.java b/app/photofox/vipsffm/jextract/VipsTypeMap2Fn.java
+index 11fddc2..a0d140a 100644
+--- a/app/photofox/vipsffm/jextract/VipsTypeMap2Fn.java
++++ b/app/photofox/vipsffm/jextract/VipsTypeMap2Fn.java
+@@ -40,7 +40,7 @@ public class VipsTypeMap2Fn {
+     /**
+      * The descriptor of this function pointer
+      */
+-    public static FunctionDescriptor descriptor() {
++    public static FunctionDescriptor descriptor() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(33);
+         return $DESC;
+     }
+ 
+@@ -50,7 +50,7 @@ public class VipsTypeMap2Fn {
+      * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
+      * The lifetime of the returned segment is managed by {@code arena}
+      */
+-    public static MemorySegment allocate(VipsTypeMap2Fn.Function fi, Arena arena) {
++    public static MemorySegment allocate(VipsTypeMap2Fn.Function fi, Arena arena) { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(36);
+         return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
+     }
+ 
+diff --git a/app/photofox/vipsffm/jextract/_GInputStream.java b/app/photofox/vipsffm/jextract/_GInputStream.java
+index 3b59886..b85507b 100644
+--- a/app/photofox/vipsffm/jextract/_GInputStream.java
++++ b/app/photofox/vipsffm/jextract/_GInputStream.java
+@@ -34,7 +34,7 @@ public class _GInputStream {
+     /**
+      * The layout of this struct
+      */
+-    public static final GroupLayout layout() {
++    public static final GroupLayout layout() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(39);
+         return $LAYOUT;
+     }
+ 
+@@ -46,7 +46,7 @@ public class _GInputStream {
+      * GObject parent_instance
+      * }
+      */
+-    public static final GroupLayout parent_instance$layout() {
++    public static final GroupLayout parent_instance$layout() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(42);
+         return parent_instance$LAYOUT;
+     }
+ 
+diff --git a/app/photofox/vipsffm/jextract/_GInputStreamClass.java b/app/photofox/vipsffm/jextract/_GInputStreamClass.java
+index ff92193..9dde827 100644
+--- a/app/photofox/vipsffm/jextract/_GInputStreamClass.java
++++ b/app/photofox/vipsffm/jextract/_GInputStreamClass.java
+@@ -60,7 +60,7 @@ public class _GInputStreamClass {
+     /**
+      * The layout of this struct
+      */
+-    public static final GroupLayout layout() {
++    public static final GroupLayout layout() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(45);
+         return $LAYOUT;
+     }
+ 
+@@ -72,7 +72,7 @@ public class _GInputStreamClass {
+      * GObjectClass parent_class
+      * }
+      */
+-    public static final GroupLayout parent_class$layout() {
++    public static final GroupLayout parent_class$layout() { app.photofox.vipsffm.jmhbench.MutationSwitch.tick(48);
+         return parent_class$LAYOUT;
+     }
+ 
+diff --git a/app/photofox/vipsffm/jmhbench/MutationSwitch.java b/app/photofox/vipsffm/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c2da5d8
+--- /dev/null
++++ b/app/photofox/vipsffm/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package app.photofox.vipsffm.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

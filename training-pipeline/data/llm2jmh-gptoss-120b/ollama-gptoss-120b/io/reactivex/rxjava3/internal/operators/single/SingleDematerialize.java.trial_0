@@ -1,0 +1,71 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.single.SingleDematerialize;
+import io.reactivex.rxjava3.notifications.Notification;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link SingleDematerialize} operator.
+ *
+ * The benchmark measures the throughput of the operator when a {@link Single}
+ * emits a single value that is transformed into a {@link Notification} and
+ * then dematerialized into a {@link Maybe}.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Initialize immutable objects in @Setup(Level.Trial) to exclude construction cost.
+ * - Use blackhole to prevent dead-code elimination if needed (here we consume the result).
+ * - Configure warm‑up and measurement iterations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class SingleDematerializeBenchmark {
+
+    /** Source Single that emits a constant integer. */
+    private Single<Integer> source;
+
+    /** Selector that converts the integer into a Notification of a String. */
+    private Function<Integer, Notification<String>> selector;
+
+    /** The operator under test. */
+    private Maybe<String> operator;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Single.just(42);
+
+        selector = new Function<Integer, Notification<String>>() {
+            @Override
+            public Notification<String> apply(Integer t) {
+                // Always emit an onNext Notification; could be varied for different scenarios.
+                return Notification.createOnNext("value-" + t);
+            }
+        };
+
+        // Create the SingleDematerialize operator instance.
+        operator = new SingleDematerialize<>(source, selector);
+    }
+
+    /**
+     * Executes the operator and blocks until the result is available.
+     *
+     * The returned value is consumed by the JMH blackhole to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public String dematerialize() {
+        // blockingGet will subscribe, apply the selector, and return the dematerialized value.
+        // It throws NoSuchElementException if the Maybe completes without a value,
+        // which is not the case in this benchmark.
+        return operator.blockingGet();
+    }
+}
+```

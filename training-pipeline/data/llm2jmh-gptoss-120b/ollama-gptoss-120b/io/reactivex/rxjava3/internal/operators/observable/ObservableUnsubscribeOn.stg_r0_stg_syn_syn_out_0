@@ -1,0 +1,96 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableUnsubscribeOn}.
+ *
+ * The benchmark measures the throughput of subscribing to an Observable that
+ * uses {@code unsubscribeOn} and immediately disposing the subscription.
+ *
+ * Best‑practice JMH settings are applied:
+ * - Warm‑up iterations to let the JIT stabilize.
+ * - Multiple measurement iterations for statistical confidence.
+ * - Forks to isolate JVM state.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3)
+@State(Scope.Thread)
+public class ObservableUnsubscribeOnBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     * Adjusting this parameter allows exploring the impact of payload size.
+     */
+    @Param({ "1", "10", "100", "1000" })
+    int itemCount;
+
+    private Observable<Integer> source;
+
+    private Scheduler scheduler;
+
+    /**
+     * Set up the Observable and Scheduler once per benchmark trial.
+     * Using {@link Schedulers#single()} provides a deterministic thread for disposal.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        scheduler = Schedulers.single();
+        source = Observable.range(0, itemCount).unsubscribeOn(scheduler);
+    }
+
+    /**
+     * Subscribes to the Observable, consumes all emitted items via Blackhole,
+     * and then disposes the subscription to trigger the {@code unsubscribeOn}
+     * path. The method is measured in throughput mode (operations per second).
+     *
+     * @param bh Blackhole to consume emitted items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void subscribeConsumeAndDispose(Blackhole bh) {
+        // Subscribe and forward each item to the Blackhole.
+        // The Disposable is retained so we can dispose it immediately,
+        // exercising the asynchronous disposal logic.
+        var disposable = source.subscribe(bh::consume);
+        // Trigger the asynchronous disposal path.
+        disposable.dispose();
+    }
+}

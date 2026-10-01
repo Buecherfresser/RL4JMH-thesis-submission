@@ -1,0 +1,75 @@
+```
+package io.reactivex.rxjava3.processors;
+
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Subscription;
+import org.reactivestreams.Subscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class SerializedProcessorBenchmark {
+
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+
+        PublishProcessor<Integer> actual;
+        SerializedProcessor<Integer> serialized;
+
+        @SuppressWarnings("unused")
+        private final Subscriber<Integer> subscriber = new Subscriber<Integer>() {
+            @Override
+            public void onSubscribe(Subscription s) {
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                // no‑op
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // no‑op
+            }
+
+            @Override
+            public void onComplete() {
+                // no‑op
+            }
+        };
+
+        final Integer value = 1;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            actual = PublishProcessor.create();
+            serialized = new SerializedProcessor<>(actual);
+            serialized.subscribe(subscriber);
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            serialized.onComplete();
+        }
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void onNextSingleThread(BenchmarkState state, Blackhole bh) {
+        state.serialized.onNext(state.value);
+        bh.consume(state.serialized);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void onNextMultiThread(BenchmarkState state, Blackhole bh) {
+        state.serialized.onNext(state.value);
+        bh.consume(state.serialized);
+    }
+}
+```

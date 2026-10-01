@@ -1,0 +1,67 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Supplier;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableToList;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link ObservableToList} operator in throughput mode.
+ *
+ * The benchmark measures how many times per second the operator can collect
+ * a stream of {@code Integer}s into a {@code List}. It uses a simple
+ * {@code Observable.range} as upstream source and an {@code ArrayList}
+ * supplier, which reflects the most common usage pattern in RxJava.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create the source once per benchmark iteration.
+ * - Blackhole consumption to prevent dead-code elimination.
+ * - Warm‑up and measurement iterations with reasonable defaults.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableToListThroughputBenchmark {
+
+    /** Number of items emitted by the upstream Observable. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Upstream Observable that emits a range of integers. */
+    private Observable<Integer> source;
+
+    /** Supplier that creates a fresh collection for each subscription. */
+    private Supplier<List<Integer>> collectionSupplier;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits the configured number of items.
+        source = Observable.range(1, itemCount);
+        // Use ArrayList as the default collection implementation.
+        collectionSupplier = ArrayList::new;
+    }
+
+    @Benchmark
+    public void collectToList(Blackhole bh) {
+        // Instantiate the operator directly.
+        ObservableToList<Integer, List<Integer>> toListOperator =
+                new ObservableToList<>(source, collectionSupplier);
+
+        // Blocking call to trigger the whole flow and obtain the resulting list.
+        List<Integer> result = toListOperator.blockingFirst();
+
+        // Consume the result to avoid dead‑code elimination.
+        bh.consume(result);
+    }
+}
+```

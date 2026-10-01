@@ -1,0 +1,93 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@code Flowable.distinctUntilChanged} which internally uses
+ * {@code FlowableDistinctUntilChanged}. The benchmark measures the throughput
+ * (items processed per second) under different source sizes.
+ *
+ * The benchmark follows JMH best‑practice:
+ * - {@code @State(Scope.Thread)} isolates mutable state per thread.
+ * - {@code @Param} allows easy scaling of the source size.
+ * - {@code @Setup(Level.Trial)} prepares the immutable source once per trial.
+ * - The subscription is performed inside the benchmark method to include
+ *   the cost of operator wiring and downstream consumption.
+ * - {@code Blackhole} is used to consume the emitted items and prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableDistinctUntilChangedBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    /**
+     * Source Flowable that emits a sequence of integers from 0 to {@code size-1}.
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * Key selector – identity function for integers.
+     */
+    private static final Function<Integer, Integer> IDENTITY = i -> i;
+
+    /**
+     * Equality comparer – uses {@link Integer#equals(Object)}.
+     */
+    private static final BiPredicate<Integer, Integer> EQUALS = Integer::equals;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Flowable.range is fuseable and thus exercises the fusion path of the operator.
+        source = Flowable.range(0, size);
+    }
+
+    /**
+     * Benchmark that subscribes to the distinctUntilChanged operator and drains all items.
+     * The downstream simply forwards each item to the Blackhole.
+     */
+    @Benchmark
+    public void distinctUntilChanged(Blackhole bh) {
+        source.distinctUntilChanged(IDENTITY, EQUALS).subscribe(bh::consume, bh::consume, () -> {
+        });
+    }
+}

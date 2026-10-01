@@ -1,0 +1,85 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableFilter}.
+ * Measures the throughput of the filter operator under different workloads and predicate
+ * characteristics. The benchmark uses {@link Flowable#range(int, int)} as a deterministic
+ * upstream source and consumes the filtered items with a {@link Blackhole} to avoid dead‑code
+ * elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+public class FlowableFilterBenchmark {
+
+    /**
+     * Number of items emitted by the upstream {@link Flowable#range(int, int)}.
+     */
+    @Param({"1_000", "10_000", "100_000"})
+    public int itemCount;
+
+    /**
+     * Type of predicate applied in the filter operator.
+     * <ul>
+     *   <li>alwaysTrue – predicate that always returns {@code true}</li>
+     *   <li>alwaysFalse – predicate that always returns {@code false}</li>
+     *   <li>mod3 – returns {@code true} for values divisible by 3 (≈33% pass)</li>
+     * </ul>
+     */
+    @Param({"alwaysTrue", "alwaysFalse", "mod3"})
+    public String predicateType;
+
+    private Predicate<Integer> predicate;
+
+    /**
+     * Pre‑creates the predicate instance based on the selected {@code predicateType}.
+     * Using a field instead of recreating it inside the benchmark method eliminates
+     * allocation noise from the measurement.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        switch (predicateType) {
+            case "alwaysTrue":
+                predicate = v -> true;
+                break;
+            case "alwaysFalse":
+                predicate = v -> false;
+                break;
+            case "mod3":
+                predicate = v -> (v % 3) == 0;
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported predicate type: " + predicateType);
+        }
+    }
+
+    /**
+     * Executes the filter pipeline and consumes all resulting items.
+     * The {@link Blackhole} ensures that the JIT compiler cannot eliminate the
+     * subscription side‑effects.
+     *
+     * @param bh Blackhole for consuming the filtered values.
+     */
+    @Benchmark
+    public void filterThroughput(Blackhole bh) {
+        // Upstream source: a range of integers [1, itemCount]
+        Flowable<Integer> source = Flowable.range(1, itemCount);
+
+        // Apply the filter operator under test
+        source.filter(predicate)
+              // Use a fast, non‑blocking terminal operation that still forces evaluation
+              .blockingForEach(bh::consume);
+    }
+}
+```

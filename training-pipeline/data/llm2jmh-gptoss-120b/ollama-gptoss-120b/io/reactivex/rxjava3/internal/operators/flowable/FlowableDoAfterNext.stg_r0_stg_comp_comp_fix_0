@@ -1,0 +1,87 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Consumer;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link FlowableDoAfterNext}.
+ *
+ * <p>Measures the throughput (operations per second) of a Flowable emitting a fixed number of items
+ * with and without the {@code doAfterNext} operator. The benchmark uses a no‑op {@code Consumer}
+ * to isolate the overhead of the operator itself.</p>
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@code @State} for shared immutable data.</li>
+ *   <li>Use {@code Blackhole} to consume emitted items and prevent dead‑code elimination.</li>
+ *   <li>Warm‑up, measurement, and fork parameters are set to typical values.</li>
+ *   <li>Both baseline and operator benchmarks are provided for relative comparison.</li>
+ * </ul>
+ * </p>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableDoAfterNextBenchmark {
+
+    /**
+     * Number of items emitted per subscription.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * A no‑op consumer used as the {@code doAfterNext} action.
+     */
+    private static final Consumer<Object> NO_OP = o -> {
+        // intentionally empty
+    };
+
+    /**
+     * Baseline Flowable without the operator.
+     */
+    private Flowable<Integer> baseline;
+
+    /**
+     * Flowable with {@code doAfterNext} applied.
+     */
+    private Flowable<Integer> withDoAfterNext;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple range Flowable that emits integers from 0 to itemCount-1.
+        Flowable<Integer> source = Flowable.range(0, itemCount);
+        // Baseline: plain source.
+        baseline = source;
+        // Apply the operator under test.
+        withDoAfterNext = source.doAfterNext(NO_OP);
+    }
+
+    /**
+     * Consumes the baseline Flowable.
+     *
+     * @param bh Blackhole to consume the emitted items.
+     */
+    @Benchmark
+    public void baselineConsume(Blackhole bh) {
+        baseline.subscribe(bh::consume);
+    }
+
+    /**
+     * Consumes the Flowable with {@code doAfterNext} operator.
+     *
+     * @param bh Blackhole to consume the emitted items.
+     */
+    @Benchmark
+    public void doAfterNextConsume(Blackhole bh) {
+        withDoAfterNext.subscribe(bh::consume);
+    }
+}
+```

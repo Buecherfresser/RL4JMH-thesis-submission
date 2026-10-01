@@ -1,0 +1,323 @@
+diff --git a/org/ishugaliy/allgood/consistent/hash/HashRing.java b/org/ishugaliy/allgood/consistent/hash/HashRing.java
+index 69d2f33..7f94e17 100644
+--- a/org/ishugaliy/allgood/consistent/hash/HashRing.java
++++ b/org/ishugaliy/allgood/consistent/hash/HashRing.java
+@@ -83,7 +83,7 @@ public final class HashRing<T extends Node> implements ConsistentHash<T> {
+      * @param <T> the type of node
+      * @return the hash ring builder
+      */
+-    public static <T extends Node> HashRingBuilder<T> newBuilder() {
++    public static <T extends Node> HashRingBuilder<T> newBuilder() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(6);
+         return new HashRingBuilder<>();
+     }
+ 
+@@ -98,7 +98,7 @@ public final class HashRing<T extends Node> implements ConsistentHash<T> {
+     }
+ 
+     @Override
+-    public boolean addAll(Collection<T> nodes) {
++    public boolean addAll(Collection<T> nodes) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(7);
+         mutex.writeLock().lock();
+         try {
+             if (nodes == null) {
+@@ -141,7 +141,7 @@ public final class HashRing<T extends Node> implements ConsistentHash<T> {
+     }
+ 
+     @Override
+-    public Set<T> getNodes() {
++    public Set<T> getNodes() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(8);
+         mutex.readLock().lock();
+         try {
+             return new HashSet<>(nodes.keySet());
+@@ -151,7 +151,7 @@ public final class HashRing<T extends Node> implements ConsistentHash<T> {
+     }
+ 
+     @Override
+-    public Optional<T> locate(String key) {
++    public Optional<T> locate(String key) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(9);
+         mutex.readLock().lock();
+         Optional<T> node;
+         try {
+@@ -163,7 +163,7 @@ public final class HashRing<T extends Node> implements ConsistentHash<T> {
+     }
+ 
+     @Override
+-    public Set<T> locate(String key, int count) {
++    public Set<T> locate(String key, int count) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(10);
+         mutex.readLock().lock();
+         Set<T> nodes;
+         try {
+@@ -175,12 +175,12 @@ public final class HashRing<T extends Node> implements ConsistentHash<T> {
+     }
+ 
+     @Override
+-    public String getName() {
++    public String getName() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(11);
+         return name;
+     }
+ 
+     @Override
+-    public int size() {
++    public int size() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(12);
+         mutex.readLock().lock();
+         try {
+             return nodes.size();
+@@ -189,11 +189,11 @@ public final class HashRing<T extends Node> implements ConsistentHash<T> {
+         }
+     }
+ 
+-    public Hasher getHasher() {
++    public Hasher getHasher() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(13);
+         return hasher;
+     }
+ 
+-    public int getPartitionRate() {
++    public int getPartitionRate() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(14);
+         return partitionRate;
+     }
+ 
+diff --git a/org/ishugaliy/allgood/consistent/hash/HashRingBuilder.java b/org/ishugaliy/allgood/consistent/hash/HashRingBuilder.java
+index b6ea9ae..033855b 100644
+--- a/org/ishugaliy/allgood/consistent/hash/HashRingBuilder.java
++++ b/org/ishugaliy/allgood/consistent/hash/HashRingBuilder.java
+@@ -54,7 +54,7 @@ public final class HashRingBuilder<T extends Node> {
+      * @return builder instance
+      * @throws NullPointerException if name is null
+      */
+-    public HashRingBuilder<T> name(String name) {
++    public HashRingBuilder<T> name(String name) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(1);
+         Objects.requireNonNull(name, "Name can not be null");
+         this.name = name;
+         return this;
+@@ -66,7 +66,7 @@ public final class HashRingBuilder<T extends Node> {
+      * @param hash the hash function, default value is {@link DefaultHasher#MURMUR_3}
+      * @return builder instance
+      */
+-    public HashRingBuilder<T> hasher(Hasher hash) {
++    public HashRingBuilder<T> hasher(Hasher hash) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(2);
+         this.hash = hash;
+         return this;
+     }
+@@ -78,7 +78,7 @@ public final class HashRingBuilder<T extends Node> {
+      * @return builder instance
+      * @throws IllegalArgumentException if partition rate less than 1
+      */
+-    public HashRingBuilder<T> partitionRate(int partitionRate) {
++    public HashRingBuilder<T> partitionRate(int partitionRate) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(3);
+         if (partitionRate < 1) {
+             throw new IllegalArgumentException("Replication Rate can not be less than 1");
+         }
+@@ -93,7 +93,7 @@ public final class HashRingBuilder<T extends Node> {
+      * @return builder instance
+      * @throws NullPointerException if nodes list is null
+      */
+-    public HashRingBuilder<T> nodes(Collection<T> nodes) {
++    public HashRingBuilder<T> nodes(Collection<T> nodes) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(4);
+         Objects.requireNonNull(nodes, "Nodes list can not be null");
+         this.nodes = nodes;
+         return this;
+@@ -104,7 +104,7 @@ public final class HashRingBuilder<T extends Node> {
+      *
+      * @return the hash ring instance
+      */
+-    public HashRing<T> build() {
++    public HashRing<T> build() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(5);
+         name = name != null ? name : generateName();
+         hash = hash != null ? hash : DefaultHasher.MURMUR_3;
+ 
+diff --git a/org/ishugaliy/allgood/consistent/hash/hasher/DefaultHasher.java b/org/ishugaliy/allgood/consistent/hash/hasher/DefaultHasher.java
+index b5bac54..0f06a31 100644
+--- a/org/ishugaliy/allgood/consistent/hash/hasher/DefaultHasher.java
++++ b/org/ishugaliy/allgood/consistent/hash/hasher/DefaultHasher.java
+@@ -71,7 +71,7 @@ public enum DefaultHasher implements Hasher {
+     }
+ 
+     @Override
+-    public long hash(String key, int seed) {
++    public long hash(String key, int seed) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(15);
+         return buildHashFunction.apply(seed).hashChars(key);
+     }
+ }
+diff --git a/org/ishugaliy/allgood/consistent/hash/node/ServerNode.java b/org/ishugaliy/allgood/consistent/hash/node/ServerNode.java
+index f0635e6..3721bf9 100644
+--- a/org/ishugaliy/allgood/consistent/hash/node/ServerNode.java
++++ b/org/ishugaliy/allgood/consistent/hash/node/ServerNode.java
+@@ -49,20 +49,20 @@ public class ServerNode implements Node {
+         this.port = port;
+     }
+ 
+-    public String getDc() {
++    public String getDc() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(16);
+         return dc;
+     }
+ 
+-    public String getIp() {
++    public String getIp() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(17);
+         return ip;
+     }
+ 
+-    public int getPort() {
++    public int getPort() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(18);
+         return port;
+     }
+ 
+     @Override
+-    public String getKey() {
++    public String getKey() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(19);
+         return String.format("%s:%s:%s", dc, ip, port);
+     }
+ 
+diff --git a/org/ishugaliy/allgood/consistent/hash/node/SimpleNode.java b/org/ishugaliy/allgood/consistent/hash/node/SimpleNode.java
+index 4dfae9f..1b46b50 100644
+--- a/org/ishugaliy/allgood/consistent/hash/node/SimpleNode.java
++++ b/org/ishugaliy/allgood/consistent/hash/node/SimpleNode.java
+@@ -50,12 +50,12 @@ public class SimpleNode implements Node {
+      *
+      * @return the instance of the class
+      */
+-    public static SimpleNode of(String value) {
++    public static SimpleNode of(String value) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(20);
+         return new SimpleNode(value);
+     }
+ 
+     @Override
+-    public String getKey() {
++    public String getKey() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(21);
+         return value;
+     }
+ 
+diff --git a/org/ishugaliy/allgood/consistent/hash/partition/ReplicationPartition.java b/org/ishugaliy/allgood/consistent/hash/partition/ReplicationPartition.java
+index 3a704e2..1e26eee 100644
+--- a/org/ishugaliy/allgood/consistent/hash/partition/ReplicationPartition.java
++++ b/org/ishugaliy/allgood/consistent/hash/partition/ReplicationPartition.java
+@@ -56,27 +56,27 @@ public final class ReplicationPartition<T extends Node> implements Partition<T>
+         this.slot = slot;
+     }
+ 
+-    public int getIndex() {
++    public int getIndex() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(22);
+         return index;
+     }
+ 
+     @Override
+-    public T getNode() {
++    public T getNode() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(23);
+         return node;
+     }
+ 
+     @Override
+-    public long getSlot() {
++    public long getSlot() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(24);
+         return slot;
+     }
+ 
+     @Override
+-    public void setSlot(long slot) {
++    public void setSlot(long slot) { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(25);
+         this.slot = slot;
+     }
+ 
+     @Override
+-    public String getPartitionKey() {
++    public String getPartitionKey() { org.ishugaliy.allgood.jmhbench.MutationSwitch.tick(26);
+         return String.format("rp%d:%s", index, node.getKey());
+     }
+ 
+diff --git a/org/ishugaliy/allgood/jmhbench/MutationSwitch.java b/org/ishugaliy/allgood/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..6e05e7d
+--- /dev/null
++++ b/org/ishugaliy/allgood/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.ishugaliy.allgood.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 26;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

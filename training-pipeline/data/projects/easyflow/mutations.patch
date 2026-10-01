@@ -1,0 +1,469 @@
+diff --git a/au/com/ds/ef/AsyncExecutor.java b/au/com/ds/ef/AsyncExecutor.java
+index 0e73b8e..43b7ad7 100644
+--- a/au/com/ds/ef/AsyncExecutor.java
++++ b/au/com/ds/ef/AsyncExecutor.java
+@@ -7,7 +7,7 @@ public class AsyncExecutor implements Executor {
+ 	private Executor executor = Executors.newSingleThreadExecutor();
+ 	
+ 	@Override
+-	public void execute(Runnable task) {
++	public void execute(Runnable task) { au.com.ds.jmhbench.MutationSwitch.tick(8);
+ 		executor.execute(task);
+ 	}
+ }
+diff --git a/au/com/ds/ef/EasyFlow.java b/au/com/ds/ef/EasyFlow.java
+index d9c1ab8..d3c71c9 100644
+--- a/au/com/ds/ef/EasyFlow.java
++++ b/au/com/ds/ef/EasyFlow.java
+@@ -16,7 +16,7 @@ import static au.com.ds.ef.HandlerCollection.EventType;
+ public class EasyFlow<C extends StatefulContext> {
+     public class DefaultErrorHandler implements ExecutionErrorHandler<StatefulContext> {
+         @Override
+-        public void call(ExecutionError error, StatefulContext context) {
++        public void call(ExecutionError error, StatefulContext context) { au.com.ds.jmhbench.MutationSwitch.tick(9);
+             String msg = "Execution Error in StateHolder [" + error.getState() + "] ";
+             if (error.getEvent() != null) {
+                 msg += "on EventHolder [" + error.getEvent() + "] ";
+@@ -42,11 +42,11 @@ public class EasyFlow<C extends StatefulContext> {
+         this.handlers.setHandler(HandlerCollection.EventType.ERROR, null, null, new DefaultErrorHandler());
+     }
+ 
+-    protected void processAllTransitions(boolean skipValidation) {
++    protected void processAllTransitions(boolean skipValidation) { au.com.ds.jmhbench.MutationSwitch.tick(10);
+         transitions = new TransitionCollection(Transition.consumeTransitions(), !skipValidation);
+     }
+ 
+-    protected void setTransitions(Collection<Transition> collection, boolean skipValidation) {
++    protected void setTransitions(Collection<Transition> collection, boolean skipValidation) { au.com.ds.jmhbench.MutationSwitch.tick(11);
+         transitions = new TransitionCollection(collection, !skipValidation);
+     }
+ 
+@@ -56,11 +56,11 @@ public class EasyFlow<C extends StatefulContext> {
+         }
+     }
+ 
+-    public void start(final C context) {
++    public void start(final C context) { au.com.ds.jmhbench.MutationSwitch.tick(12);
+         start(false, context);
+     }
+ 
+-    public void start(boolean enterInitialState, final C context) {
++    public void start(boolean enterInitialState, final C context) { au.com.ds.jmhbench.MutationSwitch.tick(13);
+         prepare();
+         context.setFlow(this);
+ 
+@@ -71,10 +71,10 @@ public class EasyFlow<C extends StatefulContext> {
+         }
+     }
+ 
+-    protected void setCurrentState(final StateEnum state, final boolean enterInitialState, final C context) {
++    protected void setCurrentState(final StateEnum state, final boolean enterInitialState, final C context) { au.com.ds.jmhbench.MutationSwitch.tick(14);
+         execute(new Runnable() {
+             @Override
+-            public void run() {
++            public void run() { au.com.ds.jmhbench.MutationSwitch.tick(15);
+                 if (!enterInitialState) {
+                     StateEnum prevState = context.getState();
+                     if (prevState != null) {
+@@ -88,72 +88,72 @@ public class EasyFlow<C extends StatefulContext> {
+         }, context);
+     }
+ 
+-    protected void execute(Runnable task, final C context) {
++    protected void execute(Runnable task, final C context) { au.com.ds.jmhbench.MutationSwitch.tick(16);
+         if (!context.isTerminated()) {
+             executor.execute(task);
+         }
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> whenEvent(EventEnum event, ContextHandler<C1> onEvent) {
++    public <C1 extends StatefulContext> EasyFlow<C1> whenEvent(EventEnum event, ContextHandler<C1> onEvent) { au.com.ds.jmhbench.MutationSwitch.tick(17);
+         handlers.setHandler(EventType.EVENT_TRIGGER, null, event, onEvent);
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> whenEvent(EventHandler<C1> onEvent) {
++    public <C1 extends StatefulContext> EasyFlow<C1> whenEvent(EventHandler<C1> onEvent) { au.com.ds.jmhbench.MutationSwitch.tick(18);
+         handlers.setHandler(EventType.ANY_EVENT_TRIGGER, null, null, onEvent);
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> whenEnter(StateEnum state, ContextHandler<C1> onEnter) {
++    public <C1 extends StatefulContext> EasyFlow<C1> whenEnter(StateEnum state, ContextHandler<C1> onEnter) { au.com.ds.jmhbench.MutationSwitch.tick(19);
+         handlers.setHandler(EventType.STATE_ENTER, state, null, onEnter);
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> whenEnter(StateHandler<C1> onEnter) {
++    public <C1 extends StatefulContext> EasyFlow<C1> whenEnter(StateHandler<C1> onEnter) { au.com.ds.jmhbench.MutationSwitch.tick(20);
+         handlers.setHandler(EventType.ANY_STATE_ENTER, null, null, onEnter);
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> whenLeave(StateEnum state, ContextHandler<C1> onEnter) {
++    public <C1 extends StatefulContext> EasyFlow<C1> whenLeave(StateEnum state, ContextHandler<C1> onEnter) { au.com.ds.jmhbench.MutationSwitch.tick(21);
+         handlers.setHandler(EventType.STATE_LEAVE, state, null, onEnter);
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> whenLeave(StateHandler<C1> onEnter) {
++    public <C1 extends StatefulContext> EasyFlow<C1> whenLeave(StateHandler<C1> onEnter) { au.com.ds.jmhbench.MutationSwitch.tick(22);
+         handlers.setHandler(EventType.ANY_STATE_LEAVE, null, null, onEnter);
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> whenError(ExecutionErrorHandler<C1> onError) {
++    public <C1 extends StatefulContext> EasyFlow<C1> whenError(ExecutionErrorHandler<C1> onError) { au.com.ds.jmhbench.MutationSwitch.tick(23);
+         handlers.setHandler(EventType.ERROR, null, null, onError);
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> whenFinalState(StateHandler<C1> onFinalState) {
++    public <C1 extends StatefulContext> EasyFlow<C1> whenFinalState(StateHandler<C1> onFinalState) { au.com.ds.jmhbench.MutationSwitch.tick(24);
+         handlers.setHandler(EventType.FINAL_STATE, null, null, onFinalState);
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public void waitForCompletion(C context) {
++    public void waitForCompletion(C context) { au.com.ds.jmhbench.MutationSwitch.tick(25);
+       context.awaitTermination();
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> executor(Executor executor) {
++    public <C1 extends StatefulContext> EasyFlow<C1> executor(Executor executor) { au.com.ds.jmhbench.MutationSwitch.tick(26);
+         this.executor = executor;
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> trace() {
++    public <C1 extends StatefulContext> EasyFlow<C1> trace() { au.com.ds.jmhbench.MutationSwitch.tick(27);
+         trace = true;
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> logger(FlowLogger log) {
++    public <C1 extends StatefulContext> EasyFlow<C1> logger(FlowLogger log) { au.com.ds.jmhbench.MutationSwitch.tick(28);
+         this.log = log;
+         return (EasyFlow<C1>) this;
+     }
+ 
+-    public boolean safeTrigger(final EventEnum event, final C context) {
++    public boolean safeTrigger(final EventEnum event, final C context) { au.com.ds.jmhbench.MutationSwitch.tick(29);
+         try {
+             return trigger(event, true, context);
+         } catch (LogicViolationError logicViolationError) {
+@@ -161,15 +161,15 @@ public class EasyFlow<C extends StatefulContext> {
+         }
+     }
+ 
+-    public void trigger(final EventEnum event, final C context) throws LogicViolationError {
++    public void trigger(final EventEnum event, final C context) throws LogicViolationError { au.com.ds.jmhbench.MutationSwitch.tick(30);
+         trigger(event, false, context);
+     }
+ 
+-    public List<Transition> getAvailableTransitions(StateEnum stateFrom) {
++    public List<Transition> getAvailableTransitions(StateEnum stateFrom) { au.com.ds.jmhbench.MutationSwitch.tick(31);
+         return transitions.getTransitions(stateFrom);
+     }
+ 
+-    public boolean isEventHandledByState(final StateEnum state, final EventEnum event) {
++    public boolean isEventHandledByState(final StateEnum state, final EventEnum event) { au.com.ds.jmhbench.MutationSwitch.tick(32);
+         for (Transition transition : transitions.getTransitions(state)) {
+             if (transition.getEvent() == event) return true;
+         }
+@@ -187,7 +187,7 @@ public class EasyFlow<C extends StatefulContext> {
+         if (transition != null) {
+             execute(new Runnable() {
+                 @Override
+-                public void run() {
++                public void run() { au.com.ds.jmhbench.MutationSwitch.tick(33);
+                     try {
+                         StateEnum stateTo = transition.getStateTo();
+                         if (isTrace())
+@@ -257,20 +257,20 @@ public class EasyFlow<C extends StatefulContext> {
+         }
+     }
+ 
+-    protected boolean isTrace() {
++    protected boolean isTrace() { au.com.ds.jmhbench.MutationSwitch.tick(34);
+         return trace;
+     }
+ 
+-    protected void doOnError(final ExecutionError error) {
++    protected void doOnError(final ExecutionError error) { au.com.ds.jmhbench.MutationSwitch.tick(35);
+         handlers.callOnError(error);
+         doOnTerminate(error.getState(), (C) error.getContext());
+     }
+ 
+-    protected StateEnum getStartState() {
++    protected StateEnum getStartState() { au.com.ds.jmhbench.MutationSwitch.tick(36);
+         return startState;
+     }
+ 
+-    protected void doOnTerminate(StateEnum state, final C context) {
++    protected void doOnTerminate(StateEnum state, final C context) { au.com.ds.jmhbench.MutationSwitch.tick(37);
+         if (!context.isTerminated()) {
+             try {
+                 if (isTrace())
+diff --git a/au/com/ds/ef/FlowBuilder.java b/au/com/ds/ef/FlowBuilder.java
+index c593f4a..57adbaa 100644
+--- a/au/com/ds/ef/FlowBuilder.java
++++ b/au/com/ds/ef/FlowBuilder.java
+@@ -12,11 +12,11 @@ public class FlowBuilder<C extends StatefulContext> {
+             this.event = event;
+         }
+ 
+-        public Transition to(StateEnum state) {
++        public Transition to(StateEnum state) { au.com.ds.jmhbench.MutationSwitch.tick(1);
+             return new Transition(event, state, false);
+         }
+ 
+-        public Transition finish(StateEnum state) {
++        public Transition finish(StateEnum state) { au.com.ds.jmhbench.MutationSwitch.tick(2);
+             return new Transition(event, state, true);
+         }
+     }
+@@ -25,26 +25,26 @@ public class FlowBuilder<C extends StatefulContext> {
+         flow = new EasyFlow<C>(startState);
+ 	}
+ 
+-	public static <C extends StatefulContext> FlowBuilder<C> from(StateEnum startState) {
++	public static <C extends StatefulContext> FlowBuilder<C> from(StateEnum startState) { au.com.ds.jmhbench.MutationSwitch.tick(3);
+ 		return new FlowBuilder<C>(startState);
+ 	}
+ 
+ 	public static <C extends StatefulContext> EasyFlow<C> fromTransitions(StateEnum startState,
+-                                                                          Collection<Transition> transitions, boolean skipValidation) {
++                                                                          Collection<Transition> transitions, boolean skipValidation) { au.com.ds.jmhbench.MutationSwitch.tick(4);
+         EasyFlow<C> flow = new EasyFlow<C>(startState);
+         flow.setTransitions(transitions, skipValidation);
+         return flow;
+     }
+ 
+-    public static ToHolder on(EventEnum event) {
++    public static ToHolder on(EventEnum event) { au.com.ds.jmhbench.MutationSwitch.tick(5);
+         return new ToHolder(event);
+     }
+ 
+-    public <C1 extends StatefulContext> EasyFlow<C1> transit(Transition... transitions) {
++    public <C1 extends StatefulContext> EasyFlow<C1> transit(Transition... transitions) { au.com.ds.jmhbench.MutationSwitch.tick(6);
+         return transit(false, transitions);
+     }
+ 
+-	public <C1 extends StatefulContext> EasyFlow<C1> transit(boolean skipValidation, Transition... transitions) {
++	public <C1 extends StatefulContext> EasyFlow<C1> transit(boolean skipValidation, Transition... transitions) { au.com.ds.jmhbench.MutationSwitch.tick(7);
+         for (Transition transition : transitions) {
+             transition.setStateFrom(flow.getStartState());
+         }
+diff --git a/au/com/ds/ef/FlowLoggerImpl.java b/au/com/ds/ef/FlowLoggerImpl.java
+index b068047..fbc3a42 100644
+--- a/au/com/ds/ef/FlowLoggerImpl.java
++++ b/au/com/ds/ef/FlowLoggerImpl.java
+@@ -30,7 +30,7 @@ public class FlowLoggerImpl implements FlowLogger {
+     }
+ 
+     @Override
+-    public void info(String message, Object... o) {
++    public void info(String message, Object... o) { au.com.ds.jmhbench.MutationSwitch.tick(38);
+         String formattedMessage = format(message, o);
+         if (infoMethod != null) {
+             try {
+@@ -44,7 +44,7 @@ public class FlowLoggerImpl implements FlowLogger {
+     }
+ 
+     @Override
+-    public void error(String message, Throwable e) {
++    public void error(String message, Throwable e) { au.com.ds.jmhbench.MutationSwitch.tick(39);
+         if (errorMethod != null) {
+             try {
+                 errorMethod.invoke(logger, message, e);
+diff --git a/au/com/ds/ef/HandlerCollection.java b/au/com/ds/ef/HandlerCollection.java
+index 42cf626..5ce9453 100644
+--- a/au/com/ds/ef/HandlerCollection.java
++++ b/au/com/ds/ef/HandlerCollection.java
+@@ -59,11 +59,11 @@ class HandlerCollection {
+ 
+     private Map<HandlerType, Handler> handlers = new HashMap<HandlerType, Handler>();
+ 
+-    public void setHandler(EventType eventType, StateEnum state, EventEnum event, Handler handler) {
++    public void setHandler(EventType eventType, StateEnum state, EventEnum event, Handler handler) { au.com.ds.jmhbench.MutationSwitch.tick(40);
+         handlers.put(new HandlerType(eventType, event, state), handler);
+     }
+ 
+-    public <C extends StatefulContext> void callOnEventTriggered(EventEnum event, StateEnum stateFrom, StateEnum stateTo, C context) throws Exception {
++    public <C extends StatefulContext> void callOnEventTriggered(EventEnum event, StateEnum stateFrom, StateEnum stateTo, C context) throws Exception { au.com.ds.jmhbench.MutationSwitch.tick(41);
+         Handler h = handlers.get(new HandlerType(EventType.EVENT_TRIGGER, event, null));
+         if (h != null) {
+             ContextHandler<C> contextHandler = (ContextHandler<C>) h;
+@@ -77,7 +77,7 @@ class HandlerCollection {
+         }
+     }
+ 
+-    public <C extends StatefulContext> void callOnStateEntered(StateEnum state, C context) throws Exception {
++    public <C extends StatefulContext> void callOnStateEntered(StateEnum state, C context) throws Exception { au.com.ds.jmhbench.MutationSwitch.tick(42);
+         Handler h = handlers.get(new HandlerType(EventType.STATE_ENTER, null, state));
+         if (h != null) {
+             ContextHandler<C> contextHandler = (ContextHandler<C>) h;
+@@ -91,7 +91,7 @@ class HandlerCollection {
+         }
+     }
+ 
+-    public <C extends StatefulContext> void callOnStateLeaved(StateEnum state, C context) throws Exception {
++    public <C extends StatefulContext> void callOnStateLeaved(StateEnum state, C context) throws Exception { au.com.ds.jmhbench.MutationSwitch.tick(43);
+         Handler h = handlers.get(new HandlerType(EventType.STATE_LEAVE, null, state));
+         if (h != null) {
+             ContextHandler<C> contextHandler = (ContextHandler<C>) h;
+@@ -105,7 +105,7 @@ class HandlerCollection {
+         }
+     }
+ 
+-    public <C extends StatefulContext> void callOnFinalState(StateEnum state, C context) throws Exception {
++    public <C extends StatefulContext> void callOnFinalState(StateEnum state, C context) throws Exception { au.com.ds.jmhbench.MutationSwitch.tick(44);
+         Handler h = handlers.get(new HandlerType(EventType.FINAL_STATE, null, null));
+         if (h != null) {
+             StateHandler<C> contextHandler = (StateHandler<C>) h;
+@@ -113,7 +113,7 @@ class HandlerCollection {
+         }
+     }
+ 
+-    public void callOnError(ExecutionError error) {
++    public void callOnError(ExecutionError error) { au.com.ds.jmhbench.MutationSwitch.tick(45);
+         Handler h = handlers.get(new HandlerType(EventType.ERROR, null, null));
+         if (h != null) {
+             ExecutionErrorHandler errorHandler = (ExecutionErrorHandler) h;
+diff --git a/au/com/ds/ef/StatefulContext.java b/au/com/ds/ef/StatefulContext.java
+index a60839b..4aef88c 100644
+--- a/au/com/ds/ef/StatefulContext.java
++++ b/au/com/ds/ef/StatefulContext.java
+@@ -28,15 +28,15 @@ public class StatefulContext implements Serializable {
+ 		id = aId + ":" + getClass().getSimpleName();
+ 	}
+ 
+-	public String getId() {
++	public String getId() { au.com.ds.jmhbench.MutationSwitch.tick(46);
+ 		return id;
+ 	}
+ 	
+-	public void setState(StateEnum state){
++	public void setState(StateEnum state){ au.com.ds.jmhbench.MutationSwitch.tick(47);
+ 		this.state = state;
+ 	}
+ 	
+-	public StateEnum getState() {
++	public StateEnum getState() { au.com.ds.jmhbench.MutationSwitch.tick(48);
+ 		return state;
+ 	}
+ 
+@@ -59,12 +59,12 @@ public class StatefulContext implements Serializable {
+ 		return true;
+ 	}
+ 
+-    public void stop() {
++    public void stop() { au.com.ds.jmhbench.MutationSwitch.tick(49);
+         stopped.set(true);
+         setTerminated();
+     }
+ 
+-    public boolean isStopped() {
++    public boolean isStopped() { au.com.ds.jmhbench.MutationSwitch.tick(50);
+         return stopped.get();
+     }
+ 
+diff --git a/au/com/ds/jmhbench/MutationSwitch.java b/au/com/ds/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..e8c9b5b
+--- /dev/null
++++ b/au/com/ds/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package au.com.ds.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

@@ -1,0 +1,87 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import org.openjdk.jmh.annotations.*;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Predicate;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableAny}.
+ *
+ * The benchmarks measure throughput (operations per second) of the {@code any} operator
+ * under different predicate characteristics and source sizes.
+ *
+ * Best practices applied:
+ * - Use @State with Scope.Thread to avoid sharing mutable state between threads.
+ * - Initialize the source Observable once per trial in @Setup(Level.Trial).
+ * - Use @Param to vary the size of the upstream sequence.
+ * - Use blockingGet() to ensure the whole stream is consumed before the benchmark iteration ends.
+ * - Include warm‑up, measurement, and fork settings to obtain reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableAnyBenchmark {
+
+    /**
+     * Number of items emitted by the upstream Observable.
+     * Typical values cover small, medium and large streams.
+     */
+    @Param({"10", "1000", "100_000"})
+    public int size;
+
+    private Observable<Integer> source;
+
+    /** Predicate that never matches – forces full traversal. */
+    private Predicate<Integer> alwaysFalse;
+
+    /** Predicate that always matches – short‑circuits after the first element. */
+    private Predicate<Integer> alwaysTrue;
+
+    /** Predicate with moderate selectivity (matches half of the items). */
+    private Predicate<Integer> evenPredicate;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Observable that emits a range of integers [1, size]
+        source = Observable.range(1, size);
+
+        alwaysFalse = v -> false;
+        alwaysTrue = v -> true;
+        evenPredicate = v -> (v & 1) == 0; // true for even numbers
+    }
+
+    /**
+     * Benchmark where the predicate never matches.
+     * The operator must consume the entire upstream sequence.
+     */
+    @Benchmark
+    public boolean anyNeverMatches() {
+        return source.any(alwaysFalse).blockingGet();
+    }
+
+    /**
+     * Benchmark where the predicate matches the first element.
+     * The operator short‑circuits immediately.
+     */
+    @Benchmark
+    public boolean anyMatchesImmediately() {
+        return source.any(alwaysTrue).blockingGet();
+    }
+
+    /**
+     * Benchmark with a predicate that matches roughly half of the items.
+     * This represents a realistic workload where short‑circuiting may happen
+     * after processing a moderate number of elements.
+     */
+    @Benchmark
+    public boolean anyMatchesHalfway() {
+        return source.any(evenPredicate).blockingGet();
+    }
+}
+```

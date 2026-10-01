@@ -1,0 +1,100 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@code SingleDoAfterSuccess} operator.
+ *
+ * Measures the throughput of a {@link Single} that emits a single value
+ * and executes a no‑op {@code doAfterSuccess} consumer.
+ *
+ * The benchmark follows JMH best practices:
+ * - {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - {@code @Setup(Level.Trial)} to create immutable objects once per trial.
+ * - Use of {@link Blackhole} to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are left to the JMH runner defaults
+ *   (or can be configured via command line).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class SingleDoAfterSuccessBenchmark {
+
+    /**
+     * Source Single that emits a constant integer.
+     */
+    private Single<Integer> source;
+
+    /**
+     * Wrapped Single with a no‑op after‑success consumer.
+     */
+    private Single<Integer> wrapped;
+
+    /**
+     * No‑op consumer used for the {@code doAfterSuccess} hook.
+     */
+    private static final Consumer<Integer> NO_OP = v -> {
+        // intentionally empty
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple source Single that emits the value 1.
+        source = Single.just(1);
+        // Apply the doAfterSuccess operator with a no‑op consumer.
+        // This internally creates a SingleDoAfterSuccess instance.
+        wrapped = source.doAfterSuccess(NO_OP);
+    }
+
+    /**
+     * Benchmark method that subscribes to the wrapped Single and blocks
+     * until the value is emitted. The result is consumed by the Blackhole
+     * to avoid dead‑code elimination.
+     *
+     * @param bh Blackhole to consume the emitted value.
+     */
+    @Benchmark
+    public void testDoAfterSuccess(Blackhole bh) {
+        // blockingGet() triggers subscription, emission, and the after‑success hook.
+        Integer result = wrapped.blockingGet();
+        // Consume the result so the JIT cannot eliminate the call.
+        bh.consume(result);
+    }
+}

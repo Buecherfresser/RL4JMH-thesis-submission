@@ -1,0 +1,93 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableConcatMap}.
+ *
+ * The benchmark measures the throughput (operations per second) of the concatMap
+ * operator when mapping a range of integers to simple scalar Observables.
+ *
+ * Best practices applied:
+ * - Use @State with Scope.Thread to avoid sharing mutable state between threads.
+ * - Perform all allocations in @Setup(Level.Trial) to keep the benchmark focused on the operator.
+ * - Consume the emitted items via Blackhole to prevent dead‑code elimination.
+ * - Configure warm‑up, measurement iterations and forks for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(3)
+@State(Scope.Thread)
+public class ObservableConcatMapBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable per benchmark iteration.
+     */
+    @Param({ "1000", "10000" })
+    public int itemCount;
+
+    /**
+     * Source Observable emitting a range of integers.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * Mapper function used by concatMap.
+     */
+    private Function<Integer, ObservableSource<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold source that emits a fixed range of integers.
+        source = Observable.range(0, itemCount);
+        // Simple mapper that returns a scalar Observable for each upstream value.
+        mapper = i -> Observable.just(i);
+    }
+
+    /**
+     * Benchmark the concatMap operator in its default (IMMEDIATE error) mode.
+     *
+     * @param bh Blackhole to consume the emitted items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void concatMapThroughput(Blackhole bh) {
+        source.concatMap(mapper).subscribe(bh::consume);
+    }
+}

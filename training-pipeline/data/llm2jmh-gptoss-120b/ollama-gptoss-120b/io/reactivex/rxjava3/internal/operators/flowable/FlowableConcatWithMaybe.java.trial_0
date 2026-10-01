@@ -1,0 +1,67 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableConcatWithMaybe}
+ * measuring the throughput of concatenating a {@link Flowable} with a {@link Maybe}.
+ *
+ * The benchmark creates a hot {@link Flowable} emitting a configurable number of
+ * integer values and a {@link Maybe} emitting a single integer. The operator under
+ * test is exercised by subscribing to the concatenated sequence and consuming
+ * all emitted items via {@link Blackhole} to prevent dead‑code elimination.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Warm‑up and measurement iterations are defined to let the JIT stabilize.
+ * - Blackhole consumption ensures the compiler cannot optimize away the flow.
+ * - The benchmark runs in Mode.Throughput with results expressed as operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableConcatWithMaybeBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     * Typical values: 1, 10, 1000, 100_000.
+     */
+    @Param({"1", "10", "1000", "100000"})
+    public int flowableSize;
+
+    private Flowable<Integer> sourceFlowable;
+    private Maybe<Integer> maybeSource;
+    private Scheduler scheduler;
+
+    @Setup(Level.Iteration)
+    public void setUp() {
+        // Use a simple range Flowable; the scheduler is deliberately omitted to keep the benchmark
+        // focused on the operator's overhead rather than thread switching.
+        sourceFlowable = Flowable.range(1, flowableSize);
+        maybeSource = Maybe.just(flowableSize + 1);
+        scheduler = Schedulers.trampoline(); // deterministic execution
+    }
+
+    @Benchmark
+    public void concatWithMaybe(Blackhole bh) {
+        // Concatenate the Flowable with the Maybe and block until completion,
+        // feeding each emitted item into the Blackhole.
+        sourceFlowable
+                .concatWith(maybeSource)
+                .observeOn(scheduler) // ensure downstream runs on the same thread for consistency
+                .blockingSubscribe(bh::consume);
+    }
+}
+```

@@ -1,0 +1,124 @@
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link ObservableConcatMapCompletable}.
+ *
+ * The benchmark measures the throughput of concatenating a stream of items
+ * into {@link Completable}s using the operator under test.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Trial) prepares immutable data structures once per trial.
+ * - Parameters allow exploring different source sizes, prefetch values and error modes.
+ * - The benchmark method blocks until the Completable terminates to ensure
+ *   the whole pipeline is measured.
+ * - Blackhole is used to consume the final result and prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ObservableConcatMapCompletableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        @Param({ "1", "10", "100", "1000", "10000" })
+        public int sourceSize;
+
+        @Param({ "1", "16", "64", "256" })
+        public int prefetch;
+
+        @Param({ "IMMEDIATE", "BOUNDARY", "END" })
+        public String errorModeStr;
+
+        Observable<Integer> source;
+
+        Function<Integer, CompletableSource> mapper;
+
+        ErrorMode errorMode;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Simple range source; each item maps to a Completable that completes immediately.
+            source = Observable.range(1, sourceSize);
+            mapper = v -> Completable.complete();
+            errorMode = ErrorMode.valueOf(errorModeStr);
+        }
+    }
+
+    @Benchmark
+    public void concatMapCompletableThroughput(BenchmarkState state, Blackhole bh) {
+        // Build the operator under test.
+        Completable concat = new ObservableConcatMapCompletable<>(state.source, state.mapper, state.errorMode, state.prefetch);
+        // Subscribe and block until completion.
+        // Using an AtomicInteger to ensure the subscription side‑effects are observed.
+        AtomicInteger done = new AtomicInteger();
+        concat.subscribe(new CompletableObserver() {
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                // No-op
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // Propagate error to Blackhole to avoid dead‑code elimination.
+                bh.consume(e);
+                done.set(1);
+            }
+
+            @Override
+            public void onComplete() {
+                done.set(1);
+            }
+        });
+        // Busy‑wait until the Completable signals termination.
+        // This is safe in a benchmark because the work is tiny and the loop
+        // will exit quickly; it also avoids using Thread.sleep which would
+        // distort throughput measurements.
+        while (done.get() == 0) {
+            // spin
+        }
+        // Consume a dummy value to keep the JIT from optimizing away the whole pipeline.
+        bh.consume(state.sourceSize);
+    }
+}

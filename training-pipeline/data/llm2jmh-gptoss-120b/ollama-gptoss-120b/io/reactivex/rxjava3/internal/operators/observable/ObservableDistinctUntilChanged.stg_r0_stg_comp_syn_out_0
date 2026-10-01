@@ -1,0 +1,95 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableDistinctUntilChanged}.
+ *
+ * The benchmark measures the throughput (operations per second) of an {@code Observable}
+ * pipeline that applies the {@code distinctUntilChanged} operator with an identity key selector.
+ * The source emits a configurable number of integer values.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} isolates benchmark state per thread.
+ * - {@code @Setup(Level.Trial)} prepares immutable data structures once per trial.
+ * - {@code @Param} allows easy scaling of the source size.
+ * - {@code Blackhole} consumes the emitted items to prevent dead‑code elimination.
+ * - The benchmark runs in {@code Mode.Throughput} with a 1‑second measurement time.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class ObservableDistinctUntilChangedBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    /**
+     * The source Observable that emits a range of integers.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * Key selector: identity function (Integer -> Integer).
+     */
+    private static final Function<Integer, Integer> IDENTITY = v -> v;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits a sequential range of integers.
+        source = Observable.range(1, size);
+    }
+
+    /**
+     * Benchmark that subscribes to the source, applies {@code distinctUntilChanged}
+     * with an identity key selector, and consumes all emitted items via {@link Blackhole}.
+     *
+     * The subscription is performed using {@code blockingSubscribe} to ensure the
+     * benchmark measures the complete processing of the stream.
+     *
+     * @param bh Blackhole to consume the items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void distinctUntilChanged(Blackhole bh) {
+        source.distinctUntilChanged(IDENTITY).blockingSubscribe(bh::consume);
+    }
+}

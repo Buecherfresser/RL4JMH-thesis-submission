@@ -1,0 +1,125 @@
+package io.reactivex.rxjava3.internal.disposables;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link ListCompositeDisposable}.
+ *
+ * The benchmarks focus on the most frequently used public operations:
+ * add, addAll, remove, clear and dispose. Each benchmark runs in
+ * {@link Mode#Throughput} to measure how many operations can be performed
+ * per time unit under a warm JVM.
+ *
+ * Best‑practice JMH settings are applied:
+ * - 5 warm‑up iterations (1 s each) to let the JIT stabilize.
+ * - 10 measurement iterations (1 s each) for reliable results.
+ * - 3 forks to isolate JVMs.
+ * - {@code @State(Scope.Thread)} to avoid cross‑thread interference.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(3)
+@State(Scope.Thread)
+public class ListCompositeDisposableBenchmark {
+
+    /**
+     * Number of dummy disposables used in each benchmark iteration.
+     */
+    private static final int SIZE = 128;
+
+    /**
+     * The composite under test.
+     */
+    private ListCompositeDisposable composite;
+
+    /**
+     * Pre‑created disposables to avoid allocation overhead during the benchmark.
+     */
+    private Disposable[] disposables;
+
+    /**
+     * A second set of disposables used for remove/clear tests.
+     */
+    private Disposable[] otherDisposables;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        composite = new ListCompositeDisposable();
+        disposables = new Disposable[SIZE];
+        otherDisposables = new Disposable[SIZE];
+        for (int i = 0; i < SIZE; i++) {
+            disposables[i] = Disposable.empty();
+            otherDisposables[i] = Disposable.empty();
+        }
+    }
+
+    @Benchmark
+    public void addSingle() {
+        for (Disposable d : disposables) {
+            composite.add(d);
+        }
+    }
+
+    @Benchmark
+    public void addAllVarargs() {
+        composite.addAll(disposables);
+    }
+
+    @Benchmark
+    public void removeSingle() {
+        // first fill the composite
+        composite.addAll(disposables);
+        // then remove one by one
+        for (Disposable d : disposables) {
+            composite.remove(d);
+        }
+    }
+
+    @Benchmark
+    public void clear() {
+        composite.addAll(disposables);
+        composite.clear();
+    }
+
+    @Benchmark
+    public void dispose() {
+        composite.addAll(disposables);
+        composite.dispose();
+    }
+}

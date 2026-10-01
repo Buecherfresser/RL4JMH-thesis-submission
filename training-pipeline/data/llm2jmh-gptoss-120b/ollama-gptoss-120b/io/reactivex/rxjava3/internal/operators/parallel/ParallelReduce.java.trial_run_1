@@ -1,0 +1,100 @@
+```java
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.parallel.ParallelReduce}
+ * using a parallel reduction of integers to their sum.
+ *
+ * The benchmark runs in {@link Mode#Throughput} to measure how many
+ * reductions can be performed per second under different input sizes
+ * and parallelism levels.
+ *
+ * Best practices applied:
+ * - @State objects are reused across iterations to avoid allocation overhead.
+ * - @Setup prepares immutable data structures.
+ * - Blackhole is used to consume the result and prevent dead-code elimination.
+ * - Warmup and measurement iterations are configured to let the JIT stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Benchmark)
+public class ParallelReduceBenchmark {
+
+    /**
+     * Number of elements in the source Flowable.
+     */
+    @Param({ "1000", "10000", "100000", "1000000" })
+    public int size;
+
+    /**
+     * Parallelism level (number of rails).
+     */
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    private ParallelFlowable<Integer> source;
+
+    private Supplier<Integer> initialSupplier;
+
+    private BiFunction<Integer, Integer, Integer> reducer;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a hot source that can be subscribed to repeatedly without reallocation.
+        source = Flowable.range(1, size).parallel(parallelism).runOn(Schedulers.computation());
+        // Simple sum reduction.
+        initialSupplier = () -> 0;
+        reducer = (sum, value) -> sum + value;
+    }
+
+    // No explicit teardown; the computation scheduler will be shut down automatically
+    // when the JVM exits or after each fork, avoiding premature shutdown between
+    // parameter runs in a non‑forked execution.
+
+    @Benchmark
+    public void parallelReduceSum(Blackhole bh) {
+        // Perform the parallel reduction and block until the final result is available.
+        // The result is consumed by Blackhole to prevent dead‑code elimination.
+        Integer result = source.reduce(initialSupplier, reducer).sequential().blockingFirst();
+        bh.consume(result);
+    }
+}
+```

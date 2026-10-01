@@ -1,0 +1,58 @@
+```
+package io.reactivex.rxjava3.internal.operators.single;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.Supplier;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link SingleFromSupplier}.
+ *
+ * Measures the throughput of subscribing to a {@code Single} that emits a value
+ * supplied by a {@link Supplier}. The benchmark uses {@code blockingGet()} to
+ * force the subscription to complete synchronously, ensuring that the measured
+ * work includes the full operator path.
+ *
+ * Best‑practice JMH settings (warm‑up, measurement, forks) are applied to
+ * obtain reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class SingleFromSupplierBenchmark {
+
+    /** Supplier used by the benchmark – returns a constant integer. */
+    private Supplier<Integer> supplier;
+
+    /** Single instance created from the supplier. */
+    private Single<Integer> single;
+
+    /**
+     * Set up the benchmark state. Executed once per fork.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        supplier = () -> 42;
+        single = new SingleFromSupplier<>(supplier);
+    }
+
+    /**
+     * Benchmark method that subscribes to the {@code Single} and retrieves the
+     * emitted value synchronously. The result is consumed by a {@link Blackhole}
+     * to prevent dead‑code elimination.
+     *
+     * @param bh Blackhole to consume the result.
+     */
+    @Benchmark
+    public void subscribeAndBlock(Blackhole bh) {
+        int value = single.blockingGet();
+        bh.consume(value);
+    }
+}
+```

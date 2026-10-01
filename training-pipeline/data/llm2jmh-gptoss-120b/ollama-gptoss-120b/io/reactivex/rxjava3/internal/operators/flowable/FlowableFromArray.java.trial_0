@@ -1,0 +1,133 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableFromArray;
+import io.reactivex.rxjava3.operators.ConditionalSubscriber;
+import io.reactivex.rxjava3.subscribers.DefaultSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableFromArray}.
+ *
+ * Measures throughput of the operator in different scenarios:
+ * - Fast path (unbounded request)
+ * - Slow path (bounded request)
+ * - With and without ConditionalSubscriber
+ *
+ * The benchmark follows best practices:
+ * - Use @State to share immutable data per thread
+ * - Use @Param to vary array size and mode
+ * - Consume values via Blackhole to avoid dead‑code elimination
+ * - Warm‑up and measurement iterations are defined
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableFromArrayBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        @Param({"10", "1000", "100000"})
+        public int arraySize;
+
+        @Param({"FAST", "SLOW"})
+        public Mode mode;
+
+        @Param({"true", "false"})
+        public boolean conditional;
+
+        Integer[] data;
+
+        Flowable<Integer> flowable;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            data = new Integer[arraySize];
+            for (int i = 0; i < arraySize; i++) {
+                data[i] = i;
+            }
+            flowable = new FlowableFromArray<>(data);
+        }
+    }
+
+    @Benchmark
+    public void subscribeAndConsume(BenchmarkState state, Blackhole bh) {
+        if (state.conditional) {
+            ConditionalSubscriber<Integer> subscriber = new ConditionalSubscriber<Integer>() {
+                @Override
+                public void onSubscribe(org.reactivestreams.Subscription s) {
+                    // request according to mode
+                    if (state.mode == Mode.FAST) {
+                        s.request(Long.MAX_VALUE);
+                    } else {
+                        s.request(state.arraySize);
+                    }
+                }
+
+                @Override
+                public void onNext(Integer integer) {
+                    // not used, tryOnNext is preferred
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    t.printStackTrace();
+                }
+
+                @Override
+                public void onComplete() {
+                    // no-op
+                }
+
+                @Override
+                public boolean tryOnNext(Integer t) {
+                    bh.consume(t);
+                    return true; // count every element as "accepted"
+                }
+            };
+            state.flowable.subscribe(subscriber);
+        } else {
+            DefaultSubscriber<Integer> subscriber = new DefaultSubscriber<Integer>() {
+                @Override
+                public void onStart() {
+                    // request according to mode
+                    if (state.mode == Mode.FAST) {
+                        request(Long.MAX_VALUE);
+                    } else {
+                        request(state.arraySize);
+                    }
+                }
+
+                @Override
+                public void onNext(Integer t) {
+                    bh.consume(t);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    t.printStackTrace();
+                }
+
+                @Override
+                public void onComplete() {
+                    // no-op
+                }
+            };
+            // DefaultSubscriber implements onStart() which is called by RxJava's subscribe()
+            state.flowable.subscribe(subscriber);
+        }
+    }
+
+    public enum Mode {
+        FAST,
+        SLOW
+    }
+}
+```

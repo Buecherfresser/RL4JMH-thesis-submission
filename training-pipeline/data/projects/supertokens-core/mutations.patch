@@ -1,0 +1,604 @@
+diff --git a/io/supertokens/webserver/InputParser.java b/io/supertokens/webserver/InputParser.java
+index b100287..e644d43 100644
+--- a/io/supertokens/webserver/InputParser.java
++++ b/io/supertokens/webserver/InputParser.java
+@@ -30,7 +30,7 @@ import java.util.Arrays;
+ 
+ public class InputParser {
+     public static JsonObject parseJsonObjectOrThrowError(HttpServletRequest request)
+-            throws ServletException, IOException {
++            throws ServletException, IOException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(1);
+         StringBuilder sb = new StringBuilder();
+         try (BufferedReader reader = request.getReader()) {
+             String line;
+@@ -46,7 +46,7 @@ public class InputParser {
+     }
+ 
+     public static String getQueryParamOrThrowError(HttpServletRequest request, String fieldName, boolean nullable)
+-            throws ServletException {
++            throws ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(3);
+         String value = request.getParameter(fieldName);
+         if (!nullable && value == null) {
+             throw new ServletException(
+diff --git a/io/supertokens/webserver/PathRouter.java b/io/supertokens/webserver/PathRouter.java
+index 7bbc340..491787d 100644
+--- a/io/supertokens/webserver/PathRouter.java
++++ b/io/supertokens/webserver/PathRouter.java
+@@ -34,7 +34,7 @@ public class PathRouter extends WebserverAPI {
+         this.apis = new ArrayList();
+     }
+ 
+-    public void addAPI(WebserverAPI newApi) {
++    public void addAPI(WebserverAPI newApi) { io.supertokens.webserver.jmhbench.MutationSwitch.tick(9);
+         this.apis.add(0, newApi); // add to the front so that the most recent API is checked first
+         for (WebserverAPI api : this.apis) {
+             for (WebserverAPI api2 : this.apis) {
+@@ -46,7 +46,7 @@ public class PathRouter extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(11);
+         return "/";
+     }
+ 
+diff --git a/io/supertokens/webserver/RecipeRouter.java b/io/supertokens/webserver/RecipeRouter.java
+index fe14165..fbfd90c 100644
+--- a/io/supertokens/webserver/RecipeRouter.java
++++ b/io/supertokens/webserver/RecipeRouter.java
+@@ -56,12 +56,12 @@ public class RecipeRouter extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(13);
+         return this.apis[0].getPath();
+     }
+ 
+     @Override
+-    protected boolean versionNeeded(HttpServletRequest req) {
++    protected boolean versionNeeded(HttpServletRequest req) { io.supertokens.webserver.jmhbench.MutationSwitch.tick(15);
+         return getAPIThatMatchesRID(req).versionNeeded(req);
+     }
+ 
+diff --git a/io/supertokens/webserver/RequestStats.java b/io/supertokens/webserver/RequestStats.java
+index 164ae5a..af65bfd 100644
+--- a/io/supertokens/webserver/RequestStats.java
++++ b/io/supertokens/webserver/RequestStats.java
+@@ -93,7 +93,7 @@ public class RequestStats extends ResourceDistributor.SingletonResource {
+         currentMinuteRequestCounts[(int) (currentSecond % 60)]++;
+     }
+ 
+-    public static RequestStats getInstance(Main main, AppIdentifier appIdentifier) throws TenantOrAppNotFoundException {
++    public static RequestStats getInstance(Main main, AppIdentifier appIdentifier) throws TenantOrAppNotFoundException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(17);
+         try {
+             return (RequestStats) main.getResourceDistributor()
+                     .getResource(appIdentifier.getAsPublicTenantIdentifier(), RESOURCE_KEY);
+@@ -111,7 +111,7 @@ public class RequestStats extends ResourceDistributor.SingletonResource {
+         }
+     }
+ 
+-    public void updateRequestStats() {
++    public void updateRequestStats() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(19);
+         this.updateRequestStats(true);
+     }
+ 
+diff --git a/io/supertokens/webserver/Utils.java b/io/supertokens/webserver/Utils.java
+index f730bc3..9a0c830 100644
+--- a/io/supertokens/webserver/Utils.java
++++ b/io/supertokens/webserver/Utils.java
+@@ -26,7 +26,7 @@ public class Utils {
+ 
+     public static final List<String> INVALID_WORDS_FOR_TENANTID = List.of("recipe", "config", "users", "hello");
+ 
+-    public static String normalizeAndValidateStringParam(String param, String paramName) throws ServletException {
++    public static String normalizeAndValidateStringParam(String param, String paramName) throws ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(5);
+         param = param.trim();
+         if (param.length() == 0) {
+             throw new ServletException(
+@@ -35,7 +35,7 @@ public class Utils {
+         return param;
+     }
+ 
+-    public static String normalizeAndValidateConnectionUriDomain(String connectionUriDomain) throws ServletException {
++    public static String normalizeAndValidateConnectionUriDomain(String connectionUriDomain) throws ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(7);
+         return normalizeAndValidateConnectionUriDomain(connectionUriDomain, true);
+     }
+ 
+diff --git a/io/supertokens/webserver/WebServerLogging.java b/io/supertokens/webserver/WebServerLogging.java
+index c8e21da..3a4c552 100644
+--- a/io/supertokens/webserver/WebServerLogging.java
++++ b/io/supertokens/webserver/WebServerLogging.java
+@@ -34,7 +34,7 @@ public class WebServerLogging extends Handler {
+     }
+ 
+     @Override
+-    public void publish(LogRecord record) {
++    public void publish(LogRecord record) { io.supertokens.webserver.jmhbench.MutationSwitch.tick(21);
+         StringBuilder sb = new StringBuilder();
+ 
+         sb.append(CoreConstants.LINE_SEPARATOR);
+@@ -64,6 +64,6 @@ public class WebServerLogging extends Handler {
+     }
+ 
+     @Override
+-    public void close() {
++    public void close() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(23);
+     }
+ }
+diff --git a/io/supertokens/webserver/Webserver.java b/io/supertokens/webserver/Webserver.java
+index d3b90d0..2731294 100644
+--- a/io/supertokens/webserver/Webserver.java
++++ b/io/supertokens/webserver/Webserver.java
+@@ -211,7 +211,7 @@ public class Webserver extends ResourceDistributor.SingletonResource {
+         this.pathRouter = new PathRouter(main);
+     }
+ 
+-    public static Webserver getInstance(Main main) {
++    public static Webserver getInstance(Main main) { io.supertokens.webserver.jmhbench.MutationSwitch.tick(25);
+         try {
+             return (Webserver) main.getResourceDistributor()
+                     .getResource(new TenantIdentifier(null, null, null), RESOURCE_KEY);
+@@ -221,7 +221,7 @@ public class Webserver extends ResourceDistributor.SingletonResource {
+         }
+     }
+ 
+-    public void start() {
++    public void start() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(27);
+         if (tomcatReference != null || Thread.currentThread() != main.getMainThread()) {
+             return;
+         }
+diff --git a/io/supertokens/webserver/api/accountlinking/CanCreatePrimaryUserAPI.java b/io/supertokens/webserver/api/accountlinking/CanCreatePrimaryUserAPI.java
+index f0a7079..2e93d43 100644
+--- a/io/supertokens/webserver/api/accountlinking/CanCreatePrimaryUserAPI.java
++++ b/io/supertokens/webserver/api/accountlinking/CanCreatePrimaryUserAPI.java
+@@ -46,12 +46,12 @@ public class CanCreatePrimaryUserAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(42);
+         return "/recipe/accountlinking/user/primary/check";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(43);
+         // API is app specific
+         String inputRecipeUserId = InputParser.getQueryParamOrThrowError(req, "recipeUserId", false);
+ 
+diff --git a/io/supertokens/webserver/api/accountlinking/CanLinkAccountsAPI.java b/io/supertokens/webserver/api/accountlinking/CanLinkAccountsAPI.java
+index 4c3941a..d77d20f 100644
+--- a/io/supertokens/webserver/api/accountlinking/CanLinkAccountsAPI.java
++++ b/io/supertokens/webserver/api/accountlinking/CanLinkAccountsAPI.java
+@@ -48,12 +48,12 @@ public class CanLinkAccountsAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(44);
+         return "/recipe/accountlinking/user/link/check";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(45);
+         // API is app specific
+         String inputRecipeUserId = InputParser.getQueryParamOrThrowError(req, "recipeUserId", false);
+         String inputPrimaryUserId = InputParser.getQueryParamOrThrowError(req, "primaryUserId", false);
+diff --git a/io/supertokens/webserver/api/accountlinking/CreatePrimaryUserAPI.java b/io/supertokens/webserver/api/accountlinking/CreatePrimaryUserAPI.java
+index 8bfa348..0788b2f 100644
+--- a/io/supertokens/webserver/api/accountlinking/CreatePrimaryUserAPI.java
++++ b/io/supertokens/webserver/api/accountlinking/CreatePrimaryUserAPI.java
+@@ -48,12 +48,12 @@ public class CreatePrimaryUserAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(46);
+         return "/recipe/accountlinking/user/primary";
+     }
+ 
+     @Override
+-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(47);
+         // API is app specific
+         JsonObject input = InputParser.parseJsonObjectOrThrowError(req);
+         String inputRecipeUserId = InputParser.parseStringOrThrowError(input, "recipeUserId", false);
+diff --git a/io/supertokens/webserver/api/accountlinking/LinkAccountsAPI.java b/io/supertokens/webserver/api/accountlinking/LinkAccountsAPI.java
+index c2c826e..d5de968 100644
+--- a/io/supertokens/webserver/api/accountlinking/LinkAccountsAPI.java
++++ b/io/supertokens/webserver/api/accountlinking/LinkAccountsAPI.java
+@@ -51,12 +51,12 @@ public class LinkAccountsAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(48);
+         return "/recipe/accountlinking/user/link";
+     }
+ 
+     @Override
+-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(49);
+         // API is app specific
+         JsonObject input = InputParser.parseJsonObjectOrThrowError(req);
+         String inputRecipeUserId = InputParser.parseStringOrThrowError(input, "recipeUserId", false);
+diff --git a/io/supertokens/webserver/api/accountlinking/UnlinkAccountAPI.java b/io/supertokens/webserver/api/accountlinking/UnlinkAccountAPI.java
+index 80386c9..bd239a0 100644
+--- a/io/supertokens/webserver/api/accountlinking/UnlinkAccountAPI.java
++++ b/io/supertokens/webserver/api/accountlinking/UnlinkAccountAPI.java
+@@ -44,7 +44,7 @@ public class UnlinkAccountAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(50);
+         return "/recipe/accountlinking/user/unlink";
+     }
+ 
+diff --git a/io/supertokens/webserver/api/core/ListUsersByAccountInfoAPI.java b/io/supertokens/webserver/api/core/ListUsersByAccountInfoAPI.java
+index deef164..feb0d22 100644
+--- a/io/supertokens/webserver/api/core/ListUsersByAccountInfoAPI.java
++++ b/io/supertokens/webserver/api/core/ListUsersByAccountInfoAPI.java
+@@ -44,12 +44,12 @@ public class ListUsersByAccountInfoAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(2);
+         return "/users/by-accountinfo";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(4);
+         // API is tenant specific.
+         String email = InputParser.getQueryParamOrThrowError(req, "email", true);
+         String phoneNumber = Utils.normalizeIfPhoneNumber(
+diff --git a/io/supertokens/webserver/api/emailpassword/Utils.java b/io/supertokens/webserver/api/emailpassword/Utils.java
+index baf33f0..6434668 100644
+--- a/io/supertokens/webserver/api/emailpassword/Utils.java
++++ b/io/supertokens/webserver/api/emailpassword/Utils.java
+@@ -27,7 +27,7 @@ import jakarta.servlet.ServletException;
+ 
+ public class Utils {
+     public static void assertIfEmailPasswordIsEnabledForTenant(Main main, TenantIdentifier tenantIdentifier,
+-                                                               SemVer version) throws ServletException {
++                                                               SemVer version) throws ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(6);
+         TenantConfig config = Multitenancy.getTenantInfo(main, tenantIdentifier);
+         if (!MultitenancyHelper.isEmailPasswordEnabled(config, version)) {
+             throw new ServletException(new BadPermissionException("Email password login not enabled for tenant"));
+diff --git a/io/supertokens/webserver/api/multitenancy/ListAppsAPI.java b/io/supertokens/webserver/api/multitenancy/ListAppsAPI.java
+index a3c4a9e..747386c 100644
+--- a/io/supertokens/webserver/api/multitenancy/ListAppsAPI.java
++++ b/io/supertokens/webserver/api/multitenancy/ListAppsAPI.java
+@@ -48,12 +48,12 @@ public class ListAppsAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(8);
+         return "/recipe/multitenancy/app/list";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(10);
+         try {
+             TenantIdentifier tenantIdentifier = getTenantIdentifier(req);
+             Storage storage = this.getTenantStorage(req);
+diff --git a/io/supertokens/webserver/api/multitenancy/ListAppsV2API.java b/io/supertokens/webserver/api/multitenancy/ListAppsV2API.java
+index 7ea91d3..6e3b647 100644
+--- a/io/supertokens/webserver/api/multitenancy/ListAppsV2API.java
++++ b/io/supertokens/webserver/api/multitenancy/ListAppsV2API.java
+@@ -46,12 +46,12 @@ public class ListAppsV2API extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(12);
+         return "/recipe/multitenancy/app/list/v2";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(14);
+         try {
+             TenantIdentifier tenantIdentifier = getTenantIdentifier(req);
+             Storage storage = this.getTenantStorage(req);
+diff --git a/io/supertokens/webserver/api/multitenancy/ListConnectionUriDomainsAPI.java b/io/supertokens/webserver/api/multitenancy/ListConnectionUriDomainsAPI.java
+index 1b3608e..394654e 100644
+--- a/io/supertokens/webserver/api/multitenancy/ListConnectionUriDomainsAPI.java
++++ b/io/supertokens/webserver/api/multitenancy/ListConnectionUriDomainsAPI.java
+@@ -48,12 +48,12 @@ public class ListConnectionUriDomainsAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(16);
+         return "/recipe/multitenancy/connectionuridomain/list";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(18);
+         try {
+             TenantIdentifier tenantIdentifier = getTenantIdentifier(req);
+             Storage storage = this.getTenantStorage(req);
+diff --git a/io/supertokens/webserver/api/multitenancy/ListConnectionUriDomainsV2API.java b/io/supertokens/webserver/api/multitenancy/ListConnectionUriDomainsV2API.java
+index 315dd9a..7e5fd8c 100644
+--- a/io/supertokens/webserver/api/multitenancy/ListConnectionUriDomainsV2API.java
++++ b/io/supertokens/webserver/api/multitenancy/ListConnectionUriDomainsV2API.java
+@@ -46,12 +46,12 @@ public class ListConnectionUriDomainsV2API extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(20);
+         return "/recipe/multitenancy/connectionuridomain/list/v2";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(22);
+         try {
+             TenantIdentifier tenantIdentifier = getTenantIdentifier(req);
+             Storage storage = this.getTenantStorage(req);
+diff --git a/io/supertokens/webserver/api/multitenancy/ListTenantsAPI.java b/io/supertokens/webserver/api/multitenancy/ListTenantsAPI.java
+index 755c85f..8c29e2a 100644
+--- a/io/supertokens/webserver/api/multitenancy/ListTenantsAPI.java
++++ b/io/supertokens/webserver/api/multitenancy/ListTenantsAPI.java
+@@ -44,12 +44,12 @@ public class ListTenantsAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(24);
+         return "/recipe/multitenancy/tenant/list";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(26);
+         try {
+             TenantIdentifier tenantIdentifier = getTenantIdentifier(req);
+             Storage storage = getTenantStorage(req);
+diff --git a/io/supertokens/webserver/api/multitenancy/ListTenantsV2API.java b/io/supertokens/webserver/api/multitenancy/ListTenantsV2API.java
+index 3200e92..a41d7b7 100644
+--- a/io/supertokens/webserver/api/multitenancy/ListTenantsV2API.java
++++ b/io/supertokens/webserver/api/multitenancy/ListTenantsV2API.java
+@@ -42,12 +42,12 @@ public class ListTenantsV2API extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(28);
+         return "/recipe/multitenancy/tenant/list/v2";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(29);
+         try {
+             TenantIdentifier tenantIdentifier = getTenantIdentifier(req);
+             Storage storage = getTenantStorage(req);
+diff --git a/io/supertokens/webserver/api/oauth/OAuthClientListAPI.java b/io/supertokens/webserver/api/oauth/OAuthClientListAPI.java
+index 0d9a2e7..ee10f0a 100644
+--- a/io/supertokens/webserver/api/oauth/OAuthClientListAPI.java
++++ b/io/supertokens/webserver/api/oauth/OAuthClientListAPI.java
+@@ -41,12 +41,12 @@ public class OAuthClientListAPI extends WebserverAPI {
+     }
+     
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(30);
+         return "/recipe/oauth/clients/list";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(31);
+         try {
+             AppIdentifier appIdentifier = getAppIdentifier(req);
+             Storage storage = enforcePublicTenantAndGetPublicTenantStorage(req);
+diff --git a/io/supertokens/webserver/api/passwordless/Utils.java b/io/supertokens/webserver/api/passwordless/Utils.java
+index a9c32ce..af3f3aa 100644
+--- a/io/supertokens/webserver/api/passwordless/Utils.java
++++ b/io/supertokens/webserver/api/passwordless/Utils.java
+@@ -27,7 +27,7 @@ import jakarta.servlet.ServletException;
+ 
+ public class Utils {
+     public static void assertIfPasswordlessIsEnabledForTenant(Main main, TenantIdentifier tenantIdentifier,
+-                                                              SemVer version) throws ServletException {
++                                                              SemVer version) throws ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(32);
+         TenantConfig config = Multitenancy.getTenantInfo(main, tenantIdentifier);
+         if (!MultitenancyHelper.isPasswordlessEnabled(config, version)) {
+             throw new ServletException(new BadPermissionException("Passwordless login not enabled for tenant"));
+diff --git a/io/supertokens/webserver/api/saml/ListSamlClientsAPI.java b/io/supertokens/webserver/api/saml/ListSamlClientsAPI.java
+index 11cb808..883050e 100644
+--- a/io/supertokens/webserver/api/saml/ListSamlClientsAPI.java
++++ b/io/supertokens/webserver/api/saml/ListSamlClientsAPI.java
+@@ -39,12 +39,12 @@ public class ListSamlClientsAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(33);
+         return "/recipe/saml/clients/list";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(34);
+ 
+         try {
+             List<SAMLClient> clients = SAML.getClients(getTenantIdentifier(req), getTenantStorage(req));
+diff --git a/io/supertokens/webserver/api/thirdparty/Utils.java b/io/supertokens/webserver/api/thirdparty/Utils.java
+index 0bd0391..c3afdcd 100644
+--- a/io/supertokens/webserver/api/thirdparty/Utils.java
++++ b/io/supertokens/webserver/api/thirdparty/Utils.java
+@@ -27,7 +27,7 @@ import jakarta.servlet.ServletException;
+ 
+ public class Utils {
+     public static void assertIfThirdPartyIsEnabledForTenant(Main main, TenantIdentifier tenantIdentifier,
+-                                                            SemVer version) throws ServletException {
++                                                            SemVer version) throws ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(35);
+         TenantConfig config = Multitenancy.getTenantInfo(main, tenantIdentifier);
+         if (!MultitenancyHelper.isThirdPartyEnabled(config, version)) {
+             throw new ServletException(new BadPermissionException("ThirdParty login not enabled for tenant"));
+diff --git a/io/supertokens/webserver/api/useridmapping/RemoveUserIdMappingAPI.java b/io/supertokens/webserver/api/useridmapping/RemoveUserIdMappingAPI.java
+index 28a6294..1bf3f90 100644
+--- a/io/supertokens/webserver/api/useridmapping/RemoveUserIdMappingAPI.java
++++ b/io/supertokens/webserver/api/useridmapping/RemoveUserIdMappingAPI.java
+@@ -44,12 +44,12 @@ public class RemoveUserIdMappingAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(36);
+         return "/recipe/userid/map/remove";
+     }
+ 
+     @Override
+-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(37);
+         // this API is app specific
+         JsonObject input = InputParser.parseJsonObjectOrThrowError(req);
+ 
+diff --git a/io/supertokens/webserver/api/useridmapping/UserIdMappingAPI.java b/io/supertokens/webserver/api/useridmapping/UserIdMappingAPI.java
+index fc05894..a5251cf 100644
+--- a/io/supertokens/webserver/api/useridmapping/UserIdMappingAPI.java
++++ b/io/supertokens/webserver/api/useridmapping/UserIdMappingAPI.java
+@@ -48,12 +48,12 @@ public class UserIdMappingAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(38);
+         return "/recipe/userid/map";
+     }
+ 
+     @Override
+-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(39);
+         // this API is specific to app
+         JsonObject input = InputParser.parseJsonObjectOrThrowError(req);
+ 
+diff --git a/io/supertokens/webserver/api/webauthn/ListCredentialsAPI.java b/io/supertokens/webserver/api/webauthn/ListCredentialsAPI.java
+index 19b4195..94653d0 100644
+--- a/io/supertokens/webserver/api/webauthn/ListCredentialsAPI.java
++++ b/io/supertokens/webserver/api/webauthn/ListCredentialsAPI.java
+@@ -41,12 +41,12 @@ public class ListCredentialsAPI extends WebserverAPI {
+     }
+ 
+     @Override
+-    public String getPath() {
++    public String getPath() { io.supertokens.webserver.jmhbench.MutationSwitch.tick(40);
+         return "/recipe/webauthn/user/credential/list";
+     }
+ 
+     @Override
+-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException { io.supertokens.webserver.jmhbench.MutationSwitch.tick(41);
+         try {
+             Storage storage = getTenantStorage(req);
+             TenantIdentifier tenantIdentifier = getTenantIdentifier(req);
+diff --git a/io/supertokens/webserver/jmhbench/MutationSwitch.java b/io/supertokens/webserver/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..66dc2c3
+--- /dev/null
++++ b/io/supertokens/webserver/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.supertokens.webserver.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

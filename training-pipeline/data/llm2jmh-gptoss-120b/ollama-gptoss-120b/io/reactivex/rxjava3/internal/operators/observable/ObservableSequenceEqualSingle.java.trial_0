@@ -1,0 +1,79 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.operators.observable;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.BiPredicate;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableSequenceEqualSingle;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableSequenceEqualSingle}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * sequence-equal operator when comparing two synchronous Observable streams.
+ *
+ * Best practices applied:
+ * - Use @State to share immutable test data across benchmark iterations.
+ * - Parameterize the size of the streams and the internal buffer size.
+ * - Use blockingGet() to ensure the Single completes before measurement.
+ * - Consume the result with Blackhole to prevent dead-code elimination.
+ * - Provide warm‑up, measurement, and fork settings.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class ObservableSequenceEqualSingleBenchmark {
+
+    /** Number of items emitted by each source Observable. */
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    /** Internal buffer size used by the operator. */
+    @Param({"16", "64", "256"})
+    public int bufferSize;
+
+    private Observable<Integer> source1;
+    private Observable<Integer> source2;
+    private BiPredicate<Integer, Integer> comparer;
+    private ObservableSequenceEqualSingle<Integer> sequenceEqualSingle;
+
+    /**
+     * Set up the sources and the operator before each benchmark iteration.
+     * The sources are synchronous and emit a range of integers.
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        source1 = Observable.range(0, size);
+        source2 = Observable.range(0, size);
+        comparer = Objects::equals;
+
+        sequenceEqualSingle = new ObservableSequenceEqualSingle<>(
+                source1,
+                source2,
+                comparer,
+                bufferSize
+        );
+    }
+
+    /**
+     * Benchmark method that subscribes to the {@code ObservableSequenceEqualSingle}
+     * and blocks until the result is available.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void sequenceEqualThroughput(Blackhole bh) {
+        // blockingGet() forces the Single to run to completion synchronously.
+        Single<Boolean> result = sequenceEqualSingle;
+        bh.consume(result.blockingGet());
+    }
+}
+```

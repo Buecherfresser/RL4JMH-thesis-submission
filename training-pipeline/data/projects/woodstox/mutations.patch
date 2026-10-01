@@ -1,0 +1,1069 @@
+diff --git a/com/ctc/wstx/api/ReaderConfig.java b/com/ctc/wstx/api/ReaderConfig.java
+index 9934ae2..eaf7e61 100644
+--- a/com/ctc/wstx/api/ReaderConfig.java
++++ b/com/ctc/wstx/api/ReaderConfig.java
+@@ -585,7 +585,7 @@ public final class ReaderConfig
+     }
+ 
+     public static ReaderConfig createJ2MEDefaults()
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(1);
+         /* For J2ME we'll use slightly smaller buffer sizes by
+          * default, on assumption lower memory usage is desireable:
+          */
+@@ -598,7 +598,7 @@ public final class ReaderConfig
+     }
+ 
+     public static ReaderConfig createFullDefaults()
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(16);
+         /* For full version, can use bit larger buffers to achieve better
+          * overall performance.
+          */
+diff --git a/com/ctc/wstx/api/ValidatorConfig.java b/com/ctc/wstx/api/ValidatorConfig.java
+index 60f7c2c..70f4fad 100644
+--- a/com/ctc/wstx/api/ValidatorConfig.java
++++ b/com/ctc/wstx/api/ValidatorConfig.java
+@@ -14,7 +14,7 @@ public final class ValidatorConfig
+     }
+ 
+     public static ValidatorConfig createDefaults()
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(30);
+         /* For now, since there are no mutable properties, we can share
+          * a singleton instance.
+          */
+@@ -22,7 +22,7 @@ public final class ValidatorConfig
+     }
+ 
+     @Override
+-    protected int findPropertyId(String propName) {
++    protected int findPropertyId(String propName) { com.ctc.wstx.jmhbench.MutationSwitch.tick(44);
+         // Nothing above and beyond default settings...
+         return -1;
+     }
+diff --git a/com/ctc/wstx/cfg/ErrorConsts.java b/com/ctc/wstx/cfg/ErrorConsts.java
+index c2840eb..996089c 100644
+--- a/com/ctc/wstx/cfg/ErrorConsts.java
++++ b/com/ctc/wstx/cfg/ErrorConsts.java
+@@ -161,7 +161,7 @@ public class ErrorConsts
+      */
+ 
+     public static String tokenTypeDesc(int type)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(2);
+         switch (type) {
+         case START_ELEMENT:
+             return "START_ELEMENT";
+diff --git a/com/ctc/wstx/dom/DOMOutputElement.java b/com/ctc/wstx/dom/DOMOutputElement.java
+index 17a898a..420c6eb 100644
+--- a/com/ctc/wstx/dom/DOMOutputElement.java
++++ b/com/ctc/wstx/dom/DOMOutputElement.java
+@@ -1,216 +1,216 @@
+-package com.ctc.wstx.dom;
+-
+-import javax.xml.namespace.NamespaceContext;
+-
+-import org.w3c.dom.Element;
+-import org.w3c.dom.Node;
+-
+-import com.ctc.wstx.sw.OutputElementBase;
+-import com.ctc.wstx.util.BijectiveNsMap;
+-
+-/**
+- * Context object that holds information about an open element
+- * (one for which START_ELEMENT has been sent, but no END_ELEMENT)
+- */
+-public final class DOMOutputElement
+-    extends OutputElementBase
+-{
+-    /**
+-     * Reference to the parent element, element enclosing this element.
+-     * Null for root element.
+-     * Non-final to allow temporary pooling
+-     * (on per-writer basis, to keep these short-lived).
+-     */
+-    private DOMOutputElement mParent;
+-
+-    /**
+-     * DOM node that is the root under which content is written, in case
+-     * where there is no parent (mParent == null). If mParent is not null,
+-     * this will be null.
+-     * Value is of type
+-     * {@link Document}, {@link DocumentFragment} or {@link Element}
+-     */
+-    private final Node mRootNode;
+-    
+-    /**
+-     * Actual DOM element for which this element object acts as a proxy.
+-     */
+-    private Element mElement;
+-
+-    private boolean mDefaultNsSet;
+-
+-    /**
+-     * Constructor for the virtual root element
+-     */
+-    private DOMOutputElement(Node rootNode)
+-    {
+-        super();
+-        mRootNode = rootNode;
+-        mParent = null;
+-        mElement = null;
+-        mNsMapping = null;
+-        mNsMapShared = false;
+-        mDefaultNsURI = "";
+-        mRootNsContext = null;
+-        mDefaultNsSet = false;
+-    }
+-
+-    private DOMOutputElement(DOMOutputElement parent, Element element, BijectiveNsMap ns)
+-    {
+-        super(parent, ns);
+-        mRootNode = null;
+-        mParent = parent;
+-        mElement = element;
+-        mNsMapping = ns;
+-        mNsMapShared = (ns != null);
+-        mDefaultNsURI = parent.mDefaultNsURI;
+-        mRootNsContext = parent.mRootNsContext;
+-        mDefaultNsSet = false;
+-    }
+-
+-    /**
+-     * Method called to reuse a pooled instance.
+-     *
+-     * @returns Chained pooled instance that should now be head of the
+-     *   reuse chain
+-     */
+-    private void relink(DOMOutputElement parent, Element element)
+-    {
+-        super.relink(parent);
+-        mParent = parent;
+-        mElement = element;
+-        parent.appendNode(element);
+-        mDefaultNsSet = false;
+-    }
+-
+-    public static DOMOutputElement createRoot(Node rootNode)
+-    {
+-        return new DOMOutputElement(rootNode);
+-    }
+-    
+-    /**
+-     * Simplest factory method, which gets called when a 1-argument
+-     * element output method is called. It is, then, assumed to
+-     * use the default namespace.
+-     * Will both create the child element and attach it to parent element,
+-     * or lacking own owner document.
+-     */
+-    protected DOMOutputElement createAndAttachChild(Element element)
+-    {
+-        if (mRootNode != null) {
+-            mRootNode.appendChild(element);
+-        } else {
+-            mElement.appendChild(element);
+-        }
+-        return createChild(element);
+-    }
+-
+-    protected DOMOutputElement createChild(Element element)
+-    {
+-        return new DOMOutputElement(this, element, mNsMapping);
+-    }
+-
+-    /**
+-     * @return New head of the recycle pool
+-     */
+-    protected DOMOutputElement reuseAsChild(DOMOutputElement parent, Element element)
+-    {
+-        DOMOutputElement poolHead = mParent;
+-        relink(parent, element);
+-        return poolHead;
+-    }
+-
+-    /**
+-     * Method called to temporarily link this instance to a pool, to
+-     * allow reusing of instances with the same reader.
+-     */
+-    protected void addToPool(DOMOutputElement poolHead)
+-    {
+-        mParent = poolHead;
+-    }
+-    
+-    /*
+-    ///////////////////////////////////////////////////////////////////////
+-    // Public API, accessors
+-    ///////////////////////////////////////////////////////////////////////
+-     */
+-
+-    public DOMOutputElement getParent() {
+-        return mParent;
+-    }
+-
+-    @Override
+-    public boolean isRoot() {
+-        // (Virtual) Root element has no parent...
+-        return (mParent == null);
+-    }
+-    
+-    /**
+-     * @return String presentation of the fully-qualified name, in
+-     *   "prefix:localName" format (no URI). Useful for error and
+-     *   debugging messages.
+-     */
+-    @Override
+-    public String getNameDesc() {
+-        if(mElement != null) {
+-            return mElement.getLocalName();
+-        }
+-        return "#error"; // unexpected case
+-    }
+-    
+-    /*
+-    ///////////////////////////////////////////////////////////////////////
+-    // Public API, mutators
+-    ///////////////////////////////////////////////////////////////////////
+-     */
+-
+-    @Override
+-    public void setDefaultNsUri(String uri) {
+-        mDefaultNsURI = uri;
+-        mDefaultNsSet = true;
+-    }
+-
+-    @Override
+-    protected void setRootNsContext(NamespaceContext ctxt)
+-    {
+-        mRootNsContext = ctxt;
+-        /* Let's also see if we have an active default ns mapping:
+-         * (provided it hasn't yet explicitly been set for this element)
+-         */
+-        if (!mDefaultNsSet) {
+-            String defURI = ctxt.getNamespaceURI("");
+-            if (defURI != null && defURI.length() > 0) {
+-                mDefaultNsURI = defURI;
+-            }
+-        }
+-    }
+-
+-    /*
+-    ///////////////////////////////////////////////////////////////////////
+-    // Public API, DOM manipulation
+-    ///////////////////////////////////////////////////////////////////////
+-     */
+-    
+-    protected void appendNode(Node n)
+-    {
+-        if (mRootNode != null) {
+-            mRootNode.appendChild(n);
+-        } else {
+-            mElement.appendChild(n);
+-        }
+-    }
+-
+-    protected void addAttribute(String pname, String value)
+-    {
+-        mElement.setAttribute(pname, value);
+-    }
+-
+-    protected void addAttribute(String uri, String qname, String value)
+-    {
+-        mElement.setAttributeNS(uri, qname, value);
+-    }
+-
+-    public void appendChild(Node n) {
+-        mElement.appendChild(n);
+-    }
+-}
++package com.ctc.wstx.dom;
++
++import javax.xml.namespace.NamespaceContext;
++
++import org.w3c.dom.Element;
++import org.w3c.dom.Node;
++
++import com.ctc.wstx.sw.OutputElementBase;
++import com.ctc.wstx.util.BijectiveNsMap;
++
++/**
++ * Context object that holds information about an open element
++ * (one for which START_ELEMENT has been sent, but no END_ELEMENT)
++ */
++public final class DOMOutputElement
++    extends OutputElementBase
++{
++    /**
++     * Reference to the parent element, element enclosing this element.
++     * Null for root element.
++     * Non-final to allow temporary pooling
++     * (on per-writer basis, to keep these short-lived).
++     */
++    private DOMOutputElement mParent;
++
++    /**
++     * DOM node that is the root under which content is written, in case
++     * where there is no parent (mParent == null). If mParent is not null,
++     * this will be null.
++     * Value is of type
++     * {@link Document}, {@link DocumentFragment} or {@link Element}
++     */
++    private final Node mRootNode;
++    
++    /**
++     * Actual DOM element for which this element object acts as a proxy.
++     */
++    private Element mElement;
++
++    private boolean mDefaultNsSet;
++
++    /**
++     * Constructor for the virtual root element
++     */
++    private DOMOutputElement(Node rootNode)
++    {
++        super();
++        mRootNode = rootNode;
++        mParent = null;
++        mElement = null;
++        mNsMapping = null;
++        mNsMapShared = false;
++        mDefaultNsURI = "";
++        mRootNsContext = null;
++        mDefaultNsSet = false;
++    }
++
++    private DOMOutputElement(DOMOutputElement parent, Element element, BijectiveNsMap ns)
++    {
++        super(parent, ns);
++        mRootNode = null;
++        mParent = parent;
++        mElement = element;
++        mNsMapping = ns;
++        mNsMapShared = (ns != null);
++        mDefaultNsURI = parent.mDefaultNsURI;
++        mRootNsContext = parent.mRootNsContext;
++        mDefaultNsSet = false;
++    }
++
++    /**
++     * Method called to reuse a pooled instance.
++     *
++     * @returns Chained pooled instance that should now be head of the
++     *   reuse chain
++     */
++    private void relink(DOMOutputElement parent, Element element)
++    {
++        super.relink(parent);
++        mParent = parent;
++        mElement = element;
++        parent.appendNode(element);
++        mDefaultNsSet = false;
++    }
++
++    public static DOMOutputElement createRoot(Node rootNode)
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(3);
++        return new DOMOutputElement(rootNode);
++    }
++    
++    /**
++     * Simplest factory method, which gets called when a 1-argument
++     * element output method is called. It is, then, assumed to
++     * use the default namespace.
++     * Will both create the child element and attach it to parent element,
++     * or lacking own owner document.
++     */
++    protected DOMOutputElement createAndAttachChild(Element element)
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(17);
++        if (mRootNode != null) {
++            mRootNode.appendChild(element);
++        } else {
++            mElement.appendChild(element);
++        }
++        return createChild(element);
++    }
++
++    protected DOMOutputElement createChild(Element element)
++    {
++        return new DOMOutputElement(this, element, mNsMapping);
++    }
++
++    /**
++     * @return New head of the recycle pool
++     */
++    protected DOMOutputElement reuseAsChild(DOMOutputElement parent, Element element)
++    {
++        DOMOutputElement poolHead = mParent;
++        relink(parent, element);
++        return poolHead;
++    }
++
++    /**
++     * Method called to temporarily link this instance to a pool, to
++     * allow reusing of instances with the same reader.
++     */
++    protected void addToPool(DOMOutputElement poolHead)
++    {
++        mParent = poolHead;
++    }
++    
++    /*
++    ///////////////////////////////////////////////////////////////////////
++    // Public API, accessors
++    ///////////////////////////////////////////////////////////////////////
++     */
++
++    public DOMOutputElement getParent() {
++        return mParent;
++    }
++
++    @Override
++    public boolean isRoot() {
++        // (Virtual) Root element has no parent...
++        return (mParent == null);
++    }
++    
++    /**
++     * @return String presentation of the fully-qualified name, in
++     *   "prefix:localName" format (no URI). Useful for error and
++     *   debugging messages.
++     */
++    @Override
++    public String getNameDesc() {
++        if(mElement != null) {
++            return mElement.getLocalName();
++        }
++        return "#error"; // unexpected case
++    }
++    
++    /*
++    ///////////////////////////////////////////////////////////////////////
++    // Public API, mutators
++    ///////////////////////////////////////////////////////////////////////
++     */
++
++    @Override
++    public void setDefaultNsUri(String uri) {
++        mDefaultNsURI = uri;
++        mDefaultNsSet = true;
++    }
++
++    @Override
++    protected void setRootNsContext(NamespaceContext ctxt)
++    {
++        mRootNsContext = ctxt;
++        /* Let's also see if we have an active default ns mapping:
++         * (provided it hasn't yet explicitly been set for this element)
++         */
++        if (!mDefaultNsSet) {
++            String defURI = ctxt.getNamespaceURI("");
++            if (defURI != null && defURI.length() > 0) {
++                mDefaultNsURI = defURI;
++            }
++        }
++    }
++
++    /*
++    ///////////////////////////////////////////////////////////////////////
++    // Public API, DOM manipulation
++    ///////////////////////////////////////////////////////////////////////
++     */
++    
++    protected void appendNode(Node n)
++    {
++        if (mRootNode != null) {
++            mRootNode.appendChild(n);
++        } else {
++            mElement.appendChild(n);
++        }
++    }
++
++    protected void addAttribute(String pname, String value)
++    {
++        mElement.setAttribute(pname, value);
++    }
++
++    protected void addAttribute(String uri, String qname, String value)
++    {
++        mElement.setAttributeNS(uri, qname, value);
++    }
++
++    public void appendChild(Node n) {
++        mElement.appendChild(n);
++    }
++}
+diff --git a/com/ctc/wstx/dom/WstxDOMWrappingReader.java b/com/ctc/wstx/dom/WstxDOMWrappingReader.java
+index daee80e..b8f353d 100644
+--- a/com/ctc/wstx/dom/WstxDOMWrappingReader.java
++++ b/com/ctc/wstx/dom/WstxDOMWrappingReader.java
+@@ -37,7 +37,7 @@ public class WstxDOMWrappingReader
+ 
+     public static WstxDOMWrappingReader createFrom(DOMSource src, ReaderConfig cfg)
+         throws XMLStreamException
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(31);
+         return new WstxDOMWrappingReader(src, cfg);
+     }
+ 
+@@ -48,7 +48,7 @@ public class WstxDOMWrappingReader
+      */
+ 
+     @Override
+-    public boolean isPropertySupported(String name) {
++    public boolean isPropertySupported(String name) { com.ctc.wstx.jmhbench.MutationSwitch.tick(45);
+         // !!! TBI: not all these properties are really supported
+         return mConfig.isPropertySupported(name);
+     }
+diff --git a/com/ctc/wstx/dtd/LargePrefixedNameSet.java b/com/ctc/wstx/dtd/LargePrefixedNameSet.java
+index 062e9f3..2ee40ab 100644
+--- a/com/ctc/wstx/dtd/LargePrefixedNameSet.java
++++ b/com/ctc/wstx/dtd/LargePrefixedNameSet.java
+@@ -91,7 +91,7 @@ public final class LargePrefixedNameSet
+     }
+ 
+     @Override
+-    public boolean hasMultiple() { return true; }
++    public boolean hasMultiple() { com.ctc.wstx.jmhbench.MutationSwitch.tick(4); return true; }
+ 
+     /**
+      * @return True if the set contains specified name; false if not.
+@@ -126,7 +126,7 @@ public final class LargePrefixedNameSet
+      */
+     @Override
+     public void appendNames(StringBuilder sb, String sep)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(18);
+         // Let's first get the alphabetized list of all names from main hash
+         TreeSet<PrefixedName> ts = new TreeSet<PrefixedName>();
+         for (int i = 0; i < mNames.length; ++i) {
+diff --git a/com/ctc/wstx/dtd/SmallPrefixedNameSet.java b/com/ctc/wstx/dtd/SmallPrefixedNameSet.java
+index 0b5701a..09a2245 100644
+--- a/com/ctc/wstx/dtd/SmallPrefixedNameSet.java
++++ b/com/ctc/wstx/dtd/SmallPrefixedNameSet.java
+@@ -46,7 +46,7 @@ public final class SmallPrefixedNameSet
+     }
+ 
+     @Override
+-    public boolean hasMultiple() {
++    public boolean hasMultiple() { com.ctc.wstx.jmhbench.MutationSwitch.tick(32);
+         return mStrings.length > 1;
+     }
+ 
+@@ -86,7 +86,7 @@ public final class SmallPrefixedNameSet
+ 
+     @Override
+     public void appendNames(StringBuilder sb, String sep)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(46);
+         for (int i = 0; i < mStrings.length; ) {
+             if (i > 0) {
+                 sb.append(sep);
+diff --git a/com/ctc/wstx/ent/IntEntity.java b/com/ctc/wstx/ent/IntEntity.java
+index 939bc23..2b4a113 100644
+--- a/com/ctc/wstx/ent/IntEntity.java
++++ b/com/ctc/wstx/ent/IntEntity.java
+@@ -39,12 +39,12 @@ public class IntEntity
+     }
+ 
+     public static IntEntity create(String id, String repl)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(5);
+         return create(id, repl.toCharArray());
+     }
+ 
+     public static IntEntity create(String id, char[] val)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(19);
+         WstxInputLocation loc = WstxInputLocation.getEmptyLocation();
+         return new IntEntity(loc, id, null, val, loc);
+     }
+diff --git a/com/ctc/wstx/ent/ParsedExtEntity.java b/com/ctc/wstx/ent/ParsedExtEntity.java
+index 5e165cf..a7b8e41 100644
+--- a/com/ctc/wstx/ent/ParsedExtEntity.java
++++ b/com/ctc/wstx/ent/ParsedExtEntity.java
+@@ -23,7 +23,7 @@ public class ParsedExtEntity
+     }
+ 
+     @Override
+-    public String getNotationName() {
++    public String getNotationName() { com.ctc.wstx.jmhbench.MutationSwitch.tick(33);
+         return null;
+     }
+ 
+@@ -35,7 +35,7 @@ public class ParsedExtEntity
+ 
+     @Override
+     public void writeEnc(Writer w) throws IOException
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(47);
+         w.write("<!ENTITY ");
+         w.write(mName);
+         String pubId = getPublicId();
+diff --git a/com/ctc/wstx/evt/CompactStartElement.java b/com/ctc/wstx/evt/CompactStartElement.java
+index 9117a0e..a9f7a57 100644
+--- a/com/ctc/wstx/evt/CompactStartElement.java
++++ b/com/ctc/wstx/evt/CompactStartElement.java
+@@ -75,7 +75,7 @@ public class CompactStartElement
+ 
+     @Override
+     public Attribute getAttributeByName(QName name)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(6);
+         if (mAttrs == null) {
+             return null;
+         }
+@@ -88,7 +88,7 @@ public class CompactStartElement
+ 
+     @Override
+     public Iterator<Attribute> getAttributes()
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(20);
+         if (mAttrList == null) { // List is lazily constructed as needed
+             if (mAttrs == null) {
+                 return DataUtil.emptyIterator();
+diff --git a/com/ctc/wstx/evt/DefaultEventAllocator.java b/com/ctc/wstx/evt/DefaultEventAllocator.java
+index 81ae5ac..8b1a9e9 100644
+--- a/com/ctc/wstx/evt/DefaultEventAllocator.java
++++ b/com/ctc/wstx/evt/DefaultEventAllocator.java
+@@ -90,14 +90,14 @@ public class DefaultEventAllocator
+         mAccurateLocation = accurateLocation;
+     }
+ 
+-    public static DefaultEventAllocator getDefaultInstance() {
++    public static DefaultEventAllocator getDefaultInstance() { com.ctc.wstx.jmhbench.MutationSwitch.tick(34);
+         /* Default (accurate location) instance can be shared as it
+          * has no state
+          */
+         return sStdInstance;
+     }
+ 
+-    public static DefaultEventAllocator getFastInstance() {
++    public static DefaultEventAllocator getFastInstance() { com.ctc.wstx.jmhbench.MutationSwitch.tick(48);
+         /* Can not share instances, due to QName caching, as well as because
+          * of Location object related state
+          */
+diff --git a/com/ctc/wstx/exc/WstxException.java b/com/ctc/wstx/exc/WstxException.java
+index 4245a12..dfe584d 100644
+--- a/com/ctc/wstx/exc/WstxException.java
++++ b/com/ctc/wstx/exc/WstxException.java
+@@ -61,7 +61,7 @@ public class WstxException
+      */
+     @Override
+     public String getMessage()
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(7);
+         String locMsg = getLocationDesc();
+         /* Better not use super's message if we do have location information,
+          * since parent's message contains (part of) Location
+@@ -90,7 +90,7 @@ public class WstxException
+      */
+ 
+     protected String getLocationDesc()
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(21);
+         Location loc = getLocation();
+         return (loc == null) ? null : loc.toString();
+     }
+diff --git a/com/ctc/wstx/exc/WstxLazyException.java b/com/ctc/wstx/exc/WstxLazyException.java
+index 6b97fe4..47ccd6c 100644
+--- a/com/ctc/wstx/exc/WstxLazyException.java
++++ b/com/ctc/wstx/exc/WstxLazyException.java
+@@ -36,7 +36,7 @@ public class WstxLazyException
+ 
+     public static void throwLazily(XMLStreamException ex)
+         throws WstxLazyException
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(35);
+         throw new WstxLazyException(ex);
+     }
+ 
+@@ -45,7 +45,7 @@ public class WstxLazyException
+      * display the location information...
+      */
+     @Override
+-    public String getMessage() {
++    public String getMessage() { com.ctc.wstx.jmhbench.MutationSwitch.tick(49);
+         return "["+getClass().getName()+"] "+mOrig.getMessage();
+     }
+ 
+diff --git a/com/ctc/wstx/io/BufferRecycler.java b/com/ctc/wstx/io/BufferRecycler.java
+index 8d1fdee..060aa48 100644
+--- a/com/ctc/wstx/io/BufferRecycler.java
++++ b/com/ctc/wstx/io/BufferRecycler.java
+@@ -31,7 +31,7 @@ public final class BufferRecycler
+     // // Small buffers, for temporary parsing
+ 
+     public synchronized char[] getSmallCBuffer(int minSize)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(8);
+         char[] result = mSmallCBuffer;
+         if (result != null && result.length >= minSize) {
+             mSmallCBuffer = null;
+@@ -42,7 +42,7 @@ public final class BufferRecycler
+     }
+ 
+     public synchronized void returnSmallCBuffer(char[] buffer)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(22);
+ //System.err.println("DEBUG: Return CSmall ("+buffer.length+"): "+buffer);
+         mSmallCBuffer = buffer;
+     }
+diff --git a/com/ctc/wstx/io/CharArraySource.java b/com/ctc/wstx/io/CharArraySource.java
+index 8a011d5..5428729 100644
+--- a/com/ctc/wstx/io/CharArraySource.java
++++ b/com/ctc/wstx/io/CharArraySource.java
+@@ -33,7 +33,7 @@ public final class CharArraySource
+      * only created from internal entities.
+      */
+     @Override
+-    public boolean fromInternalEntity() {
++    public boolean fromInternalEntity() { com.ctc.wstx.jmhbench.MutationSwitch.tick(36);
+         return true;
+     }
+ 
+@@ -43,7 +43,7 @@ public final class CharArraySource
+      */
+     @Override
+     protected void doInitInputLocation(WstxInputData reader)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(50);
+         reader.mCurrInputProcessed = mContentStart.getCharacterOffset();
+         reader.mCurrInputRow = mContentStart.getLineNumber();
+         /* 13-Apr-2005, TSa: Since column offsets reported by Location
+diff --git a/com/ctc/wstx/jmhbench/MutationSwitch.java b/com/ctc/wstx/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..2d001dc
+--- /dev/null
++++ b/com/ctc/wstx/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.ctc.wstx.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/ctc/wstx/msv/AttributeProxy.java b/com/ctc/wstx/msv/AttributeProxy.java
+index 1ef9ad3..972cefa 100644
+--- a/com/ctc/wstx/msv/AttributeProxy.java
++++ b/com/ctc/wstx/msv/AttributeProxy.java
+@@ -41,7 +41,7 @@ final class AttributeProxy
+ 
+     @Override
+     public int getIndex(String qName)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(9);
+         int cix = qName.indexOf(':');
+         int acount = mContext.getAttributeCount();
+         if (cix < 0) { // no prefix
+@@ -70,7 +70,7 @@ final class AttributeProxy
+     }
+ 
+     @Override
+-    public int getIndex(String uri, String localName) {
++    public int getIndex(String uri, String localName) { com.ctc.wstx.jmhbench.MutationSwitch.tick(23);
+         return mContext.findAttributeIndex(uri, localName);
+     }
+ 
+diff --git a/com/ctc/wstx/msv/GenericMsvValidator.java b/com/ctc/wstx/msv/GenericMsvValidator.java
+index 4be7944..3739540 100644
+--- a/com/ctc/wstx/msv/GenericMsvValidator.java
++++ b/com/ctc/wstx/msv/GenericMsvValidator.java
+@@ -160,7 +160,7 @@ public final class GenericMsvValidator
+      */
+ 
+     @Override
+-    public String getBaseUri() {
++    public String getBaseUri() { com.ctc.wstx.jmhbench.MutationSwitch.tick(37);
+         return mContext.getBaseUri();
+     }
+ 
+diff --git a/com/ctc/wstx/osgi/InputFactoryProviderImpl.java b/com/ctc/wstx/osgi/InputFactoryProviderImpl.java
+index dde1ddb..6fe96ee 100644
+--- a/com/ctc/wstx/osgi/InputFactoryProviderImpl.java
++++ b/com/ctc/wstx/osgi/InputFactoryProviderImpl.java
+@@ -12,12 +12,12 @@ public class InputFactoryProviderImpl
+     implements Stax2InputFactoryProvider
+ {
+     @Override
+-    public XMLInputFactory2 createInputFactory() {
++    public XMLInputFactory2 createInputFactory() { com.ctc.wstx.jmhbench.MutationSwitch.tick(10);
+         return new WstxInputFactory();
+     }
+ 
+     protected Properties getProperties()
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(24);
+         Properties props = new Properties();
+         props.setProperty(OSGI_SVC_PROP_IMPL_NAME, ReaderConfig.getImplName());
+         props.setProperty(OSGI_SVC_PROP_IMPL_VERSION, ReaderConfig.getImplVersion());
+diff --git a/com/ctc/wstx/osgi/OutputFactoryProviderImpl.java b/com/ctc/wstx/osgi/OutputFactoryProviderImpl.java
+index 227d337..fb0eb37 100644
+--- a/com/ctc/wstx/osgi/OutputFactoryProviderImpl.java
++++ b/com/ctc/wstx/osgi/OutputFactoryProviderImpl.java
+@@ -12,7 +12,7 @@ public class OutputFactoryProviderImpl
+     implements Stax2OutputFactoryProvider
+ {
+     @Override
+-    public XMLOutputFactory2 createOutputFactory() {
++    public XMLOutputFactory2 createOutputFactory() { com.ctc.wstx.jmhbench.MutationSwitch.tick(38);
+         return new WstxOutputFactory();
+     }
+ 
+diff --git a/com/ctc/wstx/sax/WstxSAXParser.java b/com/ctc/wstx/sax/WstxSAXParser.java
+index d22df8f..cfb837a 100644
+--- a/com/ctc/wstx/sax/WstxSAXParser.java
++++ b/com/ctc/wstx/sax/WstxSAXParser.java
+@@ -260,12 +260,12 @@ public class WstxSAXParser
+     }
+ 
+     @Override
+-    public final Parser getParser() {
++    public final Parser getParser() { com.ctc.wstx.jmhbench.MutationSwitch.tick(11);
+         return this;
+     }
+ 
+     @Override
+-    public final XMLReader getXMLReader() {
++    public final XMLReader getXMLReader() { com.ctc.wstx.jmhbench.MutationSwitch.tick(25);
+         return this;
+     }
+ 
+diff --git a/com/ctc/wstx/sax/WstxSAXParserFactory.java b/com/ctc/wstx/sax/WstxSAXParserFactory.java
+index 6d5d2ac..7be2e7a 100644
+--- a/com/ctc/wstx/sax/WstxSAXParserFactory.java
++++ b/com/ctc/wstx/sax/WstxSAXParserFactory.java
+@@ -79,7 +79,7 @@ public class WstxSAXParserFactory
+     @Override
+     public boolean getFeature(String name)
+         throws SAXNotRecognizedException, SAXNotSupportedException
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(39);
+         SAXFeature stdFeat = SAXFeature.findByUri(name);
+ 
+         if (stdFeat == SAXFeature.EXTERNAL_GENERAL_ENTITIES) {
+diff --git a/com/ctc/wstx/sr/TypedStreamReader.java b/com/ctc/wstx/sr/TypedStreamReader.java
+index 227919c..3413cb9 100644
+--- a/com/ctc/wstx/sr/TypedStreamReader.java
++++ b/com/ctc/wstx/sr/TypedStreamReader.java
+@@ -122,7 +122,7 @@ public class TypedStreamReader
+ 
+     @Override
+     public boolean getElementAsBoolean() throws XMLStreamException
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(12);
+         ValueDecoderFactory.BooleanDecoder dec = _decoderFactory().getBooleanDecoder();
+         getElementAs(dec);
+         return dec.getValue();
+@@ -130,7 +130,7 @@ public class TypedStreamReader
+ 
+     @Override
+     public int getElementAsInt() throws XMLStreamException
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(26);
+         ValueDecoderFactory.IntDecoder dec = _decoderFactory().getIntDecoder();
+         getElementAs(dec);
+         return dec.getValue();
+diff --git a/com/ctc/wstx/sr/ValidatingStreamReader.java b/com/ctc/wstx/sr/ValidatingStreamReader.java
+index 43c169e..c59870b 100644
+--- a/com/ctc/wstx/sr/ValidatingStreamReader.java
++++ b/com/ctc/wstx/sr/ValidatingStreamReader.java
+@@ -139,7 +139,7 @@ public class ValidatingStreamReader
+ 
+     @Override
+     public Object getProperty(String name)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(40);
+         // DTD-specific properties...
+         if (name.equals(STAX_PROP_ENTITIES)) {
+             safeEnsureFinishToken();
+diff --git a/com/ctc/wstx/stax/WstxEventFactory.java b/com/ctc/wstx/stax/WstxEventFactory.java
+index 19cf80e..b8b35f4 100644
+--- a/com/ctc/wstx/stax/WstxEventFactory.java
++++ b/com/ctc/wstx/stax/WstxEventFactory.java
+@@ -49,7 +49,7 @@ public final class WstxEventFactory
+      */
+ 
+     @Override
+-    public void setLocation(Location location) {
++    public void setLocation(Location location) { com.ctc.wstx.jmhbench.MutationSwitch.tick(13);
+         super.setLocation(location == null ? WstxInputLocation.getEmptyLocation()
+                 : immutableLocation(location));
+     }
+@@ -83,7 +83,7 @@ public final class WstxEventFactory
+      * construction.
+      */
+     @Override
+-    public DTD createDTD(String dtd) {
++    public DTD createDTD(String dtd) { com.ctc.wstx.jmhbench.MutationSwitch.tick(27);
+         return new WDTD(mLocation, dtd);
+     }
+ 
+diff --git a/com/ctc/wstx/stax/WstxInputFactory.java b/com/ctc/wstx/stax/WstxInputFactory.java
+index 2de4738..cfdd58a 100644
+--- a/com/ctc/wstx/stax/WstxInputFactory.java
++++ b/com/ctc/wstx/stax/WstxInputFactory.java
+@@ -158,7 +158,7 @@ public class WstxInputFactory
+      * @since 4.2.1
+      */
+     public void addSymbol(String symbol)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(41);
+         synchronized (mSymbols) {
+             mSymbols.findSymbol(symbol);
+         }
+diff --git a/com/ctc/wstx/sw/BufferingXmlWriter.java b/com/ctc/wstx/sw/BufferingXmlWriter.java
+index 00a6724..2595dca 100644
+--- a/com/ctc/wstx/sw/BufferingXmlWriter.java
++++ b/com/ctc/wstx/sw/BufferingXmlWriter.java
+@@ -196,7 +196,7 @@ public final class BufferingXmlWriter
+     }
+ 
+     @Override
+-    protected int getOutputPtr() {
++    protected int getOutputPtr() { com.ctc.wstx.jmhbench.MutationSwitch.tick(14);
+         return mOutputPtr;
+     }
+ 
+@@ -224,7 +224,7 @@ public final class BufferingXmlWriter
+ 
+     @Override
+     public void close(boolean forceRealClose) throws IOException
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(28);
+         flush();
+         mTextWriter = null;
+         mAttrValueWriter = null;
+diff --git a/com/ctc/wstx/sw/NonNsStreamWriter.java b/com/ctc/wstx/sw/NonNsStreamWriter.java
+index c7f3b92..964b9f6 100644
+--- a/com/ctc/wstx/sw/NonNsStreamWriter.java
++++ b/com/ctc/wstx/sw/NonNsStreamWriter.java
+@@ -88,7 +88,7 @@ public class NonNsStreamWriter
+      */
+ 
+     @Override
+-    public NamespaceContext getNamespaceContext() {
++    public NamespaceContext getNamespaceContext() { com.ctc.wstx.jmhbench.MutationSwitch.tick(42);
+         return EmptyNamespaceContext.getInstance();
+     }
+ 
+diff --git a/com/ctc/wstx/util/ArgUtil.java b/com/ctc/wstx/util/ArgUtil.java
+index dc13dc7..ea5bbf4 100644
+--- a/com/ctc/wstx/util/ArgUtil.java
++++ b/com/ctc/wstx/util/ArgUtil.java
+@@ -10,7 +10,7 @@ public final class ArgUtil
+     private ArgUtil() { }
+ 
+     public static boolean convertToBoolean(String prop, Object value)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(15);
+         if (value == null) {
+             return false;
+         }
+@@ -31,7 +31,7 @@ public final class ArgUtil
+     }
+ 
+     public static int convertToInt(String prop, Object value, int minValue)
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(29);
+         int i;
+ 
+         if (value == null) {
+diff --git a/com/ctc/wstx/util/BijectiveNsMap.java b/com/ctc/wstx/util/BijectiveNsMap.java
+index 7712638..3a943f2 100644
+--- a/com/ctc/wstx/util/BijectiveNsMap.java
++++ b/com/ctc/wstx/util/BijectiveNsMap.java
+@@ -80,7 +80,7 @@ public final class BijectiveNsMap
+     }
+ 
+     public static BijectiveNsMap createEmpty()
+-    {
++    { com.ctc.wstx.jmhbench.MutationSwitch.tick(43);
+         String[] strs = new String[DEFAULT_ARRAY_SIZE];
+ 
+         strs[0] = XMLConstants.XML_NS_PREFIX;

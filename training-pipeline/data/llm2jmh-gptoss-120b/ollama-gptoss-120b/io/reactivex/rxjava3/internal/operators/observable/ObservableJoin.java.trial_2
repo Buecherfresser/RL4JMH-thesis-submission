@@ -1,0 +1,49 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.observers.TestObserver;
+import org.openjdk.jmh.annotations.*;
+
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableJoinBenchmark {
+
+    @Param({ "500", "1000", "2000" })
+    public int leftSize;
+
+    @Param({ "500", "1000", "2000" })
+    public int rightSize;
+
+    private Observable<Integer> leftSource;
+    private Observable<Integer> rightSource;
+
+    private Function<Integer, ObservableSource<Object>> leftEnd;
+    private Function<Integer, ObservableSource<Object>> rightEnd;
+
+    private BiFunction<Integer, Integer, Object> resultSelector;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        leftSource = Observable.range(1, leftSize);
+        rightSource = Observable.range(1, rightSize);
+        leftEnd = v -> Observable.never();
+        rightEnd = v -> Observable.never();
+        resultSelector = (l, r) -> new Object();
+    }
+
+    @Benchmark
+    public void joinAndConsume() {
+        TestObserver<Object> to = new TestObserver<>();
+        leftSource.join(rightSource, leftEnd, rightEnd, resultSelector).subscribe(to);
+        to.awaitDone(1, TimeUnit.MINUTES);
+        to.assertNoErrors();
+    }
+}
+```

@@ -1,0 +1,538 @@
+diff --git a/net/openhft/hashing/ByteBufferAccess.java b/net/openhft/hashing/ByteBufferAccess.java
+index a87848f..63fee68 100644
+--- a/net/openhft/hashing/ByteBufferAccess.java
++++ b/net/openhft/hashing/ByteBufferAccess.java
+@@ -18,7 +18,7 @@ public final class ByteBufferAccess extends Access<ByteBuffer> {
+     }
+ 
+     @Override
+-    public long getUnsignedInt(ByteBuffer input, long offset) {
++    public long getUnsignedInt(ByteBuffer input, long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(1);
+         return Primitives.unsignedInt(getInt(input, offset));
+     }
+ 
+@@ -28,17 +28,17 @@ public final class ByteBufferAccess extends Access<ByteBuffer> {
+     }
+ 
+     @Override
+-    public int getUnsignedShort(ByteBuffer input, long offset) {
++    public int getUnsignedShort(ByteBuffer input, long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(2);
+         return Primitives.unsignedShort(getShort(input, offset));
+     }
+ 
+     @Override
+-    public int getShort(ByteBuffer input, long offset) {
++    public int getShort(ByteBuffer input, long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(3);
+         return input.getShort((int) offset);
+     }
+ 
+     @Override
+-    public int getUnsignedByte(ByteBuffer input, long offset) {
++    public int getUnsignedByte(ByteBuffer input, long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(4);
+         return Primitives.unsignedByte(getByte(input, offset));
+     }
+ 
+@@ -48,12 +48,12 @@ public final class ByteBufferAccess extends Access<ByteBuffer> {
+     }
+ 
+     @Override
+-    public ByteOrder byteOrder(ByteBuffer input) {
++    public ByteOrder byteOrder(ByteBuffer input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(5);
+         return input.order();
+     }
+ 
+     @Override
+-    protected Access<ByteBuffer> reverseAccess() {
++    protected Access<ByteBuffer> reverseAccess() { net.openhft.hashing.jmhbench.MutationSwitch.tick(6);
+         return INSTANCE_REVERSE;
+     }
+ }
+diff --git a/net/openhft/hashing/CityAndFarmHash_1_1.java b/net/openhft/hashing/CityAndFarmHash_1_1.java
+index 9908f0c..804ceb5 100644
+--- a/net/openhft/hashing/CityAndFarmHash_1_1.java
++++ b/net/openhft/hashing/CityAndFarmHash_1_1.java
+@@ -214,14 +214,14 @@ class CityAndFarmHash_1_1 {
+         }
+ 
+         @Override
+-        public long hashLong(long input) {
++        public long hashLong(long input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(12);
+             input = Primitives.nativeToLittleEndian(input);
+             long hash = hash8To16Bytes(8L, input, input);
+             return finalize(hash);
+         }
+ 
+         @Override
+-        public long hashInt(int input) {
++        public long hashInt(int input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(13);
+             input = Primitives.nativeToLittleEndian(input);
+             long unsignedInt = Primitives.unsignedInt(input);
+             long hash = hash4To7Bytes(4L, unsignedInt, unsignedInt);
+@@ -229,7 +229,7 @@ class CityAndFarmHash_1_1 {
+         }
+ 
+         @Override
+-        public long hashShort(short input) {
++        public long hashShort(short input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(14);
+             return hashChar((char) input);
+         }
+ 
+@@ -240,7 +240,7 @@ class CityAndFarmHash_1_1 {
+         private static final int SECOND_SHORT_BYTE_MASK = NATIVE_LITTLE_ENDIAN ? -1 : 0xFF;
+ 
+         @Override
+-        public long hashChar(char input) {
++        public long hashChar(char input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(15);
+             int unsignedInput = (int) input;
+             int firstByte = (unsignedInput >> FIRST_SHORT_BYTE_SHIFT) & FIRST_SHORT_BYTE_MASK;
+             int secondByte = (unsignedInput >> SECOND_SHORT_BYTE_SHIFT) & SECOND_SHORT_BYTE_MASK;
+@@ -249,14 +249,14 @@ class CityAndFarmHash_1_1 {
+         }
+ 
+         @Override
+-        public long hashByte(byte input) {
++        public long hashByte(byte input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(16);
+             int unsignedByte = Primitives.unsignedByte(input);
+             long hash = hash1To3Bytes(1, unsignedByte, unsignedByte, unsignedByte);
+             return finalize(hash);
+         }
+ 
+         @Override
+-        public long hashVoid() {
++        public long hashVoid() { net.openhft.hashing.jmhbench.MutationSwitch.tick(17);
+             return K2;
+         }
+ 
+diff --git a/net/openhft/hashing/CompactLatin1CharSequenceAccess.java b/net/openhft/hashing/CompactLatin1CharSequenceAccess.java
+index ceb41f4..6857c10 100644
+--- a/net/openhft/hashing/CompactLatin1CharSequenceAccess.java
++++ b/net/openhft/hashing/CompactLatin1CharSequenceAccess.java
+@@ -119,7 +119,7 @@ public class CompactLatin1CharSequenceAccess extends Access<byte[]> {
+     }
+ 
+     @Override
+-    public long getUnsignedInt(final byte[] input, final long offset) {
++    public long getUnsignedInt(final byte[] input, final long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(18);
+         final long byteIdx = (offset + UNSAFE_IDX_ADJUST) >> 1;
+         final int compact = UNSAFE.getShort(input, byteIdx) & 0xFFFF;
+         final long expanded = (long)(((compact << 8) | compact) & 0xFF00FF);
+@@ -130,7 +130,7 @@ public class CompactLatin1CharSequenceAccess extends Access<byte[]> {
+     }
+ 
+     @Override
+-    public int getShort(final byte[] input, final long offset) {
++    public int getShort(final byte[] input, final long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(19);
+         if (((int)offset & 1) == 0) {
+             final int byteIdx = (int)(offset >> 1);
+             return (int)input[byteIdx] & 0xFF;
+@@ -141,7 +141,7 @@ public class CompactLatin1CharSequenceAccess extends Access<byte[]> {
+     }
+ 
+     @Override
+-    public int getUnsignedShort(final byte[] input, final long offset) {
++    public int getUnsignedShort(final byte[] input, final long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(20);
+         if (((int)offset & 1) == 0) {
+             final int byteIdx = (int)(offset >> 1);
+             return (int)input[byteIdx] & 0xFF;
+@@ -161,7 +161,7 @@ public class CompactLatin1CharSequenceAccess extends Access<byte[]> {
+     }
+ 
+     @Override
+-    public int getUnsignedByte(final byte[] input, final long offset) {
++    public int getUnsignedByte(final byte[] input, final long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(21);
+         if (ARRAY_IDX_ADJUST == ((int)offset & 1)) {
+             return 0;
+         } else {
+@@ -171,13 +171,13 @@ public class CompactLatin1CharSequenceAccess extends Access<byte[]> {
+ 
+     @Override
+     @NotNull
+-    public ByteOrder byteOrder(final byte[] input) {
++    public ByteOrder byteOrder(final byte[] input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(22);
+         return UNSAFE.byteOrder(input);
+     }
+ 
+     @Override
+     @NotNull
+-    protected Access<byte[]> reverseAccess() {
++    protected Access<byte[]> reverseAccess() { net.openhft.hashing.jmhbench.MutationSwitch.tick(23);
+         return INSTANCE_NON_NATIVE;
+     }
+ }
+diff --git a/net/openhft/hashing/HotSpotPrior7u6StringHash.java b/net/openhft/hashing/HotSpotPrior7u6StringHash.java
+index ee527c1..92c86cb 100644
+--- a/net/openhft/hashing/HotSpotPrior7u6StringHash.java
++++ b/net/openhft/hashing/HotSpotPrior7u6StringHash.java
+@@ -26,7 +26,7 @@ enum HotSpotPrior7u6StringHash implements StringHash {
+     }
+ 
+     @Override
+-    public long longHash(String s, LongHashFunction hashFunction, int off, int len) {
++    public long longHash(String s, LongHashFunction hashFunction, int off, int len) { net.openhft.hashing.jmhbench.MutationSwitch.tick(7);
+         char[] value = (char[]) UnsafeAccess.UNSAFE.getObject(s, valueOffset);
+         int offset = UnsafeAccess.UNSAFE.getInt(s, offsetOffset);
+         return hashFunction.hashChars(value, offset + off, len);
+diff --git a/net/openhft/hashing/Maths.java b/net/openhft/hashing/Maths.java
+index ee6c251..52addbf 100644
+--- a/net/openhft/hashing/Maths.java
++++ b/net/openhft/hashing/Maths.java
+@@ -21,11 +21,11 @@ class Maths {
+         INSTANCE = hasMultiplyHigh ? new MathsJDK9() : new Maths();
+     }
+ 
+-    public static long unsignedLongMulXorFold(final long lhs, final long rhs) {
++    public static long unsignedLongMulXorFold(final long lhs, final long rhs) { net.openhft.hashing.jmhbench.MutationSwitch.tick(8);
+         return INSTANCE.unsignedLongMulXorFoldImp(lhs, rhs);
+     }
+ 
+-    public static long unsignedLongMulHigh(final long lhs, final long rhs) {
++    public static long unsignedLongMulHigh(final long lhs, final long rhs) { net.openhft.hashing.jmhbench.MutationSwitch.tick(9);
+         return INSTANCE.unsignedLongMulHighImp(lhs, rhs);
+     }
+ 
+diff --git a/net/openhft/hashing/MetroHash.java b/net/openhft/hashing/MetroHash.java
+index a9f2233..8562c5a 100644
+--- a/net/openhft/hashing/MetroHash.java
++++ b/net/openhft/hashing/MetroHash.java
+@@ -106,12 +106,12 @@ class MetroHash {
+             return SEEDLESS_INSTANCE;
+         }
+ 
+-        protected long seed() {
++        protected long seed() { net.openhft.hashing.jmhbench.MutationSwitch.tick(24);
+             return 0L;
+         }
+ 
+         @Override
+-        public long hashLong(long input) {
++        public long hashLong(long input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(25);
+             input = Primitives.nativeToLittleEndian(input);
+             long h = (seed() + k2) * k0;
+             h += input * k3;
+@@ -121,7 +121,7 @@ class MetroHash {
+         }
+ 
+         @Override
+-        public long hashInt(int input) {
++        public long hashInt(int input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(26);
+             input = Primitives.nativeToLittleEndian(input);
+             long h = (seed() + k2) * k0;
+             h += Primitives.unsignedInt(input) * k3;
+@@ -131,7 +131,7 @@ class MetroHash {
+         }
+ 
+         @Override
+-        public long hashShort(short input) {
++        public long hashShort(short input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(27);
+             input = Primitives.nativeToLittleEndian(input);
+             long h = (seed() + k2) * k0;
+             h += Primitives.unsignedShort(input) * k3;
+@@ -141,12 +141,12 @@ class MetroHash {
+         }
+ 
+         @Override
+-        public long hashChar(char input) {
++        public long hashChar(char input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(28);
+             return hashShort((short) input);
+         }
+ 
+         @Override
+-        public long hashByte(byte input) {
++        public long hashByte(byte input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(29);
+             long h = (seed() + k2) * k0;
+             h += Primitives.unsignedByte(input) * k3;
+             h ^= Long.rotateRight(h, 37) * k1;
+diff --git a/net/openhft/hashing/ModernHotSpotStringHash.java b/net/openhft/hashing/ModernHotSpotStringHash.java
+index e3ca9ec..5fb1c41 100644
+--- a/net/openhft/hashing/ModernHotSpotStringHash.java
++++ b/net/openhft/hashing/ModernHotSpotStringHash.java
+@@ -22,7 +22,7 @@ enum ModernHotSpotStringHash implements StringHash {
+     }
+ 
+     @Override
+-    public long longHash(String s, LongHashFunction hashFunction, int off, int len) {
++    public long longHash(String s, LongHashFunction hashFunction, int off, int len) { net.openhft.hashing.jmhbench.MutationSwitch.tick(10);
+         char[] value = (char[]) UnsafeAccess.UNSAFE.getObject(s, valueOffset);
+         return hashFunction.hashChars(value, off, len);
+     }
+diff --git a/net/openhft/hashing/MurmurHash_3.java b/net/openhft/hashing/MurmurHash_3.java
+index a6c520f..41cf943 100644
+--- a/net/openhft/hashing/MurmurHash_3.java
++++ b/net/openhft/hashing/MurmurHash_3.java
+@@ -214,12 +214,12 @@ class MurmurHash_3 {
+         }
+ 
+         @Override
+-        public int bitsLength() {
++        public int bitsLength() { net.openhft.hashing.jmhbench.MutationSwitch.tick(30);
+             return 128;
+         }
+         @Override
+         @NotNull
+-        public long[] newResultArray() {
++        public long[] newResultArray() { net.openhft.hashing.jmhbench.MutationSwitch.tick(31);
+             return new long[2]; // override for a little performance
+         }
+ 
+diff --git a/net/openhft/hashing/UnknownJvmStringHash.java b/net/openhft/hashing/UnknownJvmStringHash.java
+index 4f0dd41..ea7b45c 100644
+--- a/net/openhft/hashing/UnknownJvmStringHash.java
++++ b/net/openhft/hashing/UnknownJvmStringHash.java
+@@ -10,7 +10,7 @@ enum UnknownJvmStringHash implements StringHash {
+     INSTANCE;
+ 
+     @Override
+-    public long longHash(String s, LongHashFunction hashFunction, int off, int len) {
++    public long longHash(String s, LongHashFunction hashFunction, int off, int len) { net.openhft.hashing.jmhbench.MutationSwitch.tick(11);
+         return hashFunction.hashNativeChars(s, off, len);
+     }
+ 
+diff --git a/net/openhft/hashing/UnsafeAccess.java b/net/openhft/hashing/UnsafeAccess.java
+index 6dfbcac..02ce002 100644
+--- a/net/openhft/hashing/UnsafeAccess.java
++++ b/net/openhft/hashing/UnsafeAccess.java
+@@ -71,7 +71,7 @@ public class UnsafeAccess extends Access<Object> {
+     }
+ 
+     @Override
+-    public long getUnsignedInt(Object input, long offset) {
++    public long getUnsignedInt(Object input, long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(32);
+         return unsignedInt(getInt(input, offset));
+     }
+ 
+@@ -81,17 +81,17 @@ public class UnsafeAccess extends Access<Object> {
+     }
+ 
+     @Override
+-    public int getUnsignedShort(Object input, long offset) {
++    public int getUnsignedShort(Object input, long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(33);
+         return unsignedShort(getShort(input, offset));
+     }
+ 
+     @Override
+-    public int getShort(Object input, long offset) {
++    public int getShort(Object input, long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(34);
+         return UNSAFE.getShort(input, offset);
+     }
+ 
+     @Override
+-    public int getUnsignedByte(Object input, long offset) {
++    public int getUnsignedByte(Object input, long offset) { net.openhft.hashing.jmhbench.MutationSwitch.tick(35);
+         return unsignedByte(getByte(input, offset));
+     }
+ 
+@@ -101,12 +101,12 @@ public class UnsafeAccess extends Access<Object> {
+     }
+ 
+     @Override
+-    public ByteOrder byteOrder(Object input) {
++    public ByteOrder byteOrder(Object input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(36);
+         return ByteOrder.nativeOrder();
+     }
+ 
+     @Override
+-    protected Access<Object> reverseAccess() {
++    protected Access<Object> reverseAccess() { net.openhft.hashing.jmhbench.MutationSwitch.tick(37);
+         return INSTANCE_NON_NATIVE;
+     }
+ 
+diff --git a/net/openhft/hashing/WyHash.java b/net/openhft/hashing/WyHash.java
+index acdeb24..1427ea6 100644
+--- a/net/openhft/hashing/WyHash.java
++++ b/net/openhft/hashing/WyHash.java
+@@ -143,12 +143,12 @@ class WyHash {
+             return SEEDLESS_INSTANCE;
+         }
+ 
+-        public long seed() {
++        public long seed() { net.openhft.hashing.jmhbench.MutationSwitch.tick(38);
+             return 0L;
+         }
+ 
+         @Override
+-        public long hashLong(long input) {
++        public long hashLong(long input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(39);
+             input = Primitives.nativeToLittleEndian(input);
+             long hi = input & 0xFFFFFFFFL;
+             long lo = (input >>> 32) & 0xFFFFFFFFL;
+@@ -158,7 +158,7 @@ class WyHash {
+         }
+ 
+         @Override
+-        public long hashInt(int input) {
++        public long hashInt(int input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(40);
+             input = Primitives.nativeToLittleEndian(input);
+             long longInput = (input & 0xFFFFFFFFL);
+             return _wymum(_wymum(longInput ^ seed() ^ _wyp0,
+@@ -167,7 +167,7 @@ class WyHash {
+         }
+ 
+         @Override
+-        public long hashShort(short input) {
++        public long hashShort(short input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(41);
+             input = Primitives.nativeToLittleEndian(input);
+             long hi = (input >>> 8) & 0xFFL;
+             long wyr3 = hi | hi << 8 | (input & 0xFFL) << 16;
+@@ -176,12 +176,12 @@ class WyHash {
+         }
+ 
+         @Override
+-        public long hashChar(final char input) {
++        public long hashChar(final char input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(42);
+             return hashShort((short)input);
+         }
+ 
+         @Override
+-        public long hashByte(final byte input) {
++        public long hashByte(final byte input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(43);
+             long hi = input & 0xFFL;
+             long wyr3 = hi | hi << 8 | hi << 16;
+             return _wymum(_wymum(wyr3 ^ seed() ^ _wyp0,
+diff --git a/net/openhft/hashing/XXH3.java b/net/openhft/hashing/XXH3.java
+index 4ff62a3..e3109d2 100644
+--- a/net/openhft/hashing/XXH3.java
++++ b/net/openhft/hashing/XXH3.java
+@@ -676,12 +676,12 @@ class XXH3 {
+         private static final long serialVersionUID = 0L;
+         private static final AsLongHashFunction SEEDLESS_INSTANCE = new AsLongHashFunction();
+ 
+-        public long seed() {
++        public long seed() { net.openhft.hashing.jmhbench.MutationSwitch.tick(44);
+             return 0L;
+         }
+ 
+         @Override
+-        public long hashLong(long input) {
++        public long hashLong(long input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(45);
+             input = Primitives.nativeToLittleEndian(input);
+             final long s = seed() ^ Long.reverseBytes(seed() & 0xFFFFFFFFL);
+             final long bitflip = (unsafeLE.i64(XXH3.XXH3_kSecret, 8+BYTE_BASE) ^ unsafeLE.i64(XXH3.XXH3_kSecret, 16+BYTE_BASE)) - s;
+@@ -690,7 +690,7 @@ class XXH3 {
+         }
+ 
+         @Override
+-        public long hashInt(int input) {
++        public long hashInt(int input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(46);
+             input = Primitives.nativeToLittleEndian(input);
+             long s = seed() ^ Long.reverseBytes(seed() & 0xFFFFFFFFL);
+             final long bitflip = (unsafeLE.i64(XXH3.XXH3_kSecret, 8+BYTE_BASE) ^ unsafeLE.i64(XXH3.XXH3_kSecret, 16+BYTE_BASE)) - s;
+@@ -699,7 +699,7 @@ class XXH3 {
+         }
+ 
+         @Override
+-        public long hashShort(short input) {
++        public long hashShort(short input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(47);
+             input = Primitives.nativeToLittleEndian(input);
+             final int c1 = Primitives.unsignedByte((byte)input);
+             final int c2 = Primitives.unsignedShort(input) >>> 8;
+@@ -710,12 +710,12 @@ class XXH3 {
+         }
+ 
+         @Override
+-        public long hashChar(char input) {
++        public long hashChar(char input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(48);
+             return hashShort((short) input);
+         }
+ 
+         @Override
+-        public long hashByte(byte input) {
++        public long hashByte(byte input) { net.openhft.hashing.jmhbench.MutationSwitch.tick(49);
+             final int c1 = Primitives.unsignedByte(input);
+             final int c2 = c1;
+             final int c3 = c1;
+diff --git a/net/openhft/hashing/XxHash.java b/net/openhft/hashing/XxHash.java
+index 4bc8455..c2ea0c0 100644
+--- a/net/openhft/hashing/XxHash.java
++++ b/net/openhft/hashing/XxHash.java
+@@ -132,7 +132,7 @@ class XxHash {
+             return SEEDLESS_INSTANCE;
+         }
+ 
+-        public long seed() {
++        public long seed() { net.openhft.hashing.jmhbench.MutationSwitch.tick(50);
+             return 0L;
+         }
+ 
+diff --git a/net/openhft/hashing/jmhbench/MutationSwitch.java b/net/openhft/hashing/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..963fe61
+--- /dev/null
++++ b/net/openhft/hashing/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.openhft.hashing.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

@@ -1,0 +1,67 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+
+/**
+ * JMH benchmark for {@link FlowableTimeout}.
+ *
+ * Measures throughput of the {@code timeout} operator under three scenarios:
+ *
+ * <ul>
+ *   <li>{@code noTimeout} – timeout indicators never fire.</li>
+ *   <li>{@code timeout} – timeout indicators fire immediately, causing a {@link java.util.concurrent.TimeoutException}.</li>
+ *   <li>{@code fallback} – timeout indicators fire immediately and switch to a fallback {@link Flowable}.</li>
+ * </ul>
+ *
+ * The source {@link Flowable} emits 1 000 integers.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableTimeoutBenchmark {
+
+    @Param({ "noTimeout", "timeout", "fallback" })
+    public String scenario;
+
+    private Flowable<Integer> flowable;
+
+    @Setup
+    public void setup() {
+        Flowable<Integer> source = Flowable.range(1, 1_000);
+        switch (scenario) {
+            case "noTimeout":
+                flowable = source.timeout(Flowable.never(), item -> Flowable.never());
+                break;
+            case "timeout":
+                flowable = source.timeout(
+                        Flowable.timer(1, TimeUnit.NANOSECONDS),
+                        item -> Flowable.timer(1, TimeUnit.NANOSECONDS));
+                break;
+            case "fallback":
+                Flowable<Integer> fallback = Flowable.range(1_001, 100);
+                flowable = source.timeout(
+                        Flowable.timer(1, TimeUnit.NANOSECONDS),
+                        item -> Flowable.timer(1, TimeUnit.NANOSECONDS),
+                        fallback);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown scenario: " + scenario);
+        }
+    }
+
+    @Benchmark
+    public void runTimeoutOperator(Blackhole bh) {
+        flowable.subscribe(
+                bh::consume,                 // onNext
+                bh::consume,                 // onError
+                () -> bh.consume(0)          // onComplete (dummy value)
+        );
+    }
+}
+```

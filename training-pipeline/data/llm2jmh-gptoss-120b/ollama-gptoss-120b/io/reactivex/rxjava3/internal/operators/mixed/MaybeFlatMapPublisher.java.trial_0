@@ -1,0 +1,65 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.mixed.MaybeFlatMapPublisher;
+import org.reactivestreams.Publisher;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Microbenchmark for {@link MaybeFlatMapPublisher}.
+ *
+ * The benchmark measures the throughput (operations per second) of a
+ * {@code MaybeFlatMapPublisher} that maps a single {@code Maybe} value to a
+ * {@link Flowable} of {@code size} elements.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable objects between threads.
+ * - Pre‑create the operator in @Setup to exclude allocation overhead from the measurement.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Run in Mode.Throughput with a time unit of seconds.
+ * - Provide a @Param to vary the size of the inner publisher.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class MaybeFlatMapPublisherBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the inner Publisher. */
+        @Param({"1", "10", "100", "1000"})
+        public int size;
+
+        /** The operator under test. */
+        MaybeFlatMapPublisher<Integer, Integer> flowable;
+
+        /** Mapper that creates a Flowable of {@code size} integers. */
+        private final Function<Integer, Publisher<Integer>> mapper = i -> Flowable.range(1, size);
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Source Maybe that emits a single value (1)
+            Maybe<Integer> source = Maybe.just(1);
+            // Create the operator once per trial
+            flowable = new MaybeFlatMapPublisher<>(source, mapper);
+        }
+    }
+
+    @Benchmark
+    public void flatMapPublisherThroughput(BenchmarkState state, Blackhole bh) {
+        // blockingSubscribe ensures the benchmark measures the complete processing
+        // of the inner Flowable and prevents asynchronous side‑effects from leaking
+        // into the measurement.
+        state.flowable.blockingSubscribe(bh::consume);
+    }
+}
+```

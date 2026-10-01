@@ -1,0 +1,82 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.operators.flowable;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableAllSingle;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableAllSingle}.
+ *
+ * <p>Measures the throughput of evaluating a predicate over a {@link Flowable}
+ * and emitting the final {@code Boolean} result via {@code Single}.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@link State} for immutable benchmark data.</li>
+ *   <li>Use {@code @Param} to vary the size of the source {@code Flowable}.</li>
+ *   <li>Warm‑up and measurement iterations are left to the JMH runner defaults
+ *       (or can be overridden via command line).</li>
+ *   <li>Consume the result with {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Benchmark runs in {@link Mode#Throughput} with time unit {@code ops/ms}.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Thread)
+public class FlowableAllSingleBenchmark {
+
+    /**
+     * Number of items emitted by the source {@link Flowable}.
+     * Typical values: 1, 10, 1000, 100_000.
+     */
+    @Param({"1", "10", "1000", "100000"})
+    public int size;
+
+    /**
+     * Predicate used by the operator.
+     * {@code truePredicate} always returns {@code true} – the operator must
+     * consume the whole source before emitting {@code true}.
+     * {@code falsePredicate} returns {@code false} for the first element – the
+     * operator can short‑circuit after the first item.
+     */
+    @Param({"true", "false"})
+    public boolean predicateType;
+
+    private Flowable<Integer> source;
+    private io.reactivex.rxjava3.functions.Predicate<Integer> predicate;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a source Flowable that emits a range of integers.
+        source = Flowable.range(1, size);
+
+        // Choose a predicate based on the benchmark parameter.
+        if (predicateType) {
+            // Always true predicate – forces full traversal.
+            predicate = v -> true;
+        } else {
+            // Predicate that fails on the first element (value == 1).
+            predicate = v -> v != 1;
+        }
+    }
+
+    /**
+     * Benchmark the {@link FlowableAllSingle} operator using {@link Single#blockingGet()}.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void allSingleThroughput(Blackhole bh) {
+        // Create the operator instance.
+        Single<Boolean> allSingle = new FlowableAllSingle<>(source, predicate);
+        // Execute the flow synchronously and consume the result.
+        Boolean result = allSingle.blockingGet();
+        bh.consume(result);
+    }
+}
+```

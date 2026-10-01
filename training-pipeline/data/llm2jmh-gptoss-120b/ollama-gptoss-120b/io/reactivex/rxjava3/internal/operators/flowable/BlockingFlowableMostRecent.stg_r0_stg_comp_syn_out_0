@@ -1,0 +1,99 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmark for {@link BlockingFlowableMostRecent}.
+ *
+ * The benchmark measures the throughput of iterating over a {@code BlockingFlowableMostRecent}
+ * that wraps a hot {@link Flowable} emitting a fixed number of integer values.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Perform all heavyweight setup in @Setup(Level.Trial) to exclude it from measurement.
+ * - Consume values with Blackhole to prevent dead‑code elimination.
+ * - Use a warm‑up phase and a measurement phase with stable iteration times.
+ * - Run in Mode.Throughput (operations per second) as requested.
+ */
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class BlockingFlowableMostRecentBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * The source Flowable that emits a range of integers on a dedicated scheduler.
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * The BlockingFlowableMostRecent instance under test.
+     */
+    private BlockingFlowableMostRecent<Integer> mostRecent;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a hot Flowable that emits the requested number of items.
+        // Using a dedicated scheduler ensures the emission happens asynchronously,
+        // mimicking realistic usage where the source may be producing values concurrently.
+        source = Flowable.range(1, itemCount).subscribeOn(Schedulers.single()).publish().autoConnect();
+        // The initial value is a sentinel that will be replaced by the first onNext.
+        mostRecent = new BlockingFlowableMostRecent<>(source, -1);
+    }
+
+    /**
+     * Benchmark that iterates over the BlockingFlowableMostRecent and consumes each element.
+     *
+     * Each operation creates a fresh iterator, walks through all emitted items,
+     * and feeds them into a Blackhole to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void iterateAll(Blackhole bh) {
+        Iterator<Integer> it = mostRecent.iterator();
+        while (it.hasNext()) {
+            bh.consume(it.next());
+        }
+    }
+}

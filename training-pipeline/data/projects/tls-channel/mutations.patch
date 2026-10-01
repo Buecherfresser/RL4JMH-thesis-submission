@@ -1,0 +1,569 @@
+diff --git a/tlschannel/ClientTlsChannel.java b/tlschannel/ClientTlsChannel.java
+index 24b7869..fed7f5c 100644
+--- a/tlschannel/ClientTlsChannel.java
++++ b/tlschannel/ClientTlsChannel.java
+@@ -36,7 +36,7 @@ public class ClientTlsChannel implements TlsChannel {
+             return this;
+         }
+ 
+-        public ClientTlsChannel build() {
++        public ClientTlsChannel build() { tlschannel.jmhbench.MutationSwitch.tick(17);
+             return new ClientTlsChannel(
+                     underlying,
+                     sslEngineFactory.get(),
+@@ -63,7 +63,7 @@ public class ClientTlsChannel implements TlsChannel {
+      * @param sslEngine the engine to use with this channel
+      * @return the new builder
+      */
+-    public static Builder newBuilder(ByteChannel underlying, SSLEngine sslEngine) {
++    public static Builder newBuilder(ByteChannel underlying, SSLEngine sslEngine) { tlschannel.jmhbench.MutationSwitch.tick(21);
+         return new Builder(underlying, sslEngine);
+     }
+ 
+@@ -76,7 +76,7 @@ public class ClientTlsChannel implements TlsChannel {
+      *     SSLEngine}.
+      * @return the new builder
+      */
+-    public static Builder newBuilder(ByteChannel underlying, SSLContext sslContext) {
++    public static Builder newBuilder(ByteChannel underlying, SSLContext sslContext) { tlschannel.jmhbench.MutationSwitch.tick(25);
+         return new Builder(underlying, sslContext);
+     }
+ 
+@@ -112,17 +112,17 @@ public class ClientTlsChannel implements TlsChannel {
+     }
+ 
+     @Override
+-    public ByteChannel getUnderlying() {
++    public ByteChannel getUnderlying() { tlschannel.jmhbench.MutationSwitch.tick(28);
+         return underlying;
+     }
+ 
+     @Override
+-    public SSLEngine getSslEngine() {
++    public SSLEngine getSslEngine() { tlschannel.jmhbench.MutationSwitch.tick(31);
+         return impl.engine();
+     }
+ 
+     @Override
+-    public Consumer<SSLSession> getSessionInitCallback() {
++    public Consumer<SSLSession> getSessionInitCallback() { tlschannel.jmhbench.MutationSwitch.tick(34);
+         return impl.getSessionInitCallback();
+     }
+ 
+diff --git a/tlschannel/DirectBufferAllocator.java b/tlschannel/DirectBufferAllocator.java
+index 2e854bc..9cc7dfd 100644
+--- a/tlschannel/DirectBufferAllocator.java
++++ b/tlschannel/DirectBufferAllocator.java
+@@ -17,12 +17,12 @@ public class DirectBufferAllocator implements BufferAllocator {
+     private final DirectBufferDeallocator deallocator = new DirectBufferDeallocator();
+ 
+     @Override
+-    public ByteBuffer allocate(int size) {
++    public ByteBuffer allocate(int size) { tlschannel.jmhbench.MutationSwitch.tick(1);
+         return ByteBuffer.allocateDirect(size);
+     }
+ 
+     @Override
+-    public void free(ByteBuffer buffer) {
++    public void free(ByteBuffer buffer) { tlschannel.jmhbench.MutationSwitch.tick(5);
+         // do not wait for GC (and finalizer) to run
+         deallocator.deallocate(buffer);
+     }
+diff --git a/tlschannel/HeapBufferAllocator.java b/tlschannel/HeapBufferAllocator.java
+index b92dc24..fba3f22 100644
+--- a/tlschannel/HeapBufferAllocator.java
++++ b/tlschannel/HeapBufferAllocator.java
+@@ -11,12 +11,12 @@ import java.nio.ByteBuffer;
+ public class HeapBufferAllocator implements BufferAllocator {
+ 
+     @Override
+-    public ByteBuffer allocate(int size) {
++    public ByteBuffer allocate(int size) { tlschannel.jmhbench.MutationSwitch.tick(9);
+         return ByteBuffer.allocate(size);
+     }
+ 
+     @Override
+-    public void free(ByteBuffer buffer) {
++    public void free(ByteBuffer buffer) { tlschannel.jmhbench.MutationSwitch.tick(13);
+         // GC does it
+     }
+ }
+diff --git a/tlschannel/NeedsTaskException.java b/tlschannel/NeedsTaskException.java
+index 2f5def2..eaec639 100644
+--- a/tlschannel/NeedsTaskException.java
++++ b/tlschannel/NeedsTaskException.java
+@@ -28,7 +28,7 @@ public class NeedsTaskException extends TlsChannelFlowControlException {
+         this.task = task;
+     }
+ 
+-    public Runnable getTask() {
++    public Runnable getTask() { tlschannel.jmhbench.MutationSwitch.tick(37);
+         return task;
+     }
+ }
+diff --git a/tlschannel/ServerTlsChannel.java b/tlschannel/ServerTlsChannel.java
+index 86f7b0c..d8fd381 100644
+--- a/tlschannel/ServerTlsChannel.java
++++ b/tlschannel/ServerTlsChannel.java
+@@ -51,7 +51,7 @@ public class ServerTlsChannel implements TlsChannel {
+         }
+ 
+         @Override
+-        public SSLContext getSslContext(SniReader sniReader) throws IOException, EofException {
++        public SSLContext getSslContext(SniReader sniReader) throws IOException, EofException { tlschannel.jmhbench.MutationSwitch.tick(39);
+             // IO block
+             Optional<SNIServerName> nameOpt = sniReader.readSni();
+             // call client code
+@@ -76,7 +76,7 @@ public class ServerTlsChannel implements TlsChannel {
+         }
+ 
+         @Override
+-        public SSLContext getSslContext(SniReader sniReader) {
++        public SSLContext getSslContext(SniReader sniReader) { tlschannel.jmhbench.MutationSwitch.tick(41);
+             /*
+              * Avoid SNI parsing (using the supplied sniReader) when no decision
+              * would be made based on it.
+@@ -112,12 +112,12 @@ public class ServerTlsChannel implements TlsChannel {
+             return this;
+         }
+ 
+-        public Builder withEngineFactory(Function<SSLContext, SSLEngine> sslEngineFactory) {
++        public Builder withEngineFactory(Function<SSLContext, SSLEngine> sslEngineFactory) { tlschannel.jmhbench.MutationSwitch.tick(43);
+             this.sslEngineFactory = sslEngineFactory;
+             return this;
+         }
+ 
+-        public ServerTlsChannel build() {
++        public ServerTlsChannel build() { tlschannel.jmhbench.MutationSwitch.tick(45);
+             return new ServerTlsChannel(
+                     underlying,
+                     internalSslContextFactory,
+@@ -139,7 +139,7 @@ public class ServerTlsChannel implements TlsChannel {
+      * @param sslContext a fixed {@link SSLContext} to be used
+      * @return the new builder
+      */
+-    public static Builder newBuilder(ByteChannel underlying, SSLContext sslContext) {
++    public static Builder newBuilder(ByteChannel underlying, SSLContext sslContext) { tlschannel.jmhbench.MutationSwitch.tick(47);
+         return new Builder(underlying, sslContext);
+     }
+ 
+@@ -158,7 +158,7 @@ public class ServerTlsChannel implements TlsChannel {
+      * @return the new builder
+      * @see <a href="https://tools.ietf.org/html/rfc6066#section-3">Server Name Indication</a>
+      */
+-    public static Builder newBuilder(ByteChannel underlying, SniSslContextFactory sslContextFactory) {
++    public static Builder newBuilder(ByteChannel underlying, SniSslContextFactory sslContextFactory) { tlschannel.jmhbench.MutationSwitch.tick(49);
+         return new Builder(underlying, sslContextFactory);
+     }
+ 
+diff --git a/tlschannel/async/AsynchronousTlsChannel.java b/tlschannel/async/AsynchronousTlsChannel.java
+index 9e53525..377c302 100644
+--- a/tlschannel/async/AsynchronousTlsChannel.java
++++ b/tlschannel/async/AsynchronousTlsChannel.java
+@@ -23,7 +23,7 @@ public class AsynchronousTlsChannel implements ExtendedAsynchronousByteChannel {
+         ReadOperation op;
+ 
+         @Override
+-        public boolean cancel(boolean mayInterruptIfRunning) {
++        public boolean cancel(boolean mayInterruptIfRunning) { tlschannel.jmhbench.MutationSwitch.tick(2);
+             super.cancel(mayInterruptIfRunning);
+             return group.doCancelRead(registeredSocket, op);
+         }
+@@ -33,7 +33,7 @@ public class AsynchronousTlsChannel implements ExtendedAsynchronousByteChannel {
+         WriteOperation op;
+ 
+         @Override
+-        public boolean cancel(boolean mayInterruptIfRunning) {
++        public boolean cancel(boolean mayInterruptIfRunning) { tlschannel.jmhbench.MutationSwitch.tick(6);
+             super.cancel(mayInterruptIfRunning);
+             return group.doCancelWrite(registeredSocket, op);
+         }
+@@ -232,7 +232,7 @@ public class AsynchronousTlsChannel implements ExtendedAsynchronousByteChannel {
+      * @return <code>true</code> if, and only if, this channel is open
+      */
+     @Override
+-    public boolean isOpen() {
++    public boolean isOpen() { tlschannel.jmhbench.MutationSwitch.tick(10);
+         return tlsChannel.isOpen();
+     }
+ 
+@@ -245,7 +245,7 @@ public class AsynchronousTlsChannel implements ExtendedAsynchronousByteChannel {
+      * @throws IOException If an I/O error occurs
+      */
+     @Override
+-    public void close() throws IOException {
++    public void close() throws IOException { tlschannel.jmhbench.MutationSwitch.tick(14);
+         tlsChannel.close();
+         registeredSocket.close();
+     }
+diff --git a/tlschannel/async/AsynchronousTlsChannelGroup.java b/tlschannel/async/AsynchronousTlsChannelGroup.java
+index 3b7189b..29c3870 100644
+--- a/tlschannel/async/AsynchronousTlsChannelGroup.java
++++ b/tlschannel/async/AsynchronousTlsChannelGroup.java
+@@ -75,7 +75,7 @@ public class AsynchronousTlsChannelGroup {
+             this.socketChannel = socketChannel;
+         }
+ 
+-        public void close() {
++        public void close() { tlschannel.jmhbench.MutationSwitch.tick(18);
+             if (key != null) {
+                 key.cancel();
+             }
+@@ -634,7 +634,7 @@ public class AsynchronousTlsChannelGroup {
+      * @return {@code true} if this group has initiated shutdown and {@code false} if the group is
+      *     active
+      */
+-    public boolean isShutdown() {
++    public boolean isShutdown() { tlschannel.jmhbench.MutationSwitch.tick(22);
+         return shutdown != Shutdown.No;
+     }
+ 
+@@ -642,7 +642,7 @@ public class AsynchronousTlsChannelGroup {
+      * Starts the shutdown process. New sockets cannot be registered; already-registered ones continue
+      * operating normally until they are closed.
+      */
+-    public void shutdown() {
++    public void shutdown() { tlschannel.jmhbench.MutationSwitch.tick(26);
+         shutdown = Shutdown.Wait;
+         selector.wakeup();
+     }
+@@ -651,7 +651,7 @@ public class AsynchronousTlsChannelGroup {
+      * Shuts down this channel group immediately. All registered sockets are closed, pending
+      * operations may or may not finish.
+      */
+-    public void shutdownNow() {
++    public void shutdownNow() { tlschannel.jmhbench.MutationSwitch.tick(29);
+         shutdown = Shutdown.Immediate;
+         selector.wakeup();
+     }
+@@ -661,7 +661,7 @@ public class AsynchronousTlsChannelGroup {
+      *
+      * @return whether the channel is terminated
+      */
+-    public boolean isTerminated() {
++    public boolean isTerminated() { tlschannel.jmhbench.MutationSwitch.tick(32);
+         return executor.isTerminated();
+     }
+ 
+@@ -676,7 +676,7 @@ public class AsynchronousTlsChannelGroup {
+      *     termination
+      * @throws InterruptedException if interrupted while waiting
+      */
+-    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
++    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException { tlschannel.jmhbench.MutationSwitch.tick(35);
+         return executor.awaitTermination(timeout, unit);
+     }
+ 
+diff --git a/tlschannel/impl/BufferHolder.java b/tlschannel/impl/BufferHolder.java
+index 443ebdb..6bfaa81 100644
+--- a/tlschannel/impl/BufferHolder.java
++++ b/tlschannel/impl/BufferHolder.java
+@@ -37,13 +37,13 @@ public class BufferHolder {
+         this.lastSize = buffer.map(b -> b.capacity()).orElse(initialSize);
+     }
+ 
+-    public void prepare() {
++    public void prepare() { tlschannel.jmhbench.MutationSwitch.tick(3);
+         if (buffer == null) {
+             buffer = allocator.allocate(lastSize);
+         }
+     }
+ 
+-    public boolean release() {
++    public boolean release() { tlschannel.jmhbench.MutationSwitch.tick(7);
+         if (opportunisticDispose && buffer.position() == 0) {
+             return dispose();
+         } else {
+@@ -51,7 +51,7 @@ public class BufferHolder {
+         }
+     }
+ 
+-    public boolean dispose() {
++    public boolean dispose() { tlschannel.jmhbench.MutationSwitch.tick(11);
+         if (buffer != null) {
+             allocator.free(buffer);
+             buffer = null;
+@@ -61,7 +61,7 @@ public class BufferHolder {
+         }
+     }
+ 
+-    public void enlarge() {
++    public void enlarge() { tlschannel.jmhbench.MutationSwitch.tick(15);
+         if (buffer.capacity() >= maxSize) {
+             throw new IllegalStateException(
+                     String.format("%s buffer insufficient despite having capacity of %d", name, buffer.capacity()));
+@@ -93,7 +93,7 @@ public class BufferHolder {
+      *
+      * <p>Typically used for security reasons, with buffers that contain now-unused plaintext.
+      */
+-    public void zeroRemaining() {
++    public void zeroRemaining() { tlschannel.jmhbench.MutationSwitch.tick(19);
+         zero(buffer.position());
+     }
+ 
+@@ -102,7 +102,7 @@ public class BufferHolder {
+      *
+      * <p>Typically used for security reasons, with buffers that contain now-unused plaintext.
+      */
+-    public void zero() {
++    public void zero() { tlschannel.jmhbench.MutationSwitch.tick(23);
+         zero(0);
+     }
+ 
+diff --git a/tlschannel/impl/ByteBufferSet.java b/tlschannel/impl/ByteBufferSet.java
+index 4499a8f..760aac2 100644
+--- a/tlschannel/impl/ByteBufferSet.java
++++ b/tlschannel/impl/ByteBufferSet.java
+@@ -83,7 +83,7 @@ public class ByteBufferSet {
+     /**
+      * Returns the total number of bytes remaining across the combined buffer.
+      */
+-    public long remaining() {
++    public long remaining() { tlschannel.jmhbench.MutationSwitch.tick(27);
+         long ret = 0;
+         for (int i = offset; i < offset + length; i++) {
+             ret += array[i].remaining();
+@@ -94,7 +94,7 @@ public class ByteBufferSet {
+     /**
+      * Returns the total position across the combined buffer..
+      */
+-    public long position() {
++    public long position() { tlschannel.jmhbench.MutationSwitch.tick(30);
+         long ret = 0;
+         for (int i = offset; i < offset + length; i++) {
+             ret += array[i].position();
+@@ -110,7 +110,7 @@ public class ByteBufferSet {
+      *
+      * @throws ReadOnlyBufferException if this buffer is read-only
+      */
+-    public int putRemaining(ByteBuffer from) {
++    public int putRemaining(ByteBuffer from) { tlschannel.jmhbench.MutationSwitch.tick(33);
+         if (isReadOnly()) {
+             throw new ReadOnlyBufferException();
+         }
+@@ -164,7 +164,7 @@ public class ByteBufferSet {
+      *
+      * @return the number of bytes copied
+      */
+-    public int getRemaining(ByteBuffer dst) {
++    public int getRemaining(ByteBuffer dst) { tlschannel.jmhbench.MutationSwitch.tick(36);
+         int totalBytes = 0;
+         for (int i = offset; i < offset + length; i++) {
+             if (!dst.hasRemaining()) {
+@@ -208,7 +208,7 @@ public class ByteBufferSet {
+     /**
+      * Returns {@code true} if the combined buffer has bytes remaining.
+      */
+-    public boolean hasRemaining() {
++    public boolean hasRemaining() { tlschannel.jmhbench.MutationSwitch.tick(38);
+         return remaining() > 0;
+     }
+ 
+@@ -216,7 +216,7 @@ public class ByteBufferSet {
+      * Returns {@code true} if any active buffer is read-only, making the combined buffer
+      * effectively read-only too.
+      */
+-    public boolean isReadOnly() {
++    public boolean isReadOnly() { tlschannel.jmhbench.MutationSwitch.tick(40);
+         for (int i = offset; i < offset + length; i++) {
+             if (array[i].isReadOnly()) {
+                 return true;
+diff --git a/tlschannel/impl/TlsChannelImpl.java b/tlschannel/impl/TlsChannelImpl.java
+index 45276c3..426d913 100644
+--- a/tlschannel/impl/TlsChannelImpl.java
++++ b/tlschannel/impl/TlsChannelImpl.java
+@@ -36,7 +36,7 @@ public class TlsChannelImpl implements ByteChannel {
+ 
+         /** For efficiency, override this method to do nothing. */
+         @Override
+-        public Throwable fillInStackTrace() {
++        public Throwable fillInStackTrace() { tlschannel.jmhbench.MutationSwitch.tick(42);
+             return this;
+         }
+     }
+@@ -143,15 +143,15 @@ public class TlsChannelImpl implements ByteChannel {
+      */
+     private final ByteBufferSet dummyOut = new ByteBufferSet(new ByteBuffer[] {ByteBuffer.allocate(0)});
+ 
+-    public Consumer<SSLSession> getSessionInitCallback() {
++    public Consumer<SSLSession> getSessionInitCallback() { tlschannel.jmhbench.MutationSwitch.tick(44);
+         return initSessionCallback;
+     }
+ 
+-    public TrackingAllocator getPlainBufferAllocator() {
++    public TrackingAllocator getPlainBufferAllocator() { tlschannel.jmhbench.MutationSwitch.tick(46);
+         return plainBufAllocator;
+     }
+ 
+-    public TrackingAllocator getEncryptedBufferAllocator() {
++    public TrackingAllocator getEncryptedBufferAllocator() { tlschannel.jmhbench.MutationSwitch.tick(48);
+         return encryptedBufAllocator;
+     }
+ 
+@@ -331,7 +331,7 @@ public class TlsChannelImpl implements ByteChannel {
+     }
+ 
+     public static void callChannelRead(ReadableByteChannel readChannel, ByteBuffer buffer)
+-            throws IOException, EofException {
++            throws IOException, EofException { tlschannel.jmhbench.MutationSwitch.tick(50);
+         Util.assertTrue(buffer.hasRemaining());
+         logger.log(Level.FINEST, "Reading from channel");
+         int c = readChannel.read(buffer); // IO block
+diff --git a/tlschannel/jmhbench/MutationSwitch.java b/tlschannel/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..6f08922
+--- /dev/null
++++ b/tlschannel/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package tlschannel.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/tlschannel/util/DirectBufferDeallocator.java b/tlschannel/util/DirectBufferDeallocator.java
+index cbce9ad..4434b01 100644
+--- a/tlschannel/util/DirectBufferDeallocator.java
++++ b/tlschannel/util/DirectBufferDeallocator.java
+@@ -38,7 +38,7 @@ public class DirectBufferDeallocator {
+         }
+ 
+         @Override
+-        public void free(ByteBuffer bb) {
++        public void free(ByteBuffer bb) { tlschannel.jmhbench.MutationSwitch.tick(4);
+             try {
+                 clean.invoke(cleanerAccessor.invoke(bb));
+             } catch (IllegalAccessException | InvocationTargetException t) {
+@@ -71,7 +71,7 @@ public class DirectBufferDeallocator {
+         }
+ 
+         @Override
+-        public void free(ByteBuffer bb) {
++        public void free(ByteBuffer bb) { tlschannel.jmhbench.MutationSwitch.tick(8);
+             try {
+                 invokeCleaner.invoke(unsafe, bb);
+             } catch (IllegalAccessException | InvocationTargetException t) {
+@@ -92,7 +92,7 @@ public class DirectBufferDeallocator {
+         }
+     }
+ 
+-    public void deallocate(ByteBuffer buffer) {
++    public void deallocate(ByteBuffer buffer) { tlschannel.jmhbench.MutationSwitch.tick(12);
+         deallocator.free(buffer);
+     }
+ }
+diff --git a/tlschannel/util/Util.java b/tlschannel/util/Util.java
+index 29f25fe..e33d9f2 100644
+--- a/tlschannel/util/Util.java
++++ b/tlschannel/util/Util.java
+@@ -7,7 +7,7 @@ public class Util {
+ 
+     private static final Logger logger = Logger.getLogger(Util.class.getName());
+ 
+-    public static void assertTrue(boolean condition) {
++    public static void assertTrue(boolean condition) { tlschannel.jmhbench.MutationSwitch.tick(16);
+         if (!condition) throw new AssertionError();
+     }
+ 
+@@ -18,13 +18,13 @@ public class Util {
+      * @param result the SSLEngineResult
+      * @return the resulting string
+      */
+-    public static String resultToString(SSLEngineResult result) {
++    public static String resultToString(SSLEngineResult result) { tlschannel.jmhbench.MutationSwitch.tick(20);
+         return String.format(
+                 "status=%s,handshakeStatus=%s,bytesProduced=%d,bytesConsumed=%d",
+                 result.getStatus(), result.getHandshakeStatus(), result.bytesProduced(), result.bytesConsumed());
+     }
+ 
+-    public static int getJavaMajorVersion() {
++    public static int getJavaMajorVersion() { tlschannel.jmhbench.MutationSwitch.tick(24);
+         String version = System.getProperty("java.version");
+         if (version.startsWith("1.")) {
+             version = version.substring(2);

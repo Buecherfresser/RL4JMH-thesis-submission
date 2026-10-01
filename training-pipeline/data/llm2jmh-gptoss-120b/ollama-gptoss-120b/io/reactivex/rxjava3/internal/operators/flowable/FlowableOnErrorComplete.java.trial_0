@@ -1,0 +1,94 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableOnErrorComplete;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
+
+/**
+ * JMH benchmark for {@link FlowableOnErrorComplete}.
+ *
+ * The benchmark measures the throughput of a Flowable that emits a fixed number of
+ * items and is wrapped with the {@code onErrorComplete} operator. The predicate
+ * always returns {@code false} so the operator does not alter the normal flow;
+ * this isolates the overhead of the operator itself.
+ *
+ * Best practices applied:
+ * - Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - Pre‑create the Flowable in {@code @Setup(Level.Trial)} to exclude construction cost.
+ * - Use {@code Blackhole} to consume items and prevent dead‑code elimination.
+ * - Configure warm‑up and measurement iterations for reliable results.
+ * - Run in {@code Mode.Throughput} with time unit seconds.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableOnErrorCompleteBenchmark {
+
+    /** Number of items emitted by the source Flowable. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** The Flowable under test (source wrapped with onErrorComplete). */
+    private Flowable<Integer> flowable;
+
+    /** Predicate used by onErrorComplete – always returns false (no completion on error). */
+    private static final Predicate<Throwable> ALWAYS_FALSE = t -> false;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Source that emits a range of integers and then completes normally.
+        Flowable<Integer> source = Flowable.range(1, itemCount);
+
+        // Wrap the source with the operator under test.
+        flowable = new FlowableOnErrorComplete<>(source, ALWAYS_FALSE);
+    }
+
+    /**
+     * Benchmark method that subscribes to the Flowable, consumes all items,
+     * and blocks until completion. The {@link Blackhole} ensures the consumed
+     * values are not optimized away.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        flowable.blockingSubscribe(bh::consume);
+    }
+
+    /**
+     * Alternative benchmark that uses a custom Subscriber to request
+     * {@code Long.MAX_VALUE} up‑front. This mimics typical downstream
+     * behavior in RxJava and avoids the overhead of the blocking helper.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void subscribeWithSubscriber(Blackhole bh) {
+        flowable.subscribe(new DisposableSubscriber<Integer>() {
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // No error expected in this benchmark.
+            }
+
+            @Override
+            public void onComplete() {
+                // No action needed.
+            }
+        });
+    }
+}
+```

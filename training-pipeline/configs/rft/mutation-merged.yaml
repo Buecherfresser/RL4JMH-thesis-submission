@@ -1,0 +1,40 @@
+# Merged mutation-RFT train config.
+#
+# Used by configs/rft/mutation-projects.yaml for the manifest-level M-step:
+# project configs build data/rft-*/sft.jsonl independently, then the manifest
+# runner concatenates them into work_dir/sft.jsonl and trains one adapter.
+
+base_model: google/gemma-4-E2B-it
+output_dir: outputs/rft-mutation
+# Not used during train; kept for RFTConfig completeness.
+dataset_path: data/rft-mutation/sft.jsonl
+seed: 42
+
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+loss_type: chunked_nll
+activation_offloading: false
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: [vision_tower, audio_tower, multi_modal_projector]
+  bias: none
+
+# 16k is the largest measured stable context on one A100 80GB for Gemma 4 E2B
+# with LoRA+bf16+SDPA+chunked_nll. Longer accepted traces are truncated by TRL.
+max_seq_len: 16384
+learning_rate: 1.0e-5
+per_device_batch_size: 1
+gradient_accumulation_steps: 8
+num_epochs: 1.0
+completion_only_loss: true
+packing: false
+warmup_ratio: 0.03
+logging_steps: 5
+report_to: none
+
+work_dir: data/rft-mutation

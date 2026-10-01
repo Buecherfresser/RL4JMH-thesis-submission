@@ -1,0 +1,109 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmarks for {@link io.reactivex.rxjava3.internal.operators.single.SingleDoAfterTerminate}.
+ *
+ * <p>Measures the throughput (operations per second) of a plain {@code Single.just}
+ * versus the same {@code Single} wrapped with {@code doAfterTerminate}.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@link State} for shared immutable fixtures.</li>
+ *   <li>Warm‑up and measurement iterations to let the JIT stabilize.</li>
+ *   <li>Multiple forks to reduce JVM start‑up noise.</li>
+ *   <li>Blackhole is not needed because we return the result, which JMH treats as a
+ *       consumption point.</li>
+ *   <li>All allocations are performed in {@link Setup} to avoid measuring allocation cost.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Benchmark)
+public class SingleDoAfterTerminateBenchmark {
+
+    /**
+     * Plain source without any operator.
+     */
+    private Single<Integer> plainSingle;
+
+    /**
+     * Source wrapped with {@code doAfterTerminate}.
+     */
+    private Single<Integer> withDoAfterTerminate;
+
+    /**
+     * No‑op action used for the operator.
+     */
+    private Action noopAction;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A simple source that emits a constant value.
+        plainSingle = Single.just(1);
+        // No‑op action – the overhead we want to measure.
+        noopAction = () -> {
+            // intentionally empty
+        };
+        // Apply the operator under test.
+        withDoAfterTerminate = plainSingle.doAfterTerminate(noopAction);
+    }
+
+    /**
+     * Baseline benchmark: retrieve the value from a plain {@code Single}.
+     *
+     * @return the emitted integer (used by JMH to prevent dead‑code elimination)
+     */
+    @Benchmark
+    public int baseline() {
+        return plainSingle.blockingGet();
+    }
+
+    /**
+     * Benchmark the {@code doAfterTerminate} operator.
+     *
+     * @return the emitted integer (used by JMH to prevent dead‑code elimination)
+     */
+    @Benchmark
+    public int withDoAfterTerminate() {
+        return withDoAfterTerminate.blockingGet();
+    }
+}

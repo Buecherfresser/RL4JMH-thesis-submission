@@ -1,0 +1,47 @@
+```
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleSource;
+import io.reactivex.rxjava3.functions.Function;
+
+/**
+ * JMH benchmark for {@link FlowableSwitchMapSingle} using the public {@code switchMapSingle}
+ * operator. Measures throughput of processing a configurable number of items.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableSwitchMapSingleBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int size; // number of items emitted by the source Flowable
+
+    private Flowable<Integer> source;
+    private Function<Integer, SingleSource<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Immutable source emitting a range of integers.
+        source = Flowable.range(1, size);
+        // Simple mapper that wraps the transformed value into a Single.
+        mapper = i -> Single.just(i * 2);
+    }
+
+    @Benchmark
+    public void switchMapSingleThroughput(Blackhole bh) {
+        // The public API uses FlowableSwitchMapSingle internally.
+        source.switchMapSingle(mapper)
+              .blockingSubscribe(bh::consume);
+    }
+}
+```

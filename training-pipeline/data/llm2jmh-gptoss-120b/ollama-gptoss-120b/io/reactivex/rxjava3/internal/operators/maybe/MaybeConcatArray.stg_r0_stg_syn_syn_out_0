@@ -1,0 +1,105 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link MaybeConcatArray}.
+ *
+ * The benchmark measures the throughput of concatenating an array of {@link MaybeSource}s
+ * into a {@link Flowable} and consuming the emitted items.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create the test data once per iteration.
+ * - Blackhole consumption to prevent dead-code elimination.
+ * - Reasonable warm‑up and measurement settings.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class MaybeConcatArrayBenchmark {
+
+    /**
+     * Size of the source array. Adjust to reflect realistic workloads.
+     */
+    @Param({ "10", "100", "1000" })
+    public int sourceCount;
+
+    /**
+     * The array of Maybe sources used in the benchmark.
+     */
+    private MaybeSource<Integer>[] sources;
+
+    /**
+     * The Flowable produced by MaybeConcatArray.
+     */
+    private Flowable<Integer> flowable;
+
+    @SuppressWarnings("unchecked")
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create an array of Maybe.just(i) sources.
+        sources = new MaybeSource[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            final int value = i;
+            sources[i] = Maybe.just(value);
+        }
+        // Build the Flowable that concatenates the Maybes.
+        flowable = new MaybeConcatArray<>(sources);
+    }
+
+    /**
+     * Benchmark method that subscribes to the Flowable and consumes all items.
+     *
+     * @param bh Blackhole to consume values and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void concatAndConsume(Blackhole bh) {
+        // Use TestSubscriber to request all items and await completion.
+        TestSubscriber<Integer> ts = new TestSubscriber<>(Long.MAX_VALUE);
+        flowable.subscribe(ts);
+        // Ensure the subscription has completed before returning.
+        ts.awaitDone(5, TimeUnit.SECONDS);
+        // Consume the received items via Blackhole.
+        for (Integer v : ts.values()) {
+            bh.consume(v);
+        }
+    }
+}

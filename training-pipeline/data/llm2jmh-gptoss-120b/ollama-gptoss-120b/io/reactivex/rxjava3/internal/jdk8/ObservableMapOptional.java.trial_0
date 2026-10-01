@@ -1,0 +1,83 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.jdk8.ObservableMapOptional;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableMapOptional}.
+ *
+ * Measures the throughput of mapping a stream of integers to {@link Optional}
+ * values and emitting only the present ones.
+ *
+ * The benchmark follows best practices:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create immutable data structures once per iteration.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations, multiple forks, and a reasonable timeout.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@Threads(1)
+@State(Scope.Thread)
+public class ObservableMapOptionalBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    /** Source Observable that emits a range of integers. */
+    private Observable<Integer> source;
+
+    /** Mapper function converting an integer to an Optional. */
+    private Function<Integer, Optional<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits a range of integers.
+        source = Observable.range(1, size);
+
+        // Simple mapper: even numbers are wrapped in Optional, odd numbers become empty.
+        mapper = i -> (i & 1) == 0 ? Optional.of(i) : Optional.empty();
+    }
+
+    /**
+     * Benchmark the full pipeline: source → ObservableMapOptional → blocking subscription.
+     *
+     * The Blackhole consumes each emitted item to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void mapOptionalThroughput(Blackhole bh) {
+        ObservableMapOptional<Integer, Integer> mapped =
+                new ObservableMapOptional<>(source, mapper);
+
+        // Use a custom Observer that forwards each onNext to the Blackhole.
+        mapped.blockingSubscribe(new Observer<Integer>() {
+            @Override public void onSubscribe(io.reactivex.rxjava3.disposables.Disposable d) { /* no‑op */ }
+
+            @Override public void onNext(Integer value) {
+                bh.consume(value);
+            }
+
+            @Override public void onError(Throwable e) {
+                // Propagate errors to the benchmark harness.
+                throw new RuntimeException(e);
+            }
+
+            @Override public void onComplete() {
+                // No‑op; completion is implicit in the benchmark timing.
+            }
+        });
+    }
+}
+```

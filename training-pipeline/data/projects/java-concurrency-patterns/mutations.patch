@@ -1,0 +1,643 @@
+diff --git a/br/com/leonardoz/features/atomics/UsingAtomics.java b/br/com/leonardoz/features/atomics/UsingAtomics.java
+index 97ff747..f29816a 100644
+--- a/br/com/leonardoz/features/atomics/UsingAtomics.java
++++ b/br/com/leonardoz/features/atomics/UsingAtomics.java
+@@ -32,11 +32,11 @@ public class UsingAtomics {
+ 	static class AtomicCounter {
+ 		private AtomicInteger atomicInteger = new AtomicInteger(0);
+ 
+-		public void increment() {
++		public void increment() { br.com.leonardoz.jmhbench.MutationSwitch.tick(5);
+ 			atomicInteger.incrementAndGet();
+ 		}
+ 
+-		public void decrement() {
++		public void decrement() { br.com.leonardoz.jmhbench.MutationSwitch.tick(7);
+ 			atomicInteger.decrementAndGet();
+ 		}
+ 
+diff --git a/br/com/leonardoz/features/collections/UsingConcurrentCollections.java b/br/com/leonardoz/features/collections/UsingConcurrentCollections.java
+index 5073cac..1972edf 100644
+--- a/br/com/leonardoz/features/collections/UsingConcurrentCollections.java
++++ b/br/com/leonardoz/features/collections/UsingConcurrentCollections.java
+@@ -35,7 +35,7 @@ public class UsingConcurrentCollections {
+ 	 * 
+ 	 * - Just a few Writers can modify it.
+ 	 */
+-	public static void usingConcurrentHashMap() {
++	public static void usingConcurrentHashMap() { br.com.leonardoz.jmhbench.MutationSwitch.tick(9);
+ 		System.out.println("=== ConcurrentHashMap ===");
+ 		var executor = Executors.newCachedThreadPool();
+ 		var random = new Random();
+@@ -84,7 +84,7 @@ public class UsingConcurrentCollections {
+ 	 * Supports atomic operations.
+ 	 * 
+ 	 */
+-	public static void usingCopyOnWriteArrayList() {
++	public static void usingCopyOnWriteArrayList() { br.com.leonardoz.jmhbench.MutationSwitch.tick(11);
+ 		System.out.println("=== CopyOnWriteArrayList ===");
+ 		var executor = Executors.newCachedThreadPool();
+ 		var random = new Random();
+diff --git a/br/com/leonardoz/features/collections/UsingSynchronizedCollections.java b/br/com/leonardoz/features/collections/UsingSynchronizedCollections.java
+index fb24ce6..a3ba62a 100644
+--- a/br/com/leonardoz/features/collections/UsingSynchronizedCollections.java
++++ b/br/com/leonardoz/features/collections/UsingSynchronizedCollections.java
+@@ -27,7 +27,7 @@ public class UsingSynchronizedCollections {
+ 	 * It's just an easy example to explain the problem, sets are better for this
+ 	 * than a vector/list.
+ 	 */
+-	public static void insertIfAbsent(Vector<Long> list, Long value) {
++	public static void insertIfAbsent(Vector<Long> list, Long value) { br.com.leonardoz.jmhbench.MutationSwitch.tick(13);
+ 		synchronized (list) {
+ 			var contains = list.contains(value);
+ 			if (!contains) {
+@@ -41,7 +41,7 @@ public class UsingSynchronizedCollections {
+ 	 * You can have duplicates. Try to run multiple times and see the diff in
+ 	 * results
+ 	 */
+-	public static void insertIfAbsentUnsafe(Vector<Long> list, Long value) {
++	public static void insertIfAbsentUnsafe(Vector<Long> list, Long value) { br.com.leonardoz.jmhbench.MutationSwitch.tick(15);
+ 		var contains = list.contains(value);
+ 		if (!contains) {
+ 			list.add(value);
+diff --git a/br/com/leonardoz/features/executors/UsingExecutors.java b/br/com/leonardoz/features/executors/UsingExecutors.java
+index 93c4bff..3983ef6 100644
+--- a/br/com/leonardoz/features/executors/UsingExecutors.java
++++ b/br/com/leonardoz/features/executors/UsingExecutors.java
+@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
+  */
+ public class UsingExecutors {
+ 
+-	public static void usingSingleThreadExecutor() {
++	public static void usingSingleThreadExecutor() { br.com.leonardoz.jmhbench.MutationSwitch.tick(17);
+ 		System.out.println("=== SingleThreadExecutor ===");
+ 		var singleThreadExecutor = Executors.newSingleThreadExecutor();
+ 		singleThreadExecutor.execute(() -> System.out.println("Print this."));
+@@ -62,7 +62,7 @@ public class UsingExecutors {
+ 		System.out.println("\n\n");
+ 	}
+ 
+-	public static void usingCachedThreadPool() {
++	public static void usingCachedThreadPool() { br.com.leonardoz.jmhbench.MutationSwitch.tick(19);
+ 		System.out.println("=== CachedThreadPool ===");
+ 		var cachedThreadPool = Executors.newCachedThreadPool();
+ 		var uuids = new LinkedList<Future<UUID>>();
+diff --git a/br/com/leonardoz/features/forkjoin/UsingForkJoinFramework.java b/br/com/leonardoz/features/forkjoin/UsingForkJoinFramework.java
+index f61eea7..0796eb1 100644
+--- a/br/com/leonardoz/features/forkjoin/UsingForkJoinFramework.java
++++ b/br/com/leonardoz/features/forkjoin/UsingForkJoinFramework.java
+@@ -95,7 +95,7 @@ public class UsingForkJoinFramework {
+ 	 * the resource consumption. It doesn't need to be closed/shutdown.
+ 	 * 
+ 	 */
+-	public ForkJoinPool getCommonPool() {
++	public ForkJoinPool getCommonPool() { br.com.leonardoz.jmhbench.MutationSwitch.tick(21);
+ 		return ForkJoinPool.commonPool();
+ 	}
+ 
+@@ -116,7 +116,7 @@ public class UsingForkJoinFramework {
+ 	public ForkJoinPool customForkJoinPool(int parallelism, 
+ 			ForkJoinPool.ForkJoinWorkerThreadFactory factory,
+ 			UncaughtExceptionHandler handler, 
+-			boolean asyncMode) {
++			boolean asyncMode) { br.com.leonardoz.jmhbench.MutationSwitch.tick(23);
+ 		return new ForkJoinPool(parallelism, factory, handler, asyncMode);
+ 	}
+ 
+diff --git a/br/com/leonardoz/features/futures/UsingCompletableFuture.java b/br/com/leonardoz/features/futures/UsingCompletableFuture.java
+index bbffd0f..9c93916 100644
+--- a/br/com/leonardoz/features/futures/UsingCompletableFuture.java
++++ b/br/com/leonardoz/features/futures/UsingCompletableFuture.java
+@@ -140,7 +140,7 @@ import java.util.function.Supplier;
+  */
+ public class UsingCompletableFuture {
+ 
+-	public static void main(String[] args) throws InterruptedException, ExecutionException {
++	public static void main(String[] args) throws InterruptedException, ExecutionException { br.com.leonardoz.jmhbench.MutationSwitch.tick(25);
+ 		var random = new Random();
+ 		var executor = Executors.newCachedThreadPool();
+ 		// Creating
+diff --git a/br/com/leonardoz/features/futures/UsingFutureTasks.java b/br/com/leonardoz/features/futures/UsingFutureTasks.java
+index 5018f39..50a2f5a 100644
+--- a/br/com/leonardoz/features/futures/UsingFutureTasks.java
++++ b/br/com/leonardoz/features/futures/UsingFutureTasks.java
+@@ -23,7 +23,7 @@ import java.util.concurrent.TimeoutException;
+  */
+ public class UsingFutureTasks {
+ 
+-	public static void main(String[] args) {
++	public static void main(String[] args) { br.com.leonardoz.jmhbench.MutationSwitch.tick(27);
+ 		Callable<Integer> callable = () -> {
+ 			int random = new Random().nextInt(10) * 100;
+ 			System.out.println("Preparing to execute");
+diff --git a/br/com/leonardoz/features/locks/UsingExplicitReadWriteLocks.java b/br/com/leonardoz/features/locks/UsingExplicitReadWriteLocks.java
+index d531c65..e22a729 100644
+--- a/br/com/leonardoz/features/locks/UsingExplicitReadWriteLocks.java
++++ b/br/com/leonardoz/features/locks/UsingExplicitReadWriteLocks.java
+@@ -41,7 +41,7 @@ public class UsingExplicitReadWriteLocks {
+ 	 * 
+ 	 * @return
+ 	 */
+-	public String showContent() {
++	public String showContent() { br.com.leonardoz.jmhbench.MutationSwitch.tick(29);
+ 		ReadLock readLock = readWriteLock.readLock();
+ 		readLock.lock();
+ 		try {
+@@ -52,7 +52,7 @@ public class UsingExplicitReadWriteLocks {
+ 		}
+ 	}
+ 
+-	public void writeContent(String newContentToAppend) {
++	public void writeContent(String newContentToAppend) { br.com.leonardoz.jmhbench.MutationSwitch.tick(31);
+ 		WriteLock writeLock = readWriteLock.writeLock();
+ 		writeLock.lock();
+ 		try {
+diff --git a/br/com/leonardoz/features/locks/UsingExplicitReentrantLocks.java b/br/com/leonardoz/features/locks/UsingExplicitReentrantLocks.java
+index 9f9974c..a218803 100644
+--- a/br/com/leonardoz/features/locks/UsingExplicitReentrantLocks.java
++++ b/br/com/leonardoz/features/locks/UsingExplicitReentrantLocks.java
+@@ -28,7 +28,7 @@ public class UsingExplicitReentrantLocks {
+ 	/**
+ 	 * Simplest way to use
+ 	 */
+-	public void lockMyHearth() {
++	public void lockMyHearth() { br.com.leonardoz.jmhbench.MutationSwitch.tick(33);
+ 		reentrantLock.lock();
+ 		try {
+ 			System.out.println("Changing stated in a serialized way");
+@@ -44,7 +44,7 @@ public class UsingExplicitReentrantLocks {
+ 	 * 
+ 	 * @throws InterruptedException
+ 	 */
+-	public void lockMyHearthWithTiming() throws InterruptedException {
++	public void lockMyHearthWithTiming() throws InterruptedException { br.com.leonardoz.jmhbench.MutationSwitch.tick(35);
+ 		// Tries to acquire lock in the specified timeout
+ 		if (!reentrantLock.tryLock(1l, TimeUnit.SECONDS)) {
+ 			System.err.println("Failed to acquire the lock - it's already held.");
+diff --git a/br/com/leonardoz/features/locks/UsingIntrinsicLocks.java b/br/com/leonardoz/features/locks/UsingIntrinsicLocks.java
+index a9cc800..c35a59f 100644
+--- a/br/com/leonardoz/features/locks/UsingIntrinsicLocks.java
++++ b/br/com/leonardoz/features/locks/UsingIntrinsicLocks.java
+@@ -29,7 +29,7 @@ public class UsingIntrinsicLocks {
+ 	 * 
+ 	 * Instead of 'this', other objects variables can be used
+ 	 */
+-	public synchronized void mySynchronizedMethod() {
++	public synchronized void mySynchronizedMethod() { br.com.leonardoz.jmhbench.MutationSwitch.tick(37);
+ 		state = !state;
+ 		// Everything in this method can only be accessed by the thread who hold the
+ 		// lock.
+@@ -41,7 +41,7 @@ public class UsingIntrinsicLocks {
+ 	/**
+ 	 * It's possible to lock only a block inside the method
+ 	 */
+-	public void mySynchronizedBlock() {
++	public void mySynchronizedBlock() { br.com.leonardoz.jmhbench.MutationSwitch.tick(39);
+ 		/*
+ 		 * Everything in this block can only be accessed by the thread who hold the
+ 		 * lock. The message bellow will be printed before the message inside the
+diff --git a/br/com/leonardoz/features/parallel_stream/UsingParallelStreams.java b/br/com/leonardoz/features/parallel_stream/UsingParallelStreams.java
+index eaf2b46..f008e77 100644
+--- a/br/com/leonardoz/features/parallel_stream/UsingParallelStreams.java
++++ b/br/com/leonardoz/features/parallel_stream/UsingParallelStreams.java
+@@ -32,7 +32,7 @@ import java.util.stream.IntStream;
+  */
+ public class UsingParallelStreams {
+ 
+-	public static void main(String[] args) {
++	public static void main(String[] args) { br.com.leonardoz.jmhbench.MutationSwitch.tick(1);
+ 		// Creating Parallel Streams from existing collection
+ 		new ArrayList<>().parallelStream();
+ 
+@@ -84,7 +84,7 @@ public class UsingParallelStreams {
+ 
+ 	// thanks to linski on
+ 	// https://stackoverflow.com/questions/15862271/java-compute-intensive-task
+-	public static boolean isPrime(BigInteger n) {
++	public static boolean isPrime(BigInteger n) { br.com.leonardoz.jmhbench.MutationSwitch.tick(3);
+ 		var counter = BigInteger.ONE.add(BigInteger.ONE);
+ 		var isPrime = true;
+ 		while (counter.compareTo(n) == -1) {
+diff --git a/br/com/leonardoz/features/synchronizers/UsingBarriers.java b/br/com/leonardoz/features/synchronizers/UsingBarriers.java
+index 0b4610d..b8287c1 100644
+--- a/br/com/leonardoz/features/synchronizers/UsingBarriers.java
++++ b/br/com/leonardoz/features/synchronizers/UsingBarriers.java
+@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
+  */
+ public class UsingBarriers {
+ 
+-	public static void main(String[] args) {
++	public static void main(String[] args) { br.com.leonardoz.jmhbench.MutationSwitch.tick(41);
+ 
+ 		Runnable barrierAction = () -> System.out.println("Well done, guys!");
+ 
+diff --git a/br/com/leonardoz/features/synchronizers/UsingLatches.java b/br/com/leonardoz/features/synchronizers/UsingLatches.java
+index 1da6b2b..a990333 100644
+--- a/br/com/leonardoz/features/synchronizers/UsingLatches.java
++++ b/br/com/leonardoz/features/synchronizers/UsingLatches.java
+@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
+  */
+ public class UsingLatches {
+ 
+-	public static void main(String[] args) {
++	public static void main(String[] args) { br.com.leonardoz.jmhbench.MutationSwitch.tick(43);
+ 		var executor = Executors.newCachedThreadPool();
+ 		var latch = new CountDownLatch(3);
+ 		Runnable r = () -> {
+diff --git a/br/com/leonardoz/features/synchronizers/UsingSemaphores.java b/br/com/leonardoz/features/synchronizers/UsingSemaphores.java
+index 8fbffff..76f4d6f 100644
+--- a/br/com/leonardoz/features/synchronizers/UsingSemaphores.java
++++ b/br/com/leonardoz/features/synchronizers/UsingSemaphores.java
+@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
+  *
+  */
+ public class UsingSemaphores {
+-	public static void main(String[] args) {
++	public static void main(String[] args) { br.com.leonardoz.jmhbench.MutationSwitch.tick(45);
+ 		
+ 		var executor = Executors.newCachedThreadPool();
+ 		var semaphore = new Semaphore(3);
+diff --git a/br/com/leonardoz/features/threads/UsingThreads.java b/br/com/leonardoz/features/threads/UsingThreads.java
+index 129c1e2..d64ac45 100644
+--- a/br/com/leonardoz/features/threads/UsingThreads.java
++++ b/br/com/leonardoz/features/threads/UsingThreads.java
+@@ -12,7 +12,7 @@ package br.com.leonardoz.features.threads;
+  */
+ public class UsingThreads {
+ 
+-	public static void main(String[] args) throws InterruptedException {
++	public static void main(String[] args) throws InterruptedException { br.com.leonardoz.jmhbench.MutationSwitch.tick(47);
+ 		// Creating
+ 		var created = new Thread();
+ 		created.start();
+diff --git a/br/com/leonardoz/jmhbench/MutationSwitch.java b/br/com/leonardoz/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..6310204
+--- /dev/null
++++ b/br/com/leonardoz/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package br.com.leonardoz.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/br/com/leonardoz/patterns/condition_queues/ExplicitConditionQueue.java b/br/com/leonardoz/patterns/condition_queues/ExplicitConditionQueue.java
+index 3a9d205..2d24b48 100644
+--- a/br/com/leonardoz/patterns/condition_queues/ExplicitConditionQueue.java
++++ b/br/com/leonardoz/patterns/condition_queues/ExplicitConditionQueue.java
+@@ -28,7 +28,7 @@ public class ExplicitConditionQueue {
+ 	private Condition limitReachedCondition = lock.newCondition();
+ 	private Condition limitUnreachedCondition = lock.newCondition();
+ 
+-	public void stopMessages() throws InterruptedException {
++	public void stopMessages() throws InterruptedException { br.com.leonardoz.jmhbench.MutationSwitch.tick(6);
+ 		lock.lock();
+ 		try {
+ 			while (messageCount < LIMIT) {
+@@ -43,7 +43,7 @@ public class ExplicitConditionQueue {
+ 		}
+ 	}
+ 
+-	public void printMessages(String message) throws InterruptedException {
++	public void printMessages(String message) throws InterruptedException { br.com.leonardoz.jmhbench.MutationSwitch.tick(8);
+ 		lock.lock();
+ 		try {
+ 			while (messageCount == LIMIT) {
+diff --git a/br/com/leonardoz/patterns/condition_queues/WaitNotifyQueue.java b/br/com/leonardoz/patterns/condition_queues/WaitNotifyQueue.java
+index afa138f..de16199 100644
+--- a/br/com/leonardoz/patterns/condition_queues/WaitNotifyQueue.java
++++ b/br/com/leonardoz/patterns/condition_queues/WaitNotifyQueue.java
+@@ -31,12 +31,12 @@ public class WaitNotifyQueue {
+ 		this.continueToNotify = true;
+ 	}
+ 
+-	public synchronized void stopsMessaging() {
++	public synchronized void stopsMessaging() { br.com.leonardoz.jmhbench.MutationSwitch.tick(10);
+ 		continueToNotify = false;
+ 		notifyAll();
+ 	}
+ 
+-	public synchronized void message() throws InterruptedException {
++	public synchronized void message() throws InterruptedException { br.com.leonardoz.jmhbench.MutationSwitch.tick(12);
+ 		while (!continueToNotify)
+ 			wait();
+ 		var message = messages.take();
+diff --git a/br/com/leonardoz/patterns/controlled_initialization/ControlledInitialization.java b/br/com/leonardoz/patterns/controlled_initialization/ControlledInitialization.java
+index 5576ac1..4fca1ac 100644
+--- a/br/com/leonardoz/patterns/controlled_initialization/ControlledInitialization.java
++++ b/br/com/leonardoz/patterns/controlled_initialization/ControlledInitialization.java
+@@ -97,7 +97,7 @@ public class ControlledInitialization {
+ 
+ 	}
+ 
+-	public static void main(String[] args) {
++	public static void main(String[] args) { br.com.leonardoz.jmhbench.MutationSwitch.tick(14);
+ 		new ControlledInitialization();
+ 	}
+ 
+diff --git a/br/com/leonardoz/patterns/divideconquer/ParallelDivideAndConquer.java b/br/com/leonardoz/patterns/divideconquer/ParallelDivideAndConquer.java
+index 4cef549..0a3923c 100644
+--- a/br/com/leonardoz/patterns/divideconquer/ParallelDivideAndConquer.java
++++ b/br/com/leonardoz/patterns/divideconquer/ParallelDivideAndConquer.java
+@@ -36,7 +36,7 @@ public class ParallelDivideAndConquer {
+ 		}
+ 		
+ 		@Override
+-		protected Integer compute() {
++		protected Integer compute() { br.com.leonardoz.jmhbench.MutationSwitch.tick(16);
+ 			var size = somethingToDivideAndConquer.size();
+ 			if (size < THRESHOLD) {
+ 				// solves directly
+diff --git a/br/com/leonardoz/patterns/divideconquer/ParallelSum.java b/br/com/leonardoz/patterns/divideconquer/ParallelSum.java
+index 8fff70e..fc06c56 100644
+--- a/br/com/leonardoz/patterns/divideconquer/ParallelSum.java
++++ b/br/com/leonardoz/patterns/divideconquer/ParallelSum.java
+@@ -27,7 +27,7 @@ public class ParallelSum extends RecursiveTask<BigInteger> {
+ 	}
+ 
+ 	@Override
+-	protected BigInteger compute() {
++	protected BigInteger compute() { br.com.leonardoz.jmhbench.MutationSwitch.tick(18);
+ 		var size = nums.size();
+ 		if (size < THRESHOLD) {
+ 			return sequentialSum(nums);
+@@ -46,7 +46,7 @@ public class ParallelSum extends RecursiveTask<BigInteger> {
+ 	 * Just showing how to use the pattern and some really dummy benchmark. Don't
+ 	 * take it seriously.
+ 	 */
+-	public static void main(String[] args) throws InterruptedException {
++	public static void main(String[] args) throws InterruptedException { br.com.leonardoz.jmhbench.MutationSwitch.tick(20);
+ 		var nums = LongStream.range(0, 10_000_000L)
+ 				.mapToObj(BigInteger::valueOf)
+ 				.collect(Collectors.toList());
+diff --git a/br/com/leonardoz/patterns/fixed_lock_ordering/CoinTransfer.java b/br/com/leonardoz/patterns/fixed_lock_ordering/CoinTransfer.java
+index 862dd89..86ace93 100644
+--- a/br/com/leonardoz/patterns/fixed_lock_ordering/CoinTransfer.java
++++ b/br/com/leonardoz/patterns/fixed_lock_ordering/CoinTransfer.java
+@@ -14,11 +14,11 @@ public class CoinTransfer {
+ 		private String name;
+ 		private BigInteger coins;
+ 
+-		public int getId() {
++		public int getId() { br.com.leonardoz.jmhbench.MutationSwitch.tick(22);
+ 			return id;
+ 		}
+ 
+-		public void setId(int id) {
++		public void setId(int id) { br.com.leonardoz.jmhbench.MutationSwitch.tick(24);
+ 			this.id = id;
+ 		}
+ 
+diff --git a/br/com/leonardoz/patterns/fixed_lock_ordering/FixedLockOrdering.java b/br/com/leonardoz/patterns/fixed_lock_ordering/FixedLockOrdering.java
+index 5ac14d6..a673bab 100644
+--- a/br/com/leonardoz/patterns/fixed_lock_ordering/FixedLockOrdering.java
++++ b/br/com/leonardoz/patterns/fixed_lock_ordering/FixedLockOrdering.java
+@@ -19,11 +19,11 @@ public class FixedLockOrdering {
+ 		private int id;
+ 		private String anotherValue;
+ 
+-		public int getId() {
++		public int getId() { br.com.leonardoz.jmhbench.MutationSwitch.tick(26);
+ 			return id;
+ 		}
+ 
+-		public void setId(int id) {
++		public void setId(int id) { br.com.leonardoz.jmhbench.MutationSwitch.tick(28);
+ 			this.id = id;
+ 		}
+ 
+diff --git a/br/com/leonardoz/patterns/non_blocking/DoubleCounter.java b/br/com/leonardoz/patterns/non_blocking/DoubleCounter.java
+index 836b638..5bdbfbf 100644
+--- a/br/com/leonardoz/patterns/non_blocking/DoubleCounter.java
++++ b/br/com/leonardoz/patterns/non_blocking/DoubleCounter.java
+@@ -12,7 +12,7 @@ public class DoubleCounter {
+ 
+ 	private AtomicInteger value = new AtomicInteger(0);
+ 
+-	public void increase() {
++	public void increase() { br.com.leonardoz.jmhbench.MutationSwitch.tick(30);
+ 		int updatedValue;
+ 		int old;
+ 		do {
+@@ -26,7 +26,7 @@ public class DoubleCounter {
+ 		 */
+ 	}
+ 	
+-	public int getValue() {
++	public int getValue() { br.com.leonardoz.jmhbench.MutationSwitch.tick(32);
+ 		return value.get();
+ 	}
+ 	
+diff --git a/br/com/leonardoz/patterns/non_blocking/NonBlockingDesign.java b/br/com/leonardoz/patterns/non_blocking/NonBlockingDesign.java
+index d655724..69ce9ca 100644
+--- a/br/com/leonardoz/patterns/non_blocking/NonBlockingDesign.java
++++ b/br/com/leonardoz/patterns/non_blocking/NonBlockingDesign.java
+@@ -22,7 +22,7 @@ public class NonBlockingDesign {
+ 
+ 	private AtomicReference<Object> value = new AtomicReference<>(new Object());
+ 
+-	public void modifyValue() {
++	public void modifyValue() { br.com.leonardoz.jmhbench.MutationSwitch.tick(34);
+ 		Object updatedValue;
+ 		Object old;
+ 		do {
+@@ -36,7 +36,7 @@ public class NonBlockingDesign {
+ 		 */
+ 	}
+ 	
+-	public Object getValue() {
++	public Object getValue() { br.com.leonardoz.jmhbench.MutationSwitch.tick(36);
+ 		return value.get();
+ 	}
+ 
+diff --git a/br/com/leonardoz/patterns/producer_consumer/ProducerConsumer.java b/br/com/leonardoz/patterns/producer_consumer/ProducerConsumer.java
+index 972bc7b..3ac7845 100644
+--- a/br/com/leonardoz/patterns/producer_consumer/ProducerConsumer.java
++++ b/br/com/leonardoz/patterns/producer_consumer/ProducerConsumer.java
+@@ -43,7 +43,7 @@ public class ProducerConsumer {
+ 		return null;
+ 	};
+ 
+-	public void run(long forHowLong, TimeUnit unit) throws InterruptedException {
++	public void run(long forHowLong, TimeUnit unit) throws InterruptedException { br.com.leonardoz.jmhbench.MutationSwitch.tick(38);
+ 		var pool = Executors.newCachedThreadPool();
+ 		pool.submit(producer);
+ 		pool.submit(consumer);
+@@ -52,7 +52,7 @@ public class ProducerConsumer {
+ 		pool.awaitTermination(forHowLong, unit);
+ 	}
+ 
+-	public static void main(String[] args) {
++	public static void main(String[] args) { br.com.leonardoz.jmhbench.MutationSwitch.tick(40);
+ 		var producerConsumer = new ProducerConsumer();
+ 		try {
+ 			producerConsumer.run(5, TimeUnit.SECONDS);
+diff --git a/br/com/leonardoz/patterns/resource_pool/ResourcePool.java b/br/com/leonardoz/patterns/resource_pool/ResourcePool.java
+index db7df92..4e716e6 100644
+--- a/br/com/leonardoz/patterns/resource_pool/ResourcePool.java
++++ b/br/com/leonardoz/patterns/resource_pool/ResourcePool.java
+@@ -45,7 +45,7 @@ public class ResourcePool<T> {
+ 		}
+ 	}
+ 
+-	public void release(T resource) throws InterruptedException {
++	public void release(T resource) throws InterruptedException { br.com.leonardoz.jmhbench.MutationSwitch.tick(42);
+ 		if (resource != null) {
+ 			resources.put(resource);
+ 			semaphore.release();
+diff --git a/br/com/leonardoz/patterns/resource_pool/ResourcePoolUsage.java b/br/com/leonardoz/patterns/resource_pool/ResourcePoolUsage.java
+index bcd12a0..39157b4 100644
+--- a/br/com/leonardoz/patterns/resource_pool/ResourcePoolUsage.java
++++ b/br/com/leonardoz/patterns/resource_pool/ResourcePoolUsage.java
+@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
+  * Example: Resource Pool usage
+  */
+ public class ResourcePoolUsage {
+-	public static void main(String[] args) {
++	public static void main(String[] args) { br.com.leonardoz.jmhbench.MutationSwitch.tick(44);
+ 		var executor = Executors.newCachedThreadPool();
+ 		var pool = new ResourcePool<Integer>(15,
+ 				Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14));
+diff --git a/br/com/leonardoz/patterns/task_cancel/BackgroundTimePrintTask.java b/br/com/leonardoz/patterns/task_cancel/BackgroundTimePrintTask.java
+index f9b7903..105046c 100644
+--- a/br/com/leonardoz/patterns/task_cancel/BackgroundTimePrintTask.java
++++ b/br/com/leonardoz/patterns/task_cancel/BackgroundTimePrintTask.java
+@@ -25,12 +25,12 @@ public class BackgroundTimePrintTask {
+ 		}
+ 	};
+ 
+-	public void run() {
++	public void run() { br.com.leonardoz.jmhbench.MutationSwitch.tick(46);
+ 		thread = new Thread(task);
+ 		thread.start();
+ 	}
+ 
+-	public void cancel() {
++	public void cancel() { br.com.leonardoz.jmhbench.MutationSwitch.tick(48);
+ 		if (thread != null) {
+ 			thread.interrupt();
+ 		}
+diff --git a/br/com/leonardoz/patterns/task_cancel/ThreadTaskCancel.java b/br/com/leonardoz/patterns/task_cancel/ThreadTaskCancel.java
+index 25e53e2..f317fbb 100644
+--- a/br/com/leonardoz/patterns/task_cancel/ThreadTaskCancel.java
++++ b/br/com/leonardoz/patterns/task_cancel/ThreadTaskCancel.java
+@@ -23,12 +23,12 @@ public class ThreadTaskCancel {
+ 		}
+ 	};
+ 
+-	public void run() {
++	public void run() { br.com.leonardoz.jmhbench.MutationSwitch.tick(49);
+ 		thread = new Thread(task);
+ 		thread.start();
+ 	}
+ 
+-	public void cancel() {
++	public void cancel() { br.com.leonardoz.jmhbench.MutationSwitch.tick(50);
+ 		if (thread != null) {
+ 			thread.interrupt();
+ 		}
+diff --git a/br/com/leonardoz/patterns/thread_safe/compound_actions/CompareAndSwapUtil.java b/br/com/leonardoz/patterns/thread_safe/compound_actions/CompareAndSwapUtil.java
+index b0e7d5f..abe3a86 100644
+--- a/br/com/leonardoz/patterns/thread_safe/compound_actions/CompareAndSwapUtil.java
++++ b/br/com/leonardoz/patterns/thread_safe/compound_actions/CompareAndSwapUtil.java
+@@ -11,11 +11,11 @@ public class CompareAndSwapUtil {
+ 
+ 	private int value;
+ 
+-	public synchronized int getValue() {
++	public synchronized int getValue() { br.com.leonardoz.jmhbench.MutationSwitch.tick(2);
+ 		return value;
+ 	}
+ 
+-	public synchronized int compareAndSwap(int expected, int newValue) {
++	public synchronized int compareAndSwap(int expected, int newValue) { br.com.leonardoz.jmhbench.MutationSwitch.tick(4);
+ 		int old = value;
+ 		if (old == expected) {
+ 			value = newValue;

@@ -1,0 +1,113 @@
+```
+package io.reactivex.rxjava3.subjects.benchmark;
+
+import org.openjdk.jmh.annotations.*;
+import io.reactivex.rxjava3.subjects.CompletableSubject;
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link CompletableSubject}.
+ *
+ * The benchmarks focus on the most frequently used hot paths:
+ *   • Adding and removing observers (subscribe + dispose)
+ *   • Completing the subject
+ *   • Erroring the subject
+ *
+ * Throughput mode is used because typical usage of a Subject is to handle
+ * a high volume of events; we want to know how many operations per second
+ * can be performed under steady‑state conditions.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class CompletableSubjectBenchmark {
+
+    private CompletableSubject subject;
+    private TestObserver observer;
+
+    /**
+     * Create a fresh subject and observer for each benchmark invocation.
+     * Using Level.Invocation ensures that each measurement sees a clean
+     * state, eliminating cross‑iteration interference.
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        subject = CompletableSubject.create();
+        observer = new TestObserver();
+    }
+
+    /**
+     * Benchmark the cost of subscribing an observer and then disposing it.
+     * This exercises the {@code add} and {@code remove} paths, which involve
+     * atomic array updates and CAS loops.
+     */
+    @Benchmark
+    public void addAndRemove() {
+        subject.subscribe(observer);
+        observer.dispose(); // triggers removal from the subject
+    }
+
+    /**
+     * Benchmark the cost of completing a subject after a single subscription.
+     * This exercises the {@code onComplete} path and the iteration over the
+     * internal observer array.
+     */
+    @Benchmark
+    public void complete() {
+        subject.subscribe(observer);
+        subject.onComplete();
+    }
+
+    /**
+     * Benchmark the cost of signalling an error after a single subscription.
+     * This exercises the {@code onError} path, including the error storage
+     * and propagation to the observer.
+     */
+    @Benchmark
+    public void error() {
+        subject.subscribe(observer);
+        subject.onError(new RuntimeException("benchmark"));
+    }
+
+    /**
+     * Minimal observer implementation used by the benchmarks.
+     * It implements both {@link CompletableObserver} and {@link Disposable}
+     * so that the benchmark can dispose it directly without extra indirection.
+     */
+    static final class TestObserver implements CompletableObserver, Disposable {
+
+        private volatile boolean disposed;
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            // No‑op: the benchmark controls disposal directly.
+        }
+
+        @Override
+        public void onComplete() {
+            // No‑op: we only measure the subject's work.
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // No‑op: we only measure the subject's work.
+        }
+
+        @Override
+        public void dispose() {
+            disposed = true;
+        }
+
+        @Override
+        public boolean isDisposed() {
+            return disposed;
+        }
+    }
+}
+```

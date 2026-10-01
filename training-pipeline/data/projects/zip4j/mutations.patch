@@ -1,0 +1,1203 @@
+diff --git a/net/lingala/zip4j/ZipFile.java b/net/lingala/zip4j/ZipFile.java
+index 5e2bf8a..cbe7ad1 100644
+--- a/net/lingala/zip4j/ZipFile.java
++++ b/net/lingala/zip4j/ZipFile.java
+@@ -170,7 +170,7 @@ public class ZipFile implements Closeable {
+    * @throws ZipException  - if zip file already exists, or of split length is less than 65536
+    */
+   public void createSplitZipFile(List<File> filesToAdd, ZipParameters parameters, boolean splitArchive,
+-                            long splitLength) throws ZipException {
++                            long splitLength) throws ZipException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(1);
+ 
+     if (zipFile.exists()) {
+       throw new ZipException("zip file: " + zipFile
+@@ -200,7 +200,7 @@ public class ZipFile implements Closeable {
+    * @throws ZipException if zip file already exists, or of split length is less than 65536
+    */
+   public void createSplitZipFile(InputStream inputStream, ZipParameters parameters, boolean splitArchive,
+-                                 long splitLength) throws ZipException {
++                                 long splitLength) throws ZipException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(9);
+ 
+     if (zipFile.exists()) {
+       throw new ZipException("zip file: " + zipFile
+diff --git a/net/lingala/zip4j/crypto/AESDecrypter.java b/net/lingala/zip4j/crypto/AESDecrypter.java
+index 0f15c81..fb7aaf9 100644
+--- a/net/lingala/zip4j/crypto/AESDecrypter.java
++++ b/net/lingala/zip4j/crypto/AESDecrypter.java
+@@ -67,7 +67,7 @@ public class AESDecrypter implements Decrypter {
+   }
+ 
+   @Override
+-  public int decryptData(byte[] buff, int start, int len) throws ZipException {
++  public int decryptData(byte[] buff, int start, int len) throws ZipException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(17);
+ 
+     for (int j = start; j < (start + len); j += AES_BLOCK_SIZE) {
+       int loopCount = (j + AES_BLOCK_SIZE <= (start + len)) ?
+@@ -87,7 +87,7 @@ public class AESDecrypter implements Decrypter {
+     return len;
+   }
+ 
+-  public byte[] getCalculatedAuthenticationBytes(int numberOfBytesPushedBack) {
++  public byte[] getCalculatedAuthenticationBytes(int numberOfBytesPushedBack) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(23);
+     return mac.doFinal(numberOfBytesPushedBack);
+   }
+ }
+diff --git a/net/lingala/zip4j/crypto/AESEncrypter.java b/net/lingala/zip4j/crypto/AESEncrypter.java
+index c63be3a..dc5b3c5 100644
+--- a/net/lingala/zip4j/crypto/AESEncrypter.java
++++ b/net/lingala/zip4j/crypto/AESEncrypter.java
+@@ -71,14 +71,14 @@ public class AESEncrypter implements Encrypter {
+     mac = getMacBasedPRF(derivedKey, aesKeyStrength);
+   }
+ 
+-  public int encryptData(byte[] buff) throws ZipException {
++  public int encryptData(byte[] buff) throws ZipException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(29);
+     if (buff == null) {
+       throw new ZipException("input bytes are null, cannot perform AES encryption");
+     }
+     return encryptData(buff, 0, buff.length);
+   }
+ 
+-  public int encryptData(byte[] buff, int start, int len) throws ZipException {
++  public int encryptData(byte[] buff, int start, int len) throws ZipException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(35);
+ 
+     if (finished) {
+       // A non 16 byte block has already been passed to encrypter
+diff --git a/net/lingala/zip4j/crypto/AesCipherUtil.java b/net/lingala/zip4j/crypto/AesCipherUtil.java
+index cf63203..ba95bba 100644
+--- a/net/lingala/zip4j/crypto/AesCipherUtil.java
++++ b/net/lingala/zip4j/crypto/AesCipherUtil.java
+@@ -29,7 +29,7 @@ public class AesCipherUtil {
+    * @throws ZipException Thrown when Derived Key is not valid
+    */
+   public static byte[] derivePasswordBasedKey(final byte[] salt, final char[] password,
+-                                              final AesKeyStrength aesKeyStrength) throws ZipException {
++                                              final AesKeyStrength aesKeyStrength) throws ZipException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(2);
+     final int keyLength = aesKeyStrength.getKeyLength();
+     final int macLength = aesKeyStrength.getMacLength();
+     final int derivedKeyLength = keyLength + macLength + AES_PASSWORD_VERIFIER_LENGTH;
+@@ -56,7 +56,7 @@ public class AesCipherUtil {
+    * @param aesKeyStrength AES Key Strength
+    * @return Derived Password Verifier
+    */
+-  public static byte[] derivePasswordVerifier(final byte[] derivedKey, final AesKeyStrength aesKeyStrength) {
++  public static byte[] derivePasswordVerifier(final byte[] derivedKey, final AesKeyStrength aesKeyStrength) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(10);
+     byte[] derivedPasswordVerifier = new byte[AES_PASSWORD_VERIFIER_LENGTH];
+     final int keyMacLength = aesKeyStrength.getKeyLength() + aesKeyStrength.getMacLength();
+     System.arraycopy(derivedKey, keyMacLength, derivedPasswordVerifier, START_INDEX, AES_PASSWORD_VERIFIER_LENGTH);
+diff --git a/net/lingala/zip4j/crypto/PBKDF2/BinTools.java b/net/lingala/zip4j/crypto/PBKDF2/BinTools.java
+index fcc60ec..f69bcb2 100644
+--- a/net/lingala/zip4j/crypto/PBKDF2/BinTools.java
++++ b/net/lingala/zip4j/crypto/PBKDF2/BinTools.java
+@@ -1,70 +1,70 @@
+-/*
+- * Copyright 2010 Srikanth Reddy Lingala
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- * http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing,
+- * software distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-package net.lingala.zip4j.crypto.PBKDF2;
+-
+-/*
+- * Source referred from Matthias Gartner's PKCS#5 implementation -
+- * see http://rtner.de/software/PBKDF2.html
+- */
+-
+-class BinTools {
+-  public static final String hex = "0123456789ABCDEF";
+-
+-  public static String bin2hex(final byte[] b) {
+-    if (b == null) {
+-      return "";
+-    }
+-    StringBuffer sb = new StringBuffer(2 * b.length);
+-    for (int i = 0; i < b.length; i++) {
+-      int v = (256 + b[i]) % 256;
+-      sb.append(hex.charAt((v / 16) & 15));
+-      sb.append(hex.charAt((v % 16) & 15));
+-    }
+-    return sb.toString();
+-  }
+-
+-  public static byte[] hex2bin(final String s) {
+-    String m = s;
+-    if (s == null) {
+-      // Allow empty input string.
+-      m = "";
+-    } else if (s.length() % 2 != 0) {
+-      // Assume leading zero for odd string length
+-      m = "0" + s;
+-    }
+-    byte r[] = new byte[m.length() / 2];
+-    for (int i = 0, n = 0; i < m.length(); n++) {
+-      char h = m.charAt(i++);
+-      char l = m.charAt(i++);
+-      r[n] = (byte) (hex2bin(h) * 16 + hex2bin(l));
+-    }
+-    return r;
+-  }
+-
+-  public static int hex2bin(char c) {
+-    if (c >= '0' && c <= '9') {
+-      return (c - '0');
+-    }
+-    if (c >= 'A' && c <= 'F') {
+-      return (c - 'A' + 10);
+-    }
+-    if (c >= 'a' && c <= 'f') {
+-      return (c - 'a' + 10);
+-    }
+-    throw new IllegalArgumentException("Input string may only contain hex digits, but found '" + c + "'");
+-  }
+-}
++/*
++ * Copyright 2010 Srikanth Reddy Lingala
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package net.lingala.zip4j.crypto.PBKDF2;
++
++/*
++ * Source referred from Matthias Gartner's PKCS#5 implementation -
++ * see http://rtner.de/software/PBKDF2.html
++ */
++
++class BinTools {
++  public static final String hex = "0123456789ABCDEF";
++
++  public static String bin2hex(final byte[] b) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(41);
++    if (b == null) {
++      return "";
++    }
++    StringBuffer sb = new StringBuffer(2 * b.length);
++    for (int i = 0; i < b.length; i++) {
++      int v = (256 + b[i]) % 256;
++      sb.append(hex.charAt((v / 16) & 15));
++      sb.append(hex.charAt((v % 16) & 15));
++    }
++    return sb.toString();
++  }
++
++  public static byte[] hex2bin(final String s) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(47);
++    String m = s;
++    if (s == null) {
++      // Allow empty input string.
++      m = "";
++    } else if (s.length() % 2 != 0) {
++      // Assume leading zero for odd string length
++      m = "0" + s;
++    }
++    byte r[] = new byte[m.length() / 2];
++    for (int i = 0, n = 0; i < m.length(); n++) {
++      char h = m.charAt(i++);
++      char l = m.charAt(i++);
++      r[n] = (byte) (hex2bin(h) * 16 + hex2bin(l));
++    }
++    return r;
++  }
++
++  public static int hex2bin(char c) {
++    if (c >= '0' && c <= '9') {
++      return (c - '0');
++    }
++    if (c >= 'A' && c <= 'F') {
++      return (c - 'A' + 10);
++    }
++    if (c >= 'a' && c <= 'f') {
++      return (c - 'a' + 10);
++    }
++    throw new IllegalArgumentException("Input string may only contain hex digits, but found '" + c + "'");
++  }
++}
+diff --git a/net/lingala/zip4j/headers/FileHeaderFactory.java b/net/lingala/zip4j/headers/FileHeaderFactory.java
+index 2ec12cb..79210ca 100644
+--- a/net/lingala/zip4j/headers/FileHeaderFactory.java
++++ b/net/lingala/zip4j/headers/FileHeaderFactory.java
+@@ -25,7 +25,7 @@ public class FileHeaderFactory {
+ 
+   public FileHeader generateFileHeader(ZipParameters zipParameters, boolean isSplitZip, int currentDiskNumberStart,
+                                        Charset charset, RawIO rawIO)
+-      throws ZipException {
++      throws ZipException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(18);
+ 
+     FileHeader fileHeader = new FileHeader();
+     fileHeader.setSignature(HeaderSignature.CENTRAL_DIRECTORY);
+@@ -78,7 +78,7 @@ public class FileHeaderFactory {
+     return fileHeader;
+   }
+ 
+-  public LocalFileHeader generateLocalFileHeader(FileHeader fileHeader) {
++  public LocalFileHeader generateLocalFileHeader(FileHeader fileHeader) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(24);
+     LocalFileHeader localFileHeader = new LocalFileHeader();
+     localFileHeader.setSignature(HeaderSignature.LOCAL_FILE_HEADER);
+     localFileHeader.setVersionNeededToExtract(fileHeader.getVersionNeededToExtract());
+diff --git a/net/lingala/zip4j/headers/HeaderReader.java b/net/lingala/zip4j/headers/HeaderReader.java
+index ff7c639..de02dd0 100644
+--- a/net/lingala/zip4j/headers/HeaderReader.java
++++ b/net/lingala/zip4j/headers/HeaderReader.java
+@@ -61,7 +61,7 @@ public class HeaderReader {
+   private final RawIO rawIO = new RawIO();
+   private final byte[] intBuff = new byte[4];
+ 
+-  public ZipModel readAllHeaders(RandomAccessFile zip4jRaf, Zip4jConfig zip4jConfig) throws IOException {
++  public ZipModel readAllHeaders(RandomAccessFile zip4jRaf, Zip4jConfig zip4jConfig) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(30);
+ 
+     if (zip4jRaf.length() == 0) {
+       return new ZipModel();
+@@ -514,7 +514,7 @@ public class HeaderReader {
+     seekInCurrentPart(zip4jRaf, offsetEndOfCentralDirectoryRecord - 4 - 8 - 4 - 4);
+   }
+ 
+-  public LocalFileHeader readLocalFileHeader(InputStream inputStream, Charset charset) throws IOException {
++  public LocalFileHeader readLocalFileHeader(InputStream inputStream, Charset charset) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(36);
+     LocalFileHeader localFileHeader = new LocalFileHeader();
+     byte[] intBuff = new byte[4];
+ 
+diff --git a/net/lingala/zip4j/headers/HeaderSignature.java b/net/lingala/zip4j/headers/HeaderSignature.java
+index ec8d27f..4c747ac 100644
+--- a/net/lingala/zip4j/headers/HeaderSignature.java
++++ b/net/lingala/zip4j/headers/HeaderSignature.java
+@@ -21,7 +21,7 @@ public enum HeaderSignature {
+     this.value = value;
+   }
+ 
+-  public long getValue() {
++  public long getValue() { net.lingala.zip4j.jmhbench.MutationSwitch.tick(42);
+     return value;
+   }
+ }
+diff --git a/net/lingala/zip4j/headers/HeaderUtil.java b/net/lingala/zip4j/headers/HeaderUtil.java
+index 4a1271f..7f3eba5 100644
+--- a/net/lingala/zip4j/headers/HeaderUtil.java
++++ b/net/lingala/zip4j/headers/HeaderUtil.java
+@@ -16,7 +16,7 @@ import static net.lingala.zip4j.util.Zip4jUtil.isStringNotNullAndNotEmpty;
+ 
+ public class HeaderUtil {
+ 
+-  public static FileHeader getFileHeader(ZipModel zipModel, String fileName) throws ZipException {
++  public static FileHeader getFileHeader(ZipModel zipModel, String fileName) throws ZipException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(3);
+     FileHeader fileHeader = getFileHeaderWithExactMatch(zipModel, fileName);
+ 
+     if (fileHeader == null) {
+@@ -32,7 +32,7 @@ public class HeaderUtil {
+     return fileHeader;
+   }
+ 
+-  public static String decodeStringWithCharset(byte[] data, boolean isUtf8Encoded, Charset charset) {
++  public static String decodeStringWithCharset(byte[] data, boolean isUtf8Encoded, Charset charset) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(11);
+     if (charset != null) {
+       return new String(data, charset);
+     }
+diff --git a/net/lingala/zip4j/headers/HeaderWriter.java b/net/lingala/zip4j/headers/HeaderWriter.java
+index e79a3a9..fa08700 100644
+--- a/net/lingala/zip4j/headers/HeaderWriter.java
++++ b/net/lingala/zip4j/headers/HeaderWriter.java
+@@ -54,7 +54,7 @@ public class HeaderWriter {
+   private final byte[] intBuff = new byte[4];
+ 
+   public void writeLocalFileHeader(ZipModel zipModel, LocalFileHeader localFileHeader, OutputStream outputStream,
+-                                   Charset charset) throws IOException {
++                                   Charset charset) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(48);
+ 
+     try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+       rawIO.writeIntLittleEndian(byteArrayOutputStream, (int) localFileHeader.getSignature().getValue());
+diff --git a/net/lingala/zip4j/io/inputstream/AesCipherInputStream.java b/net/lingala/zip4j/io/inputstream/AesCipherInputStream.java
+index aad0325..524a2a7 100644
+--- a/net/lingala/zip4j/io/inputstream/AesCipherInputStream.java
++++ b/net/lingala/zip4j/io/inputstream/AesCipherInputStream.java
+@@ -32,7 +32,7 @@ class AesCipherInputStream extends CipherInputStream<AESDecrypter> {
+ 
+   @Override
+   protected AESDecrypter initializeDecrypter(LocalFileHeader localFileHeader, char[] password,
+-                                             boolean useUtf8ForPassword) throws IOException {
++                                             boolean useUtf8ForPassword) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(4);
+     return new AESDecrypter(localFileHeader.getAesExtraDataRecord(), password, getSalt(localFileHeader),
+             getPasswordVerifier());
+   }
+@@ -117,7 +117,7 @@ class AesCipherInputStream extends CipherInputStream<AESDecrypter> {
+   }
+ 
+   @Override
+-  protected void endOfEntryReached(InputStream inputStream, int numberOfBytesPushedBack) throws IOException {
++  protected void endOfEntryReached(InputStream inputStream, int numberOfBytesPushedBack) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(12);
+     verifyContent(readStoredMac(inputStream), numberOfBytesPushedBack);
+   }
+ 
+diff --git a/net/lingala/zip4j/io/inputstream/InflaterInputStream.java b/net/lingala/zip4j/io/inputstream/InflaterInputStream.java
+index 572797e..4542552 100644
+--- a/net/lingala/zip4j/io/inputstream/InflaterInputStream.java
++++ b/net/lingala/zip4j/io/inputstream/InflaterInputStream.java
+@@ -55,7 +55,7 @@ public class InflaterInputStream extends DecompressedInputStream {
+   }
+ 
+   @Override
+-  public void endOfEntryReached(InputStream inputStream, int numberOfBytesPushedBack) throws IOException {
++  public void endOfEntryReached(InputStream inputStream, int numberOfBytesPushedBack) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(19);
+     if (inflater != null) {
+       inflater.end();
+       inflater = null;
+@@ -64,7 +64,7 @@ public class InflaterInputStream extends DecompressedInputStream {
+   }
+ 
+   @Override
+-  public int pushBackInputStreamIfNecessary(PushbackInputStream pushbackInputStream) throws IOException {
++  public int pushBackInputStreamIfNecessary(PushbackInputStream pushbackInputStream) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(25);
+     int n = inflater.getRemaining();
+     if (n > 0) {
+       byte[] rawDataCache = getLastReadRawDataCache();
+diff --git a/net/lingala/zip4j/io/inputstream/NoCipherInputStream.java b/net/lingala/zip4j/io/inputstream/NoCipherInputStream.java
+index 51bc283..1be3e41 100644
+--- a/net/lingala/zip4j/io/inputstream/NoCipherInputStream.java
++++ b/net/lingala/zip4j/io/inputstream/NoCipherInputStream.java
+@@ -13,14 +13,14 @@ class NoCipherInputStream extends CipherInputStream<NoCipherInputStream.NoDecryp
+   }
+ 
+   @Override
+-  protected NoDecrypter initializeDecrypter(LocalFileHeader localFileHeader, char[] password, boolean useUtf8ForPassword) {
++  protected NoDecrypter initializeDecrypter(LocalFileHeader localFileHeader, char[] password, boolean useUtf8ForPassword) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(31);
+     return new NoDecrypter();
+   }
+ 
+   static class NoDecrypter implements Decrypter {
+ 
+     @Override
+-    public int decryptData(byte[] buff, int start, int len) {
++    public int decryptData(byte[] buff, int start, int len) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(37);
+       return len;
+     }
+   }
+diff --git a/net/lingala/zip4j/io/inputstream/NumberedSplitFileInputStream.java b/net/lingala/zip4j/io/inputstream/NumberedSplitFileInputStream.java
+index d715e89..755bae4 100644
+--- a/net/lingala/zip4j/io/inputstream/NumberedSplitFileInputStream.java
++++ b/net/lingala/zip4j/io/inputstream/NumberedSplitFileInputStream.java
+@@ -34,12 +34,12 @@ public class NumberedSplitFileInputStream extends SplitFileInputStream {
+   }
+ 
+   @Override
+-  public void prepareExtractionForFileHeader(FileHeader fileHeader) throws IOException {
++  public void prepareExtractionForFileHeader(FileHeader fileHeader) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(43);
+     randomAccessFile.seek(fileHeader.getOffsetLocalHeader());
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(49);
+     if (randomAccessFile != null) {
+       randomAccessFile.close();
+     }
+diff --git a/net/lingala/zip4j/jmhbench/MutationSwitch.java b/net/lingala/zip4j/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..841ce2c
+--- /dev/null
++++ b/net/lingala/zip4j/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.lingala.zip4j.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/net/lingala/zip4j/model/AESExtraDataRecord.java b/net/lingala/zip4j/model/AESExtraDataRecord.java
+index f6678b6..07b52e2 100644
+--- a/net/lingala/zip4j/model/AESExtraDataRecord.java
++++ b/net/lingala/zip4j/model/AESExtraDataRecord.java
+@@ -38,11 +38,11 @@ public class AESExtraDataRecord extends ZipHeader {
+     compressionMethod = CompressionMethod.DEFLATE;
+   }
+ 
+-  public int getDataSize() {
++  public int getDataSize() { net.lingala.zip4j.jmhbench.MutationSwitch.tick(5);
+     return dataSize;
+   }
+ 
+-  public void setDataSize(int dataSize) {
++  public void setDataSize(int dataSize) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(13);
+     this.dataSize = dataSize;
+   }
+ 
+diff --git a/net/lingala/zip4j/model/ArchiveExtraDataRecord.java b/net/lingala/zip4j/model/ArchiveExtraDataRecord.java
+index 6f9db5c..83d7d5d 100644
+--- a/net/lingala/zip4j/model/ArchiveExtraDataRecord.java
++++ b/net/lingala/zip4j/model/ArchiveExtraDataRecord.java
+@@ -1,40 +1,40 @@
+-/*
+- * Copyright 2010 Srikanth Reddy Lingala
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- * http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing,
+- * software distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-package net.lingala.zip4j.model;
+-
+-public class ArchiveExtraDataRecord extends ZipHeader {
+-
+-  private int extraFieldLength;
+-  private String extraFieldData;
+-
+-  public int getExtraFieldLength() {
+-    return extraFieldLength;
+-  }
+-
+-  public void setExtraFieldLength(int extraFieldLength) {
+-    this.extraFieldLength = extraFieldLength;
+-  }
+-
+-  public String getExtraFieldData() {
+-    return extraFieldData;
+-  }
+-
+-  public void setExtraFieldData(String extraFieldData) {
+-    this.extraFieldData = extraFieldData;
+-  }
+-
+-}
++/*
++ * Copyright 2010 Srikanth Reddy Lingala
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package net.lingala.zip4j.model;
++
++public class ArchiveExtraDataRecord extends ZipHeader {
++
++  private int extraFieldLength;
++  private String extraFieldData;
++
++  public int getExtraFieldLength() { net.lingala.zip4j.jmhbench.MutationSwitch.tick(20);
++    return extraFieldLength;
++  }
++
++  public void setExtraFieldLength(int extraFieldLength) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(26);
++    this.extraFieldLength = extraFieldLength;
++  }
++
++  public String getExtraFieldData() {
++    return extraFieldData;
++  }
++
++  public void setExtraFieldData(String extraFieldData) {
++    this.extraFieldData = extraFieldData;
++  }
++
++}
+diff --git a/net/lingala/zip4j/model/CentralDirectory.java b/net/lingala/zip4j/model/CentralDirectory.java
+index e6f1211..cc26986 100644
+--- a/net/lingala/zip4j/model/CentralDirectory.java
++++ b/net/lingala/zip4j/model/CentralDirectory.java
+@@ -1,44 +1,44 @@
+-/*
+- * Copyright 2010 Srikanth Reddy Lingala
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- * http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing,
+- * software distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-package net.lingala.zip4j.model;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-
+-public class CentralDirectory {
+-
+-  private List<FileHeader> fileHeaders = new ArrayList<>();
+-  private DigitalSignature digitalSignature = new DigitalSignature();
+-
+-  public List<FileHeader> getFileHeaders() {
+-    return fileHeaders;
+-  }
+-
+-  public void setFileHeaders(List<FileHeader> fileHeaders) {
+-    this.fileHeaders = fileHeaders;
+-  }
+-
+-  public DigitalSignature getDigitalSignature() {
+-    return digitalSignature;
+-  }
+-
+-  public void setDigitalSignature(DigitalSignature digitalSignature) {
+-    this.digitalSignature = digitalSignature;
+-  }
+-
+-
+-}
++/*
++ * Copyright 2010 Srikanth Reddy Lingala
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package net.lingala.zip4j.model;
++
++import java.util.ArrayList;
++import java.util.List;
++
++public class CentralDirectory {
++
++  private List<FileHeader> fileHeaders = new ArrayList<>();
++  private DigitalSignature digitalSignature = new DigitalSignature();
++
++  public List<FileHeader> getFileHeaders() { net.lingala.zip4j.jmhbench.MutationSwitch.tick(32);
++    return fileHeaders;
++  }
++
++  public void setFileHeaders(List<FileHeader> fileHeaders) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(38);
++    this.fileHeaders = fileHeaders;
++  }
++
++  public DigitalSignature getDigitalSignature() {
++    return digitalSignature;
++  }
++
++  public void setDigitalSignature(DigitalSignature digitalSignature) {
++    this.digitalSignature = digitalSignature;
++  }
++
++
++}
+diff --git a/net/lingala/zip4j/model/DataDescriptor.java b/net/lingala/zip4j/model/DataDescriptor.java
+index 88621e9..c643d6d 100644
+--- a/net/lingala/zip4j/model/DataDescriptor.java
++++ b/net/lingala/zip4j/model/DataDescriptor.java
+@@ -22,11 +22,11 @@ public class DataDescriptor extends ZipHeader {
+   private long compressedSize;
+   private long uncompressedSize;
+ 
+-  public long getCrc() {
++  public long getCrc() { net.lingala.zip4j.jmhbench.MutationSwitch.tick(44);
+     return crc;
+   }
+ 
+-  public void setCrc(long crc) {
++  public void setCrc(long crc) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(50);
+     this.crc = crc;
+   }
+ 
+diff --git a/net/lingala/zip4j/progress/ProgressMonitor.java b/net/lingala/zip4j/progress/ProgressMonitor.java
+index 3277272..2e82183 100644
+--- a/net/lingala/zip4j/progress/ProgressMonitor.java
++++ b/net/lingala/zip4j/progress/ProgressMonitor.java
+@@ -1,162 +1,162 @@
+-/*
+- * Copyright 2010 Srikanth Reddy Lingala
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- * http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing,
+- * software distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-package net.lingala.zip4j.progress;
+-
+-/**
+- * If Zip4j is set to run in thread mode, this class helps retrieve current progress
+- */
+-public class ProgressMonitor {
+-
+-  public enum State { READY, BUSY }
+-  public enum Result { SUCCESS, WORK_IN_PROGRESS, ERROR, CANCELLED }
+-  public enum Task { NONE, ADD_ENTRY, REMOVE_ENTRY, CALCULATE_CRC, EXTRACT_ENTRY, MERGE_ZIP_FILES, SET_COMMENT, RENAME_FILE}
+-
+-  private State state;
+-  private long totalWork;
+-  private long workCompleted;
+-  private int percentDone;
+-  private Task currentTask;
+-  private String fileName;
+-  private Result result;
+-  private Exception exception;
+-  private boolean cancelAllTasks;
+-  private boolean pause;
+-
+-  public ProgressMonitor() {
+-    reset();
+-  }
+-
+-  public void updateWorkCompleted(long workCompleted) {
+-    this.workCompleted += workCompleted;
+-
+-    if (totalWork > 0) {
+-      percentDone = (int) ((this.workCompleted * 100 / totalWork));
+-      if (percentDone > 100) {
+-        percentDone = 100;
+-      }
+-    }
+-
+-    while (pause) {
+-      try {
+-        Thread.sleep(150);
+-      } catch (InterruptedException e) {
+-        //Do nothing
+-      }
+-    }
+-  }
+-
+-  public void endProgressMonitor() {
+-    result = Result.SUCCESS;
+-    percentDone = 100;
+-    reset();
+-  }
+-
+-  public void endProgressMonitor(Exception e) {
+-    result = Result.ERROR;
+-    exception = e;
+-    reset();
+-  }
+-
+-  public void fullReset() {
+-    reset();
+-    fileName = null;
+-    totalWork = 0;
+-    workCompleted = 0;
+-    percentDone = 0;
+-  }
+-
+-  private void reset() {
+-    currentTask = Task.NONE;
+-    state = State.READY;
+-  }
+-
+-  public State getState() {
+-    return state;
+-  }
+-
+-  public void setState(State state) {
+-    this.state = state;
+-  }
+-
+-  public long getTotalWork() {
+-    return totalWork;
+-  }
+-
+-  public void setTotalWork(long totalWork) {
+-    this.totalWork = totalWork;
+-  }
+-
+-  public long getWorkCompleted() {
+-    return workCompleted;
+-  }
+-
+-  public int getPercentDone() {
+-    return percentDone;
+-  }
+-
+-  public void setPercentDone(int percentDone) {
+-    this.percentDone = percentDone;
+-  }
+-
+-  public Task getCurrentTask() {
+-    return currentTask;
+-  }
+-
+-  public void setCurrentTask(Task currentTask) {
+-    this.currentTask = currentTask;
+-  }
+-
+-  public String getFileName() {
+-    return fileName;
+-  }
+-
+-  public void setFileName(String fileName) {
+-    this.fileName = fileName;
+-  }
+-
+-  public Result getResult() {
+-    return result;
+-  }
+-
+-  public void setResult(Result result) {
+-    this.result = result;
+-  }
+-
+-  public Exception getException() {
+-    return exception;
+-  }
+-
+-  public void setException(Exception exception) {
+-    this.exception = exception;
+-  }
+-
+-  public boolean isCancelAllTasks() {
+-    return cancelAllTasks;
+-  }
+-
+-  public void setCancelAllTasks(boolean cancelAllTasks) {
+-    this.cancelAllTasks = cancelAllTasks;
+-  }
+-
+-  public boolean isPause() {
+-    return pause;
+-  }
+-
+-  public void setPause(boolean pause) {
+-    this.pause = pause;
+-  }
+-}
++/*
++ * Copyright 2010 Srikanth Reddy Lingala
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package net.lingala.zip4j.progress;
++
++/**
++ * If Zip4j is set to run in thread mode, this class helps retrieve current progress
++ */
++public class ProgressMonitor {
++
++  public enum State { READY, BUSY }
++  public enum Result { SUCCESS, WORK_IN_PROGRESS, ERROR, CANCELLED }
++  public enum Task { NONE, ADD_ENTRY, REMOVE_ENTRY, CALCULATE_CRC, EXTRACT_ENTRY, MERGE_ZIP_FILES, SET_COMMENT, RENAME_FILE}
++
++  private State state;
++  private long totalWork;
++  private long workCompleted;
++  private int percentDone;
++  private Task currentTask;
++  private String fileName;
++  private Result result;
++  private Exception exception;
++  private boolean cancelAllTasks;
++  private boolean pause;
++
++  public ProgressMonitor() {
++    reset();
++  }
++
++  public void updateWorkCompleted(long workCompleted) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(6);
++    this.workCompleted += workCompleted;
++
++    if (totalWork > 0) {
++      percentDone = (int) ((this.workCompleted * 100 / totalWork));
++      if (percentDone > 100) {
++        percentDone = 100;
++      }
++    }
++
++    while (pause) {
++      try {
++        Thread.sleep(150);
++      } catch (InterruptedException e) {
++        //Do nothing
++      }
++    }
++  }
++
++  public void endProgressMonitor() { net.lingala.zip4j.jmhbench.MutationSwitch.tick(14);
++    result = Result.SUCCESS;
++    percentDone = 100;
++    reset();
++  }
++
++  public void endProgressMonitor(Exception e) {
++    result = Result.ERROR;
++    exception = e;
++    reset();
++  }
++
++  public void fullReset() {
++    reset();
++    fileName = null;
++    totalWork = 0;
++    workCompleted = 0;
++    percentDone = 0;
++  }
++
++  private void reset() {
++    currentTask = Task.NONE;
++    state = State.READY;
++  }
++
++  public State getState() {
++    return state;
++  }
++
++  public void setState(State state) {
++    this.state = state;
++  }
++
++  public long getTotalWork() {
++    return totalWork;
++  }
++
++  public void setTotalWork(long totalWork) {
++    this.totalWork = totalWork;
++  }
++
++  public long getWorkCompleted() {
++    return workCompleted;
++  }
++
++  public int getPercentDone() {
++    return percentDone;
++  }
++
++  public void setPercentDone(int percentDone) {
++    this.percentDone = percentDone;
++  }
++
++  public Task getCurrentTask() {
++    return currentTask;
++  }
++
++  public void setCurrentTask(Task currentTask) {
++    this.currentTask = currentTask;
++  }
++
++  public String getFileName() {
++    return fileName;
++  }
++
++  public void setFileName(String fileName) {
++    this.fileName = fileName;
++  }
++
++  public Result getResult() {
++    return result;
++  }
++
++  public void setResult(Result result) {
++    this.result = result;
++  }
++
++  public Exception getException() {
++    return exception;
++  }
++
++  public void setException(Exception exception) {
++    this.exception = exception;
++  }
++
++  public boolean isCancelAllTasks() {
++    return cancelAllTasks;
++  }
++
++  public void setCancelAllTasks(boolean cancelAllTasks) {
++    this.cancelAllTasks = cancelAllTasks;
++  }
++
++  public boolean isPause() {
++    return pause;
++  }
++
++  public void setPause(boolean pause) {
++    this.pause = pause;
++  }
++}
+diff --git a/net/lingala/zip4j/tasks/AddFilesToZipTask.java b/net/lingala/zip4j/tasks/AddFilesToZipTask.java
+index 718343e..e013aea 100644
+--- a/net/lingala/zip4j/tasks/AddFilesToZipTask.java
++++ b/net/lingala/zip4j/tasks/AddFilesToZipTask.java
+@@ -26,7 +26,7 @@ public class AddFilesToZipTask extends AbstractAddFileToZipTask<AddFilesToZipTas
+ 
+   @Override
+   protected void executeTask(AddFilesToZipTaskParameters taskParameters, ProgressMonitor progressMonitor)
+-      throws IOException {
++      throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(33);
+ 
+     verifyZipParameters(taskParameters.zipParameters);
+     List<File> filesToAdd = determineActualFilesToAdd(taskParameters);
+@@ -34,7 +34,7 @@ public class AddFilesToZipTask extends AbstractAddFileToZipTask<AddFilesToZipTas
+   }
+ 
+   @Override
+-  protected long calculateTotalWork(AddFilesToZipTaskParameters taskParameters) throws ZipException {
++  protected long calculateTotalWork(AddFilesToZipTaskParameters taskParameters) throws ZipException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(39);
+     return calculateWorkForFiles(taskParameters.filesToAdd, taskParameters.zipParameters);
+   }
+ 
+diff --git a/net/lingala/zip4j/tasks/AddFolderToZipTask.java b/net/lingala/zip4j/tasks/AddFolderToZipTask.java
+index b48a2ef..0b766ec 100644
+--- a/net/lingala/zip4j/tasks/AddFolderToZipTask.java
++++ b/net/lingala/zip4j/tasks/AddFolderToZipTask.java
+@@ -22,7 +22,7 @@ public class AddFolderToZipTask extends AbstractAddFileToZipTask<AddFolderToZipT
+ 
+   @Override
+   protected void executeTask(AddFolderToZipTaskParameters taskParameters, ProgressMonitor progressMonitor)
+-      throws IOException {
++      throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(45);
+     List<File> filesToAdd = getFilesToAdd(taskParameters);
+     setDefaultFolderPath(taskParameters);
+     addFilesToZip(filesToAdd, progressMonitor, taskParameters.zipParameters, taskParameters.zip4jConfig);
+diff --git a/net/lingala/zip4j/tasks/AddStreamToZipTask.java b/net/lingala/zip4j/tasks/AddStreamToZipTask.java
+index 90716df..3f3da9d 100644
+--- a/net/lingala/zip4j/tasks/AddStreamToZipTask.java
++++ b/net/lingala/zip4j/tasks/AddStreamToZipTask.java
+@@ -27,7 +27,7 @@ public class AddStreamToZipTask extends AbstractAddFileToZipTask<AddStreamToZipT
+ 
+   @Override
+   protected void executeTask(AddStreamToZipTaskParameters taskParameters, ProgressMonitor progressMonitor)
+-      throws IOException {
++      throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(7);
+ 
+     verifyZipParameters(taskParameters.zipParameters);
+ 
+@@ -75,7 +75,7 @@ public class AddStreamToZipTask extends AbstractAddFileToZipTask<AddStreamToZipT
+   }
+ 
+   @Override
+-  protected long calculateTotalWork(AddStreamToZipTaskParameters taskParameters) {
++  protected long calculateTotalWork(AddStreamToZipTaskParameters taskParameters) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(15);
+     return 0;
+   }
+ 
+diff --git a/net/lingala/zip4j/tasks/SetCommentTask.java b/net/lingala/zip4j/tasks/SetCommentTask.java
+index 4307e43..6de505f 100644
+--- a/net/lingala/zip4j/tasks/SetCommentTask.java
++++ b/net/lingala/zip4j/tasks/SetCommentTask.java
+@@ -21,7 +21,7 @@ public class SetCommentTask extends AsyncZipTask<SetCommentTaskTaskParameters> {
+   }
+ 
+   @Override
+-  protected void executeTask(SetCommentTaskTaskParameters taskParameters, ProgressMonitor progressMonitor) throws IOException {
++  protected void executeTask(SetCommentTaskTaskParameters taskParameters, ProgressMonitor progressMonitor) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(21);
+     if (taskParameters.comment == null) {
+       throw new ZipException("comment is null, cannot update Zip file with comment");
+     }
+@@ -43,7 +43,7 @@ public class SetCommentTask extends AsyncZipTask<SetCommentTaskTaskParameters> {
+   }
+ 
+   @Override
+-  protected long calculateTotalWork(SetCommentTaskTaskParameters taskParameters) {
++  protected long calculateTotalWork(SetCommentTaskTaskParameters taskParameters) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(27);
+     return 0;
+   }
+ 
+diff --git a/net/lingala/zip4j/util/BitUtils.java b/net/lingala/zip4j/util/BitUtils.java
+index 0598d78..b2e1b14 100644
+--- a/net/lingala/zip4j/util/BitUtils.java
++++ b/net/lingala/zip4j/util/BitUtils.java
+@@ -2,11 +2,11 @@ package net.lingala.zip4j.util;
+ 
+ public class BitUtils {
+ 
+-  public static boolean isBitSet(byte b, int pos) {
++  public static boolean isBitSet(byte b, int pos) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(8);
+     return (b & (1L << pos)) != 0;
+   }
+ 
+-  public static byte setBit(byte b, int pos) {
++  public static byte setBit(byte b, int pos) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(16);
+     return (byte) (b | 1 << pos);
+   }
+ 
+diff --git a/net/lingala/zip4j/util/CrcUtil.java b/net/lingala/zip4j/util/CrcUtil.java
+index 2509006..c19bb25 100644
+--- a/net/lingala/zip4j/util/CrcUtil.java
++++ b/net/lingala/zip4j/util/CrcUtil.java
+@@ -29,7 +29,7 @@ public class CrcUtil {
+ 
+   private static final int BUF_SIZE = 1 << 14; //16384
+ 
+-  public static long computeFileCrc(File inputFile, ProgressMonitor progressMonitor) throws IOException {
++  public static long computeFileCrc(File inputFile, ProgressMonitor progressMonitor) throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(22);
+ 
+     if (inputFile == null || !inputFile.exists() || !inputFile.canRead()) {
+       throw new ZipException("input file is null or does not exist or cannot read. " +
+diff --git a/net/lingala/zip4j/util/FileUtils.java b/net/lingala/zip4j/util/FileUtils.java
+index 3d84a3c..8d1ec22 100644
+--- a/net/lingala/zip4j/util/FileUtils.java
++++ b/net/lingala/zip4j/util/FileUtils.java
+@@ -47,7 +47,7 @@ public class FileUtils {
+   public static final byte[] DEFAULT_POSIX_FILE_ATTRIBUTES = new byte[] {0, 0, -92, -127}; //-rw-r--r--
+   public static final byte[] DEFAULT_POSIX_FOLDER_ATTRIBUTES = new byte[] {0, 0, -19, 65}; //drwxr-xr-x
+ 
+-  public static void setFileAttributes(Path file, byte[] fileAttributes) {
++  public static void setFileAttributes(Path file, byte[] fileAttributes) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(28);
+     if (fileAttributes == null || fileAttributes.length == 0) {
+       return;
+     }
+@@ -59,7 +59,7 @@ public class FileUtils {
+     }
+   }
+ 
+-  public static void setFileLastModifiedTime(Path file, long lastModifiedTime) {
++  public static void setFileLastModifiedTime(Path file, long lastModifiedTime) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(34);
+     if (lastModifiedTime <= 0 || !Files.exists(file)) {
+       return;
+     }
+diff --git a/net/lingala/zip4j/util/UnzipUtil.java b/net/lingala/zip4j/util/UnzipUtil.java
+index 343ab3f..65dfe7d 100644
+--- a/net/lingala/zip4j/util/UnzipUtil.java
++++ b/net/lingala/zip4j/util/UnzipUtil.java
+@@ -19,7 +19,7 @@ import static net.lingala.zip4j.util.FileUtils.setFileLastModifiedTimeWithoutNio
+ public class UnzipUtil {
+ 
+   public static ZipInputStream createZipInputStream(ZipModel zipModel, FileHeader fileHeader, char[] password)
+-      throws IOException {
++      throws IOException { net.lingala.zip4j.jmhbench.MutationSwitch.tick(40);
+ 
+     SplitFileInputStream splitInputStream = null;
+     try {
+@@ -40,7 +40,7 @@ public class UnzipUtil {
+     }
+   }
+ 
+-  public static void applyFileAttributes(FileHeader fileHeader, File file) {
++  public static void applyFileAttributes(FileHeader fileHeader, File file) { net.lingala.zip4j.jmhbench.MutationSwitch.tick(46);
+ 
+     try {
+       Path path = file.toPath();

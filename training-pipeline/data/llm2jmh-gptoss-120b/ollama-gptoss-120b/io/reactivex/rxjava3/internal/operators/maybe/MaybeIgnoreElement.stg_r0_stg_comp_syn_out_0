@@ -1,0 +1,113 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for the {@code MaybeIgnoreElement} operator (exposed via {@code Maybe.ignoreElement()}).
+ * Measures the throughput of subscribing to a {@code Maybe} that emits a single item,
+ * ignoring the item and completing.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * - State is scoped to a single thread to avoid contention.
+ * - Sources are created once in {@link #setup()} to exclude allocation overhead.
+ * - {@link Blackhole} is used to consume the result and prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are defined.
+ * - Forking isolates the benchmark from JVM warm‑up effects.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeIgnoreElementBenchmark {
+
+    /**
+     * A {@code Maybe} that emits a single integer value.
+     */
+    private Maybe<Integer> justSource;
+
+    /**
+     * A {@code Maybe} that completes without emitting any value.
+     */
+    private Maybe<Integer> emptySource;
+
+    /**
+     * The {@code Completable} obtained after applying {@code ignoreElement()} to {@code justSource}.
+     */
+    private Completable justIgnore;
+
+    /**
+     * The {@code Completable} obtained after applying {@code ignoreElement()} to {@code emptySource}.
+     */
+    private Completable emptyIgnore;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Create sources once per trial to avoid measuring allocation costs.
+        justSource = Maybe.just(1);
+        emptySource = Maybe.empty();
+        // Apply the operator under test.
+        justIgnore = justSource.ignoreElement();
+        emptyIgnore = emptySource.ignoreElement();
+    }
+
+    /**
+     * Benchmark the throughput of ignoring an element from a {@code Maybe} that emits a value.
+     *
+     * @param bh Blackhole to consume the result and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void ignoreElementFromJust(Blackhole bh) {
+        // wait for completion
+        justIgnore.blockingAwait();
+        // consume to avoid dead‑code elimination
+        bh.consume(justIgnore);
+    }
+
+    /**
+     * Benchmark the throughput of ignoring an element from an empty {@code Maybe}.
+     *
+     * @param bh Blackhole to consume the result and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void ignoreElementFromEmpty(Blackhole bh) {
+        // wait for completion
+        emptyIgnore.blockingAwait();
+        // consume to avoid dead‑code elimination
+        bh.consume(emptyIgnore);
+    }
+}

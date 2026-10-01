@@ -1,0 +1,85 @@
+# Rejection fine-tuning on Apache Commons Lang. See jmhgen.config.RFTConfig and the fully
+# annotated configs/rft/default.yaml; this only swaps the corpus + SUT classpath.
+#
+# Why Commons Lang: a zero-runtime-dependency utility library of small, public, mostly *static*
+# methods (StringUtils, NumberUtils, ArrayUtils, ...). They are self-contained and callable by
+# name, so the "import and call the real subject" contract is trivially satisfiable — none of the
+# "internal operator unreachable via the public API" misses that cost RxJava ~25 subjects. The
+# classpath is a single jar, so provisioning is one Maven build.
+#
+# Setup (once):
+#   jmh-extract-snippets commons-lang \
+#       --url https://github.com/apache/commons-lang.git --ref rel/commons-lang-3.18.0 \
+#       --include-package org.apache.commons.lang3
+#   jmh-provision-classpath commons-lang \
+#       --source data/external-src/commons-lang --build-cmd "mvn -q -DskipTests package"
+#   jmh-train-rft --config configs/rft/commons-lang.yaml
+
+base_model: google/gemma-4-E2B-it
+output_dir: outputs/rft-commons-lang
+dataset_path: data/snippets/commons-lang.jsonl
+seed: 42
+
+# Shared numerical recipe (identical to default.yaml / SFT for a valid per-stage comparison).
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: [vision_tower, audio_tower, multi_modal_projector]
+  bias: none
+
+max_seq_len: 32768           # training context; use loss_type: chunked_nll to fit the lm_head loss
+learning_rate: 1.0e-5
+per_device_batch_size: 1
+gradient_accumulation_steps: 8
+num_epochs: 1.0
+completion_only_loss: true
+
+# --- sampling (E-step) ---
+samples_per_prompt: 16
+sampling_temperature: 1.0
+limit_prompts: 0
+max_source_chars: 90000      # skip subjects too large for the context window (see default.yaml)
+inference:
+  base_url: http://localhost:8000/v1   # point at your RunPod vLLM server
+  model: google/gemma-4-E2B-it
+  api_key_env: VLLM_API_KEY
+  timeout_s: 600.0
+  max_concurrency: 8
+  top_p: 0.95
+  top_k: 64
+  max_tokens: 8192
+  enable_thinking: true
+
+# --- verification / acceptance --- (see default.yaml for the weight/threshold rationale)
+accept_threshold: 0.9
+need_run: true
+reward_weights:
+  compile: 0.25
+  runtime: 0.25
+  anti_pattern: 0.25
+  rsd: 0.25
+  mutation: 0.0
+rsd_good: 0.05
+rsd_bad: 0.25
+runner:
+  jmh_version: "1.37"
+  java_release: 17
+  jmh:
+    warmup_iterations: 3
+    measurement_iterations: 5
+    forks: 1
+project_classpaths:
+  commons-lang: data/classpaths/commons-lang.cp
+
+# --- dataset construction ---
+work_dir: data/rft-commons-lang
+max_keep_per_prompt: 4
+dedup: true
+drop_all_pass: false
+val_fraction: 0.05

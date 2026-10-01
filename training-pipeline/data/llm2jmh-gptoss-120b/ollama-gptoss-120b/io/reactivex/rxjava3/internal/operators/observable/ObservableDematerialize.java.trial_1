@@ -1,0 +1,66 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Functions;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for the {@code dematerialize} operator (which internally uses {@code ObservableDematerialize}).
+ * Measures throughput: how many items per second can be processed.
+ *
+ * The benchmark creates an Observable that emits a configurable number of integer items,
+ * materializes them into {@link io.reactivex.rxjava3.core.Notification}s and then dematerializes
+ * back to the original values. The downstream simply consumes the values via a {@link Blackhole}
+ * to prevent dead‑code elimination.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Create the Observable in @Setup to exclude construction overhead from the measurement.
+ * - Use Blackhole to consume values safely.
+ * - Configure warm‑up, measurement, and fork parameters.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableDematerializeBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the source Observable.
+         * Adjust to evaluate different load scenarios.
+         */
+        @Param({ "1000", "10000", "100000" })
+        public int itemCount;
+
+        /**
+         * Observable that materializes and then dematerializes {@code Integer} values.
+         * Constructed once per thread to avoid measuring creation overhead.
+         */
+        public Observable<Integer> observable;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a range Observable, materialize it into Notification<Integer>,
+            // then dematerialize back to Integer using an identity selector.
+            observable = Observable
+                    .range(1, itemCount)
+                    .materialize()
+                    .dematerialize(Functions.identity());
+        }
+    }
+
+    @Benchmark
+    public void dematerializeThroughput(BenchmarkState state, Blackhole bh) {
+        // Consume all items; blockingForEach ensures the benchmark measures the full
+        // processing pipeline and not just subscription latency.
+        state.observable.blockingForEach(bh::consume);
+    }
+}
+```

@@ -1,0 +1,63 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Action;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableDoFinally}
+ * measuring the throughput of a simple {@code Observable.range(...).doFinally(...)} pipeline.
+ *
+ * The benchmark runs the whole flow (subscription, emission, termination) and consumes
+ * the emitted items with a {@link Blackhole} to avoid dead‑code elimination.
+ *
+ * Best‑practice notes:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Configure warm‑up, measurement, and fork parameters to obtain stable results.</li>
+ *   <li>Keep the benchmark method small and let JMH handle the timing.</li>
+ *   <li>Use {@code blockingSubscribe} to ensure the pipeline completes within the benchmark iteration.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class ObservableDoFinallyBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     * Adjust this parameter to explore different load levels.
+     */
+    @Param({"1", "10", "1000", "100000"})
+    public int itemCount;
+
+    private Observable<Integer> observable;
+    private Action onFinally;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A lightweight Action that does nothing but is executed on termination.
+        onFinally = () -> {
+            // No‑op; could be replaced with a more realistic cleanup if needed.
+        };
+
+        // Build the Observable pipeline once per trial.
+        observable = Observable
+                .range(1, itemCount)
+                .doFinally(onFinally);
+    }
+
+    @Benchmark
+    public void doFinallyThroughput(Blackhole bh) {
+        // Run the whole pipeline and consume each emitted item with Blackhole.
+        observable.blockingSubscribe(bh::consume);
+    }
+}
+```

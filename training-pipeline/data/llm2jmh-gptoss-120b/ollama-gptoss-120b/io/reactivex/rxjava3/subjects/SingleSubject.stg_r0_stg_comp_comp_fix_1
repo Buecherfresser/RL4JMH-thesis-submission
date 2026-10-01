@@ -1,0 +1,163 @@
+```
+package io.reactivex.rxjava3.subjects;
+
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmarks for {@link SingleSubject}.
+ *
+ * <p>These benchmarks focus on the most common operations:
+ * <ul>
+ *   <li>Subscribing a large number of observers</li>
+ *   <li>Emitting a success value</li>
+ *   <li>Emitting an error</li>
+ *   <li>Disposing observers (removal)</li>
+ * </ul>
+ *
+ * <p>All benchmarks run in {@link Mode#Throughput} to measure how many operations
+ * can be performed per time unit. The {@code @State} objects are scoped to a
+ * thread to avoid cross‑thread interference, which mirrors typical usage in
+ * reactive pipelines.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@Threads(4)
+public class SingleSubjectBenchmark {
+
+    /**
+     * A simple {@link SingleObserver} implementation that does nothing
+     * except hold a reference to its {@link Disposable} so it can be
+     * disposed later.
+     */
+    static final class NoOpObserver<T> implements SingleObserver<T> {
+
+        volatile Disposable d;
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            this.d = d;
+        }
+
+        @Override
+        public void onSuccess(T value) {
+            // no‑op
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // no‑op
+        }
+    }
+
+    /**
+     * State used for the {@code subscribeAndSuccess} benchmark.
+     * It creates a fresh {@link SingleSubject} and a pool of observers
+     * that will be subscribed during the benchmark iteration.
+     */
+    @State(Scope.Thread)
+    public static class SubscribeSuccessState {
+
+        @Param({ "1", "10", "100", "1000" })
+        public int observerCount;
+
+        SingleSubject<Integer> subject;
+        NoOpObserver<Integer>[] observers;
+
+        @Setup(Level.Invocation)
+        @SuppressWarnings("unchecked")
+        public void setUp() {
+            subject = SingleSubject.create();
+            observers = new NoOpObserver[observerCount];
+            for (int i = 0; i < observerCount; i++) {
+                observers[i] = new NoOpObserver<>();
+            }
+        }
+    }
+
+    /**
+     * State used for the {@code subscribeAndError} benchmark.
+     */
+    @State(Scope.Thread)
+    public static class SubscribeErrorState {
+
+        @Param({ "1", "10", "100", "1000" })
+        public int observerCount;
+
+        SingleSubject<Integer> subject;
+        NoOpObserver<Integer>[] observers;
+
+        @Setup(Level.Invocation)
+        @SuppressWarnings("unchecked")
+        public void setUp() {
+            subject = SingleSubject.create();
+            observers = new NoOpObserver[observerCount];
+            for (int i = 0; i < observerCount; i++) {
+                observers[i] = new NoOpObserver<>();
+            }
+        }
+    }
+
+    /**
+     * State used for the {@code disposeObservers} benchmark.
+     * Observers are subscribed once in {@code @Setup(Level.Trial)} and
+     * then disposed repeatedly during the benchmark.
+     */
+    @State(Scope.Thread)
+    public static class DisposeState {
+
+        @Param({ "1", "10", "100", "1000" })
+        public int observerCount;
+
+        SingleSubject<Integer> subject;
+        NoOpObserver<Integer>[] observers;
+        Disposable[] disposables;
+
+        @Setup(Level.Trial)
+        @SuppressWarnings("unchecked")
+        public void setUp() {
+            subject = SingleSubject.create();
+            observers = new NoOpObserver[observerCount];
+            disposables = new Disposable[observerCount];
+            for (int i = 0; i < observerCount; i++) {
+                NoOpObserver<Integer> o = new NoOpObserver<>();
+                observers[i] = o;
+                subject.subscribe(o);
+                disposables[i] = o.d;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Benchmark methods
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public void subscribeAndSuccess(Blackhole bh, SubscribeSuccessState state) {
+        for (NoOpObserver<Integer> o : state.observers) {
+            state.subject.subscribe(o);
+        }
+        state.subject.onSuccess(42);
+        bh.consume(state.subject.getValue());
+    }
+
+    @Benchmark
+    public void subscribeAndError(Blackhole bh, SubscribeErrorState state) {
+        for (NoOpObserver<Integer> o : state.observers) {
+            state.subject.subscribe(o);
+        }
+        state.subject.onError(new RuntimeException("benchmark"));
+        bh.consume(state.subject.getThrowable());
+    }
+
+    @Benchmark
+    public void disposeObservers(DisposeState state) {
+        for (Disposable d : state.disposables) {
+            d.dispose();
+        }
+    }
+}
+```

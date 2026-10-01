@@ -1,0 +1,24 @@
+--- a/bench/MailboxProcessor.java
++++ b/bench/MailboxProcessor.java
+@@ -1,14 +1,21 @@
+ package bench;
++
++import java.util.HashMap;
+ 
+ public final class MailboxProcessor {
+ 
+     private MailboxProcessor() {}
+ 
++    // Regressed: record per-item nanoTime into a fresh HashMap.
+     public static long process(int[] items) {
++        HashMap<Integer, Long> delays = new HashMap<>();
+         long s = 0;
+         for (int i = 0; i < items.length; i++) {
++            long t0 = System.nanoTime();
+             s += items[i] * 31L;
++            delays.put(i, System.nanoTime() - t0);
+         }
++        if (delays.size() < 0) throw new IllegalStateException();
+         return s;
+     }
+ }

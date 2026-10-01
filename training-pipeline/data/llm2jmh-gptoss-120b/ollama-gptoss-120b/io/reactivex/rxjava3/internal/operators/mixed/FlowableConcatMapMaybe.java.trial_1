@@ -1,0 +1,50 @@
+```
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.util.ErrorMode;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableConcatMapMaybe}.
+ *
+ * Measures throughput of the concatMapMaybe operator when mapping a simple
+ * Flowable of integers to Maybe.just values.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+@State(Scope.Thread)
+public class FlowableConcatMapMaybeBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    @Param({ "32", "64", "128" })
+    public int prefetch;
+
+    private Function<Integer, MaybeSource<Integer>> mapper;
+
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        mapper = v -> Maybe.just(v);
+        source = Flowable.range(1, itemCount);
+    }
+
+    @Benchmark
+    public void concatMapMaybeThroughput(Blackhole bh) {
+        source
+            .concatMapMaybe(mapper, ErrorMode.IMMEDIATE, prefetch)
+            .blockingSubscribe(bh::consume);
+    }
+}
+```

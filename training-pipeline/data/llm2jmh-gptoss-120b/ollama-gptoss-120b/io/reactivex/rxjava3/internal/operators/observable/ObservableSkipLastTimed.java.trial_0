@@ -1,0 +1,57 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableSkipLastTimed}.
+ *
+ * The benchmark measures the throughput of the {@code skipLast(time, unit, scheduler)} operator
+ * when processing a large, hot stream of integers. The test uses a computation scheduler to
+ * provide a realistic timing source while keeping the benchmark deterministic.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup prepares the source once per iteration to avoid measuring allocation overhead.
+ * - Blackhole consumes the emitted items to prevent dead‑code elimination.
+ * - Warm‑up, measurement, and fork parameters are chosen to give stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class ObservableSkipLastTimedBenchmark {
+
+    /** Number of items emitted by the source Observable per benchmark invocation. */
+    @Param({"1000000"})
+    private int itemCount;
+
+    /** The source Observable emitting a range of integers. */
+    private Observable<Integer> source;
+
+    @Setup(Level.Iteration)
+    public void setUp() {
+        // Use hide() to prevent fusion optimizations that would bypass the operator.
+        source = Observable.range(1, itemCount).hide();
+    }
+
+    /**
+     * Executes the skipLastTimed operator and consumes all emitted items.
+     *
+     * @param bh Blackhole to consume the items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void skipLastTimed(Blackhole bh) {
+        source
+            .skipLast(1, TimeUnit.MILLISECONDS, Schedulers.computation())
+            .blockingForEach(bh::consume);
+    }
+}
+```

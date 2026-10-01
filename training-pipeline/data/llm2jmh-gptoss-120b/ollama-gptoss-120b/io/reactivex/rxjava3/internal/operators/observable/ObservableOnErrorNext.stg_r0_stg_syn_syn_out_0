@@ -1,0 +1,104 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link ObservableOnErrorNext} measuring the throughput of the operator
+ * when an upstream Observable terminates with an error and a fallback Observable is
+ * subscribed to.
+ *
+ * The benchmark uses {@code blockingSubscribe} to make the flow synchronous,
+ * ensuring that the measured time reflects only the operator's overhead and not
+ * thread scheduling or asynchronous hand‑off.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize the size of the upstream and fallback streams to explore scaling.
+ * - Consume all emitted items via Blackhole to prevent dead‑code elimination.
+ * - Configure warm‑up and measurement iterations via JMH defaults (can be overridden on CLI).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableOnErrorNextBenchmark {
+
+    /**
+     * Number of items emitted by the primary Observable before it fails.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int upstreamItemCount;
+
+    /**
+     * Number of items emitted by the fallback Observable after the error.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int fallbackItemCount;
+
+    private Observable<Integer> source;
+
+    private Observable<Integer> fallback;
+
+    private Observable<Integer> operatorObservable;
+
+    /**
+     * Set up the source, fallback and the operator under test.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Primary Observable: emits a range then fails with an exception.
+        source = Observable.range(0, upstreamItemCount).concatWith(Observable.error(new RuntimeException("forced error")));
+        // Fallback Observable: emits a range when the error occurs.
+        fallback = Observable.range(upstreamItemCount, fallbackItemCount);
+        // The operator under test: ObservableOnErrorNext.
+        Function<Throwable, ObservableSource<? extends Integer>> nextSupplier = throwable -> fallback;
+        operatorObservable = new ObservableOnErrorNext<>(source, nextSupplier);
+    }
+
+    /**
+     * Benchmark method that subscribes to the operator and consumes all items.
+     *
+     * @param bh Blackhole to consume emitted values and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void onErrorNextThroughput(Blackhole bh) {
+        // blockingSubscribe ensures the benchmark measures the complete execution path.
+        operatorObservable.blockingSubscribe(bh::consume);
+    }
+}

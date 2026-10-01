@@ -1,0 +1,108 @@
+```
+package io.reactivex.rxjava3.operators.benchmark;
+
+import io.reactivex.rxjava3.operators.SpscArrayQueue;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link SpscArrayQueue}.
+ *
+ * The benchmark measures throughput of the single‑producer single‑consumer
+ * scenario as well as single‑threaded offer/poll operations.
+ *
+ * Best practices applied:
+ * - @State(Scope.Group) to share the queue between producer and consumer threads.
+ * - @Group and @GroupThreads to model the SPSC pattern.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Warmup, measurement, and fork settings that are commonly used for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:-RestrictContended"})
+public class SpscArrayQueueBenchmark {
+
+    /**
+     * Shared state for the SPSC group.
+     */
+    @State(Scope.Group)
+    public static class SpscState {
+        /** Queue capacity – a power of two for optimal indexing. */
+        private static final int CAPACITY = 1 << 12; // 4096
+
+        /** The queue instance used by both producer and consumer. */
+        SpscArrayQueue<Integer> queue;
+
+        /** A simple payload used for offers. */
+        int counter = 0;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            queue = new SpscArrayQueue<>(CAPACITY);
+        }
+
+        /** Returns a distinct integer for each offer to avoid accidental caching effects. */
+        int nextValue() {
+            return counter++;
+        }
+    }
+
+    /**
+     * Producer thread for the SPSC benchmark.
+     */
+    @Benchmark
+    @Group("spsc")
+    @GroupThreads(1)
+    public void produce(SpscState state, Blackhole bh) {
+        // Offer a new integer; the return value is consumed to avoid dead‑code elimination.
+        boolean offered = state.queue.offer(state.nextValue());
+        bh.consume(offered);
+    }
+
+    /**
+     * Consumer thread for the SPSC benchmark.
+     */
+    @Benchmark
+    @Group("spsc")
+    @GroupThreads(1)
+    public void consume(SpscState state, Blackhole bh) {
+        // Poll the queue; the result (or null) is consumed.
+        Integer value = state.queue.poll();
+        bh.consume(value);
+    }
+
+    /**
+     * Single‑threaded benchmark that measures the raw cost of an offer followed by a poll.
+     * This isolates the queue's internal overhead from thread‑interaction effects.
+     */
+    @State(Scope.Thread)
+    public static class SingleThreadState {
+        private static final int CAPACITY = 1 << 12;
+        SpscArrayQueue<Integer> queue;
+        int counter = 0;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            queue = new SpscArrayQueue<>(CAPACITY);
+        }
+
+        int nextValue() {
+            return counter++;
+        }
+    }
+
+    @Benchmark
+    @GroupThreads(1)
+    public void singleThreadOfferPoll(SingleThreadState state, Blackhole bh) {
+        // Offer then immediately poll; both results are consumed.
+        boolean offered = state.queue.offer(state.nextValue());
+        bh.consume(offered);
+        Integer value = state.queue.poll();
+        bh.consume(value);
+    }
+}
+```

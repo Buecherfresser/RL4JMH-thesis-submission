@@ -1,0 +1,651 @@
+diff --git a/org/jeasy/random/DefaultExclusionPolicy.java b/org/jeasy/random/DefaultExclusionPolicy.java
+index 9156cba..d24bbb8 100644
+--- a/org/jeasy/random/DefaultExclusionPolicy.java
++++ b/org/jeasy/random/DefaultExclusionPolicy.java
+@@ -48,7 +48,7 @@ public class DefaultExclusionPolicy implements ExclusionPolicy {
+      * @param context the current randomization context
+      * @return true if the field should be excluded, false otherwise
+      */
+-    public boolean shouldBeExcluded(final Field field, final RandomizerContext context) {
++    public boolean shouldBeExcluded(final Field field, final RandomizerContext context) { org.jeasy.random.jmhbench.MutationSwitch.tick(1);
+         if (isStatic(field)) {
+             return true;
+         }
+@@ -68,7 +68,7 @@ public class DefaultExclusionPolicy implements ExclusionPolicy {
+      * @param context the current randomization context
+      * @return true if the type should be excluded, false otherwise
+      */
+-    public boolean shouldBeExcluded(final Class<?> type, final RandomizerContext context) {
++    public boolean shouldBeExcluded(final Class<?> type, final RandomizerContext context) { org.jeasy.random.jmhbench.MutationSwitch.tick(4);
+         Set<Predicate<Class<?>>> typeExclusionPredicates = context.getParameters().getTypeExclusionPredicates();
+         for (Predicate<Class<?>> typeExclusionPredicate : typeExclusionPredicates) {
+             if (typeExclusionPredicate.test(type)) {
+diff --git a/org/jeasy/random/EasyRandom.java b/org/jeasy/random/EasyRandom.java
+index c26b16e..85c6d39 100644
+--- a/org/jeasy/random/EasyRandom.java
++++ b/org/jeasy/random/EasyRandom.java
+@@ -100,7 +100,7 @@ public class EasyRandom extends Random {
+      * @return a random instance of the given type
+      * @throws ObjectCreationException when unable to create a new instance of the given type
+      */
+-    public <T> T nextObject(final Class<T> type) {
++    public <T> T nextObject(final Class<T> type) { org.jeasy.random.jmhbench.MutationSwitch.tick(7);
+         if (type.isRecord()) {
+             return createRandomRecord(type, new RandomizationContext(type, parameters));
+         } else {
+@@ -117,7 +117,7 @@ public class EasyRandom extends Random {
+      * @return a stream of random instances of the given type
+      * @throws ObjectCreationException when unable to create a new instance of the given type
+      */
+-    public <T> Stream<T> objects(final Class<T> type, final int streamSize) {
++    public <T> Stream<T> objects(final Class<T> type, final int streamSize) { org.jeasy.random.jmhbench.MutationSwitch.tick(10);
+         if (streamSize < 0) {
+             throw new IllegalArgumentException("The stream size must be positive");
+         }
+diff --git a/org/jeasy/random/EasyRandomParameters.java b/org/jeasy/random/EasyRandomParameters.java
+index 10a759e..cad9f55 100644
+--- a/org/jeasy/random/EasyRandomParameters.java
++++ b/org/jeasy/random/EasyRandomParameters.java
+@@ -139,10 +139,10 @@ public class EasyRandomParameters {
+         randomizerProvider = new RegistriesRandomizerProvider();
+     }
+ 
+-    public Range<Integer> getCollectionSizeRange() {
++    public Range<Integer> getCollectionSizeRange() { org.jeasy.random.jmhbench.MutationSwitch.tick(13);
+         return collectionSizeRange;
+     }
+-    public void setCollectionSizeRange(final Range<Integer> collectionSizeRange) {
++    public void setCollectionSizeRange(final Range<Integer> collectionSizeRange) { org.jeasy.random.jmhbench.MutationSwitch.tick(16);
+         this.collectionSizeRange = collectionSizeRange;
+     }
+ 
+diff --git a/org/jeasy/random/FieldPredicates.java b/org/jeasy/random/FieldPredicates.java
+index ff20b01..b287f8d 100644
+--- a/org/jeasy/random/FieldPredicates.java
++++ b/org/jeasy/random/FieldPredicates.java
+@@ -49,7 +49,7 @@ public class FieldPredicates {
+      * @param name pattern of the field name to check
+      * @return Predicate to check that a field has a certain name pattern
+      */
+-    public static Predicate<Field> named(final String name) {
++    public static Predicate<Field> named(final String name) { org.jeasy.random.jmhbench.MutationSwitch.tick(19);
+         final Pattern pattern = Pattern.compile(name);
+         return (ContextAwareFieldPredicate) (field, context) -> pattern.matcher(field.getName()).matches();
+     }
+@@ -61,7 +61,7 @@ public class FieldPredicates {
+      * @return Predicate to check that a field has a certain path from the root object
+      * @since 6.0.1
+      */
+-    public static Predicate<Field> path(final String path) {
++    public static Predicate<Field> path(final String path) { org.jeasy.random.jmhbench.MutationSwitch.tick(22);
+         final String expectedPath = path.toLowerCase();
+         return (ContextAwareFieldPredicate) (field, context) -> expectedPath.equals(getFieldPath(field, context));
+     }
+diff --git a/org/jeasy/random/ObjenesisObjectFactory.java b/org/jeasy/random/ObjenesisObjectFactory.java
+index 6cf741d..50c6577 100644
+--- a/org/jeasy/random/ObjenesisObjectFactory.java
++++ b/org/jeasy/random/ObjenesisObjectFactory.java
+@@ -47,7 +47,7 @@ public class ObjenesisObjectFactory implements ObjectFactory {
+     private EasyRandom random;
+ 
+     @Override
+-    public <T> T createInstance(Class<T> type, RandomizerContext context) {
++    public <T> T createInstance(Class<T> type, RandomizerContext context) { org.jeasy.random.jmhbench.MutationSwitch.tick(24);
+         if (random == null) {
+             random = new EasyRandom(context.getParameters());
+         }
+diff --git a/org/jeasy/random/RandomizationContext.java b/org/jeasy/random/RandomizationContext.java
+index a38dbb0..baf1a0d 100644
+--- a/org/jeasy/random/RandomizationContext.java
++++ b/org/jeasy/random/RandomizationContext.java
+@@ -114,12 +114,12 @@ class RandomizationContext implements RandomizerContext {
+     }
+ 
+     @Override
+-    public Class<?> getTargetType() {
++    public Class<?> getTargetType() { org.jeasy.random.jmhbench.MutationSwitch.tick(26);
+         return type;
+     }
+ 
+     @Override
+-    public Object getCurrentObject() {
++    public Object getCurrentObject() { org.jeasy.random.jmhbench.MutationSwitch.tick(28);
+         if (stack.empty()) {
+             return rootObject;
+         }
+diff --git a/org/jeasy/random/RandomizationContextStackItem.java b/org/jeasy/random/RandomizationContextStackItem.java
+index 9914a30..dc330c4 100644
+--- a/org/jeasy/random/RandomizationContextStackItem.java
++++ b/org/jeasy/random/RandomizationContextStackItem.java
+@@ -41,11 +41,11 @@ class RandomizationContextStackItem {
+         this.field = field;
+     }
+ 
+-    public Object getObject() {
++    public Object getObject() { org.jeasy.random.jmhbench.MutationSwitch.tick(30);
+         return object;
+     }
+ 
+-    public void setObject(Object object) {
++    public void setObject(Object object) { org.jeasy.random.jmhbench.MutationSwitch.tick(32);
+         this.object = object;
+     }
+ 
+diff --git a/org/jeasy/random/RegistriesRandomizerProvider.java b/org/jeasy/random/RegistriesRandomizerProvider.java
+index ee17ac2..32b43a3 100644
+--- a/org/jeasy/random/RegistriesRandomizerProvider.java
++++ b/org/jeasy/random/RegistriesRandomizerProvider.java
+@@ -47,13 +47,13 @@ class RegistriesRandomizerProvider implements RandomizerProvider {
+     private final Comparator<Object> priorityComparator = new PriorityComparator();
+ 
+     @Override
+-    public Randomizer<?> getRandomizerByField(Field field, RandomizerContext context) {
++    public Randomizer<?> getRandomizerByField(Field field, RandomizerContext context) { org.jeasy.random.jmhbench.MutationSwitch.tick(34);
+         return getRandomizer(new ByFieldProvider(field));
+     }
+ 
+     @Override
+     @SuppressWarnings("unchecked")
+-    public <T> Randomizer<T> getRandomizerByType(Class<T> type, RandomizerContext context) {
++    public <T> Randomizer<T> getRandomizerByType(Class<T> type, RandomizerContext context) { org.jeasy.random.jmhbench.MutationSwitch.tick(36);
+         return (Randomizer<T>) getRandomizer(new ByTypeProvider(type));
+     }
+ 
+diff --git a/org/jeasy/random/TypePredicates.java b/org/jeasy/random/TypePredicates.java
+index 0a887b9..1108fb8 100644
+--- a/org/jeasy/random/TypePredicates.java
++++ b/org/jeasy/random/TypePredicates.java
+@@ -44,7 +44,7 @@ public class TypePredicates {
+      * @param name name on the type
+      * @return Predicate to check that a type has a given name.
+      */
+-    public static Predicate<Class<?>> named(final String name) {
++    public static Predicate<Class<?>> named(final String name) { org.jeasy.random.jmhbench.MutationSwitch.tick(38);
+         return clazz -> clazz.getName().equals(name);
+     }
+ 
+@@ -54,7 +54,7 @@ public class TypePredicates {
+      * @param type of the class to check
+      * @return Predicate to check that a class has a certain type
+      */
+-    public static Predicate<Class<?>> ofType(Class<?> type) {
++    public static Predicate<Class<?>> ofType(Class<?> type) { org.jeasy.random.jmhbench.MutationSwitch.tick(40);
+         return clazz -> clazz.equals(type);
+     }
+ 
+diff --git a/org/jeasy/random/jmhbench/MutationSwitch.java b/org/jeasy/random/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..9ffb779
+--- /dev/null
++++ b/org/jeasy/random/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.jeasy.random.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/jeasy/random/randomizers/CreditCardNumberRandomizer.java b/org/jeasy/random/randomizers/CreditCardNumberRandomizer.java
+index f7f6ffb..418a1f7 100644
+--- a/org/jeasy/random/randomizers/CreditCardNumberRandomizer.java
++++ b/org/jeasy/random/randomizers/CreditCardNumberRandomizer.java
+@@ -60,7 +60,7 @@ public class CreditCardNumberRandomizer extends FakerBasedRandomizer<String> {
+     }
+ 
+     @Override
+-    public String getRandomValue() {
++    public String getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(2);
+         return faker.business().creditCardNumber();
+     }
+ }
+diff --git a/org/jeasy/random/randomizers/GenericStringRandomizer.java b/org/jeasy/random/randomizers/GenericStringRandomizer.java
+index d356e5d..a996662 100644
+--- a/org/jeasy/random/randomizers/GenericStringRandomizer.java
++++ b/org/jeasy/random/randomizers/GenericStringRandomizer.java
+@@ -56,7 +56,7 @@ public class GenericStringRandomizer extends FakerBasedRandomizer<String> {
+     }
+ 
+     @Override
+-    public String getRandomValue() {
++    public String getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(5);
+         return faker.options().option(words);
+     }
+ 
+diff --git a/org/jeasy/random/randomizers/PhoneNumberRandomizer.java b/org/jeasy/random/randomizers/PhoneNumberRandomizer.java
+index 5765d84..2fc92a1 100644
+--- a/org/jeasy/random/randomizers/PhoneNumberRandomizer.java
++++ b/org/jeasy/random/randomizers/PhoneNumberRandomizer.java
+@@ -60,7 +60,7 @@ public class PhoneNumberRandomizer extends FakerBasedRandomizer<String> {
+     }
+ 
+     @Override
+-    public String getRandomValue() {
++    public String getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(8);
+         return faker.phoneNumber().phoneNumber();
+     }
+ }
+diff --git a/org/jeasy/random/randomizers/collection/EnumSetRandomizer.java b/org/jeasy/random/randomizers/collection/EnumSetRandomizer.java
+index 03f881d..ef3db02 100644
+--- a/org/jeasy/random/randomizers/collection/EnumSetRandomizer.java
++++ b/org/jeasy/random/randomizers/collection/EnumSetRandomizer.java
+@@ -61,7 +61,7 @@ public class EnumSetRandomizer<E extends Enum<E>> extends CollectionRandomizer<E
+     }
+ 
+     @Override
+-    public EnumSet<E> getRandomValue() {
++    public EnumSet<E> getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(11);
+         int size = Math.max(1, nbElements);
+         List<E> elements = new ArrayList<>();
+         for (int i = 0; i < size; i++) {
+diff --git a/org/jeasy/random/randomizers/collection/ListRandomizer.java b/org/jeasy/random/randomizers/collection/ListRandomizer.java
+index ac81249..27e8cc4 100644
+--- a/org/jeasy/random/randomizers/collection/ListRandomizer.java
++++ b/org/jeasy/random/randomizers/collection/ListRandomizer.java
+@@ -58,7 +58,7 @@ public class ListRandomizer<T> extends CollectionRandomizer<T> {
+     }
+ 
+     @Override
+-    public List<T> getRandomValue() {
++    public List<T> getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(14);
+         List<T> result = new ArrayList<>(nbElements);
+         for (int i = 0; i < nbElements; i++) {
+             result.add(getRandomElement());
+diff --git a/org/jeasy/random/randomizers/collection/MapRandomizer.java b/org/jeasy/random/randomizers/collection/MapRandomizer.java
+index 5658a1d..5419872 100644
+--- a/org/jeasy/random/randomizers/collection/MapRandomizer.java
++++ b/org/jeasy/random/randomizers/collection/MapRandomizer.java
+@@ -77,7 +77,7 @@ public class MapRandomizer<K, V> implements Randomizer<Map<K, V>> {
+     }
+ 
+     @Override
+-    public Map<K, V> getRandomValue() {
++    public Map<K, V> getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(17);
+         Map<K, V> result = new HashMap<>();
+         for (int i = 0; i < nbElements; i++) {
+             result.put(keyRandomizer.getRandomValue(), valueRandomizer.getRandomValue());
+diff --git a/org/jeasy/random/randomizers/collection/SetRandomizer.java b/org/jeasy/random/randomizers/collection/SetRandomizer.java
+index 80afbe2..5d5889d 100644
+--- a/org/jeasy/random/randomizers/collection/SetRandomizer.java
++++ b/org/jeasy/random/randomizers/collection/SetRandomizer.java
+@@ -56,7 +56,7 @@ public class SetRandomizer<T> extends CollectionRandomizer<T> {
+     }
+ 
+     @Override
+-    public Set<T> getRandomValue() {
++    public Set<T> getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(20);
+         Set<T> result = new HashSet<>();
+         for (int i = 0; i < nbElements; i++) {
+             result.add(getRandomElement());
+diff --git a/org/jeasy/random/randomizers/number/NumberRandomizer.java b/org/jeasy/random/randomizers/number/NumberRandomizer.java
+index c6a4635..0de4108 100644
+--- a/org/jeasy/random/randomizers/number/NumberRandomizer.java
++++ b/org/jeasy/random/randomizers/number/NumberRandomizer.java
+@@ -48,7 +48,7 @@ public class NumberRandomizer extends AbstractRandomizer<Number> {
+     }
+ 
+     @Override
+-    public Integer getRandomValue() {
++    public Integer getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(23);
+         return random.nextInt();
+     }
+ }
+diff --git a/org/jeasy/random/randomizers/range/BigDecimalRangeRandomizer.java b/org/jeasy/random/randomizers/range/BigDecimalRangeRandomizer.java
+index 6c00fd6..e4bc9ac 100644
+--- a/org/jeasy/random/randomizers/range/BigDecimalRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/BigDecimalRangeRandomizer.java
+@@ -115,7 +115,7 @@ public class BigDecimalRangeRandomizer implements Randomizer<BigDecimal> {
+     }
+ 
+     @Override
+-    public BigDecimal getRandomValue() {
++    public BigDecimal getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(25);
+         Double delegateRandomValue = delegate.getRandomValue();
+         BigDecimal randomValue = new BigDecimal(delegateRandomValue);
+         if (scale != null) {
+diff --git a/org/jeasy/random/randomizers/range/BigIntegerRangeRandomizer.java b/org/jeasy/random/randomizers/range/BigIntegerRangeRandomizer.java
+index 1f64ab8..8b6ebf8 100644
+--- a/org/jeasy/random/randomizers/range/BigIntegerRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/BigIntegerRangeRandomizer.java
+@@ -58,7 +58,7 @@ public class BigIntegerRangeRandomizer implements Randomizer<BigInteger> {
+     }
+ 
+     @Override
+-    public BigInteger getRandomValue() {
++    public BigInteger getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(27);
+         return new BigInteger(String.valueOf(delegate.getRandomValue()));
+     }
+ }
+diff --git a/org/jeasy/random/randomizers/range/ByteRangeRandomizer.java b/org/jeasy/random/randomizers/range/ByteRangeRandomizer.java
+index e8896ec..ecbe5a3 100644
+--- a/org/jeasy/random/randomizers/range/ByteRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/ByteRangeRandomizer.java
+@@ -52,14 +52,14 @@ public class ByteRangeRandomizer extends AbstractRangeRandomizer<Byte> {
+     }
+ 
+     @Override
+-    protected void checkValues() {
++    protected void checkValues() { org.jeasy.random.jmhbench.MutationSwitch.tick(29);
+         if (min > max) {
+             throw new IllegalArgumentException("max must be greater than min");
+         }
+     }
+ 
+     @Override
+-    public Byte getRandomValue() {
++    public Byte getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(31);
+         return (byte) nextDouble(min, max);
+     }
+ 
+diff --git a/org/jeasy/random/randomizers/range/DateRangeRandomizer.java b/org/jeasy/random/randomizers/range/DateRangeRandomizer.java
+index 31f69ce..963c355 100644
+--- a/org/jeasy/random/randomizers/range/DateRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/DateRangeRandomizer.java
+@@ -54,14 +54,14 @@ public class DateRangeRandomizer extends AbstractRangeRandomizer<Date> {
+     }
+ 
+     @Override
+-    protected void checkValues() {
++    protected void checkValues() { org.jeasy.random.jmhbench.MutationSwitch.tick(33);
+         if (min.after(max)) {
+             throw new IllegalArgumentException("max must be after min");
+         }
+     }
+ 
+     @Override
+-    protected Date getDefaultMinValue() {
++    protected Date getDefaultMinValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(35);
+         return new Date(Long.MIN_VALUE);
+     }
+ 
+diff --git a/org/jeasy/random/randomizers/range/DoubleRangeRandomizer.java b/org/jeasy/random/randomizers/range/DoubleRangeRandomizer.java
+index 12bfba5..af1d329 100644
+--- a/org/jeasy/random/randomizers/range/DoubleRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/DoubleRangeRandomizer.java
+@@ -52,14 +52,14 @@ public class DoubleRangeRandomizer extends AbstractRangeRandomizer<Double> {
+     }
+ 
+     @Override
+-    protected void checkValues() {
++    protected void checkValues() { org.jeasy.random.jmhbench.MutationSwitch.tick(37);
+         if (min > max) {
+             throw new IllegalArgumentException("max must be greater than min");
+         }
+     }
+ 
+     @Override
+-    protected Double getDefaultMinValue() {
++    protected Double getDefaultMinValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(39);
+         return Double.MIN_VALUE;
+     }
+ 
+diff --git a/org/jeasy/random/randomizers/range/FloatRangeRandomizer.java b/org/jeasy/random/randomizers/range/FloatRangeRandomizer.java
+index ef43500..735e56a 100644
+--- a/org/jeasy/random/randomizers/range/FloatRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/FloatRangeRandomizer.java
+@@ -52,14 +52,14 @@ public class FloatRangeRandomizer extends AbstractRangeRandomizer<Float> {
+     }
+ 
+     @Override
+-    protected void checkValues() {
++    protected void checkValues() { org.jeasy.random.jmhbench.MutationSwitch.tick(41);
+         if (min > max) {
+             throw new IllegalArgumentException("max must be greater than min");
+         }
+     }
+ 
+     @Override
+-    protected Float getDefaultMinValue() {
++    protected Float getDefaultMinValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(42);
+         return Float.MIN_VALUE;
+     }
+ 
+diff --git a/org/jeasy/random/randomizers/range/InstantRangeRandomizer.java b/org/jeasy/random/randomizers/range/InstantRangeRandomizer.java
+index 95a1f2f..30ad36f 100644
+--- a/org/jeasy/random/randomizers/range/InstantRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/InstantRangeRandomizer.java
+@@ -49,14 +49,14 @@ public class InstantRangeRandomizer extends AbstractRangeRandomizer<Instant> {
+     }
+ 
+     @Override
+-    protected void checkValues() {
++    protected void checkValues() { org.jeasy.random.jmhbench.MutationSwitch.tick(43);
+ 		if (min.isAfter(max)) {
+ 			throw new IllegalArgumentException("max must be after min");
+ 		}
+     }
+ 
+     @Override
+-    protected Instant getDefaultMinValue() {
++    protected Instant getDefaultMinValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(44);
+         return Instant.ofEpochMilli(Long.MIN_VALUE);
+     }
+ 
+diff --git a/org/jeasy/random/randomizers/range/IntegerRangeRandomizer.java b/org/jeasy/random/randomizers/range/IntegerRangeRandomizer.java
+index b6600a5..07e6232 100644
+--- a/org/jeasy/random/randomizers/range/IntegerRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/IntegerRangeRandomizer.java
+@@ -52,14 +52,14 @@ public class IntegerRangeRandomizer extends AbstractRangeRandomizer<Integer> {
+     }
+ 
+     @Override
+-    protected void checkValues() {
++    protected void checkValues() { org.jeasy.random.jmhbench.MutationSwitch.tick(45);
+         if (min > max) {
+             throw new IllegalArgumentException("max must be greater than min");
+         }
+     }
+ 
+     @Override
+-    public Integer getRandomValue() {
++    public Integer getRandomValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(46);
+         return (int) nextDouble(min, max);
+     }
+ 
+diff --git a/org/jeasy/random/randomizers/range/LocalDateRangeRandomizer.java b/org/jeasy/random/randomizers/range/LocalDateRangeRandomizer.java
+index 5bdffbb..5ddbe66 100644
+--- a/org/jeasy/random/randomizers/range/LocalDateRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/LocalDateRangeRandomizer.java
+@@ -55,14 +55,14 @@ public class LocalDateRangeRandomizer extends AbstractRangeRandomizer<LocalDate>
+     }
+ 
+     @Override
+-    protected void checkValues() {
++    protected void checkValues() { org.jeasy.random.jmhbench.MutationSwitch.tick(47);
+         if (min.isAfter(max)) {
+             throw new IllegalArgumentException("max must be after min");
+         }
+     }
+ 
+     @Override
+-    protected LocalDate getDefaultMinValue() {
++    protected LocalDate getDefaultMinValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(48);
+         return LocalDate.MIN;
+     }
+ 
+diff --git a/org/jeasy/random/randomizers/range/LocalDateTimeRangeRandomizer.java b/org/jeasy/random/randomizers/range/LocalDateTimeRangeRandomizer.java
+index d269270..9e9d1c1 100644
+--- a/org/jeasy/random/randomizers/range/LocalDateTimeRangeRandomizer.java
++++ b/org/jeasy/random/randomizers/range/LocalDateTimeRangeRandomizer.java
+@@ -56,14 +56,14 @@ public class LocalDateTimeRangeRandomizer extends AbstractRangeRandomizer<LocalD
+     }
+ 
+     @Override
+-    protected void checkValues() {
++    protected void checkValues() { org.jeasy.random.jmhbench.MutationSwitch.tick(49);
+         if (min.isAfter(max)) {
+             throw new IllegalArgumentException("max must be after min");
+         }
+     }
+ 
+     @Override
+-    protected LocalDateTime getDefaultMinValue() {
++    protected LocalDateTime getDefaultMinValue() { org.jeasy.random.jmhbench.MutationSwitch.tick(50);
+         return LocalDateTime.MIN;
+     }
+ 
+diff --git a/org/jeasy/random/util/CharacterUtils.java b/org/jeasy/random/util/CharacterUtils.java
+index a9613fb..9160679 100644
+--- a/org/jeasy/random/util/CharacterUtils.java
++++ b/org/jeasy/random/util/CharacterUtils.java
+@@ -48,7 +48,7 @@ public final class CharacterUtils {
+      *            Charset to use
+      * @return list of printable characters
+      */
+-    public static List<Character> collectPrintableCharactersOf(Charset charset) {
++    public static List<Character> collectPrintableCharactersOf(Charset charset) { org.jeasy.random.jmhbench.MutationSwitch.tick(3);
+         List<Character> chars = new ArrayList<>();
+         for (int i = Character.MIN_VALUE; i < Character.MAX_VALUE; i++) {
+             char character = (char) i;
+@@ -69,7 +69,7 @@ public final class CharacterUtils {
+      * @param characters to filter
+      * @return only letters
+      */
+-    public static List<Character> filterLetters(List<Character> characters) {
++    public static List<Character> filterLetters(List<Character> characters) { org.jeasy.random.jmhbench.MutationSwitch.tick(6);
+         return characters.stream().filter(Character::isLetter).collect(toList());
+     }
+ 
+diff --git a/org/jeasy/random/util/ConversionUtils.java b/org/jeasy/random/util/ConversionUtils.java
+index e425280..efded4f 100644
+--- a/org/jeasy/random/util/ConversionUtils.java
++++ b/org/jeasy/random/util/ConversionUtils.java
+@@ -47,7 +47,7 @@ public class ConversionUtils {
+ 	private ConversionUtils() {
+ 	}
+ 
+-	public static Object[] convertArguments(final RandomizerArgument[] declaredArguments) {
++	public static Object[] convertArguments(final RandomizerArgument[] declaredArguments) { org.jeasy.random.jmhbench.MutationSwitch.tick(9);
+ 		int numberOfArguments = declaredArguments.length;
+ 		Object[] arguments = new Object[numberOfArguments];
+ 		for (int i = 0; i < numberOfArguments; i++) {
+@@ -64,7 +64,7 @@ public class ConversionUtils {
+ 		return arguments;
+ 	}
+ 
+-	public static LocalDate convertDateToLocalDate(Date date) {
++	public static LocalDate convertDateToLocalDate(Date date) { org.jeasy.random.jmhbench.MutationSwitch.tick(12);
+ 		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+ 	}
+ 
+diff --git a/org/jeasy/random/util/PrimitiveEnum.java b/org/jeasy/random/util/PrimitiveEnum.java
+index e8b287d..66bba15 100644
+--- a/org/jeasy/random/util/PrimitiveEnum.java
++++ b/org/jeasy/random/util/PrimitiveEnum.java
+@@ -51,7 +51,7 @@ enum PrimitiveEnum {
+         return type;
+     }
+ 
+-    public Class<?> getClazz() {
++    public Class<?> getClazz() { org.jeasy.random.jmhbench.MutationSwitch.tick(21);
+         return clazz;
+     }
+ }
+\ No newline at end of file
+diff --git a/org/jeasy/random/util/ReflectionUtils.java b/org/jeasy/random/util/ReflectionUtils.java
+index e641b4d..906a280 100644
+--- a/org/jeasy/random/util/ReflectionUtils.java
++++ b/org/jeasy/random/util/ReflectionUtils.java
+@@ -62,7 +62,7 @@ public final class ReflectionUtils {
+      * @return the proxy randomizer
+      */
+     @SuppressWarnings("unchecked")
+-    public static <T> Randomizer<T> asRandomizer(final Supplier<T> supplier) {
++    public static <T> Randomizer<T> asRandomizer(final Supplier<T> supplier) { org.jeasy.random.jmhbench.MutationSwitch.tick(15);
+ 
+         class RandomizerProxy implements InvocationHandler {
+ 
+@@ -73,7 +73,7 @@ public final class ReflectionUtils {
+             }
+ 
+             @Override
+-            public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
++            public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable { org.jeasy.random.jmhbench.MutationSwitch.tick(18);
+                 if ("getRandomValue".equals(method.getName())) {
+                     Method getMethod = target.getClass().getMethod("get");
+                     getMethod.setAccessible(true);

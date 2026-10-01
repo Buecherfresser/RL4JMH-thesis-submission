@@ -1,0 +1,66 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.single.SingleObserveOn}
+ * measuring the throughput of a simple {@code Single.just(...).observeOn(...)} pipeline.
+ *
+ * The benchmark uses {@link Schedulers#single()} to emulate a typical asynchronous
+ * scheduler while keeping the setup lightweight. The {@code blockingGet()} call
+ * forces the downstream to wait for the scheduled emission, allowing us to
+ * measure the end‑to‑end cost of the operator.
+ *
+ * Best practices applied:
+ * - @State(Scope.Benchmark) to share the Scheduler across all benchmark threads.
+ * - @Setup/@TearDown for proper resource management.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Warm‑up, measurement, and fork parameters tuned for stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@Threads(Threads.MAX)
+public class SingleObserveOnBenchmark {
+
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+        // Using a single‑threaded scheduler to avoid thread‑pool contention.
+        io.reactivex.rxjava3.core.Scheduler scheduler;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            scheduler = Schedulers.single();
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            scheduler.shutdown();
+        }
+    }
+
+    /**
+     * Measures the throughput of a Single that emits a constant value,
+     * observes on the provided scheduler, and blocks until the value is received.
+     *
+     * @param state shared benchmark state containing the scheduler
+     * @param bh    Blackhole to consume the result and prevent dead‑code elimination
+     */
+    @Benchmark
+    public void observeOnSingle(BenchmarkState state, Blackhole bh) {
+        // The source Single emits a simple Integer; the value itself is irrelevant.
+        Integer result = Single.just(1)
+                .observeOn(state.scheduler)
+                .blockingGet(); // forces the downstream to wait for the scheduled emission
+        bh.consume(result);
+    }
+}
+```

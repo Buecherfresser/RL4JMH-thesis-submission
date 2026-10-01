@@ -1,0 +1,104 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Subscriber;
+import io.reactivex.rxjava3.internal.operators.parallel.ParallelJoin;
+import io.reactivex.rxjava3.parallel.ParallelFlowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link ParallelJoin} measuring throughput (items per second)
+ * under different parallelism, prefetch and error‑handling configurations.
+ *
+ * The benchmark creates a {@link ParallelFlowable} that emits a fixed number
+ * of integers, runs it on the computation scheduler and then joins the
+ * parallel streams using {@link ParallelJoin}. The emitted items are
+ * consumed by a {@link Subscriber} that forwards them to a {@link Blackhole}
+ * to avoid dead‑code elimination.
+ *
+ * Best‑practice JMH settings:
+ * - Warm‑up iterations to let the JIT stabilize.
+ * - Multiple measurement iterations.
+ * - Several forks to isolate JVM state.
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class ParallelJoinBenchmark {
+
+    /** Number of items emitted by each parallel source. */
+    @Param({"1000000"})
+    public int itemCount;
+
+    /** Parallelism (number of rails). */
+    @Param({"2", "4", "8"})
+    public int parallelism;
+
+    /** Prefetch size for each inner subscriber. */
+    @Param({"32", "128", "1024"})
+    public int prefetch;
+
+    /** Whether errors are delayed until all sources terminate. */
+    @Param({"true", "false"})
+    public boolean delayErrors;
+
+    private ParallelFlowable<Integer> source;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Create a ParallelFlowable that emits a range of integers.
+        // runOn ensures work is performed on separate threads.
+        source = Flowable.range(1, itemCount)
+                .parallel(parallelism)
+                .runOn(Schedulers.computation());
+    }
+
+    @Benchmark
+    public void joinAndConsume(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+
+        // Build the ParallelJoin operator directly.
+        ParallelJoin<Integer> joined = new ParallelJoin<>(source, prefetch, delayErrors);
+
+        joined.subscribe(new Subscriber<Integer>() {
+            @Override
+            public void onSubscribe(org.reactivestreams.Subscription s) {
+                // Request an unbounded number of items to focus on raw throughput.
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are not expected in the benchmark; count down to avoid hanging.
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        // Wait for the stream to finish before ending the measurement.
+        // A timeout guards against unexpected hangs.
+        if (!latch.await(30, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Benchmark timed out");
+        }
+    }
+}
+```

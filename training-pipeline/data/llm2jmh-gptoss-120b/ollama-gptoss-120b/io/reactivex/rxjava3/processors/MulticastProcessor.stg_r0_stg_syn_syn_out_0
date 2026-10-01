@@ -1,0 +1,129 @@
+package io.reactivex.rxjava3.processors;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link MulticastProcessor}.
+ *
+ * Measures the throughput of {@code onNext} calls when the processor has a
+ * configurable number of subscribers that request an unbounded amount of
+ * items. The benchmark follows best‑practice JMH settings: warm‑up,
+ * measurement iterations, multiple forks and a single benchmark thread.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+@State(Scope.Benchmark)
+public class MulticastProcessorBenchmark {
+
+    /**
+     * Number of concurrent subscribers attached to the processor.
+     */
+    @Param({ "1", "4", "8" })
+    public int subscriberCount;
+
+    /**
+     * Buffer size used when creating the processor.
+     */
+    @Param({ "128", "1024", "8192" })
+    public int bufferSize;
+
+    private MulticastProcessor<Integer> processor;
+
+    private final AtomicInteger source = new AtomicInteger();
+
+    /**
+     * Sets up a fresh {@link MulticastProcessor} and attaches the requested
+     * number of subscribers. Each subscriber requests {@code Long.MAX_VALUE}
+     * to avoid back‑pressure interference with the measurement.
+     */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        processor = new MulticastProcessor<>(bufferSize, false);
+        processor.start();
+        for (int i = 0; i < subscriberCount; i++) {
+            processor.subscribe(new BlackholeSubscriber());
+        }
+    }
+
+    /**
+     * Benchmark method that emits a single integer value into the processor.
+     * The emitted value is taken from an {@link AtomicInteger} to avoid
+     * constant folding by the JIT.
+     *
+     * @param bh Blackhole to consume the emitted value (prevents dead‑code elimination)
+     */
+    @Benchmark
+    public void emitOne(Blackhole bh) {
+        int v = source.getAndIncrement();
+        // The Blackhole ensures the value is used, preventing the JIT from
+        // optimizing away the onNext call.
+        bh.consume(v);
+        processor.onNext(v);
+    }
+
+    /**
+     * Simple subscriber that consumes items without any additional work.
+     * It requests an unbounded number of items in {@code onSubscribe}.
+     */
+    static final class BlackholeSubscriber extends DisposableSubscriber<Integer> {
+
+        @Override
+        public void onStart() {
+            request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            // No-op – the subscriber does not perform any work.
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // No-op
+        }
+
+        @Override
+        public void onComplete() {
+            // No-op
+        }
+    }
+}

@@ -1,0 +1,79 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableFlattenIterable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * JMH benchmark for {@link ObservableFlattenIterable}.
+ *
+ * The benchmark measures the throughput (operations per second) of flattening an {@link Iterable}
+ * produced by a mapper function for each upstream item. The mapper creates a small fixed-size list,
+ * which mimics a typical use‑case where each source element expands to a few inner elements.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} isolates mutable state per benchmark thread.
+ * - {@code @Setup(Level.Trial)} prepares immutable data structures once per trial.
+ * - Use of {@link Blackhole} prevents dead‑code elimination.
+ * - The benchmark runs in {@link Mode#Throughput} with results reported in operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ObservableFlattenIterableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Source Observable emitting a fixed range of integers. */
+        Observable<Integer> source;
+
+        /** Mapper that expands each integer into a small list of integers. */
+        Function<Integer, Iterable<Integer>> mapper;
+
+        /** Number of items emitted by the source per subscription. */
+        static final int SOURCE_COUNT = 1_000;
+
+        /** Number of inner items produced per source item. */
+        static final int INNER_PER_ITEM = 10;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Synchronous source – no scheduling overhead.
+            source = Observable.range(1, SOURCE_COUNT);
+
+            // Simple mapper returning a List<Integer> of size INNER_PER_ITEM.
+            mapper = i -> IntStream.range(0, INNER_PER_ITEM)
+                                   .boxed()
+                                   .collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * Benchmark that subscribes to {@link ObservableFlattenIterable},
+     * consumes all emitted items via a {@link Blackhole}, and completes.
+     *
+     * The use of {@code blockingSubscribe} guarantees that the method returns
+     * only after the whole stream has been processed, providing a clean measurement
+     * of end‑to‑end throughput.
+     */
+    @Benchmark
+    public void flattenIterable(BenchmarkState state, Blackhole bh) {
+        new ObservableFlattenIterable<>(
+                (ObservableSource<Integer>) state.source,
+                state.mapper)
+            .blockingSubscribe(bh::consume);
+    }
+}
+```

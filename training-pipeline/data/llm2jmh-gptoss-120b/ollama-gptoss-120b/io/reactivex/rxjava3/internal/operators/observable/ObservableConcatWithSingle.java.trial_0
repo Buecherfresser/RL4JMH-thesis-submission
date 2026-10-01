@@ -1,0 +1,66 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableConcatWithSingle;
+
+/**
+ * JMH benchmark for {@link ObservableConcatWithSingle}.
+ *
+ * The benchmark measures the throughput (operations per second) of concatenating an
+ * {@link Observable} with a {@link Single} using the internal RxJava operator.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source Observable and Single in @Setup to exclude allocation overhead.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Configure warm‑up and measurement iterations to let the JIT stabilize.
+ * - Run in Mode.Throughput with a time unit of seconds.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class ObservableConcatWithSingleBenchmark {
+
+    /** Number of items emitted by the upstream Observable. */
+    @Param({"1", "10", "100", "1000"})
+    public int upstreamCount;
+
+    private Observable<Integer> upstream;
+    private Single<Integer> single;
+
+    /**
+     * Prepare the upstream Observable and the Single before each benchmark thread starts.
+     * The Observable emits a range of integers, the Single emits a single integer.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        upstream = Observable.range(1, upstreamCount);
+        single = Single.just(0);
+    }
+
+    /**
+     * Benchmark method that concatenates the upstream Observable with the Single
+     * using the internal {@link ObservableConcatWithSingle} operator and consumes
+     * all emitted items via a Blackhole.
+     *
+     * @param bh Blackhole to consume the items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void concatWithSingle(Blackhole bh) {
+        // Directly instantiate the internal operator to avoid extra operator wrapping.
+        Observable<Integer> concat = new ObservableConcatWithSingle<>(upstream, single);
+
+        // Subscribe and block until completion, feeding each item into the Blackhole.
+        concat.blockingSubscribe(bh::consume);
+    }
+}
+```

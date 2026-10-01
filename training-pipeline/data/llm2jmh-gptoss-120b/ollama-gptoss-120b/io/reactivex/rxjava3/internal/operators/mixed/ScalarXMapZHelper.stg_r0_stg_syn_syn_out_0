@@ -1,0 +1,141 @@
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH microbenchmarks for {@link ScalarXMapZHelper}.
+ *
+ * The benchmarks measure the throughput of the three scalar‑optimisation helpers
+ * when the source is a {@link Supplier} that returns a non‑null value and the mapper
+ * returns a simple reactive source (Completable.complete(), Maybe.just(...), Single.just(...)).
+ *
+ * Best practices applied:
+ * • @State(Scope.Thread) isolates benchmark state per thread.
+ * • @Setup prepares immutable objects once per iteration.
+ * • Blackhole is used to consume the boolean result to avoid dead‑code elimination.
+ * • Warm‑up, measurement, and fork parameters follow typical JMH recommendations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+public class ScalarXMapZHelperBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        // Source that implements Supplier<T>
+        Supplier<Integer> supplier;
+
+        // Mappers for each reactive type
+        Function<Integer, CompletableSource> completableMapper;
+
+        Function<Integer, MaybeSource<Integer>> maybeMapper;
+
+        Function<Integer, SingleSource<Integer>> singleMapper;
+
+        // Observers that simply discard signals
+        CompletableObserver completableObserver;
+
+        Observer<Integer> maybeObserver;
+
+        Observer<Integer> singleObserver;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // non‑null scalar value
+            supplier = () -> 42;
+            completableMapper = v -> Completable.complete();
+            maybeMapper = v -> Maybe.just(v);
+            singleMapper = v -> Single.just(v);
+            completableObserver = new CompletableObserver() {
+
+                @Override
+                public void onSubscribe(Disposable d) {
+                }
+
+                @Override
+                public void onComplete() {
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                }
+            };
+            maybeObserver = new Observer<Integer>() {
+
+                @Override
+                public void onSubscribe(Disposable d) {
+                }
+
+                @Override
+                public void onNext(Integer value) {
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                }
+
+                @Override
+                public void onComplete() {
+                }
+            };
+            // same implementation works for Single
+            singleObserver = maybeObserver;
+        }
+    }
+
+    @Benchmark
+    public void tryAsCompletable(BenchmarkState state, Blackhole bh) {
+        boolean result = ScalarXMapZHelper.tryAsCompletable(state.supplier, state.completableMapper, state.completableObserver);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void tryAsMaybe(BenchmarkState state, Blackhole bh) {
+        boolean result = ScalarXMapZHelper.tryAsMaybe(state.supplier, state.maybeMapper, state.maybeObserver);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void tryAsSingle(BenchmarkState state, Blackhole bh) {
+        boolean result = ScalarXMapZHelper.tryAsSingle(state.supplier, state.singleMapper, state.singleObserver);
+        bh.consume(result);
+    }
+}

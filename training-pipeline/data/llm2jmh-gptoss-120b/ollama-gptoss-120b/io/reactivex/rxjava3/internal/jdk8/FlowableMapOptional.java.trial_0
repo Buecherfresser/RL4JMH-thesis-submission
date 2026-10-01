@@ -1,0 +1,70 @@
+```
+package io.reactivex.rxjava3.internal.jdk8.benchmark;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.jdk8.FlowableMapOptional;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableMapOptional}.
+ *
+ * Measures the throughput (operations per second) of a Flowable that maps
+ * each upstream value to an {@link Optional} and emits only present values.
+ *
+ * The benchmark uses a simple range source and a mapper that creates an
+ * Optional<String>. The downstream consumes the values via a Blackhole to
+ * prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class FlowableMapOptionalBenchmark {
+
+    /** Number of items emitted by the source Flowable per subscription. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Source Flowable emitting a range of integers. */
+    private Flowable<Integer> source;
+
+    /** Mapper converting an Integer to an Optional<String>. */
+    private Function<Integer, Optional<String>> mapper;
+
+    /** The Flowable under test (FlowableMapOptional). */
+    private Flowable<String> flowableUnderTest;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple range source; each subscription creates a fresh Flowable.
+        source = Flowable.range(1, itemCount);
+
+        // Mapper that wraps the integer as a string inside an Optional.
+        mapper = i -> Optional.of("value-" + i);
+
+        // Create the FlowableMapOptional instance once per trial.
+        flowableUnderTest = new FlowableMapOptional<>(source, mapper);
+    }
+
+    /**
+     * Benchmark method that subscribes to the FlowableMapOptional,
+     * consumes all emitted items, and blocks until completion.
+     *
+     * @param bh Blackhole to consume emitted items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void mapOptionalThroughput(Blackhole bh) {
+        flowableUnderTest.subscribe(bh::consume);
+        // The subscription is synchronous for the range source, so no explicit
+        // blocking is required. If an asynchronous source were used, one would
+        // need to block (e.g., using blockingSubscribe()).
+    }
+}
+```

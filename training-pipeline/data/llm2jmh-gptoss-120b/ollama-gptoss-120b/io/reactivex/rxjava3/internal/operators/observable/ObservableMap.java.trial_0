@@ -1,0 +1,65 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableMap}
+ * measuring the throughput of the map operator on a simple integer stream.
+ *
+ * The benchmark uses {@code Observable.range} as upstream source and a trivial
+ * mapping function. The {@code blockingSubscribe} call forces the whole
+ * pipeline to be executed synchronously, which is appropriate for measuring
+ * pure operator overhead without asynchronous scheduling effects.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Param to allow varying the size of the source sequence.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations, a single fork, and a fixed time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ObservableMapBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the source Observable. */
+        @Param({"1000", "10000", "100000"})
+        public int size;
+
+        /** Source Observable emitting a range of integers. */
+        Observable<Integer> source;
+
+        /** Mapping function applied by ObservableMap. */
+        Function<Integer, Integer> mapper;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Simple range source; each element is an Integer.
+            source = Observable.range(1, size);
+
+            // Trivial mapper that performs a small arithmetic operation.
+            mapper = i -> i * 2;
+        }
+    }
+
+    @Benchmark
+    public void mapThroughput(BenchmarkState state, Blackhole bh) {
+        // Apply the map operator and consume all items synchronously.
+        state.source
+                .map(state.mapper)
+                .blockingSubscribe(bh::consume);
+    }
+}
+```

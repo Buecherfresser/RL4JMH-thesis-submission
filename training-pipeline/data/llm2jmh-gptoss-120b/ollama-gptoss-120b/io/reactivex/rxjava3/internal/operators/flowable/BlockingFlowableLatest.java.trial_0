@@ -1,0 +1,40 @@
+```
+package io.reactivex.rxjava3.benchmark;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.BlockingFlowableLatest;
+
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class BlockingFlowableLatestBenchmark {
+
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    private BlockingFlowableLatest<Integer> blocking;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Synchronous source emitting a known number of items
+        Flowable<Integer> source = Flowable.range(1, size);
+        blocking = new BlockingFlowableLatest<>(source);
+    }
+
+    @Benchmark
+    public void iterateAll(Blackhole bh) {
+        Iterator<Integer> it = blocking.iterator();
+        while (it.hasNext()) {
+            bh.consume(it.next());
+        }
+    }
+}
+```

@@ -1,0 +1,65 @@
+```
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.parallel.ParallelFlowable;
+import io.reactivex.rxjava3.parallel.ParallelFailureHandling;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link ParallelMapTryOptional}.
+ *
+ * The benchmark measures the *throughput* (operations per second) of a
+ * parallel flow that maps each upstream value to an {@link Optional}
+ * and applies a simple error‑handling strategy.
+ *
+ * Best‑practice notes:
+ * • The source is a finite {@link Flowable#range} to keep each iteration
+ *   deterministic and bounded.
+ * • The mapper and error handler are deliberately lightweight to focus
+ *   on the operator's overhead.
+ * • {@link Blackhole} is used to consume the downstream values and avoid
+ *   dead‑code elimination.
+ * • Warm‑up and measurement iterations are configured to let the JIT
+ *   stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ParallelMapTryOptionalBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    private ParallelFlowable<Integer> parallelFlow;
+
+    // Mapper returns Optional<Integer>, which fits Optional<? extends Integer>
+    private static final Function<Integer, Optional<? extends Integer>> MAPPER = v -> Optional.of(v * 2);
+
+    private static final BiFunction<Long, Throwable, ParallelFailureHandling> ERROR_HANDLER =
+            (retryCount, throwable) -> ParallelFailureHandling.STOP;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        Flowable<Integer> source = Flowable.range(1, itemCount);
+        ParallelFlowable<Integer> parallelSource = source.parallel(parallelism);
+        parallelFlow = new ParallelMapTryOptional<Integer, Integer>(parallelSource, MAPPER, ERROR_HANDLER);
+    }
+
+    @Benchmark
+    public void mapTryOptionalThroughput(Blackhole bh) {
+        parallelFlow.sequential().blockingForEach(bh::consume);
+    }
+}
+```

@@ -1,0 +1,67 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableReduceMaybe;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Microbenchmark for {@link FlowableReduceMaybe}.
+ *
+ * Measures the throughput of reducing a {@link Flowable} of {@code Integer}s
+ * to a {@link Maybe} using a simple sum reducer.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class FlowableReduceMaybeBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of elements in the source Flowable.
+         */
+        @Param({ "100", "1000", "10000" })
+        public int size;
+
+        /**
+         * Source Flowable emitting a range of integers.
+         */
+        Flowable<Integer> source;
+
+        /**
+         * Reducer that sums two integers.
+         */
+        BiFunction<Integer, Integer, Integer> sumReducer = (a, b) -> a + b;
+
+        /**
+         * The Maybe produced by FlowableReduceMaybe.
+         */
+        Maybe<Integer> maybe;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a Flowable that emits 'size' sequential integers.
+            source = Flowable.range(1, size);
+            // Build the FlowableReduceMaybe operator.
+            maybe = new FlowableReduceMaybe<>(source, sumReducer);
+        }
+    }
+
+    @Benchmark
+    public void reduceMaybe(BenchmarkState state, Blackhole bh) {
+        // Execute the reduction and consume the result to prevent dead‑code elimination.
+        Integer result = state.maybe.blockingGet();
+        bh.consume(result);
+    }
+}
+```

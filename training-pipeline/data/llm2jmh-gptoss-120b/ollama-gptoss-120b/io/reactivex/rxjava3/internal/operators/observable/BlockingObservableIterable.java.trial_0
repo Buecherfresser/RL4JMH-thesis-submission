@@ -1,0 +1,57 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.internal.operators.observable.BlockingObservableIterable;
+
+/**
+ * Benchmark for {@link BlockingObservableIterable} measuring the throughput of
+ * iterating over a cold Observable source.
+ *
+ * The benchmark iterates over the entire sequence and consumes each element
+ * via {@link Blackhole} to prevent dead‑code elimination.
+ *
+ * Best practices applied:
+ * - Use @State with Scope.Benchmark to share immutable configuration.
+ * - Parameterize the size of the source and the internal buffer size.
+ * - Create the source in @Setup to exclude construction overhead from the measurement.
+ * - Consume values with Blackhole.
+ * - Run in Mode.Throughput with seconds as the time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Benchmark)
+public class BlockingObservableIterableBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({"1_000", "10_000", "100_000"})
+    public int size;
+
+    /** Internal buffer size used by the iterator. */
+    @Param({"128", "1024"})
+    public int bufferSize;
+
+    private BlockingObservableIterable<Integer> iterable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        ObservableSource<Integer> source = Observable.range(0, size);
+        iterable = new BlockingObservableIterable<>(source, bufferSize);
+    }
+
+    @Benchmark
+    public void iterate(Blackhole bh) {
+        Iterator<Integer> it = iterable.iterator();
+        while (it.hasNext()) {
+            bh.consume(it.next());
+        }
+    }
+}
+```

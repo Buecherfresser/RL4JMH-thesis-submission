@@ -1,0 +1,149 @@
+```
+package io.reactivex.rxjava3.internal.schedulers;
+
+import java.util.concurrent.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH microbenchmarks for {@link ScheduledRunnable}.
+ *
+ * The benchmarks focus on the most critical public methods:
+ * <ul>
+ *   <li>{@code run()}</li>
+ *   <li>{@code dispose()}</li>
+ *   <li>{@code setFuture(Future)}</li>
+ * </ul>
+ *
+ * Each benchmark creates a fresh {@code ScheduledRunnable} instance to avoid state
+ * contamination between iterations. A minimal {@link DisposableContainer}
+ * implementation is used to satisfy the constructor contract without adding
+ * overhead.
+ *
+ * Throughput mode is used because we are interested in the number of
+ * operations per time unit that the class can sustain under typical usage.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ScheduledRunnableBenchmark {
+
+    /**
+     * Simple no‑op {@link DisposableContainer} implementation.
+     *
+     * Implements only the methods required by the current RxJava3 version.
+     */
+    static final class NoOpContainer implements DisposableContainer {
+
+        public boolean add(Disposable d) {
+            return true;
+        }
+
+        public boolean delete(Disposable d) {
+            return true;
+        }
+
+        // Some RxJava versions expose a delete(Object) method; provide a stub.
+        public boolean delete(Object o) {
+            return true;
+        }
+
+        public boolean remove(Disposable d) {
+            return true;
+        }
+
+        public boolean contains(Disposable d) {
+            return false;
+        }
+
+        public int size() {
+            return 0;
+        }
+
+        public boolean isDisposed() {
+            return false;
+        }
+
+        public void dispose() {
+            // no‑op
+        }
+    }
+
+    /**
+     * A trivial {@link Runnable} that does virtually nothing.
+     */
+    private static final Runnable NO_OP_RUNNABLE = () -> {
+        // no‑op
+    };
+
+    /**
+     * A completed {@link Future} used for {@code setFuture} benchmark.
+     */
+    private static final Future<?> COMPLETED_FUTURE = CompletableFuture.completedFuture(null);
+
+    /**
+     * State for the {@code run()} benchmark.
+     */
+    @State(Scope.Thread)
+    public static class RunState {
+
+        ScheduledRunnable sr;
+
+        @Setup(Level.Invocation)
+        public void setUp() {
+            sr = new ScheduledRunnable(NO_OP_RUNNABLE, new NoOpContainer(), true);
+        }
+    }
+
+    /**
+     * State for the {@code dispose()} benchmark.
+     */
+    @State(Scope.Thread)
+    public static class DisposeState {
+
+        ScheduledRunnable sr;
+
+        @Setup(Level.Invocation)
+        public void setUp() {
+            sr = new ScheduledRunnable(NO_OP_RUNNABLE, new NoOpContainer(), true);
+            // Ensure the future slot is populated to exercise the cancel path.
+            sr.setFuture(new CompletableFuture<>());
+        }
+    }
+
+    /**
+     * State for the {@code setFuture()} benchmark.
+     */
+    @State(Scope.Thread)
+    public static class SetFutureState {
+
+        ScheduledRunnable sr;
+
+        @Setup(Level.Invocation)
+        public void setUp() {
+            sr = new ScheduledRunnable(NO_OP_RUNNABLE, new NoOpContainer(), true);
+        }
+    }
+
+    @Benchmark
+    public void run(RunState state, Blackhole bh) {
+        state.sr.run();
+        bh.consume(state.sr);
+    }
+
+    @Benchmark
+    public void dispose(DisposeState state, Blackhole bh) {
+        state.sr.dispose();
+        bh.consume(state.sr);
+    }
+
+    @Benchmark
+    public void setFuture(SetFutureState state, Blackhole bh) {
+        state.sr.setFuture(COMPLETED_FUTURE);
+        bh.consume(state.sr);
+    }
+}
+```

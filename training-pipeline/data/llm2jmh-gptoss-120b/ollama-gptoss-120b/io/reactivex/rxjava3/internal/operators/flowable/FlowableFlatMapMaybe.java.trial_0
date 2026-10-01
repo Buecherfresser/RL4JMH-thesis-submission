@@ -1,0 +1,84 @@
+```java
+package io.reactivex.rxjava3.benchmarks.internal.operators.flowable;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableFlatMapMaybe;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link FlowableFlatMapMaybe}.
+ *
+ * The benchmark measures the throughput (items processed per second) of the
+ * flatMapMaybe operator under different concurrency and error‑handling settings.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize maxConcurrency and delayErrors to explore a realistic range.
+ * - Use a warm‑up phase to let the JIT stabilize.
+ * - Block until the stream finishes (via Single<Long>.blockingGet()) to get a
+ *   deterministic measurement.
+ * - Consume the emitted items with Blackhole to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableFlatMapMaybeBenchmark {
+
+    /** Number of items emitted by the upstream source. */
+    @Param({"1000000"})
+    public int sourceSize;
+
+    /** Maximum number of inner Maybe sources that may be subscribed to concurrently. */
+    @Param({"1", "10", "100", "1000", "2147483647"}) // Integer.MAX_VALUE for unbounded
+    public int maxConcurrency;
+
+    /** Whether errors from inner sources are delayed until all sources terminate. */
+    @Param({"true", "false"})
+    public boolean delayErrors;
+
+    /** Upstream Flowable that emits a range of integers. */
+    private Flowable<Integer> source;
+
+    /** Mapping function turning each upstream value into a Maybe that emits the same value. */
+    private Function<Integer, MaybeSource<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple source that emits a known number of integers.
+        source = Flowable.range(1, sourceSize);
+
+        // The mapper does minimal work to keep the benchmark focused on the operator itself.
+        mapper = v -> Maybe.just(v);
+    }
+
+    /**
+     * Executes the flatMapMaybe operator and returns the total number of items processed.
+     *
+     * @param bh Blackhole to consume each emitted item and avoid dead‑code elimination.
+     * @return the number of items emitted downstream (should equal {@code sourceSize}).
+     */
+    @Benchmark
+    public long flatMapMaybe(Blackhole bh) {
+        // Build the operator with the current parameters.
+        Flowable<Integer> flow = new FlowableFlatMapMaybe<>(
+                source,
+                mapper,
+                delayErrors,
+                maxConcurrency
+        );
+
+        // Count the items downstream; the count operation itself is a Single<Long>.
+        // We also consume each item with Blackhole to ensure the values are used.
+        return flow
+                .doOnNext(bh::consume)
+                .count()
+                .blockingGet();
+    }
+}
+```

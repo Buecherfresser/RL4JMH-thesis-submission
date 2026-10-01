@@ -1,0 +1,491 @@
+diff --git a/com/rits/cloning/Cloner.java b/com/rits/cloning/Cloner.java
+index 362f868..31621ca 100644
+--- a/com/rits/cloning/Cloner.java
++++ b/com/rits/cloning/Cloner.java
+@@ -35,7 +35,7 @@ public class Cloner {
+ 
+ 	private Map<Object, Object> ignoredInstances;
+ 
+-	public IDumpCloned getDumpCloned() {
++	public IDumpCloned getDumpCloned() { com.rits.cloning.jmhbench.MutationSwitch.tick(1);
+ 		return dumpCloned;
+ 	}
+ 
+@@ -46,7 +46,7 @@ public class Cloner {
+ 	 * @param dumpCloned an implementation of the interface which can dump the
+ 	 *                   cloned classes.
+ 	 */
+-	public void setDumpCloned(IDumpCloned dumpCloned) {
++	public void setDumpCloned(IDumpCloned dumpCloned) { com.rits.cloning.jmhbench.MutationSwitch.tick(2);
+ 		this.dumpCloned = dumpCloned;
+ 	}
+ 
+@@ -65,7 +65,7 @@ public class Cloner {
+ 		init();
+ 	}
+ 
+-	public boolean isNullTransient() {
++	public boolean isNullTransient() { com.rits.cloning.jmhbench.MutationSwitch.tick(3);
+ 		return nullTransient;
+ 	}
+ 
+@@ -76,11 +76,11 @@ public class Cloner {
+ 	 *
+ 	 * @param nullTransient true for transient fields to be nulled
+ 	 */
+-	public void setNullTransient(final boolean nullTransient) {
++	public void setNullTransient(final boolean nullTransient) { com.rits.cloning.jmhbench.MutationSwitch.tick(4);
+ 		this.nullTransient = nullTransient;
+ 	}
+ 
+-	public void setCloneSynthetics(final boolean cloneSynthetics) {
++	public void setCloneSynthetics(final boolean cloneSynthetics) { com.rits.cloning.jmhbench.MutationSwitch.tick(5);
+ 		this.cloneSynthetics = cloneSynthetics;
+ 	}
+ 
+@@ -93,7 +93,7 @@ public class Cloner {
+ 	/**
+ 	 * registers a std set of fast cloners.
+ 	 */
+-	protected void registerFastCloners() {
++	protected void registerFastCloners() { com.rits.cloning.jmhbench.MutationSwitch.tick(6);
+ 		registerFastCloner(GregorianCalendar.class, new FastClonerCalendar());
+ 		registerFastCloner(ArrayList.class, new FastClonerArrayList());
+ 		registerFastCloner(LinkedList.class, new FastClonerLinkedList());
+@@ -119,7 +119,7 @@ public class Cloner {
+ 		registerInaccessibleClassToBeFastCloned("java.util.ImmutableCollections$Set12",setOf12);
+ 	}
+ 
+-	protected void registerInaccessibleClassToBeFastCloned(String className, IFastCloner fastCloner) {
++	protected void registerInaccessibleClassToBeFastCloned(String className, IFastCloner fastCloner) { com.rits.cloning.jmhbench.MutationSwitch.tick(7);
+ 		try {
+ 			ClassLoader classLoader = getClass().getClassLoader();
+ 			Class<?> subListClz = classLoader.loadClass(className);
+@@ -131,21 +131,21 @@ public class Cloner {
+ 
+ 	private final IDeepCloner deepCloner = this::cloneInternal;
+ 
+-	protected Object fastClone(final Object o, final Map<Object, Object> clones) {
++	protected Object fastClone(final Object o, final Map<Object, Object> clones) { com.rits.cloning.jmhbench.MutationSwitch.tick(8);
+ 		final Class<?> c = o.getClass();
+ 		final IFastCloner fastCloner = fastCloners.get(c);
+ 		if (fastCloner != null) return fastCloner.clone(o, deepCloner, clones);
+ 		return null;
+ 	}
+ 
+-	public void registerConstant(Object o) {
++	public void registerConstant(Object o) { com.rits.cloning.jmhbench.MutationSwitch.tick(9);
+ 		if (ignoredInstances == null) {
+ 			ignoredInstances = new IdentityHashMap<>();
+ 		}
+ 		ignoredInstances.put(o, o);
+ 	}
+ 
+-	public void registerConstant(Class<?> c, String privateFieldName) {
++	public void registerConstant(Class<?> c, String privateFieldName) { com.rits.cloning.jmhbench.MutationSwitch.tick(10);
+ 		try {
+ 			for (var entry : getFieldToCookieMap(c).entrySet()) {
+ 				Field field = entry.getKey();
+@@ -164,7 +164,7 @@ public class Cloner {
+ 	 * registers some known JDK immutable classes. Override this to register your
+ 	 * own list of jdk's immutable classes
+ 	 */
+-	protected void registerKnownJdkImmutableClasses() {
++	protected void registerKnownJdkImmutableClasses() { com.rits.cloning.jmhbench.MutationSwitch.tick(11);
+ 		registerImmutable(String.class);
+ 		registerImmutable(Integer.class);
+ 		registerImmutable(Long.class);
+@@ -185,10 +185,10 @@ public class Cloner {
+ 		registerImmutable(Pattern.class);
+ 	}
+ 
+-	protected void registerKnownConstants() {
++	protected void registerKnownConstants() { com.rits.cloning.jmhbench.MutationSwitch.tick(12);
+ 	}
+ 
+-	public void registerCloningStrategy(ICloningStrategy strategy) {
++	public void registerCloningStrategy(ICloningStrategy strategy) { com.rits.cloning.jmhbench.MutationSwitch.tick(13);
+ 		if (strategy == null) throw new NullPointerException("strategy can't be null");
+ 		if (cloningStrategies == null) {
+ 			cloningStrategies = new ArrayList<>();
+@@ -205,7 +205,7 @@ public class Cloner {
+ 	 *
+ 	 * @param classes array of classes
+ 	 */
+-	public void registerStaticFields(final Class<?>... classes) {
++	public void registerStaticFields(final Class<?>... classes) { com.rits.cloning.jmhbench.MutationSwitch.tick(14);
+ 		for (final Class<?> c : classes) {
+ 			for (final Field field : getFieldToCookieMap(c).keySet()) {
+ 				final int mods = field.getModifiers();
+@@ -221,7 +221,7 @@ public class Cloner {
+ 	 *
+ 	 * @param set a set of classes which will be scanned for static fields
+ 	 */
+-	public void setExtraStaticFields(final Set<Class<?>> set) {
++	public void setExtraStaticFields(final Set<Class<?>> set) { com.rits.cloning.jmhbench.MutationSwitch.tick(15);
+ 		registerStaticFields(set.toArray(new Class<?>[0]));
+ 	}
+ 
+@@ -232,15 +232,15 @@ public class Cloner {
+ 	 *          an object is created and c is encountered, the object instance of c will
+ 	 *          be added to the clone.
+ 	 */
+-	public void dontClone(final Class<?>... c) {
++	public void dontClone(final Class<?>... c) { com.rits.cloning.jmhbench.MutationSwitch.tick(16);
+ 		Collections.addAll(ignored, c);
+ 	}
+ 
+-	public void dontCloneInstanceOf(final Class<?>... c) {
++	public void dontCloneInstanceOf(final Class<?>... c) { com.rits.cloning.jmhbench.MutationSwitch.tick(17);
+ 		Collections.addAll(ignoredInstanceOf, c);
+ 	}
+ 
+-	public void setDontCloneInstanceOf(final Class<?>... c) {
++	public void setDontCloneInstanceOf(final Class<?>... c) { com.rits.cloning.jmhbench.MutationSwitch.tick(18);
+ 		dontCloneInstanceOf(c);
+ 	}
+ 
+@@ -249,12 +249,12 @@ public class Cloner {
+ 	 *
+ 	 * @param c the classes to nullify during cloning
+ 	 */
+-	public void nullInsteadOfClone(final Class<?>... c) {
++	public void nullInsteadOfClone(final Class<?>... c) { com.rits.cloning.jmhbench.MutationSwitch.tick(19);
+ 		Collections.addAll(nullInstead, c);
+ 	}
+ 
+ 	// spring framework friendly version of nullInsteadOfClone
+-	public void setExtraNullInsteadOfClone(final Set<Class<?>> set) {
++	public void setExtraNullInsteadOfClone(final Set<Class<?>> set) { com.rits.cloning.jmhbench.MutationSwitch.tick(20);
+ 		nullInstead.addAll(set);
+ 	}
+ 
+@@ -269,7 +269,7 @@ public class Cloner {
+ 	}
+ 
+ 	// spring framework friendly version of nullInsteadOfCloneAnnotation
+-	public void setExtraNullInsteadOfCloneFieldAnnotation(final Set<Class<? extends Annotation>> set) {
++	public void setExtraNullInsteadOfCloneFieldAnnotation(final Set<Class<? extends Annotation>> set) { com.rits.cloning.jmhbench.MutationSwitch.tick(21);
+ 		nullInsteadFieldAnnotations.addAll(set);
+ 	}
+ 
+@@ -278,21 +278,21 @@ public class Cloner {
+ 	 *
+ 	 * @param c the immutable class
+ 	 */
+-	public void registerImmutable(final Class<?>... c) {
++	public void registerImmutable(final Class<?>... c) { com.rits.cloning.jmhbench.MutationSwitch.tick(22);
+ 		Collections.addAll(ignored, c);
+ 	}
+ 
+ 	// spring framework friendly version of registerImmutable
+-	public void setExtraImmutables(final Set<Class<?>> set) {
++	public void setExtraImmutables(final Set<Class<?>> set) { com.rits.cloning.jmhbench.MutationSwitch.tick(23);
+ 		ignored.addAll(set);
+ 	}
+ 
+-	public void registerFastCloner(final Class<?> c, final IFastCloner fastCloner) {
++	public void registerFastCloner(final Class<?> c, final IFastCloner fastCloner) { com.rits.cloning.jmhbench.MutationSwitch.tick(24);
+ 		if (fastCloners.containsKey(c)) throw new IllegalArgumentException(c + " already fast-cloned!");
+ 		fastCloners.put(c, fastCloner);
+ 	}
+ 
+-	public void unregisterFastCloner(final Class<?> c) {
++	public void unregisterFastCloner(final Class<?> c) { com.rits.cloning.jmhbench.MutationSwitch.tick(25);
+ 		fastCloners.remove(c);
+ 	}
+ 
+@@ -303,12 +303,12 @@ public class Cloner {
+ 	 * @param c   the class
+ 	 * @return a new instance of c
+ 	 */
+-	protected <T> T newInstance(Class<T> c) {
++	protected <T> T newInstance(Class<T> c) { com.rits.cloning.jmhbench.MutationSwitch.tick(26);
+ 		return instantiationStrategy.newInstance(c);
+ 	}
+ 
+ 	@SuppressWarnings("unchecked")
+-	public <T> T fastCloneOrNewInstance(final Class<T> c) {
++	public <T> T fastCloneOrNewInstance(final Class<T> c) { com.rits.cloning.jmhbench.MutationSwitch.tick(27);
+ 		final T fastClone = (T) fastClone(c, null);
+ 		if (fastClone != null) return fastClone;
+ 		return newInstance(c);
+@@ -321,7 +321,7 @@ public class Cloner {
+ 	 * @param o   the object to be deep-cloned
+ 	 * @return a deep-clone of "o".
+ 	 */
+-	public <T> T deepClone(final T o) {
++	public <T> T deepClone(final T o) { com.rits.cloning.jmhbench.MutationSwitch.tick(28);
+ 		if (o == null) return null;
+ 		if (!cloningEnabled) return o;
+ 		if (dumpCloned != null) {
+@@ -331,7 +331,7 @@ public class Cloner {
+ 		return cloneInternal(o, clones);
+ 	}
+ 
+-	public <T> T deepCloneDontCloneInstances(final T o, final Object... dontCloneThese) {
++	public <T> T deepCloneDontCloneInstances(final T o, final Object... dontCloneThese) { com.rits.cloning.jmhbench.MutationSwitch.tick(29);
+ 		if (o == null) return null;
+ 		if (!cloningEnabled) return o;
+ 		if (dumpCloned != null) {
+@@ -352,7 +352,7 @@ public class Cloner {
+ 	 * @param o   the object to be shallow-cloned
+ 	 * @return a shallow clone of "o"
+ 	 */
+-	public <T> T shallowClone(final T o) {
++	public <T> T shallowClone(final T o) { com.rits.cloning.jmhbench.MutationSwitch.tick(30);
+ 		if (o == null) return null;
+ 		if (!cloningEnabled) return o;
+ 		return cloneInternal(o, null);
+@@ -368,11 +368,11 @@ public class Cloner {
+ 	 * @param clz the class under check
+ 	 * @return true to mark clz as immutable and skip cloning it
+ 	 */
+-	protected boolean considerImmutable(final Class<?> clz) {
++	protected boolean considerImmutable(final Class<?> clz) { com.rits.cloning.jmhbench.MutationSwitch.tick(31);
+ 		return false;
+ 	}
+ 
+-	protected Class<?> getImmutableAnnotation() {
++	protected Class<?> getImmutableAnnotation() { com.rits.cloning.jmhbench.MutationSwitch.tick(32);
+ 		return Immutable.class;
+ 	}
+ 
+@@ -414,7 +414,7 @@ public class Cloner {
+ 	private final Map<Class<?>, IDeepCloner> cloners = new ConcurrentHashMap<>();
+ 
+ 	@SuppressWarnings("unchecked")
+-	protected <T> T cloneInternal(T o, Map<Object, Object> clones) {
++	protected <T> T cloneInternal(T o, Map<Object, Object> clones) { com.rits.cloning.jmhbench.MutationSwitch.tick(33);
+ 		if (o == null) return null;
+ 		if (o == this) return null;
+ 
+@@ -493,7 +493,7 @@ public class Cloner {
+ 			componentType = clz.getComponentType();
+ 		}
+ 
+-		public <T> T deepClone(T o, Map<Object, Object> clones) {
++		public <T> T deepClone(T o, Map<Object, Object> clones) { com.rits.cloning.jmhbench.MutationSwitch.tick(34);
+ 			if (dumpCloned != null) {
+ 				dumpCloned.startCloning(o.getClass());
+ 			}
+@@ -528,7 +528,7 @@ public class Cloner {
+ 			this.cloneInternal = deepCloner;
+ 		}
+ 
+-		public <T> T deepClone(T o, Map<Object, Object> clones) {
++		public <T> T deepClone(T o, Map<Object, Object> clones) { com.rits.cloning.jmhbench.MutationSwitch.tick(35);
+ 			@SuppressWarnings("unchecked") T clone = (T) fastCloner.clone(o, cloneInternal, clones);
+ 			if (clones != null) clones.put(o, clone);
+ 			return clone;
+@@ -539,13 +539,13 @@ public class Cloner {
+ 	private static final IDeepCloner NULL_CLONER = new NullClassCloner();
+ 
+ 	private static class IgnoreClassCloner implements IDeepCloner {
+-		public <T> T deepClone(T o, Map<Object, Object> clones) {
++		public <T> T deepClone(T o, Map<Object, Object> clones) { com.rits.cloning.jmhbench.MutationSwitch.tick(36);
+ 			throw new CloningException("Don't call this directly");
+ 		}
+ 	}
+ 
+ 	private static class NullClassCloner implements IDeepCloner {
+-		public <T> T deepClone(T o, Map<Object, Object> clones) {
++		public <T> T deepClone(T o, Map<Object, Object> clones) { com.rits.cloning.jmhbench.MutationSwitch.tick(37);
+ 			throw new CloningException("Don't call this directly");
+ 		}
+ 	}
+@@ -557,7 +557,7 @@ public class Cloner {
+ 			cloner = new CloneObjectCloner(clz);
+ 		}
+ 
+-		public <T> T deepClone(T o, Map<Object, Object> clones) {
++		public <T> T deepClone(T o, Map<Object, Object> clones) { com.rits.cloning.jmhbench.MutationSwitch.tick(38);
+ 			if (o instanceof IFreezable) {
+ 				IFreezable f = (IFreezable) o;
+ 				if (f.isFrozen()) return o;
+@@ -618,7 +618,7 @@ public class Cloner {
+ 			return false;
+ 		}
+ 
+-		public <T> T deepClone(T o, Map<Object, Object> clones) {
++		public <T> T deepClone(T o, Map<Object, Object> clones) { com.rits.cloning.jmhbench.MutationSwitch.tick(39);
+ 			try {
+ 				if (dumpCloned != null) {
+ 					dumpCloned.startCloning(o.getClass());
+@@ -674,7 +674,7 @@ public class Cloner {
+ 	 * @param src  the source object
+ 	 * @param dest the destination object which must contain as minimum all the fields of src
+ 	 */
+-	public <T, E extends T> void copyPropertiesOfInheritedClass(final T src, final E dest) {
++	public <T, E extends T> void copyPropertiesOfInheritedClass(final T src, final E dest) { com.rits.cloning.jmhbench.MutationSwitch.tick(40);
+ 		if (src == null) throw new IllegalArgumentException("src can't be null");
+ 		if (dest == null) throw new IllegalArgumentException("dest can't be null");
+ 		final Class<?> srcClz = src.getClass();
+@@ -711,7 +711,7 @@ public class Cloner {
+ 	 *
+ 	 * @return the field list
+ 	 */
+-	protected List<Field> allFields(Class<?> c) {
++	protected List<Field> allFields(Class<?> c) { com.rits.cloning.jmhbench.MutationSwitch.tick(41);
+ 		List<Field> l = new ArrayList<>();
+ 		while (c != Object.class && c != null) {
+ 			Collections.addAll(l, c.getDeclaredFields());
+@@ -743,7 +743,7 @@ public class Cloner {
+ 		return m;
+ 	}
+ 
+-	public boolean isDumpClonedClasses() {
++	public boolean isDumpClonedClasses() { com.rits.cloning.jmhbench.MutationSwitch.tick(42);
+ 		return dumpCloned != null;
+ 	}
+ 
+@@ -754,43 +754,43 @@ public class Cloner {
+ 	 *
+ 	 * @param dumpClonedClasses true to enable printing all cloned classes
+ 	 */
+-	public void setDumpClonedClasses(final boolean dumpClonedClasses) {
++	public void setDumpClonedClasses(final boolean dumpClonedClasses) { com.rits.cloning.jmhbench.MutationSwitch.tick(43);
+ 		if (dumpClonedClasses) {
+ 			dumpCloned = new IDumpCloned() {
+-				public void startCloning(Class<?> clz) {
++				public void startCloning(Class<?> clz) { com.rits.cloning.jmhbench.MutationSwitch.tick(44);
+ 					System.out.println("clone>" + clz);
+ 				}
+ 
+-				public void cloning(Field field, Class<?> clz) {
++				public void cloning(Field field, Class<?> clz) { com.rits.cloning.jmhbench.MutationSwitch.tick(45);
+ 					System.out.println("cloned field>" + field + "  -- of class " + clz);
+ 				}
+ 			};
+ 		} else dumpCloned = null;
+ 	}
+ 
+-	public boolean isCloningEnabled() {
++	public boolean isCloningEnabled() { com.rits.cloning.jmhbench.MutationSwitch.tick(46);
+ 		return cloningEnabled;
+ 	}
+ 
+-	public void setCloningEnabled(final boolean cloningEnabled) {
++	public void setCloningEnabled(final boolean cloningEnabled) { com.rits.cloning.jmhbench.MutationSwitch.tick(47);
+ 		this.cloningEnabled = cloningEnabled;
+ 	}
+ 
+ 	/**
+ 	 * if false, anonymous classes parent class won't be cloned. Default is true
+ 	 */
+-	public void setCloneAnonymousParent(final boolean cloneAnonymousParent) {
++	public void setCloneAnonymousParent(final boolean cloneAnonymousParent) { com.rits.cloning.jmhbench.MutationSwitch.tick(48);
+ 		this.cloneAnonymousParent = cloneAnonymousParent;
+ 	}
+ 
+-	public boolean isCloneAnonymousParent() {
++	public boolean isCloneAnonymousParent() { com.rits.cloning.jmhbench.MutationSwitch.tick(49);
+ 		return cloneAnonymousParent;
+ 	}
+ 
+ 	/**
+ 	 * @return a standard cloner instance, will do for most use cases
+ 	 */
+-	public static Cloner standard() {
++	public static Cloner standard() { com.rits.cloning.jmhbench.MutationSwitch.tick(50);
+ 		return new Cloner();
+ 	}
+ 
+diff --git a/com/rits/cloning/jmhbench/MutationSwitch.java b/com/rits/cloning/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..dd27b39
+--- /dev/null
++++ b/com/rits/cloning/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.rits.cloning.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

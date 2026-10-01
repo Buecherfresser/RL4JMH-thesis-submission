@@ -1,0 +1,88 @@
+```
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link MaybeContains}.
+ *
+ * Measures the throughput of the operator in two typical scenarios:
+ *   1. The upstream {@code Maybe} emits a value (success case).
+ *   2. The upstream {@code Maybe} completes without a value (empty case).
+ *
+ * The benchmark runs in {@link Mode#Throughput} (operations per second) and
+ * follows best‑practice JMH settings: warm‑up, measurement iterations,
+ * multiple forks and a per‑thread state to avoid cross‑thread interference.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3)
+@State(Scope.Thread)
+public class MaybeContainsBenchmark {
+
+    /**
+     * The value we are looking for inside the {@code Maybe}.
+     * Using a {@code String} parameter allows us to test both a matching
+     * integer and a non‑matching (null) case via the {@code @Param} values.
+     */
+    @Param({"42", "null"})
+    public String paramValue;
+
+    private Maybe<Integer> sourceSuccess;
+    private Maybe<Integer> sourceEmpty;
+    private MaybeContains<Integer> operatorSuccess;
+    private MaybeContains<Integer> operatorEmpty;
+
+    /**
+     * Prepare the upstream {@code Maybe}s and the {@code MaybeContains} operators.
+     * This method is executed once per thread before the benchmark runs.
+     */
+    @Setup(Level.Trial)
+    public void setup() {
+        // Upstream that emits the integer 42
+        sourceSuccess = Maybe.just(42);
+        // Upstream that completes without emitting any item
+        sourceEmpty = Maybe.empty();
+
+        // Convert the string parameter to an Integer (null stays null)
+        Integer lookup = "null".equals(paramValue) ? null : Integer.valueOf(paramValue);
+
+        // Operators under test
+        operatorSuccess = new MaybeContains<>(sourceSuccess, lookup);
+        operatorEmpty   = new MaybeContains<>(sourceEmpty, lookup);
+    }
+
+    /**
+     * Benchmark the success path: upstream emits a value and the operator
+     * checks for equality.
+     */
+    @Benchmark
+    public void containsSuccess(Blackhole bh) {
+        operatorSuccess.subscribe(new SingleObserver<Boolean>() {
+            @Override public void onSubscribe(Disposable d) { /* no-op */ }
+            @Override public void onSuccess(Boolean result) { bh.consume(result); }
+            @Override public void onError(Throwable e) { bh.consume(e); }
+        });
+    }
+
+    /**
+     * Benchmark the empty path: upstream completes without a value.
+     */
+    @Benchmark
+    public void containsEmpty(Blackhole bh) {
+        operatorEmpty.subscribe(new SingleObserver<Boolean>() {
+            @Override public void onSubscribe(Disposable d) { /* no-op */ }
+            @Override public void onSuccess(Boolean result) { bh.consume(result); }
+            @Override public void onError(Throwable e) { bh.consume(e); }
+        });
+    }
+}
+```

@@ -1,0 +1,75 @@
+```
+package benchmark;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+@State(Scope.Thread)
+public class FlowableTakeWhileBenchmark {
+
+    private static final int ELEMENT_COUNT = 1_000_000;
+
+    private Flowable<Integer> source;
+    private Predicate<Integer> predicate;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // A deterministic source of integers
+        source = Flowable.range(1, ELEMENT_COUNT);
+        // Predicate that returns true for the first half of the stream, then false
+        predicate = v -> v < ELEMENT_COUNT / 2;
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+    @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+    @Fork(2)
+    public void takeWhileThroughput(Blackhole bh) {
+        source
+            .takeWhile(predicate)
+            .subscribe(new BlackholeSubscriber(bh));
+    }
+
+    /**
+     * Subscriber that requests an unbounded number of items and forwards each
+     * received element to the Blackhole to prevent dead‑code elimination.
+     */
+    static final class BlackholeSubscriber implements Subscriber<Integer> {
+        private final Blackhole bh;
+        private Subscription upstream;
+
+        BlackholeSubscriber(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            this.upstream = s;
+            // Request as many items as possible; the operator will cancel when the predicate fails
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onComplete() {
+            // No additional work needed on completion
+        }
+    }
+}
+```

@@ -1,0 +1,120 @@
+```java
+package io.reactivex.rxjava3.internal.util;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmarks for {@link BackpressureHelper}.
+ *
+ * The benchmarks focus on throughput (operations per time unit) and cover
+ * both the pure arithmetic helpers and the CAS‑based atomic helpers.
+ *
+ * The original {@code BackpressureHelper.multiplyCap} throws an
+ * {@code ArithmeticException} when {@code a == 0} and {@code b} is a large
+ * value (e.g., {@code Long.MAX_VALUE}) because it attempts {@code u / a}.
+ * This benchmark uses a safe wrapper that returns {@code 0} for the zero
+ * multiplicand case, preserving the intended semantics without the exception.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+public class BackpressureHelperBenchmark {
+
+    @State(Scope.Benchmark)
+    public static class Params {
+
+        // include edge cases
+        @Param({ "0", "1", "12345", "9223372036854775807" })
+        public long a;
+
+        @Param({ "0", "1", "54321", "9223372036854775807" })
+        public long b;
+
+        @Param({ "0", "1", "1000", "9223372036854775807" })
+        public long n;
+    }
+
+    @State(Scope.Thread)
+    public static class AtomicState {
+
+        AtomicLong requested;
+
+        @Setup(Level.Invocation)
+        public void setUp() {
+            // start from a known state for each invocation
+            requested = new AtomicLong(0L);
+        }
+    }
+
+    // -------------------------------------------------------------------------------
+    // Pure arithmetic helpers
+    // -------------------------------------------------------------------------------
+
+    @Benchmark
+    public long addCap(Params p) {
+        return BackpressureHelper.addCap(p.a, p.b);
+    }
+
+    /**
+     * Safe wrapper for {@link BackpressureHelper#multiplyCap(long,long)}.
+     * Returns {@code 0} when either operand is {@code 0} to avoid division by zero
+     * inside the original implementation.
+     */
+    private static long safeMultiplyCap(long a, long b) {
+        if (a == 0L || b == 0L) {
+            return 0L;
+        }
+        return BackpressureHelper.multiplyCap(a, b);
+    }
+
+    @Benchmark
+    public long multiplyCap(Params p) {
+        return safeMultiplyCap(p.a, p.b);
+    }
+
+    // -------------------------------------------------------------------------------
+    // Atomic helpers – add / addCancel
+    // -------------------------------------------------------------------------------
+
+    @Benchmark
+    public long add(AtomicState state, Params p, Blackhole bh) {
+        long prev = BackpressureHelper.add(state.requested, p.n);
+        bh.consume(prev);
+        return state.requested.get();
+    }
+
+    @Benchmark
+    public long addCancel(AtomicState state, Params p, Blackhole bh) {
+        long prev = BackpressureHelper.addCancel(state.requested, p.n);
+        bh.consume(prev);
+        return state.requested.get();
+    }
+
+    // -------------------------------------------------------------------------------
+    // Atomic helpers – produced / producedCancel
+    // -------------------------------------------------------------------------------
+
+    @Benchmark
+    public long produced(AtomicState state, Params p, Blackhole bh) {
+        // Ensure there is enough requested amount before calling produced
+        state.requested.set(p.n);
+        long updated = BackpressureHelper.produced(state.requested, p.n);
+        bh.consume(updated);
+        return state.requested.get();
+    }
+
+    @Benchmark
+    public long producedCancel(AtomicState state, Params p, Blackhole bh) {
+        // Ensure there is enough requested amount before calling producedCancel
+        state.requested.set(p.n);
+        long updated = BackpressureHelper.producedCancel(state.requested, p.n);
+        bh.consume(updated);
+        return state.requested.get();
+    }
+}
+```

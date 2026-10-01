@@ -1,0 +1,65 @@
+```java
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link MaybeFlatMapCompletable}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * {@code MaybeFlatMapCompletable} operator when the upstream {@code Maybe}
+ * emits a single value and the mapper returns a {@code Completable} that
+ * completes immediately.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create all immutable objects in @Setup to exclude allocation overhead.
+ * - Use Blackhole to consume the result and prevent dead‑code elimination.
+ * - Run the Completable synchronously via {@code blockingAwait()} to keep the benchmark deterministic.
+ * - Configure warm‑up and measurement iterations via JMH defaults (can be overridden on the command line).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class MaybeFlatMapCompletableBenchmark {
+
+    /** Source Maybe that emits a single integer value. */
+    private Maybe<Integer> source;
+
+    /** Mapper that turns the integer into a Completable that completes immediately. */
+    private Function<Integer, CompletableSource> mapper;
+
+    /** The operator under test. */
+    private Completable operator;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source that emits a constant value.
+        source = Maybe.just(1);
+
+        // Mapper returns a Completable that completes instantly.
+        mapper = v -> Completable.complete();
+
+        // Build the operator instance once per trial.
+        operator = new MaybeFlatMapCompletable<>(source, mapper);
+    }
+
+    /**
+     * Benchmark the subscription and execution of the operator.
+     *
+     * @param bh Blackhole to consume any side‑effects.
+     */
+    @Benchmark
+    public void flatMapCompletable(Blackhole bh) {
+        // Execute the Completable synchronously.
+        operator.blockingAwait();
+
+        // Consume a dummy value to prevent dead‑code elimination.
+        bh.consume(1);
+    }
+}
+```

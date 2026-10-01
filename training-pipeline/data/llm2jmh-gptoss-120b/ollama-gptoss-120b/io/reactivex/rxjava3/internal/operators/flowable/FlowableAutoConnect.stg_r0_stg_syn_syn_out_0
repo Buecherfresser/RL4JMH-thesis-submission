@@ -1,0 +1,123 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link FlowableAutoConnect}.
+ *
+ * Measures the throughput of subscribing to a FlowableAutoConnect instance.
+ * The benchmark uses a hot source (ConnectableFlowable) that is connected
+ * after the first subscription (numberOfSubscribers = 1). Subsequent
+ * subscriptions only incur the overhead of the operator.
+ *
+ * Best practices applied:
+ * - Warm‑up and measurement iterations.
+ * - Single fork to avoid JVM start‑up noise.
+ * - Use of a reusable no‑op Subscriber to minimise allocation overhead.
+ * - Time unit set to seconds for throughput reporting.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Benchmark)
+public class FlowableAutoConnectBenchmark {
+
+    /**
+     * Hot source that emits a finite range of integers.
+     */
+    private ConnectableFlowable<Integer> source;
+
+    /**
+     * FlowableAutoConnect wrapper under test.
+     */
+    private Flowable<Integer> autoConnect;
+
+    /**
+     * Reusable no‑op subscriber to avoid allocation per operation.
+     */
+    private static final Subscriber<Integer> DUMMY_SUBSCRIBER = new Subscriber<Integer>() {
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onComplete() {
+            /* no‑op */
+        }
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a ConnectableFlowable that emits 1..1000 and then completes.
+        source = Flowable.range(1, 1000).publish();
+        // numberOfSubscribers = 1 triggers immediate connection on first subscribe.
+        // The connection consumer is a no‑op.
+        autoConnect = new FlowableAutoConnect<>(source, 1, disposable -> {
+            /* no‑op */
+        });
+        // Ensure the source is connected before the benchmark starts.
+        // The first subscription will trigger the connection, but we do it explicitly
+        // to avoid measuring the connection cost in the benchmark.
+        source.connect(disposable -> {
+            /* no‑op */
+        });
+    }
+
+    @Benchmark
+    public void subscribeThroughput() {
+        // Each iteration subscribes a dummy subscriber to the auto‑connected Flowable.
+        // The subscription path goes through FlowableAutoConnect.subscribeActual().
+        autoConnect.subscribe(DUMMY_SUBSCRIBER);
+    }
+}

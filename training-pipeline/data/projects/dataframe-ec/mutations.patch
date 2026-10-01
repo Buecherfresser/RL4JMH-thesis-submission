@@ -1,0 +1,637 @@
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DataFrame.java b/io/github/vmzakharov/ecdataframe/dataframe/DataFrame.java
+index a8d5db4..cd7e8a1 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DataFrame.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DataFrame.java
+@@ -96,7 +96,7 @@ implements DfIterate
+     }
+ 
+     public DataFrame addStringColumn(String newColumnName)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(27);
+         return this.addColumn(newColumnName, ValueType.STRING);
+     }
+ 
+@@ -109,7 +109,7 @@ implements DfIterate
+      * @return this data frame
+      */
+     public DataFrame addStringColumn(String newColumnName, String expressionAsString)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(28);
+         return this.addColumnWithTypeValidation(newColumnName, ValueType.STRING, expressionAsString);
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumn.java b/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumn.java
+index 134966a..dc227ef 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumn.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumn.java
+@@ -19,12 +19,12 @@ extends DfColumnAbstract
+ 
+     @Override
+     public String getValueAsString(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(29);
+         return Boolean.toString(this.getBoolean(rowIndex));
+     }
+ 
+     public ImmutableBooleanList toBooleanList()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(30);
+         return this.asBooleanIterable().toList().toImmutable();
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumnComputed.java b/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumnComputed.java
+index 1d3085e..0cbadd6 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumnComputed.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumnComputed.java
+@@ -21,7 +21,7 @@ implements DfColumnComputed
+ 
+     @Override
+     public boolean getBoolean(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(31);
+         Value result = this.getValue(rowIndex);
+ 
+         if (result.isVoid())
+@@ -34,7 +34,7 @@ implements DfColumnComputed
+ 
+     @Override
+     public Object getObject(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(32);
+         Value result = this.getValue(rowIndex);
+ 
+         return result.isVoid() ? null : ((BooleanValue) result).isTrue();
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumnStored.java b/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumnStored.java
+index 85fc74a..3ba1510 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumnStored.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfBooleanColumnStored.java
+@@ -35,7 +35,7 @@ implements DfColumnStored
+ 
+     @Override
+     public void addValue(Value value)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(33);
+         if (value.isBoolean())
+         {
+             this.addBoolean(((BooleanValue) value).isTrue(), false);
+@@ -51,7 +51,7 @@ implements DfColumnStored
+     }
+ 
+     public void addBoolean(boolean aBoolean, boolean isNullValue)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(34);
+         this.values.add(aBoolean);
+         this.nullMap.add(isNullValue);
+     }
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfColumnSortOrder.java b/io/github/vmzakharov/ecdataframe/dataframe/DfColumnSortOrder.java
+index ab5e1e8..4a3123a 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfColumnSortOrder.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfColumnSortOrder.java
+@@ -5,7 +5,7 @@ public enum DfColumnSortOrder
+     ASC, DESC;
+ 
+     public int order(int comparisonResult)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(35);
+         return this == DESC ? -comparisonResult : comparisonResult;
+     }
+ }
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfCursor.java b/io/github/vmzakharov/ecdataframe/dataframe/DfCursor.java
+index 7d39809..4d8e067 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfCursor.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfCursor.java
+@@ -15,7 +15,7 @@ public class DfCursor
+     }
+ 
+     public String getString(String columnName)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(36);
+         return this.dataFrame.getString(columnName, this.rowIndex);
+     }
+ 
+@@ -30,7 +30,7 @@ public class DfCursor
+     }
+ 
+     public double getDouble(String columnName)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(37);
+         return this.dataFrame.getDouble(columnName, this.rowIndex);
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfDateColumnComputed.java b/io/github/vmzakharov/ecdataframe/dataframe/DfDateColumnComputed.java
+index 03a61af..d92e27e 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfDateColumnComputed.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfDateColumnComputed.java
+@@ -16,7 +16,7 @@ implements DfDateColumn
+ 
+     @Override
+     public LocalDate getTypedObject(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(38);
+         Value result = this.getValue(rowIndex);
+ 
+         return result.isVoid() ? null : ((DateValue) result).dateValue();
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfDateColumnStored.java b/io/github/vmzakharov/ecdataframe/dataframe/DfDateColumnStored.java
+index 7a0a86f..e6e32b0 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfDateColumnStored.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfDateColumnStored.java
+@@ -22,13 +22,13 @@ implements DfDateColumn
+ 
+     @Override
+     public void addObject(Object newObject)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(39);
+         this.addMyType((LocalDate) newObject);
+     }
+ 
+     @Override
+     public void addValue(Value value)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(40);
+         if (value.isVoid())
+         {
+             this.addObject(null);
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfDateTimeColumnComputed.java b/io/github/vmzakharov/ecdataframe/dataframe/DfDateTimeColumnComputed.java
+index 9b0ab9c..dc644f1 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfDateTimeColumnComputed.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfDateTimeColumnComputed.java
+@@ -16,7 +16,7 @@ implements DfDateTimeColumn
+ 
+     @Override
+     public LocalDateTime getTypedObject(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(41);
+         Value result = this.getValue(rowIndex);
+ 
+         return result.isVoid() ? null : ((DateTimeValue) result).dateTimeValue();
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfDateTimeColumnStored.java b/io/github/vmzakharov/ecdataframe/dataframe/DfDateTimeColumnStored.java
+index 3377fac..cc7d42f 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfDateTimeColumnStored.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfDateTimeColumnStored.java
+@@ -22,13 +22,13 @@ implements DfDateTimeColumn
+ 
+     @Override
+     public void addObject(Object newObject)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(42);
+         this.addMyType((LocalDateTime) newObject);
+     }
+ 
+     @Override
+     public void addValue(Value value)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(43);
+         if (value.isVoid())
+         {
+             this.addObject(null);
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfDecimalColumnComputed.java b/io/github/vmzakharov/ecdataframe/dataframe/DfDecimalColumnComputed.java
+index bc0baaf..7413edf 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfDecimalColumnComputed.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfDecimalColumnComputed.java
+@@ -16,7 +16,7 @@ implements DfDecimalColumn
+ 
+     @Override
+     public BigDecimal getTypedObject(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(44);
+         Value result = this.getValue(rowIndex);
+ 
+         return result.isVoid() ? null : ((DecimalValue) result).decimalValue();
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfDecimalColumnStored.java b/io/github/vmzakharov/ecdataframe/dataframe/DfDecimalColumnStored.java
+index 2b23b46..bb3a60f 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfDecimalColumnStored.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfDecimalColumnStored.java
+@@ -22,13 +22,13 @@ implements DfDecimalColumn
+ 
+     @Override
+     public void addObject(Object newObject)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(45);
+         this.addMyType((BigDecimal) newObject);
+     }
+ 
+     @Override
+     public void addValue(Value value)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(46);
+         if (value.isVoid())
+         {
+             this.addObject(null);
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfDoubleColumn.java b/io/github/vmzakharov/ecdataframe/dataframe/DfDoubleColumn.java
+index a8787ac..dd5b9b6 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfDoubleColumn.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfDoubleColumn.java
+@@ -19,12 +19,12 @@ abstract public class DfDoubleColumn
+ 
+     @Override
+     public String getValueAsString(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(47);
+         return Double.toString(this.getDouble(rowIndex));
+     }
+ 
+     public ImmutableDoubleList toDoubleList()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(48);
+         return this.asDoubleIterable().toList().toImmutable();
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfDoubleColumnComputed.java b/io/github/vmzakharov/ecdataframe/dataframe/DfDoubleColumnComputed.java
+index 0f1c1ff..3af3c48 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfDoubleColumnComputed.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfDoubleColumnComputed.java
+@@ -22,7 +22,7 @@ implements DfColumnComputed
+ 
+     @Override
+     public Object getObject(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(49);
+         Value result = this.getValue(rowIndex);
+ 
+         return result.isVoid() ? null : ((DoubleValue) result).doubleValue();
+@@ -30,7 +30,7 @@ implements DfColumnComputed
+ 
+     @Override
+     public double getDouble(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(50);
+         Value result = this.getValue(rowIndex);
+ 
+         if (result.isVoid())
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfStringColumnComputed.java b/io/github/vmzakharov/ecdataframe/dataframe/DfStringColumnComputed.java
+index 02b38da..b9021e1 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfStringColumnComputed.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfStringColumnComputed.java
+@@ -13,7 +13,7 @@ implements DfStringColumn
+ 
+     @Override
+     public String getTypedObject(int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(1);
+         Value result = this.getValue(rowIndex);
+ 
+         return result.isVoid() ? null : result.stringValue();
+diff --git a/io/github/vmzakharov/ecdataframe/dataframe/DfStringColumnStored.java b/io/github/vmzakharov/ecdataframe/dataframe/DfStringColumnStored.java
+index bed774f..5cc4b59 100644
+--- a/io/github/vmzakharov/ecdataframe/dataframe/DfStringColumnStored.java
++++ b/io/github/vmzakharov/ecdataframe/dataframe/DfStringColumnStored.java
+@@ -19,7 +19,7 @@ implements DfStringColumn
+ 
+     @Override
+     public void addValue(Value value)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(2);
+         if (value.isVoid())
+         {
+             this.addObject(null);
+@@ -36,7 +36,7 @@ implements DfStringColumn
+ 
+     @Override
+     public void addObject(Object newObject)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(3);
+         this.addMyType((String) newObject);
+     }
+ }
+diff --git a/io/github/vmzakharov/ecdataframe/dataset/CsvDataSet.java b/io/github/vmzakharov/ecdataframe/dataset/CsvDataSet.java
+index 9011151..b6bbb3d 100644
+--- a/io/github/vmzakharov/ecdataframe/dataset/CsvDataSet.java
++++ b/io/github/vmzakharov/ecdataframe/dataset/CsvDataSet.java
+@@ -107,7 +107,7 @@ extends DataSetAbstract
+ 
+     @Override
+     public void openFileForReading()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(4);
+         // Not needed for CSV files
+     }
+ 
+@@ -118,7 +118,7 @@ extends DataSetAbstract
+      * @return this data set
+      */
+     public CsvDataSet convertEmptyElementsToNulls()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(5);
+         this.emptyElementsConvertedToNulls = true;
+         return this;
+     }
+diff --git a/io/github/vmzakharov/ecdataframe/dataset/DataSetAbstract.java b/io/github/vmzakharov/ecdataframe/dataset/DataSetAbstract.java
+index d2073ed..dcaef16 100644
+--- a/io/github/vmzakharov/ecdataframe/dataset/DataSetAbstract.java
++++ b/io/github/vmzakharov/ecdataframe/dataset/DataSetAbstract.java
+@@ -12,7 +12,7 @@ implements DataSet
+ 
+     @Override
+     public String getName()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(6);
+         return this.name;
+     }
+ }
+diff --git a/io/github/vmzakharov/ecdataframe/dataset/ObjectListDataSet.java b/io/github/vmzakharov/ecdataframe/dataset/ObjectListDataSet.java
+index c2ad03b..69ca45d 100644
+--- a/io/github/vmzakharov/ecdataframe/dataset/ObjectListDataSet.java
++++ b/io/github/vmzakharov/ecdataframe/dataset/ObjectListDataSet.java
+@@ -38,7 +38,7 @@ extends HierarchicalDataSet
+ 
+     @Override
+     public void openFileForReading()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(7);
+         this.index = -1;
+     }
+ 
+@@ -62,7 +62,7 @@ extends HierarchicalDataSet
+ 
+     @Override
+     public void close()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(8);
+         // noop
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/dataset/StringSchemaColumn.java b/io/github/vmzakharov/ecdataframe/dataset/StringSchemaColumn.java
+index 3c8be6e..c2d8d0c 100644
+--- a/io/github/vmzakharov/ecdataframe/dataset/StringSchemaColumn.java
++++ b/io/github/vmzakharov/ecdataframe/dataset/StringSchemaColumn.java
+@@ -13,14 +13,14 @@ extends CsvSchemaColumn
+ 
+     @Override
+     public String formatColumnValueAsString(DfColumn column, int rowIndex)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(9);
+         String stringValue = column.getValueAsString(rowIndex);
+         return this.csvSchema().getQuoteCharacter() + stringValue + this.csvSchema().getQuoteCharacter();
+     }
+ 
+     @Override
+     public void parseAndAddToColumn(String aString, DfColumn dfColumn)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(10);
+         dfColumn.addObject(this.stripQuotesIfAny(aString));
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/dsl/FunctionCallExpr.java b/io/github/vmzakharov/ecdataframe/dsl/FunctionCallExpr.java
+index 9290f91..ab4ffd6 100644
+--- a/io/github/vmzakharov/ecdataframe/dsl/FunctionCallExpr.java
++++ b/io/github/vmzakharov/ecdataframe/dsl/FunctionCallExpr.java
+@@ -8,7 +8,7 @@ import org.eclipse.collections.impl.factory.Lists;
+ 
+ public record FunctionCallExpr(String functionName, String normalizedFunctionName, ListIterable<Expression> parameters)
+ implements Expression
+-{
++{ io.github.vmzakharov.jmhbench.MutationSwitch.tick(11);
+     public FunctionCallExpr(String functionName, ListIterable<Expression> parameters)
+     {
+         this(functionName, functionName.toUpperCase(), parameters);
+@@ -21,7 +21,7 @@ implements Expression
+ 
+     @Override
+     public Value evaluate(ExpressionEvaluationVisitor visitor)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(12);
+         return visitor.visitFunctionCallExpr(this);
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/dsl/FunctionScript.java b/io/github/vmzakharov/ecdataframe/dsl/FunctionScript.java
+index a396bc5..19331a0 100644
+--- a/io/github/vmzakharov/ecdataframe/dsl/FunctionScript.java
++++ b/io/github/vmzakharov/ecdataframe/dsl/FunctionScript.java
+@@ -23,12 +23,12 @@ implements FunctionDescriptor
+ 
+     @Override
+     public String getName()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(13);
+         return this.name;
+     }
+ 
+     public String getNormalizedName()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(14);
+         return this.normalizedName;
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/dsl/function/BuiltInFunctions.java b/io/github/vmzakharov/ecdataframe/dsl/function/BuiltInFunctions.java
+index b120ad9..6bc5163 100644
+--- a/io/github/vmzakharov/ecdataframe/dsl/function/BuiltInFunctions.java
++++ b/io/github/vmzakharov/ecdataframe/dsl/function/BuiltInFunctions.java
+@@ -53,14 +53,14 @@ final public class BuiltInFunctions
+      * list to its initial state so any functions added later programmatically will no longer be available.
+      */
+     public static void resetFunctionList()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(15);
+         FUNCTIONS_BY_NAME.clear();
+ 
+         addFunctionDescriptor(new IntrinsicFunctionDescriptor("print")
+         {
+             @Override
+             public Value evaluate(EvalContext context)
+-            {
++            { io.github.vmzakharov.jmhbench.MutationSwitch.tick(16);
+                 VectorValue parameters = this.getParameterVectorFrom(context);
+                 Printer printer = PrinterFactory.getPrinter();
+                 parameters.getElements().collect(Value::stringValue).forEach(printer::print);
+diff --git a/io/github/vmzakharov/ecdataframe/dsl/function/IntrinsicFunctionDescriptorBuilder.java b/io/github/vmzakharov/ecdataframe/dsl/function/IntrinsicFunctionDescriptorBuilder.java
+index 3d15ba3..ed543b9 100644
+--- a/io/github/vmzakharov/ecdataframe/dsl/function/IntrinsicFunctionDescriptorBuilder.java
++++ b/io/github/vmzakharov/ecdataframe/dsl/function/IntrinsicFunctionDescriptorBuilder.java
+@@ -20,13 +20,13 @@ extends IntrinsicFunctionDescriptor
+     }
+ 
+     public IntrinsicFunctionDescriptorBuilder action(Function<EvalContext, Value> newAction)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(17);
+         this.action = newAction;
+         return this;
+     }
+ 
+     public IntrinsicFunctionDescriptorBuilder parameterNames(ListIterable<String> parameterNames)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(18);
+         this.setParameterNames(parameterNames);
+         return this;
+     }
+diff --git a/io/github/vmzakharov/ecdataframe/dsl/value/StringValue.java b/io/github/vmzakharov/ecdataframe/dsl/value/StringValue.java
+index f7ad1c0..282437a 100644
+--- a/io/github/vmzakharov/ecdataframe/dsl/value/StringValue.java
++++ b/io/github/vmzakharov/ecdataframe/dsl/value/StringValue.java
+@@ -6,7 +6,7 @@ import io.github.vmzakharov.ecdataframe.dsl.UnaryOp;
+ 
+ public record StringValue(String value)
+ implements Value
+-{
++{ io.github.vmzakharov.jmhbench.MutationSwitch.tick(19);
+     public StringValue
+     {
+         this.throwExceptionIfNull(value);
+@@ -14,7 +14,7 @@ implements Value
+ 
+     @Override
+     public Value apply(Value another, ArithmeticOp operation)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(20);
+         return operation.applyString(this.stringValue(), another.stringValue());
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/grammar/CollectingErrorListener.java b/io/github/vmzakharov/ecdataframe/grammar/CollectingErrorListener.java
+index ddf25c8..0675815 100644
+--- a/io/github/vmzakharov/ecdataframe/grammar/CollectingErrorListener.java
++++ b/io/github/vmzakharov/ecdataframe/grammar/CollectingErrorListener.java
+@@ -19,12 +19,12 @@ extends BaseErrorListener
+                             int line, int charPositionInLine,
+                             String msg,
+                             RecognitionException e)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(21);
+         this.errors.add(new Error(offendingSymbol, line, charPositionInLine, msg));
+     }
+ 
+     public ListIterable<Error> getErrors()
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(22);
+         return this.errors;
+     }
+ 
+diff --git a/io/github/vmzakharov/ecdataframe/grammar/ModelScriptTreeBuilderVisitor.java b/io/github/vmzakharov/ecdataframe/grammar/ModelScriptTreeBuilderVisitor.java
+index 01c9e0e..e80d071 100644
+--- a/io/github/vmzakharov/ecdataframe/grammar/ModelScriptTreeBuilderVisitor.java
++++ b/io/github/vmzakharov/ecdataframe/grammar/ModelScriptTreeBuilderVisitor.java
+@@ -44,14 +44,14 @@ extends ModelScriptBaseVisitor<Expression>
+ 
+     @Override
+     public Expression visitFreeExp(ModelScriptParser.FreeExpContext ctx)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(23);
+         Expression freeExpression = this.visit(ctx.expr());
+         return this.addStatementToCurrentScriptContext(freeExpression);
+     }
+ 
+     @Override
+     public Expression visitAssignExpr(ModelScriptParser.AssignExprContext ctx)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(24);
+         String varName = ctx.ID().getText();
+         if (ctx.expr() == null)
+         {
+diff --git a/io/github/vmzakharov/ecdataframe/util/ExpressionParserHelper.java b/io/github/vmzakharov/ecdataframe/util/ExpressionParserHelper.java
+index 0a488bf..9501927 100644
+--- a/io/github/vmzakharov/ecdataframe/util/ExpressionParserHelper.java
++++ b/io/github/vmzakharov/ecdataframe/util/ExpressionParserHelper.java
+@@ -27,7 +27,7 @@ public class ExpressionParserHelper
+     }
+ 
+     public Expression toExpression(String s)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(25);
+         ModelScriptParser parser = this.stringToParser(s);
+         ParseTree tree = parser.statement();
+ 
+@@ -42,7 +42,7 @@ public class ExpressionParserHelper
+     }
+ 
+     public Expression toProjection(String s)
+-    {
++    { io.github.vmzakharov.jmhbench.MutationSwitch.tick(26);
+         ModelScriptParser parser = this.stringToParser(s);
+         ParseTree tree = parser.projectionStatement();
+ 
+diff --git a/io/github/vmzakharov/jmhbench/MutationSwitch.java b/io/github/vmzakharov/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..fe6055c
+--- /dev/null
++++ b/io/github/vmzakharov/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.github.vmzakharov.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

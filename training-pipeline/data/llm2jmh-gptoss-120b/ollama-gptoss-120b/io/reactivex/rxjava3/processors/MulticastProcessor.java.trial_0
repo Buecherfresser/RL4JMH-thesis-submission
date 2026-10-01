@@ -1,0 +1,97 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.processors.MulticastProcessor;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * JMH benchmark for {@link MulticastProcessor}.
+ *
+ * Measures the throughput of {@code onNext} calls when the processor has a
+ * configurable number of subscribers that request an unbounded amount of
+ * items. The benchmark follows best‑practice JMH settings: warm‑up,
+ * measurement iterations, multiple forks and a single benchmark thread.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+@State(Scope.Benchmark)
+public class MulticastProcessorBenchmark {
+
+    /** Number of concurrent subscribers attached to the processor. */
+    @Param({"1", "4", "8"})
+    public int subscriberCount;
+
+    /** Buffer size used when creating the processor. */
+    @Param({"128", "1024", "8192"})
+    public int bufferSize;
+
+    private MulticastProcessor<Integer> processor;
+    private final AtomicInteger source = new AtomicInteger();
+
+    /**
+     * Sets up a fresh {@link MulticastProcessor} and attaches the requested
+     * number of subscribers. Each subscriber requests {@code Long.MAX_VALUE}
+     * to avoid back‑pressure interference with the measurement.
+     */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        processor = new MulticastProcessor<>(bufferSize, false);
+        processor.start();
+
+        for (int i = 0; i < subscriberCount; i++) {
+            processor.subscribe(new BlackholeSubscriber());
+        }
+    }
+
+    /**
+     * Benchmark method that emits a single integer value into the processor.
+     * The emitted value is taken from an {@link AtomicInteger} to avoid
+     * constant folding by the JIT.
+     *
+     * @param bh Blackhole to consume the emitted value (prevents dead‑code elimination)
+     */
+    @Benchmark
+    public void emitOne(Blackhole bh) {
+        int v = source.getAndIncrement();
+        // The Blackhole ensures the value is used, preventing the JIT from
+        // optimizing away the onNext call.
+        bh.consume(v);
+        processor.onNext(v);
+    }
+
+    /**
+     * Simple subscriber that consumes items without any additional work.
+     * It requests an unbounded number of items in {@code onSubscribe}.
+     */
+    static final class BlackholeSubscriber extends DisposableSubscriber<Integer> {
+        @Override
+        public void onStart() {
+            request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            // No-op – the subscriber does not perform any work.
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // No-op
+        }
+
+        @Override
+        public void onComplete() {
+            // No-op
+        }
+    }
+}
+```

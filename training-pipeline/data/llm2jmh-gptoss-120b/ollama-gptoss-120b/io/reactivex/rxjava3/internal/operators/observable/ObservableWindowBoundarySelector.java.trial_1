@@ -1,0 +1,134 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ObservableWindowBoundarySelectorBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    @Param({ "128", "1024" })
+    public int bufferSize;
+
+    @Param({ "10", "100" })
+    public int windowOpenInterval;
+
+    @Param({ "20", "200" })
+    public int windowCloseInterval;
+
+    private Scheduler scheduler;
+    private CountDownLatchFactory latchFactory;
+
+    @Setup(Level.Trial)
+    public void setUpTrial() {
+        scheduler = Schedulers.single();
+        latchFactory = new CountDownLatchFactory();
+        RxJavaPlugins.setErrorHandler(Throwable::printStackTrace);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDownTrial() {
+        RxJavaPlugins.reset();
+    }
+
+    @Benchmark
+    public void windowBoundarySelectorThroughput(Blackhole bh) throws InterruptedException {
+        Observable<Integer> source = Observable.range(1, itemCount)
+                .subscribeOn(scheduler);
+
+        Observable<Long> open = Observable.intervalRange(
+                0,
+                (itemCount + windowOpenInterval - 1) / windowOpenInterval,
+                0,
+                0,
+                TimeUnit.MILLISECONDS,
+                scheduler)
+                .map(i -> i * windowOpenInterval);
+
+        Function<Long, ObservableSource<Long>> closingIndicator = start -> {
+            long closeAfter = Math.min(windowCloseInterval, itemCount - start);
+            return Observable.timer(closeAfter, TimeUnit.MILLISECONDS, scheduler);
+        };
+
+        Observable<Observable<Integer>> windowed = new ObservableWindowBoundarySelector<>(
+                source,
+                open,
+                closingIndicator,
+                bufferSize);
+
+        CountDownLatch latch = latchFactory.createLatch(1);
+        Disposable d = windowed
+                .flatMap(w -> w
+                        .doOnNext(item -> bh.consume(item))
+                        .ignoreElements()
+                        .toObservable())
+                .doOnComplete(latch::countDown)
+                .subscribe();
+
+        if (!latch.await(30, TimeUnit.SECONDS)) {
+            d.dispose();
+            throw new IllegalStateException("Benchmark timed out");
+        }
+
+        d.dispose();
+    }
+
+    private static final class CountDownLatchFactory {
+        private final ConcurrentLinkedQueue<CountDownLatch> pool = new ConcurrentLinkedQueue<>();
+
+        CountDownLatch createLatch(int count) {
+            CountDownLatch latch = pool.poll();
+            if (latch == null) {
+                return new CountDownLatch(count);
+            }
+            return new CountDownLatch(count);
+        }
+
+        void recycle(CountDownLatch latch) {
+            // No recycling needed; CountDownLatch cannot be reset.
+        }
+    }
+}
+```

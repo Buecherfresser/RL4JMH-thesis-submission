@@ -1,0 +1,98 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.parallel.ParallelFlowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.parallel.ParallelFilter}.
+ * Measures throughput of the parallel filter operator under a typical workload.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ParallelFilterBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the source per benchmark iteration. */
+        @Param({"1000000"})
+        int itemCount;
+
+        /** Parallelism level – typically the number of CPU cores. */
+        @Param({"4"})
+        int parallelism;
+
+        /** Source ParallelFlowable that emits a range of integers. */
+        ParallelFlowable<Integer> source;
+
+        /** Predicate used by the filter operator (filters even numbers). */
+        Predicate<Integer> predicate;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a ParallelFlowable that emits a range of integers on the computation scheduler.
+            source = Flowable.range(1, itemCount)
+                    .parallel(parallelism)
+                    .runOn(Schedulers.computation());
+
+            // Simple predicate that lets through even numbers.
+            predicate = i -> (i & 1) == 0;
+        }
+    }
+
+    @Benchmark
+    public void parallelFilter(Blackhole bh, BenchmarkState state) throws InterruptedException {
+        // Latch to wait for all parallel rails to complete.
+        CountDownLatch latch = new CountDownLatch(state.parallelism);
+
+        // Subscribe to the filtered ParallelFlowable.
+        state.source
+                .filter(state.predicate)
+                .subscribe(new Subscriber<Integer>() {
+                    Subscription upstream;
+
+                    @Override
+                    public void onSubscribe(Subscription s) {
+                        this.upstream = s;
+                        // Request an unbounded number of items; the source is finite.
+                        s.request(Long.MAX_VALUE);
+                    }
+
+                    @Override
+                    public void onNext(Integer t) {
+                        // Consume the item to prevent dead‑code elimination.
+                        bh.consume(t);
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        // In case of error, still count down the latch.
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        // Signal completion of this rail.
+                        latch.countDown();
+                    }
+                });
+
+        // Wait for all rails to finish before ending the iteration.
+        latch.await();
+    }
+}
+```

@@ -1,0 +1,74 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.BooleanSupplier;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableRepeatUntil;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Throughput benchmark for {@link FlowableRepeatUntil}.
+ *
+ * The benchmark measures how many items per second can be emitted
+ * when the source Flowable emits a fixed number of items and the
+ * repeat-until condition stops after a configurable number of repeats.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Trial) performs heavyweight initialization once per trial.
+ * - Blackhole is used to consume emitted items and prevent dead-code elimination.
+ * - Mode.Throughput with TimeUnit.SECONDS reports items/second.
+ * - The benchmark runs in a single thread to avoid interference from other threads.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableRepeatUntilThroughputBenchmark {
+
+    /** Number of items emitted by the source Flowable per subscription. */
+    @Param({"10", "100", "1000"})
+    public int itemsPerSubscription;
+
+    /** Number of repetitions before the BooleanSupplier returns true. */
+    @Param({"1", "5", "10"})
+    public int repeatCount;
+
+    private Flowable<Integer> source;
+    private BooleanSupplier stopSupplier;
+    private Flowable<Integer> repeatUntilFlowable;
+
+    /** Counter used by the BooleanSupplier to decide when to stop repeating. */
+    private AtomicInteger repeatCounter;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source that emits a range of integers.
+        source = Flowable.range(1, itemsPerSubscription);
+
+        // Counter that increments on each completion.
+        repeatCounter = new AtomicInteger(0);
+
+        // Stop when the counter reaches the configured repeatCount.
+        stopSupplier = () -> repeatCounter.incrementAndGet() >= repeatCount;
+
+        // Create the operator under test.
+        repeatUntilFlowable = new FlowableRepeatUntil<>(source, stopSupplier);
+    }
+
+    /**
+     * Benchmark method that subscribes to the FlowableRepeatUntil and consumes all items.
+     * The Blackhole ensures that the emitted values are not optimized away.
+     */
+    @Benchmark
+    public void repeatUntilThroughput(Blackhole bh) {
+        // blockingSubscribe will block until the sequence completes,
+        // which is appropriate for a throughput measurement.
+        repeatUntilFlowable.blockingSubscribe(bh::consume);
+    }
+}
+```

@@ -1,0 +1,83 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.core.SingleSource;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.single.SingleZipIterable;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link SingleZipIterable}.
+ *
+ * The benchmark measures the throughput of subscribing to a {@code SingleZipIterable}
+ * that zips a configurable number of {@link SingleSource}s using a simple summing zipper.
+ *
+ * Best practices applied:
+ * - @State(Scope.Benchmark) to share immutable data across benchmark iterations.
+ * - @Param to vary the number of zipped sources.
+ * - @Setup(Level.Trial) for one‑time initialization per fork.
+ * - Use of {@code blockingGet()} to force the whole reactive chain to execute.
+ * - Warm‑up and measurement iterations, multiple forks, and a single thread per benchmark.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@Threads(1)
+public class SingleZipIterableBenchmark {
+
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+
+        /**
+         * Number of Single sources to zip. Typical values are small (2‑8) because
+         * the operator is primarily used for combining a few asynchronous sources.
+         */
+        @Param({"2", "4", "8"})
+        public int sourceCount;
+
+        /** The zip operator under test. */
+        public Single<Integer> zipSingle;
+
+        /** Simple zipper that sums the integer values. */
+        private static final Function<Object[], Integer> SUM_ZIPPER = array -> {
+            int sum = 0;
+            for (Object o : array) {
+                sum += (Integer) o;
+            }
+            return sum;
+        };
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            List<SingleSource<Integer>> sources = new ArrayList<>(sourceCount);
+            for (int i = 0; i < sourceCount; i++) {
+                // Each source emits a constant value; using just() avoids extra threading overhead.
+                sources.add(Single.just(i));
+            }
+
+            // Build the SingleZipIterable instance.
+            zipSingle = new SingleZipIterable<>(sources, SUM_ZIPPER);
+        }
+    }
+
+    /**
+     * Executes the zip operation and blocks until the result is available.
+     *
+     * @param state shared benchmark state
+     * @return the summed result (used by JMH to prevent dead‑code elimination)
+     */
+    @Benchmark
+    public Integer zipAndBlock(BenchmarkState state) {
+        // blockingGet forces the whole reactive pipeline to run synchronously.
+        return state.zipSingle.blockingGet();
+    }
+}
+```

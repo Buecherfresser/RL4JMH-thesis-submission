@@ -1,0 +1,71 @@
+```java
+package io.reactivex.rxjava3.internal.util;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmarks for {@link OpenHashSet}.
+ *
+ * <p>Throughput measurement of {@code add} and {@code remove} operations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Benchmark)
+public class OpenHashSetBenchmark {
+
+    @Param({ "16", "256", "4096" })
+    public int initialSize;
+
+    @Param({ "0.5", "0.75", "0.9" })
+    public float loadFactor;
+
+    private OpenHashSet<Integer> set;
+    private int nextValue;               // for add benchmark
+    private int[] removalIndices;        // shuffled values to remove
+    private int removePos;               // cursor into removalIndices
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        set = new OpenHashSet<>(initialSize, loadFactor);
+        for (int i = 0; i < initialSize; i++) {
+            set.add(i);
+        }
+        nextValue = initialSize;
+
+        // create a shuffled array of indices to remove
+        List<Integer> list = IntStream.range(0, initialSize)
+                                      .boxed()
+                                      .collect(Collectors.toList());
+        Collections.shuffle(list);
+        removalIndices = list.stream().mapToInt(Integer::intValue).toArray();
+        removePos = 0;
+    }
+
+    @Benchmark
+    public void add(Blackhole bh) {
+        boolean added = set.add(nextValue++);
+        bh.consume(added);
+    }
+
+    @Benchmark
+    public void remove(Blackhole bh) {
+        // fetch the next index to remove in a round‑robin fashion
+        int idx = removalIndices[removePos];
+        removePos = (removePos + 1) % removalIndices.length;
+
+        // remove the element; to keep the set size stable we add it back
+        boolean removed = set.remove(idx);
+        set.add(idx); // restore state for the next iteration
+        bh.consume(removed);
+    }
+}
+```

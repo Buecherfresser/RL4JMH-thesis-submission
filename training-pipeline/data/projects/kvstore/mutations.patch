@@ -1,0 +1,633 @@
+diff --git a/org/javastack/kvstore/Example.java b/org/javastack/kvstore/Example.java
+index 20b2a68..58e24fd 100644
+--- a/org/javastack/kvstore/Example.java
++++ b/org/javastack/kvstore/Example.java
+@@ -29,7 +29,7 @@ import org.javastack.kvstore.structures.btree.BplusTree.TreeEntry;
+ public class Example {
+ 	private static final String btreeFile = "/tmp/test";
+ 
+-	public static void main(final String[] args) throws Exception {
++	public static void main(final String[] args) throws Exception { org.javastack.kvstore.jmhbench.MutationSwitch.tick(1);
+ 		final int[] keys = new int[] {
+ 				5, 7, -11, 111, 0
+ 		};
+diff --git a/org/javastack/kvstore/KVStoreFactory.java b/org/javastack/kvstore/KVStoreFactory.java
+index d8ca388..6297ec8 100644
+--- a/org/javastack/kvstore/KVStoreFactory.java
++++ b/org/javastack/kvstore/KVStoreFactory.java
+@@ -46,7 +46,7 @@ public class KVStoreFactory<K extends DataHolder<K>, V extends DataHolder<V>> {
+ 	}
+ 
+ 	public BplusTree<K, V> createTree(final Options opts) throws InstantiationException,
+-			IllegalAccessException {
++			IllegalAccessException { org.javastack.kvstore.jmhbench.MutationSwitch.tick(8);
+ 		final String fileName = opts.getString(FILENAME);
+ 		if (fileName == null) {
+ 			return createTreeMemory(opts);
+@@ -56,7 +56,7 @@ public class KVStoreFactory<K extends DataHolder<K>, V extends DataHolder<V>> {
+ 	}
+ 
+ 	public BplusTreeMemory<K, V> createTreeMemory(final Options opts) throws InstantiationException,
+-			IllegalAccessException {
++			IllegalAccessException { org.javastack.kvstore.jmhbench.MutationSwitch.tick(15);
+ 		final int b_size = opts.getInt(B_SIZE, 512);
+ 		return new BplusTreeMemory<K, V>(b_size, typeK, typeV);
+ 	}
+diff --git a/org/javastack/kvstore/Options.java b/org/javastack/kvstore/Options.java
+index 30566a4..c0a60e0 100644
+--- a/org/javastack/kvstore/Options.java
++++ b/org/javastack/kvstore/Options.java
+@@ -15,11 +15,11 @@ public class Options {
+ 		return this;
+ 	}
+ 
+-	public String getString(final String key) {
++	public String getString(final String key) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(22);
+ 		return getString(key, null);
+ 	}
+ 
+-	public String getString(final String key, final String defaultValue) {
++	public String getString(final String key, final String defaultValue) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(29);
+ 		final String value = opts.get(key);
+ 		if ((value != null) && !value.isEmpty()) {
+ 			return value;
+diff --git a/org/javastack/kvstore/holders/BooleanHolder.java b/org/javastack/kvstore/holders/BooleanHolder.java
+index 4adee0a..f15d6fe 100644
+--- a/org/javastack/kvstore/holders/BooleanHolder.java
++++ b/org/javastack/kvstore/holders/BooleanHolder.java
+@@ -27,7 +27,7 @@ public final class BooleanHolder extends DataHolder<BooleanHolder> {
+ 
+ 	private final boolean value;
+ 
+-	public static BooleanHolder valueOf(final boolean value) {
++	public static BooleanHolder valueOf(final boolean value) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(30);
+ 		return (value ? TRUE : FALSE);
+ 	}
+ 
+@@ -42,7 +42,7 @@ public final class BooleanHolder extends DataHolder<BooleanHolder> {
+ 		this.value = value;
+ 	}
+ 
+-	public boolean booleanValue() {
++	public boolean booleanValue() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(34);
+ 		return value;
+ 	}
+ 
+diff --git a/org/javastack/kvstore/holders/ByteArray8Holder.java b/org/javastack/kvstore/holders/ByteArray8Holder.java
+index 5f19b55..ee712fd 100644
+--- a/org/javastack/kvstore/holders/ByteArray8Holder.java
++++ b/org/javastack/kvstore/holders/ByteArray8Holder.java
+@@ -30,7 +30,7 @@ public final class ByteArray8Holder extends DataHolder<ByteArray8Holder> {
+ 
+ 	private final byte[] value;
+ 
+-	public static ByteArray8Holder valueOf(final byte[] value) {
++	public static ByteArray8Holder valueOf(final byte[] value) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(2);
+ 		final int hash = Arrays.hashCode(value);
+ 		final ByteArray8Holder cachedKey = cache.get(hash);
+ 		if (cachedKey != null) {
+@@ -54,7 +54,7 @@ public final class ByteArray8Holder extends DataHolder<ByteArray8Holder> {
+ 		this.value = value;
+ 	}
+ 
+-	public byte[] getValue() {
++	public byte[] getValue() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(9);
+ 		return value;
+ 	}
+ 
+diff --git a/org/javastack/kvstore/holders/ByteHolder.java b/org/javastack/kvstore/holders/ByteHolder.java
+index 3618601..d037528 100644
+--- a/org/javastack/kvstore/holders/ByteHolder.java
++++ b/org/javastack/kvstore/holders/ByteHolder.java
+@@ -32,7 +32,7 @@ public final class ByteHolder extends DataHolder<ByteHolder> {
+ 
+ 	private final byte value;
+ 
+-	public static ByteHolder valueOf(final byte value) {
++	public static ByteHolder valueOf(final byte value) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(38);
+ 		return cache[(int) value + 128];
+ 	}
+ 
+@@ -47,7 +47,7 @@ public final class ByteHolder extends DataHolder<ByteHolder> {
+ 		this.value = value;
+ 	}
+ 
+-	public byte byteValue() {
++	public byte byteValue() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(42);
+ 		return value;
+ 	}
+ 
+diff --git a/org/javastack/kvstore/holders/IntHolder.java b/org/javastack/kvstore/holders/IntHolder.java
+index 2d4c725..53b2849 100644
+--- a/org/javastack/kvstore/holders/IntHolder.java
++++ b/org/javastack/kvstore/holders/IntHolder.java
+@@ -29,11 +29,11 @@ public final class IntHolder extends DataHolder<IntHolder> {
+ 
+ 	private final int value;
+ 
+-	public static IntHolder valueOf(final long value) {
++	public static IntHolder valueOf(final long value) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(46);
+ 		return valueOf((int) value);
+ 	}
+ 
+-	public static IntHolder valueOf(final int value) {
++	public static IntHolder valueOf(final int value) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(49);
+ 		final IntHolder cachedKey = cache.get(value);
+ 		if (cachedKey != null) {
+ 			if (cachedKey.value == value) {
+diff --git a/org/javastack/kvstore/holders/StringHolder.java b/org/javastack/kvstore/holders/StringHolder.java
+index 24019fa..bbcafc1 100644
+--- a/org/javastack/kvstore/holders/StringHolder.java
++++ b/org/javastack/kvstore/holders/StringHolder.java
+@@ -29,7 +29,7 @@ import org.javastack.kvstore.pool.StringPool;
+ public final class StringHolder extends DataHolder<StringHolder> {
+ 	private final String value;
+ 
+-	public static StringHolder valueOf(final String value) {
++	public static StringHolder valueOf(final String value) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(16);
+ 		return new StringHolder(StringPool.getCanonicalVersion(value));
+ 	}
+ 
+@@ -44,7 +44,7 @@ public final class StringHolder extends DataHolder<StringHolder> {
+ 		this.value = value;
+ 	}
+ 
+-	public String getValue() {
++	public String getValue() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(23);
+ 		return value;
+ 	}
+ 
+diff --git a/org/javastack/kvstore/io/FileBlockStore.java b/org/javastack/kvstore/io/FileBlockStore.java
+index e8387c3..ddc9879 100644
+--- a/org/javastack/kvstore/io/FileBlockStore.java
++++ b/org/javastack/kvstore/io/FileBlockStore.java
+@@ -111,7 +111,7 @@ public class FileBlockStore {
+ 	 * 
+ 	 * @return true if valid state
+ 	 */
+-	public boolean open() {
++	public boolean open() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(31);
+ 		return open(false);
+ 	}
+ 
+@@ -121,7 +121,7 @@ public class FileBlockStore {
+ 	 * @param readOnly open for readOnly?
+ 	 * @return true if valid state
+ 	 */
+-	public boolean open(final boolean readOnly) {
++	public boolean open(final boolean readOnly) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(35);
+ 		if (isOpen()) {
+ 			close();
+ 		}
+diff --git a/org/javastack/kvstore/io/FileLongStore.java b/org/javastack/kvstore/io/FileLongStore.java
+index 20745c3..9af07c1 100644
+--- a/org/javastack/kvstore/io/FileLongStore.java
++++ b/org/javastack/kvstore/io/FileLongStore.java
+@@ -80,7 +80,7 @@ public class FileLongStore {
+ 	 * 
+ 	 * @return true if valid state
+ 	 */
+-	public boolean open() {
++	public boolean open() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(39);
+ 		return open(false);
+ 	}
+ 
+@@ -90,7 +90,7 @@ public class FileLongStore {
+ 	 * @param readOnly open in readOnly mode?
+ 	 * @return true if valid state
+ 	 */
+-	public synchronized boolean open(final boolean readOnly) {
++	public synchronized boolean open(final boolean readOnly) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(43);
+ 		if (isOpen()) {
+ 			close();
+ 		}
+diff --git a/org/javastack/kvstore/io/FileStreamStore.java b/org/javastack/kvstore/io/FileStreamStore.java
+index fb10390..7beaf99 100644
+--- a/org/javastack/kvstore/io/FileStreamStore.java
++++ b/org/javastack/kvstore/io/FileStreamStore.java
+@@ -131,7 +131,7 @@ public final class FileStreamStore {
+ 	 * 
+ 	 * @return true if valid state
+ 	 */
+-	public boolean open() {
++	public boolean open() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(3);
+ 		return open(false);
+ 	}
+ 
+@@ -141,7 +141,7 @@ public final class FileStreamStore {
+ 	 * @param readOnly open in readOnly mode?
+ 	 * @return true if valid state
+ 	 */
+-	public synchronized boolean open(final boolean readOnly) {
++	public synchronized boolean open(final boolean readOnly) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(10);
+ 		if (isOpen()) {
+ 			close();
+ 		}
+diff --git a/org/javastack/kvstore/io/StringSerializer.java b/org/javastack/kvstore/io/StringSerializer.java
+index ec3f180..f2da5e5 100644
+--- a/org/javastack/kvstore/io/StringSerializer.java
++++ b/org/javastack/kvstore/io/StringSerializer.java
+@@ -25,7 +25,7 @@ import java.nio.charset.Charset;
+ public class StringSerializer {
+ 	private static final Charset cs = Charset.forName("UTF-8");
+ 
+-	public static final void fromStringToBuffer(final ByteBuffer out, final String str) {
++	public static final void fromStringToBuffer(final ByteBuffer out, final String str) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(17);
+ 		if (str == null) {
+ 			out.putInt(Integer.MIN_VALUE);
+ 			return;
+@@ -36,7 +36,7 @@ public class StringSerializer {
+ 		out.put(bytes, 0, len);
+ 	}
+ 
+-	public static final String fromBufferToString(final ByteBuffer in) {
++	public static final String fromBufferToString(final ByteBuffer in) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(24);
+ 		final int len = in.getInt();
+ 		if (len == Integer.MIN_VALUE) {
+ 			return null;
+diff --git a/org/javastack/kvstore/jmhbench/MutationSwitch.java b/org/javastack/kvstore/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..84b8f7f
+--- /dev/null
++++ b/org/javastack/kvstore/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.javastack.kvstore.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/javastack/kvstore/pool/BufferStacker.java b/org/javastack/kvstore/pool/BufferStacker.java
+index 2b024d0..e0c7b4a 100644
+--- a/org/javastack/kvstore/pool/BufferStacker.java
++++ b/org/javastack/kvstore/pool/BufferStacker.java
+@@ -44,7 +44,7 @@ public class BufferStacker {
+ 	}
+ 
+ 	//
+-	public static BufferStacker getInstance(final int bufferLen, final boolean isDirect) {
++	public static BufferStacker getInstance(final int bufferLen, final boolean isDirect) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(4);
+ 		final int key = composeKey(bufferLen, isDirect);
+ 		synchronized (INSTANCES) {
+ 			BufferStacker bs = INSTANCES.get(key);
+@@ -62,7 +62,7 @@ public class BufferStacker {
+ 	}
+ 
+ 	//
+-	public synchronized void push(final ByteBuffer buf) {
++	public synchronized void push(final ByteBuffer buf) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(11);
+ 		stack.addFirst(buf);
+ 	}
+ 
+diff --git a/org/javastack/kvstore/pool/StringPool.java b/org/javastack/kvstore/pool/StringPool.java
+index c9eeb97..c32d3a4 100644
+--- a/org/javastack/kvstore/pool/StringPool.java
++++ b/org/javastack/kvstore/pool/StringPool.java
+@@ -26,7 +26,7 @@ import org.javastack.kvstore.structures.hash.WeakSet;
+ public class StringPool {
+ 	private static final WeakSet<String> ws = new WeakSet<String>();
+ 
+-	public static final synchronized String getCanonicalVersion(final String str) {
++	public static final synchronized String getCanonicalVersion(final String str) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(18);
+ 		final String ref = ws.get(str);
+ 		if (ref != null) {
+ 			return ref;
+@@ -35,7 +35,7 @@ public class StringPool {
+ 		return str;
+ 	}
+ 
+-	public static final synchronized int size() {
++	public static final synchronized int size() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(25);
+ 		return ws.size();
+ 	}
+ 
+diff --git a/org/javastack/kvstore/structures/bitset/SimpleBitSet.java b/org/javastack/kvstore/structures/bitset/SimpleBitSet.java
+index 1928df8..9dbb0fe 100644
+--- a/org/javastack/kvstore/structures/bitset/SimpleBitSet.java
++++ b/org/javastack/kvstore/structures/bitset/SimpleBitSet.java
+@@ -259,7 +259,7 @@ public class SimpleBitSet implements Cloneable {
+ 	 * @exception IndexOutOfBoundsException if the specified index is negative.
+ 	 * @since     JDK1.0
+ 	 */
+-	public void clear(int bitIndex) {
++	public void clear(int bitIndex) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(5);
+ 		if (bitIndex < 0)
+ 			throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
+ 
+@@ -284,7 +284,7 @@ public class SimpleBitSet implements Cloneable {
+ 	 *            larger than <tt>toIndex</tt>.
+ 	 * @since     1.4
+ 	 */
+-	public void clear(int fromIndex, int toIndex) {
++	public void clear(int fromIndex, int toIndex) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(12);
+ 		checkRange(fromIndex, toIndex);
+ 
+ 		if (fromIndex == toIndex)
+diff --git a/org/javastack/kvstore/structures/hash/FixedIntHashMap.java b/org/javastack/kvstore/structures/hash/FixedIntHashMap.java
+index 9e9fdc1..13620d0 100644
+--- a/org/javastack/kvstore/structures/hash/FixedIntHashMap.java
++++ b/org/javastack/kvstore/structures/hash/FixedIntHashMap.java
+@@ -94,7 +94,7 @@ public class FixedIntHashMap<T> {
+ 	 * @see #isEmpty
+ 	 * @see #size
+ 	 */
+-	public void clear(boolean shrink) {
++	public void clear(boolean shrink) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(19);
+ 		if (elementCount > 0) {
+ 			elementCount = 0;
+ 		}
+@@ -108,7 +108,7 @@ public class FixedIntHashMap<T> {
+ 		computeMaxSize();
+ 	}
+ 
+-	public int[] getKeys() {
++	public int[] getKeys() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(26);
+ 		return elementKeys;
+ 	}
+ 
+diff --git a/org/javastack/kvstore/structures/hash/IntHashMap.java b/org/javastack/kvstore/structures/hash/IntHashMap.java
+index 712e3c0..eac278b 100644
+--- a/org/javastack/kvstore/structures/hash/IntHashMap.java
++++ b/org/javastack/kvstore/structures/hash/IntHashMap.java
+@@ -84,7 +84,7 @@ public class IntHashMap<V> implements Iterable<V> {
+ 	 * @see #isEmpty
+ 	 * @see #size
+ 	 */
+-	public void clear() {
++	public void clear() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(32);
+ 		clear(true);
+ 	}
+ 
+@@ -94,7 +94,7 @@ public class IntHashMap<V> implements Iterable<V> {
+ 	 * @param shrink if true shrink the map to initial size
+ 	 */
+ 	@SuppressWarnings("unchecked")
+-	public void clear(final boolean shrink) {
++	public void clear(final boolean shrink) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(36);
+ 		clearCache();
+ 		if (elementCount > 0) {
+ 			elementCount = 0;
+diff --git a/org/javastack/kvstore/structures/hash/IntLinkedHashMap.java b/org/javastack/kvstore/structures/hash/IntLinkedHashMap.java
+index ebd525e..4631fe6 100644
+--- a/org/javastack/kvstore/structures/hash/IntLinkedHashMap.java
++++ b/org/javastack/kvstore/structures/hash/IntLinkedHashMap.java
+@@ -99,11 +99,11 @@ public class IntLinkedHashMap<V> implements Iterable<V> {
+ 	 * @see #isEmpty
+ 	 * @see #size
+ 	 */
+-	public void clear() {
++	public void clear() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(40);
+ 		clear(true);
+ 	}
+ 
+-	public void clear(final boolean shrink) {
++	public void clear(final boolean shrink) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(44);
+ 		clearCache();
+ 		if (elementCount > 0) {
+ 			elementCount = 0;
+diff --git a/org/javastack/kvstore/structures/hash/WeakSet.java b/org/javastack/kvstore/structures/hash/WeakSet.java
+index 6fcc078..c59fd98 100644
+--- a/org/javastack/kvstore/structures/hash/WeakSet.java
++++ b/org/javastack/kvstore/structures/hash/WeakSet.java
+@@ -91,7 +91,7 @@ public class WeakSet<T> {
+ 	 * @see #isEmpty
+ 	 * @see #size
+ 	 */
+-	public final void clear() {
++	public final void clear() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(47);
+ 		clear(true);
+ 	}
+ 
+@@ -100,7 +100,7 @@ public class WeakSet<T> {
+ 	 * 
+ 	 * @param shrink if true, shrink the set to initial size
+ 	 */
+-	public void clear(final boolean shrink) {
++	public void clear(final boolean shrink) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(50);
+ 		while (queue.poll() != null) {
+ 			;
+ 		}
+diff --git a/org/javastack/kvstore/test/BenchMarkDiskStore.java b/org/javastack/kvstore/test/BenchMarkDiskStore.java
+index b19b409..8177828 100644
+--- a/org/javastack/kvstore/test/BenchMarkDiskStore.java
++++ b/org/javastack/kvstore/test/BenchMarkDiskStore.java
+@@ -58,7 +58,7 @@ public class BenchMarkDiskStore {
+ 	}
+ 
+ 	// ByteBuffer
+-	public void serialize(final ByteBuffer out) {
++	public void serialize(final ByteBuffer out) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(6);
+ 		out.clear();
+ 		out.putLong(long1);
+ 		out.putLong(long2);
+@@ -71,7 +71,7 @@ public class BenchMarkDiskStore {
+ 		StringSerializer.fromStringToBuffer(out, str4);
+ 	}
+ 
+-	public void deserialize(final ByteBuffer in) {
++	public void deserialize(final ByteBuffer in) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(13);
+ 		long1 = in.getLong();
+ 		long2 = in.getLong();
+ 		long3 = in.getLong();
+diff --git a/org/javastack/kvstore/test/BenchMarkMemoryStructures.java b/org/javastack/kvstore/test/BenchMarkMemoryStructures.java
+index d245d4f..3509638 100644
+--- a/org/javastack/kvstore/test/BenchMarkMemoryStructures.java
++++ b/org/javastack/kvstore/test/BenchMarkMemoryStructures.java
+@@ -58,7 +58,7 @@ public class BenchMarkMemoryStructures extends DataHolder<BenchMarkMemoryStructu
+ 	}
+ 
+ 	// ByteBuffer
+-	public void serialize(final ByteBuffer out) {
++	public void serialize(final ByteBuffer out) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(20);
+ 		out.clear();
+ 		out.putLong(long1);
+ 		out.putLong(long2);
+@@ -71,7 +71,7 @@ public class BenchMarkMemoryStructures extends DataHolder<BenchMarkMemoryStructu
+ 		StringSerializer.fromStringToBuffer(out, str4);
+ 	}
+ 
+-	public BenchMarkMemoryStructures deserialize(final ByteBuffer in) {
++	public BenchMarkMemoryStructures deserialize(final ByteBuffer in) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(27);
+ 		long1 = in.getLong();
+ 		long2 = in.getLong();
+ 		long3 = in.getLong();
+diff --git a/org/javastack/kvstore/utils/CRC32.java b/org/javastack/kvstore/utils/CRC32.java
+index 82bbb2b..97a9daf 100644
+--- a/org/javastack/kvstore/utils/CRC32.java
++++ b/org/javastack/kvstore/utils/CRC32.java
+@@ -121,11 +121,11 @@ public final class CRC32 implements Checksum {
+ 			update(buffer[i]);
+ 	}
+ 
+-	public final long getValue() {
++	public final long getValue() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(21);
+ 		return ((long) (crc ^ 0xFFFFFFFF) & 0xFFFFFFFFL);
+ 	}
+ 
+-	public final void reset() {
++	public final void reset() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(28);
+ 		crc = ~0;
+ 	}
+ }
+diff --git a/org/javastack/kvstore/utils/CRC32C.java b/org/javastack/kvstore/utils/CRC32C.java
+index 21af45b..65fd038 100644
+--- a/org/javastack/kvstore/utils/CRC32C.java
++++ b/org/javastack/kvstore/utils/CRC32C.java
+@@ -124,11 +124,11 @@ public final class CRC32C implements Checksum {
+ 			update(buffer[i]);
+ 	}
+ 
+-	public final long getValue() {
++	public final long getValue() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(33);
+ 		return ((long) (crc ^ 0xFFFFFFFF) & 0xFFFFFFFFL);
+ 	}
+ 
+-	public final void reset() {
++	public final void reset() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(37);
+ 		crc = ~0;
+ 	}
+ }
+diff --git a/org/javastack/kvstore/utils/Check64bitsJVM.java b/org/javastack/kvstore/utils/Check64bitsJVM.java
+index 65905eb..9b3ac82 100644
+--- a/org/javastack/kvstore/utils/Check64bitsJVM.java
++++ b/org/javastack/kvstore/utils/Check64bitsJVM.java
+@@ -15,7 +15,7 @@
+ package org.javastack.kvstore.utils;
+ 
+ public class Check64bitsJVM {
+-	public static boolean JVMis64bits() {
++	public static boolean JVMis64bits() { org.javastack.kvstore.jmhbench.MutationSwitch.tick(41);
+ 		final String propOsArch = System.getProperty("os.arch");
+ 		final String propSunDataModel = System.getProperty("sun.arch.data.model");
+ 		// http://stackoverflow.com/questions/807263/how-do-i-detect-which-kind-of-jre-is-installed-32bit-vs-64bit
+@@ -28,7 +28,7 @@ public class Check64bitsJVM {
+ 		return false;
+ 	}
+ 
+-	public static void main(final String[] args) throws Throwable {
++	public static void main(final String[] args) throws Throwable { org.javastack.kvstore.jmhbench.MutationSwitch.tick(45);
+ 		System.out.println("JVM is 64bits?: " + JVMis64bits());
+ 	}
+ }
+\ No newline at end of file
+diff --git a/org/javastack/kvstore/utils/GenericFactory.java b/org/javastack/kvstore/utils/GenericFactory.java
+index 87dd834..0f7b28d 100644
+--- a/org/javastack/kvstore/utils/GenericFactory.java
++++ b/org/javastack/kvstore/utils/GenericFactory.java
+@@ -39,7 +39,7 @@ public class GenericFactory<T> {
+ 	@SuppressWarnings({
+ 		"unchecked"
+ 	})
+-	public T[] newArray(final int size) {
++	public T[] newArray(final int size) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(48);
+ 		return (T[]) Array.newInstance(type, size);
+ 	}
+ 
+diff --git a/org/javastack/kvstore/utils/HexStrings.java b/org/javastack/kvstore/utils/HexStrings.java
+index 27a11ce..8048501 100644
+--- a/org/javastack/kvstore/utils/HexStrings.java
++++ b/org/javastack/kvstore/utils/HexStrings.java
+@@ -32,7 +32,7 @@ public final class HexStrings {
+ 	 * @param input the number
+ 	 * @return string
+ 	 */
+-	public static final String nativeAsHex(final byte input) {
++	public static final String nativeAsHex(final byte input) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(7);
+ 		return nativeAsHex(input, 8);
+ 	}
+ 
+@@ -42,7 +42,7 @@ public final class HexStrings {
+ 	 * @param input the number
+ 	 * @return string
+ 	 */
+-	public static final String nativeAsHex(final short input) {
++	public static final String nativeAsHex(final short input) { org.javastack.kvstore.jmhbench.MutationSwitch.tick(14);
+ 		return nativeAsHex(input, 16);
+ 	}
+ 

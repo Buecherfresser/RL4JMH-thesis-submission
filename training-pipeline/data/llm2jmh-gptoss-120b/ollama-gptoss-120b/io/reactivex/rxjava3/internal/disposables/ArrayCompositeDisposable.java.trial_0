@@ -1,0 +1,108 @@
+```
+package io.reactivex.rxjava3.internal.disposables.benchmark;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.disposables.ArrayCompositeDisposable;
+
+/**
+ * JMH micro‑benchmarks for {@link ArrayCompositeDisposable}.
+ *
+ * <p>All benchmarks are executed in {@link Mode#Throughput} mode, which measures
+ * the number of operations per time unit. The benchmarks focus on the most
+ * frequently used public methods: {@code setResource}, {@code replaceResource},
+ * {@code dispose} and {@code isDisposed}.</p>
+ *
+ * <p>Best‑practice notes:</p>
+ * <ul>
+ *   <li>State objects are scoped to a single thread to avoid unwanted contention.</li>
+ *   <li>{@link Blackhole} is used to consume return values and prevent dead‑code elimination.</li>
+ *   <li>Separate {@code @Setup(Level.Invocation)} for {@code dispose} ensures a fresh instance per measurement.</li>
+ *   <li>All allocations are performed in the setup phase to keep the measured code focused on the target operation.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ArrayCompositeDisposableBenchmark {
+
+    /** Simple no‑op {@link Disposable} implementation used as a placeholder resource. */
+    static final class NoOpDisposable implements Disposable {
+        @Override public void dispose() { /* no‑op */ }
+        @Override public boolean isDisposed() { return false; }
+    }
+
+    /** State shared by the {@code setResource}, {@code replaceResource} and {@code isDisposed} benchmarks. */
+    @State(Scope.Thread)
+    public static class SharedState {
+        /** Capacity chosen to be representative of typical usage (e.g., 16). */
+        static final int CAPACITY = 16;
+
+        ArrayCompositeDisposable composite;
+        Disposable dummy;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            composite = new ArrayCompositeDisposable(CAPACITY);
+            dummy = new NoOpDisposable();
+        }
+
+        /** Reset the slot at index 0 before each invocation to keep the benchmark deterministic. */
+        @Setup(Level.Invocation)
+        public void resetSlot() {
+            // Ensure the slot is cleared (null) before each operation.
+            // Directly use the internal API via reflection is avoided; we simply replace it.
+            composite.replaceResource(0, null);
+        }
+    }
+
+    /** State used exclusively for the {@code dispose} benchmark to provide a fresh instance per invocation. */
+    @State(Scope.Thread)
+    public static class DisposeState {
+        static final int CAPACITY = 16;
+        ArrayCompositeDisposable composite;
+        Disposable dummy;
+
+        @Setup(Level.Invocation)
+        public void setUp() {
+            composite = new ArrayCompositeDisposable(CAPACITY);
+            dummy = new NoOpDisposable();
+            // Pre‑populate the array to simulate realistic work during dispose.
+            for (int i = 0; i < CAPACITY; i++) {
+                composite.setResource(i, dummy);
+            }
+        }
+    }
+
+    @Benchmark
+    public void benchSetResource(SharedState state, Blackhole bh) {
+        boolean result = state.composite.setResource(0, state.dummy);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void benchReplaceResource(SharedState state, Blackhole bh) {
+        Disposable previous = state.composite.replaceResource(0, state.dummy);
+        bh.consume(previous);
+    }
+
+    @Benchmark
+    public void benchIsDisposed(SharedState state, Blackhole bh) {
+        boolean disposed = state.composite.isDisposed();
+        bh.consume(disposed);
+    }
+
+    @Benchmark
+    public void benchDispose(DisposeState state, Blackhole bh) {
+        state.composite.dispose();
+        // No return value, but we can verify the state to avoid dead‑code elimination.
+        bh.consume(state.composite.isDisposed());
+    }
+}
+```

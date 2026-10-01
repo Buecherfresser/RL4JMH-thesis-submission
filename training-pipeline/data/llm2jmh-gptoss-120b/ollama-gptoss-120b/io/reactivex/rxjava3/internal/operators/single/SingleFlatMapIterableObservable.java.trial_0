@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.single.SingleFlatMapIterableObservable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link SingleFlatMapIterableObservable}.
+ *
+ * Measures the throughput of the operator when a {@link Single} emits a value that is
+ * mapped to an {@link Iterable} of varying size.
+ *
+ * The benchmark runs in a single thread to avoid contention and uses a {@link Blackhole}
+ * to consume the emitted items, preventing dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class SingleFlatMapIterableBenchmark {
+
+    /**
+     * Size of the iterable produced by the mapper.
+     */
+    @Param({"10", "100", "1000", "10000"})
+    public int iterableSize;
+
+    private Single<Integer> source;
+    private Function<Integer, Iterable<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A trivial Single that always emits the integer 1.
+        source = Single.just(1);
+
+        // Mapper creates a List of the configured size.
+        mapper = value -> {
+            List<Integer> list = new ArrayList<>(iterableSize);
+            for (int i = 0; i < iterableSize; i++) {
+                list.add(i);
+            }
+            return list;
+        };
+    }
+
+    /**
+     * Executes the {@code SingleFlatMapIterableObservable} pipeline and consumes all
+     * emitted items with a {@link Blackhole}.
+     *
+     * @param bh Blackhole used to consume the items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void flatMapIterable(Blackhole bh) {
+        Observable<Integer> observable = new SingleFlatMapIterableObservable<>(source, mapper);
+        observable.subscribe(bh::consume);
+    }
+}
+```

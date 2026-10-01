@@ -1,0 +1,79 @@
+```
+package io.reactivex.rxjava3.benchmark;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.jdk8.SingleMapOptional;
+import io.reactivex.rxjava3.core.Maybe;
+
+/**
+ * JMH benchmark for {@link SingleMapOptional}.
+ *
+ * Measures the throughput of the operator when the mapper returns a present Optional
+ * and when it returns an empty Optional.
+ *
+ * The benchmark uses {@link Blackhole} to consume the result and avoid dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class SingleMapOptionalBenchmark {
+
+    /** Source Single emitting a constant integer. */
+    private Single<Integer> source;
+
+    /** Mapper that always returns a present Optional. */
+    private Function<Integer, Optional<String>> mapperPresent;
+
+    /** Mapper that always returns an empty Optional. */
+    private Function<Integer, Optional<String>> mapperEmpty;
+
+    /** Cached operator instance for the present‑Optional case. */
+    private Maybe<String> maybePresent;
+
+    /** Cached operator instance for the empty‑Optional case. */
+    private Maybe<String> maybeEmpty;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Single.just(42);
+
+        mapperPresent = v -> Optional.of("value:" + v);
+        mapperEmpty   = v -> Optional.empty();
+
+        maybePresent = new SingleMapOptional<>(source, mapperPresent);
+        maybeEmpty   = new SingleMapOptional<>(source, mapperEmpty);
+    }
+
+    /**
+     * Benchmark the throughput when the mapper returns a present Optional.
+     *
+     * @param bh Blackhole to consume the result.
+     */
+    @Benchmark
+    public void mapPresent(Blackhole bh) {
+        // blockingGet() returns the mapped value; null is never returned in this case.
+        bh.consume(maybePresent.blockingGet());
+    }
+
+    /**
+     * Benchmark the throughput when the mapper returns an empty Optional.
+     *
+     * @param bh Blackhole to consume the result.
+     */
+    @Benchmark
+    public void mapEmpty(Blackhole bh) {
+        // blockingGet() returns null when the Maybe completes without a value.
+        bh.consume(maybeEmpty.blockingGet());
+    }
+}
+```

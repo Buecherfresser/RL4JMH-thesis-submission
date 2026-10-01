@@ -1,0 +1,23 @@
+--- a/bench/RestoreCounter.java
++++ b/bench/RestoreCounter.java
+@@ -2,12 +2,16 @@
+ 
+ public final class RestoreCounter {
+ 
++    private final Object lock = new Object();
+     private long value;
+ 
++    // Regressed: synchronize on a private monitor for every increment.
+     public long incrementBy(int n) {
+-        long v = value;
+-        for (int i = 0; i < n; i++) v++;
+-        value = v;
+-        return v;
++        for (int i = 0; i < n; i++) {
++            synchronized (lock) {
++                value++;
++            }
++        }
++        return value;
+     }
+ }

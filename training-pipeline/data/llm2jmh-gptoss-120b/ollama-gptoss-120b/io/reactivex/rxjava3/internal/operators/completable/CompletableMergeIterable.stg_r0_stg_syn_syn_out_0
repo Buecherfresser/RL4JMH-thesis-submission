@@ -1,0 +1,117 @@
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link CompletableMergeIterable}.
+ *
+ * Measures the throughput of merging a configurable number of {@link CompletableSource}
+ * instances that complete immediately.
+ *
+ * The benchmark follows JMH best practices:
+ * - State is scoped per thread to avoid contention.
+ * - Parameters are used to explore different source counts.
+ * - Setup creates immutable data structures.
+ * - The benchmark method blocks until the merged Completable terminates,
+ *   ensuring that the measured work includes the full lifecycle.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class CompletableMergeIterableBenchmark {
+
+    /**
+     * Number of Completable sources to merge.
+     * Typical values: 1, 10, 100, 1000.
+     */
+    @Param({ "1", "10", "100", "1000" })
+    public int sourceCount;
+
+    /**
+     * Immutable list of CompletableSources used in each benchmark iteration.
+     */
+    private List<CompletableSource> sources;
+
+    /**
+     * The iterable wrapper required by {@link CompletableMergeIterable}.
+     */
+    private Iterable<? extends CompletableSource> iterableSources;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        List<CompletableSource> list = new ArrayList<>(sourceCount);
+        for (int i = 0; i < sourceCount; i++) {
+            // Each source completes immediately; using Completable.complete()
+            list.add(Completable.complete());
+        }
+        this.sources = List.copyOf(list);
+        this.iterableSources = sources;
+    }
+
+    @Benchmark
+    public void mergeCompletableIterables(Blackhole bh) throws InterruptedException {
+        CompletableMergeIterable merge = new CompletableMergeIterable(iterableSources);
+        CountDownLatch latch = new CountDownLatch(1);
+        merge.subscribe(new CompletableObserver() {
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                // No need to keep the disposable; the benchmark will wait for completion.
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // Propagate error to Blackhole to avoid dead code elimination.
+                bh.consume(e);
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        // Wait for the merged Completable to finish.
+        latch.await();
+    }
+}

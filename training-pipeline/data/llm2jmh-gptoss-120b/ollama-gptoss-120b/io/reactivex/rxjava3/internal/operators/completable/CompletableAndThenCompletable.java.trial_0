@@ -1,0 +1,54 @@
+```
+package io.reactivex.rxjava3.internal.operators.completable.benchmark;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.internal.operators.completable.CompletableAndThenCompletable;
+
+/**
+ * JMH benchmark for {@link CompletableAndThenCompletable}.
+ *
+ * The benchmark measures the throughput of subscribing to a Completable that
+ * sequentially runs two already completed Completable sources. This isolates the
+ * overhead of the operator itself.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 1, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class CompletableAndThenBenchmark {
+
+    /** The Completable under test: source -> next */
+    private Completable andThenCompletable;
+
+    /**
+     * Set up the benchmark state. Both source and next are already completed
+     * Completable instances, so the measured time reflects only the operator
+     * overhead (subscription handling, atomic state management, etc.).
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        Completable source = Completable.complete();
+        Completable next = Completable.complete();
+        andThenCompletable = new CompletableAndThenCompletable(source, next);
+    }
+
+    /**
+     * Benchmark method that subscribes to the {@code andThenCompletable}
+     * and blocks until completion. Using {@code blockingAwait()} ensures the
+     * subscription chain is fully executed and prevents dead‑code elimination.
+     *
+     * @throws Exception if the Completable signals an error
+     */
+    @Benchmark
+    public void subscribeAndAwait() throws Exception {
+        // The call is side‑effectful; JMH will not eliminate it.
+        andThenCompletable.blockingAwait();
+    }
+}
+```

@@ -1,0 +1,26 @@
+instance_id: kafka_record_batch_iterate_001
+target_class: bench.BatchIterator
+expected_input_shapes: []
+tags:
+- collections
+- kafka
+- real-world
+provenance:
+  project: apache/kafka
+  url: https://github.com/apache/kafka
+  description: 'Inspired by the general Kafka record-batch iteration pattern
+
+    (no single PR cited): hot paths iterate batch records via
+
+    indexed access to avoid iterator allocations. The simplified
+
+    SUT here sums nested Integer lists; the full real class is
+
+    not extracted.
+
+    '
+junit_test_path: tests/BatchIteratorTest.java
+regressions:
+- id: iterator_alloc_per_batch
+  patch: regressions/iterator_alloc_per_batch.patch
+  description: Copy each batch into an ArrayList and walk its Iterator.

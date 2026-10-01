@@ -1,0 +1,630 @@
+diff --git a/net/finmath/montecarlo/BrownianMotionFromMersenneRandomNumbers.java b/net/finmath/montecarlo/BrownianMotionFromMersenneRandomNumbers.java
+index 05d3f3b..7995264 100644
+--- a/net/finmath/montecarlo/BrownianMotionFromMersenneRandomNumbers.java
++++ b/net/finmath/montecarlo/BrownianMotionFromMersenneRandomNumbers.java
+@@ -104,12 +104,12 @@ public class BrownianMotionFromMersenneRandomNumbers implements BrownianMotion,
+ 	}
+ 
+ 	@Override
+-	public BrownianMotion getCloneWithModifiedSeed(final int seed) {
++	public BrownianMotion getCloneWithModifiedSeed(final int seed) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(1);
+ 		return new BrownianMotionFromMersenneRandomNumbers(getTimeDiscretization(), getNumberOfFactors(), getNumberOfPaths(), seed);
+ 	}
+ 
+ 	@Override
+-	public BrownianMotion getCloneWithModifiedTimeDiscretization(final TimeDiscretization newTimeDiscretization) {
++	public BrownianMotion getCloneWithModifiedTimeDiscretization(final TimeDiscretization newTimeDiscretization) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(10);
+ 		/// @TODO This can be improved: a complete recreation of the Brownian motion wouldn't be necessary!
+ 		return new BrownianMotionFromMersenneRandomNumbers(newTimeDiscretization, getNumberOfFactors(), getNumberOfPaths(), getSeed());
+ 	}
+diff --git a/net/finmath/montecarlo/BrownianMotionFromRandomNumberGenerator.java b/net/finmath/montecarlo/BrownianMotionFromRandomNumberGenerator.java
+index b5fcbad..eb6f512 100644
+--- a/net/finmath/montecarlo/BrownianMotionFromRandomNumberGenerator.java
++++ b/net/finmath/montecarlo/BrownianMotionFromRandomNumberGenerator.java
+@@ -105,12 +105,12 @@ public class BrownianMotionFromRandomNumberGenerator implements BrownianMotion,
+ 	}
+ 
+ 	@Override
+-	public BrownianMotion getCloneWithModifiedSeed(final int seed) {
++	public BrownianMotion getCloneWithModifiedSeed(final int seed) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(19);
+ 		return new BrownianMotionFromRandomNumberGenerator(getTimeDiscretization(), getNumberOfFactors(), getNumberOfPaths(), randomNumberGenerator);
+ 	}
+ 
+ 	@Override
+-	public BrownianMotion getCloneWithModifiedTimeDiscretization(final TimeDiscretization newTimeDiscretization) {
++	public BrownianMotion getCloneWithModifiedTimeDiscretization(final TimeDiscretization newTimeDiscretization) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(26);
+ 		/// @TODO This can be improved: a complete recreation of the Brownian motion wouldn't be necessary!
+ 		return new BrownianMotionFromRandomNumberGenerator(newTimeDiscretization, getNumberOfFactors(), getNumberOfPaths(), randomNumberGenerator);
+ 	}
+diff --git a/net/finmath/montecarlo/RandomVariableFromArrayFactory.java b/net/finmath/montecarlo/RandomVariableFromArrayFactory.java
+index 8a58d87..055e8dc 100644
+--- a/net/finmath/montecarlo/RandomVariableFromArrayFactory.java
++++ b/net/finmath/montecarlo/RandomVariableFromArrayFactory.java
+@@ -34,12 +34,12 @@ public class RandomVariableFromArrayFactory extends AbstractRandomVariableFactor
+ 	}
+ 
+ 	@Override
+-	public RandomVariable createRandomVariable(final double value) {
++	public RandomVariable createRandomVariable(final double value) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(33);
+ 		return new Scalar(value);
+ 	}
+ 
+ 	@Override
+-	public RandomVariable createRandomVariable(final double time, final double value) {
++	public RandomVariable createRandomVariable(final double time, final double value) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(39);
+ 		return new Scalar(value);
+ 		/*
+ 		if(isUseDoublePrecisionFloatingPointImplementation) {
+diff --git a/net/finmath/montecarlo/RandomVariableFromDoubleArray.java b/net/finmath/montecarlo/RandomVariableFromDoubleArray.java
+index 708177b..777206e 100644
+--- a/net/finmath/montecarlo/RandomVariableFromDoubleArray.java
++++ b/net/finmath/montecarlo/RandomVariableFromDoubleArray.java
+@@ -183,7 +183,7 @@ public class RandomVariableFromDoubleArray implements RandomVariable {
+ 		if(size > 1) {
+ 			IntStream.range(0,size).parallel().forEach(new IntConsumer() {
+ 				@Override
+-				public void accept(final int i) {
++				public void accept(final int i) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(45);
+ 					RandomVariableFromDoubleArray.this.realizations[i] = realizations.applyAsDouble(i);
+ 				}
+ 			}
+diff --git a/net/finmath/montecarlo/assetderivativevaluation/MonteCarloAssetModel.java b/net/finmath/montecarlo/assetderivativevaluation/MonteCarloAssetModel.java
+index bfd544e..3fcafed 100644
+--- a/net/finmath/montecarlo/assetderivativevaluation/MonteCarloAssetModel.java
++++ b/net/finmath/montecarlo/assetderivativevaluation/MonteCarloAssetModel.java
+@@ -73,7 +73,7 @@ public class MonteCarloAssetModel implements AssetModelMonteCarloSimulationModel
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getAssetValue(final double time, final int assetIndex) throws CalculationException {
++	public RandomVariable getAssetValue(final double time, final int assetIndex) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(2);
+ 		final int timeIndex = getTimeIndex(time);
+ 		if(timeIndex < 0) {
+ 			throw new IllegalArgumentException("The model does not provide an interpolation of simulation time (time given was " + time + ").");
+@@ -83,7 +83,7 @@ public class MonteCarloAssetModel implements AssetModelMonteCarloSimulationModel
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getAssetValue(final int timeIndex, final int assetIndex) throws CalculationException {
++	public RandomVariable getAssetValue(final int timeIndex, final int assetIndex) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(11);
+ 		return process.getProcessValue(timeIndex, assetIndex);
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/assetderivativevaluation/MonteCarloBlackScholesModel.java b/net/finmath/montecarlo/assetderivativevaluation/MonteCarloBlackScholesModel.java
+index 8bd1ec1..6e23e06 100644
+--- a/net/finmath/montecarlo/assetderivativevaluation/MonteCarloBlackScholesModel.java
++++ b/net/finmath/montecarlo/assetderivativevaluation/MonteCarloBlackScholesModel.java
+@@ -99,7 +99,7 @@ public class MonteCarloBlackScholesModel extends MonteCarloAssetModel {
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getAssetValue(final double time, final int assetIndex) throws CalculationException {
++	public RandomVariable getAssetValue(final double time, final int assetIndex) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(20);
+ 		final int timeIndex = getTimeIndex(time);
+ 		if(timeIndex < 0) {
+ 			throw new IllegalArgumentException("The model does not provide an interpolation of simulation time (time given was " + time + ").");
+@@ -109,7 +109,7 @@ public class MonteCarloBlackScholesModel extends MonteCarloAssetModel {
+ 	}
+ 
+ 	@Override
+-	public MonteCarloBlackScholesModel getCloneWithModifiedData(final Map<String, Object> dataModified) {
++	public MonteCarloBlackScholesModel getCloneWithModifiedData(final Map<String, Object> dataModified) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(27);
+ 
+ 		final MonteCarloProcess process = getProcess();
+ 
+diff --git a/net/finmath/montecarlo/assetderivativevaluation/MonteCarloMertonModel.java b/net/finmath/montecarlo/assetderivativevaluation/MonteCarloMertonModel.java
+index 5b4c9ec..1e4ceb5 100644
+--- a/net/finmath/montecarlo/assetderivativevaluation/MonteCarloMertonModel.java
++++ b/net/finmath/montecarlo/assetderivativevaluation/MonteCarloMertonModel.java
+@@ -136,12 +136,12 @@ public class MonteCarloMertonModel implements AssetModelMonteCarloSimulationMode
+ 	}
+ 
+ 	@Override
+-	public LocalDateTime getReferenceDate() {
++	public LocalDateTime getReferenceDate() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(34);
+ 		throw new UnsupportedOperationException("This model does not provide a reference date. Reference dates will be mandatory in a future version.");
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getAssetValue(final double time, final int assetIndex) throws CalculationException {
++	public RandomVariable getAssetValue(final double time, final int assetIndex) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(40);
+ 		final int timeIndex = getTimeIndex(time);
+ 		if(timeIndex < 0) {
+ 			throw new IllegalArgumentException("The model does not provide an interpolation of simulation time (time given was " + time + ").");
+diff --git a/net/finmath/montecarlo/assetderivativevaluation/MonteCarloMultiAssetBlackScholesModel.java b/net/finmath/montecarlo/assetderivativevaluation/MonteCarloMultiAssetBlackScholesModel.java
+index fb04336..3f02f03 100644
+--- a/net/finmath/montecarlo/assetderivativevaluation/MonteCarloMultiAssetBlackScholesModel.java
++++ b/net/finmath/montecarlo/assetderivativevaluation/MonteCarloMultiAssetBlackScholesModel.java
+@@ -198,7 +198,7 @@ public class MonteCarloMultiAssetBlackScholesModel extends AbstractProcessModel
+ 	}
+ 
+ 	@Override
+-	public RandomVariable[] getInitialState(MonteCarloProcess process) {
++	public RandomVariable[] getInitialState(MonteCarloProcess process) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(46);
+ 		return initialStates;
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/automaticdifferentiation/backward/RandomVariableDifferentiableAAD.java b/net/finmath/montecarlo/automaticdifferentiation/backward/RandomVariableDifferentiableAAD.java
+index 867e3c7..6665808 100644
+--- a/net/finmath/montecarlo/automaticdifferentiation/backward/RandomVariableDifferentiableAAD.java
++++ b/net/finmath/montecarlo/automaticdifferentiation/backward/RandomVariableDifferentiableAAD.java
+@@ -278,7 +278,7 @@ public class RandomVariableDifferentiableAAD implements RandomVariableDifferenti
+ 				final double min = X.getMin();
+ 				derivative = X.apply(new DoubleUnaryOperator() {
+ 					@Override
+-					public double applyAsDouble(final double x) {
++					public double applyAsDouble(final double x) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(3);
+ 						return (x == min) ? 1.0 : 0.0;
+ 					}
+ 				});
+@@ -287,7 +287,7 @@ public class RandomVariableDifferentiableAAD implements RandomVariableDifferenti
+ 				final double max = X.getMax();
+ 				derivative = X.apply(new DoubleUnaryOperator() {
+ 					@Override
+-					public double applyAsDouble(final double x) {
++					public double applyAsDouble(final double x) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(12);
+ 						return (x == max) ? 1.0 : 0.0;
+ 					}
+ 				});
+diff --git a/net/finmath/montecarlo/automaticdifferentiation/backward/RandomVariableDifferentiableAADFactory.java b/net/finmath/montecarlo/automaticdifferentiation/backward/RandomVariableDifferentiableAADFactory.java
+index d549317..c3d8a85 100644
+--- a/net/finmath/montecarlo/automaticdifferentiation/backward/RandomVariableDifferentiableAADFactory.java
++++ b/net/finmath/montecarlo/automaticdifferentiation/backward/RandomVariableDifferentiableAADFactory.java
+@@ -90,12 +90,12 @@ public class RandomVariableDifferentiableAADFactory extends AbstractRandomVariab
+ 	}
+ 
+ 	@Override
+-	public RandomVariableDifferentiable createRandomVariable(final double time, final double value) {
++	public RandomVariableDifferentiable createRandomVariable(final double time, final double value) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(21);
+ 		return new RandomVariableDifferentiableAAD(createRandomVariableNonDifferentiable(time, value), this);
+ 	}
+ 
+ 	@Override
+-	public RandomVariableDifferentiable createRandomVariable(final double time, final double[] values) {
++	public RandomVariableDifferentiable createRandomVariable(final double time, final double[] values) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(28);
+ 		return new RandomVariableDifferentiableAAD(createRandomVariableNonDifferentiable(time, values), this);
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/automaticdifferentiation/backward/alternative/RandomVariableAAD.java b/net/finmath/montecarlo/automaticdifferentiation/backward/alternative/RandomVariableAAD.java
+index e43a3ed..881fb23 100644
+--- a/net/finmath/montecarlo/automaticdifferentiation/backward/alternative/RandomVariableAAD.java
++++ b/net/finmath/montecarlo/automaticdifferentiation/backward/alternative/RandomVariableAAD.java
+@@ -57,7 +57,7 @@ public class RandomVariableAAD implements RandomVariable {
+ 	}
+ 
+ 	public static RandomVariableAAD constructNewAADRandomVariable(final RandomVariable randomVariable, final int[] parentIndices,
+-			final OperatorType parentOperator, final ArrayList<Integer> childrenIndices, final boolean isConstant){
++			final OperatorType parentOperator, final ArrayList<Integer> childrenIndices, final boolean isConstant){ net.finmath.montecarlo.jmhbench.MutationSwitch.tick(35);
+ 
+ 		/* TODO how to handle cases with different realization lengths? */
+ 		if(!arrayListOfAllAADRandomVariables.isEmpty()){
+@@ -79,7 +79,7 @@ public class RandomVariableAAD implements RandomVariable {
+ 		return newAADRandomVariable;
+ 	}
+ 
+-	public static RandomVariableAAD constructNewAADRandomVariable(final double value){
++	public static RandomVariableAAD constructNewAADRandomVariable(final double value){ net.finmath.montecarlo.jmhbench.MutationSwitch.tick(41);
+ 		return constructNewAADRandomVariable(new RandomVariableFromDoubleArray(value), /*parentRandomVariables*/ null, /*parentOperator*/ null, /*childrenIndices*/ null ,/*isConstant*/ true);
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/automaticdifferentiation/backward/alternative/RandomVariableDifferentiableAADPathwise.java b/net/finmath/montecarlo/automaticdifferentiation/backward/alternative/RandomVariableDifferentiableAADPathwise.java
+index 10681db..6ff53ff 100644
+--- a/net/finmath/montecarlo/automaticdifferentiation/backward/alternative/RandomVariableDifferentiableAADPathwise.java
++++ b/net/finmath/montecarlo/automaticdifferentiation/backward/alternative/RandomVariableDifferentiableAADPathwise.java
+@@ -55,7 +55,7 @@ public class RandomVariableDifferentiableAADPathwise implements RandomVariableDi
+ 			this(operator,
+ 					arguments != null ? arguments.stream().map(new Function<RandomVariable, OperatorTreeNode>() {
+ 						@Override
+-						public OperatorTreeNode apply(final RandomVariable x) {
++						public OperatorTreeNode apply(final RandomVariable x) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(47);
+ 							return (x != null && x instanceof RandomVariableDifferentiableAADPathwise) ? ((RandomVariableDifferentiableAADPathwise)x).getOperatorTreeNode(): null;
+ 						}
+ 					}).collect(Collectors.toList()) : null,
+diff --git a/net/finmath/montecarlo/conditionalexpectation/LinearRegression.java b/net/finmath/montecarlo/conditionalexpectation/LinearRegression.java
+index 9cc1a85..77ea3f2 100644
+--- a/net/finmath/montecarlo/conditionalexpectation/LinearRegression.java
++++ b/net/finmath/montecarlo/conditionalexpectation/LinearRegression.java
+@@ -33,7 +33,7 @@ public class LinearRegression {
+ 	 * @param value The random variable to regress.
+ 	 * @return The vector of regression coefficients.
+ 	 */
+-	public double[] getRegressionCoefficients(final RandomVariable value) {
++	public double[] getRegressionCoefficients(final RandomVariable value) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(22);
+ 		if(basisFunctions.length == 0) {
+ 			return new double[] { };
+ 		}
+diff --git a/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationLinearRegressionFactory.java b/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationLinearRegressionFactory.java
+index 64f2e3d..3e1fe47 100644
+--- a/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationLinearRegressionFactory.java
++++ b/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationLinearRegressionFactory.java
+@@ -11,7 +11,7 @@ import net.finmath.stochastic.RandomVariable;
+ public class MonteCarloConditionalExpectationLinearRegressionFactory implements MonteCarloConditionalExpectationRegressionFactory {
+ 
+ 	@Override
+-	public ConditionalExpectationEstimator getConditionalExpectationEstimator(final RandomVariable[] basisFunctionsEstimator, final RandomVariable[] basisFunctionsPredictor) {
++	public ConditionalExpectationEstimator getConditionalExpectationEstimator(final RandomVariable[] basisFunctionsEstimator, final RandomVariable[] basisFunctionsPredictor) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(29);
+ 		return new MonteCarloConditionalExpectationRegression(basisFunctionsEstimator, basisFunctionsPredictor);
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationLocalizedOnDependentRegressionFactory.java b/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationLocalizedOnDependentRegressionFactory.java
+index ce0b12e..ca0d1be 100644
+--- a/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationLocalizedOnDependentRegressionFactory.java
++++ b/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationLocalizedOnDependentRegressionFactory.java
+@@ -20,7 +20,7 @@ public class MonteCarloConditionalExpectationLocalizedOnDependentRegressionFacto
+ 	}
+ 
+ 	@Override
+-	public ConditionalExpectationEstimator getConditionalExpectationEstimator(final RandomVariable[] basisFunctionsEstimator, final RandomVariable[] basisFunctionsPredictor) {
++	public ConditionalExpectationEstimator getConditionalExpectationEstimator(final RandomVariable[] basisFunctionsEstimator, final RandomVariable[] basisFunctionsPredictor) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(36);
+ 		return new MonteCarloConditionalExpectationRegressionLocalizedOnDependents(basisFunctionsEstimator, basisFunctionsPredictor, standardDeviations);
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationRegression.java b/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationRegression.java
+index e4ac201..ff3a19d 100644
+--- a/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationRegression.java
++++ b/net/finmath/montecarlo/conditionalexpectation/MonteCarloConditionalExpectationRegression.java
+@@ -54,7 +54,7 @@ public class MonteCarloConditionalExpectationRegression implements ConditionalEx
+ 		}
+ 
+ 		@Override
+-		public RandomVariable[] getBasisFunctions() {
++		public RandomVariable[] getBasisFunctions() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(42);
+ 			return basisFunctions;
+ 		}
+ 	}
+@@ -95,7 +95,7 @@ public class MonteCarloConditionalExpectationRegression implements ConditionalEx
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getConditionalExpectation(final RandomVariable randomVariable) {
++	public RandomVariable getConditionalExpectation(final RandomVariable randomVariable) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(48);
+ 		// Get regression parameters x as the solution of XTX x = XT y
+ 		final double[] linearRegressionParameters = getLinearRegressionParameters(randomVariable);
+ 
+diff --git a/net/finmath/montecarlo/conditionalexpectation/RegressionBasisFunctionsFromProducts.java b/net/finmath/montecarlo/conditionalexpectation/RegressionBasisFunctionsFromProducts.java
+index 851de79..456612a 100644
+--- a/net/finmath/montecarlo/conditionalexpectation/RegressionBasisFunctionsFromProducts.java
++++ b/net/finmath/montecarlo/conditionalexpectation/RegressionBasisFunctionsFromProducts.java
+@@ -33,11 +33,11 @@ public class RegressionBasisFunctionsFromProducts implements RegressionBasisFunc
+ 	}
+ 
+ 	@Override
+-	public RandomVariable[] getBasisFunctions(final double evaluationTime, final MonteCarloSimulationModel model) {
++	public RandomVariable[] getBasisFunctions(final double evaluationTime, final MonteCarloSimulationModel model) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(4);
+ 
+ 		final Function<AbstractMonteCarloProduct, RandomVariable> valuation = new Function<AbstractMonteCarloProduct, RandomVariable>() {
+ 			@Override
+-			public RandomVariable apply(final AbstractMonteCarloProduct p) {
++			public RandomVariable apply(final AbstractMonteCarloProduct p) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(13);
+ 				RandomVariable value = null;
+ 				try {
+ 					value = p.getValue(evaluationTime, model);
+diff --git a/net/finmath/montecarlo/hybridassetinterestrate/ConvexityAdjustedModel.java b/net/finmath/montecarlo/hybridassetinterestrate/ConvexityAdjustedModel.java
+index 4f4bcf2..d6a74b2 100644
+--- a/net/finmath/montecarlo/hybridassetinterestrate/ConvexityAdjustedModel.java
++++ b/net/finmath/montecarlo/hybridassetinterestrate/ConvexityAdjustedModel.java
+@@ -32,7 +32,7 @@ public class ConvexityAdjustedModel {
+ 		this.factorLoadingMap = factorLoadingMap;
+ 	}
+ 
+-	public RandomVariable[] getDrift(RandomVariable[] driftUnadjusted, MonteCarloProcess process, int timeIndex, RandomVariable[] realizationAtTimeIndex, RandomVariable[] realizationPredictor) {
++	public RandomVariable[] getDrift(RandomVariable[] driftUnadjusted, MonteCarloProcess process, int timeIndex, RandomVariable[] realizationAtTimeIndex, RandomVariable[] realizationPredictor) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(5);
+ 		/*
+ 		 * Add convexity adjustment
+ 		 */
+diff --git a/net/finmath/montecarlo/hybridassetinterestrate/CrossCurrencyLIBORMarketModelFromModels.java b/net/finmath/montecarlo/hybridassetinterestrate/CrossCurrencyLIBORMarketModelFromModels.java
+index a41511f..516e9d1 100644
+--- a/net/finmath/montecarlo/hybridassetinterestrate/CrossCurrencyLIBORMarketModelFromModels.java
++++ b/net/finmath/montecarlo/hybridassetinterestrate/CrossCurrencyLIBORMarketModelFromModels.java
+@@ -45,12 +45,12 @@ public class CrossCurrencyLIBORMarketModelFromModels implements HybridAssetMonte
+ 	}
+ 
+ 
+-	public LIBORModelMonteCarloSimulationModel getBaseModel() {
++	public LIBORModelMonteCarloSimulationModel getBaseModel() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(14);
+ 		return interestRatesModels.get(baseModel);
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getRandomVariableForConstant(double value) {
++	public RandomVariable getRandomVariableForConstant(double value) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(23);
+ 		return getBaseModel().getRandomVariableForConstant(value);
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/hybridassetinterestrate/HybridAssetLIBORModelMonteCarloSimulationFromModels.java b/net/finmath/montecarlo/hybridassetinterestrate/HybridAssetLIBORModelMonteCarloSimulationFromModels.java
+index 047ccb3..da0f7a5 100644
+--- a/net/finmath/montecarlo/hybridassetinterestrate/HybridAssetLIBORModelMonteCarloSimulationFromModels.java
++++ b/net/finmath/montecarlo/hybridassetinterestrate/HybridAssetLIBORModelMonteCarloSimulationFromModels.java
+@@ -71,12 +71,12 @@ public class HybridAssetLIBORModelMonteCarloSimulationFromModels implements Hybr
+ 	}
+ 
+ 	@Override
+-	public int getNumberOfPaths() {
++	public int getNumberOfPaths() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(30);
+ 		return liborSimulation.getNumberOfPaths();
+ 	}
+ 
+ 	@Override
+-	public LocalDateTime getReferenceDate() {
++	public LocalDateTime getReferenceDate() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(37);
+ 		return liborSimulation.getReferenceDate();
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/hybridassetinterestrate/ModelFactory.java b/net/finmath/montecarlo/hybridassetinterestrate/ModelFactory.java
+index 7bcc298..3ef19b0 100644
+--- a/net/finmath/montecarlo/hybridassetinterestrate/ModelFactory.java
++++ b/net/finmath/montecarlo/hybridassetinterestrate/ModelFactory.java
+@@ -35,7 +35,7 @@ public class ModelFactory {
+ 		// TODO Auto-generated constructor stub
+ 	}
+ 
+-	public static synchronized ModelFactory getInstance() {
++	public static synchronized ModelFactory getInstance() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(43);
+ 		if(modelFactory == null) {
+ 			modelFactory = new ModelFactory();
+ 		}
+@@ -68,7 +68,7 @@ public class ModelFactory {
+ 			final double[] maturities,
+ 			final double[] strikes,
+ 			final double[] volatilities,
+-			final DiscountCurve discountCurve) throws CalculationException {
++			final DiscountCurve discountCurve) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(49);
+ 
+ 		final Optimizer optimizer = new LevenbergMarquardt(volatilities /*initialParameters*/, volatilities /*targetValues*/, 100 /*maxIteration*/, 1 /*numberOfThreads*/) {
+ 			private static final long serialVersionUID = -9199565564991442848L;
+diff --git a/net/finmath/montecarlo/interestrate/CalibrationProduct.java b/net/finmath/montecarlo/interestrate/CalibrationProduct.java
+index 6ce39e2..1b19347 100644
+--- a/net/finmath/montecarlo/interestrate/CalibrationProduct.java
++++ b/net/finmath/montecarlo/interestrate/CalibrationProduct.java
+@@ -62,7 +62,7 @@ public class CalibrationProduct {
+ 	 *
+ 	 * @return A short name for this calibration product. If no short name was given, the method returns <code>getProduct().toString()</code>
+ 	 */
+-	public String getName() {
++	public String getName() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(6);
+ 		if(name != null) {
+ 			return name;
+ 		} else {
+@@ -73,7 +73,7 @@ public class CalibrationProduct {
+ 	/**
+ 	 * @return the product.
+ 	 */
+-	public AbstractTermStructureMonteCarloProduct getProduct() {
++	public AbstractTermStructureMonteCarloProduct getProduct() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(15);
+ 		return product;
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/interestrate/LIBORMonteCarloSimulationFromLIBORModel.java b/net/finmath/montecarlo/interestrate/LIBORMonteCarloSimulationFromLIBORModel.java
+index c9f8e7f..5fad564 100644
+--- a/net/finmath/montecarlo/interestrate/LIBORMonteCarloSimulationFromLIBORModel.java
++++ b/net/finmath/montecarlo/interestrate/LIBORMonteCarloSimulationFromLIBORModel.java
+@@ -50,12 +50,12 @@ public class LIBORMonteCarloSimulationFromLIBORModel implements LIBORModelMonteC
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getMonteCarloWeights(final int timeIndex) throws CalculationException {
++	public RandomVariable getMonteCarloWeights(final int timeIndex) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(24);
+ 		return process.getMonteCarloWeights(timeIndex);
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getMonteCarloWeights(final double time) throws CalculationException {
++	public RandomVariable getMonteCarloWeights(final double time) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(31);
+ 		int timeIndex = getTimeIndex(time);
+ 		if(timeIndex < 0) {
+ 			timeIndex = (-timeIndex-1)-1;
+diff --git a/net/finmath/montecarlo/interestrate/LIBORMonteCarloSimulationFromTermStructureModel.java b/net/finmath/montecarlo/interestrate/LIBORMonteCarloSimulationFromTermStructureModel.java
+index 1cc35e8..982050d 100644
+--- a/net/finmath/montecarlo/interestrate/LIBORMonteCarloSimulationFromTermStructureModel.java
++++ b/net/finmath/montecarlo/interestrate/LIBORMonteCarloSimulationFromTermStructureModel.java
+@@ -50,12 +50,12 @@ public class LIBORMonteCarloSimulationFromTermStructureModel implements LIBORMod
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getMonteCarloWeights(final int timeIndex) throws CalculationException {
++	public RandomVariable getMonteCarloWeights(final int timeIndex) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(38);
+ 		return process.getMonteCarloWeights(timeIndex);
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getMonteCarloWeights(final double time) throws CalculationException {
++	public RandomVariable getMonteCarloWeights(final double time) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(44);
+ 		int timeIndex = getTimeIndex(time);
+ 		if(timeIndex < 0) {
+ 			timeIndex = (-timeIndex-1)-1;
+diff --git a/net/finmath/montecarlo/interestrate/TermStructureMonteCarloSimulationFromTermStructureModel.java b/net/finmath/montecarlo/interestrate/TermStructureMonteCarloSimulationFromTermStructureModel.java
+index ef7c729..e500fdb 100644
+--- a/net/finmath/montecarlo/interestrate/TermStructureMonteCarloSimulationFromTermStructureModel.java
++++ b/net/finmath/montecarlo/interestrate/TermStructureMonteCarloSimulationFromTermStructureModel.java
+@@ -50,7 +50,7 @@ public class TermStructureMonteCarloSimulationFromTermStructureModel implements
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getMonteCarloWeights(final int timeIndex) throws CalculationException {
++	public RandomVariable getMonteCarloWeights(final int timeIndex) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(50);
+ 		return process.getMonteCarloWeights(timeIndex);
+ 	}
+ 
+diff --git a/net/finmath/montecarlo/jmhbench/MutationSwitch.java b/net/finmath/montecarlo/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..4af852f
+--- /dev/null
++++ b/net/finmath/montecarlo/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.finmath.montecarlo.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/net/finmath/montecarlo/process/EulerSchemeFromProcessModel.java b/net/finmath/montecarlo/process/EulerSchemeFromProcessModel.java
+index 95a592c..99ec60c 100644
+--- a/net/finmath/montecarlo/process/EulerSchemeFromProcessModel.java
++++ b/net/finmath/montecarlo/process/EulerSchemeFromProcessModel.java
+@@ -129,7 +129,7 @@ public class EulerSchemeFromProcessModel extends MonteCarloProcessFromProcessMod
+ 	 * @return A vector of process realizations (on path)
+ 	 */
+ 	@Override
+-	public RandomVariable getProcessValue(final int timeIndex, final int componentIndex) {
++	public RandomVariable getProcessValue(final int timeIndex, final int componentIndex) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(7);
+ 		// Thread safe lazy initialization
+ 		synchronized(this) {
+ 			if (discreteProcess == null || discreteProcess.length == 0) {
+@@ -152,7 +152,7 @@ public class EulerSchemeFromProcessModel extends MonteCarloProcessFromProcessMod
+ 	 * @return A vector of positive weights
+ 	 */
+ 	@Override
+-	public RandomVariable getMonteCarloWeights(final int timeIndex) {
++	public RandomVariable getMonteCarloWeights(final int timeIndex) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(16);
+ 		// Thread safe lazy initialization
+ 		synchronized(this) {
+ 			if (discreteProcessWeights == null || discreteProcessWeights.length == 0) {
+diff --git a/net/finmath/montecarlo/process/LinearInterpolatedTimeDiscreteProcess.java b/net/finmath/montecarlo/process/LinearInterpolatedTimeDiscreteProcess.java
+index 5a38e94..98af33d 100644
+--- a/net/finmath/montecarlo/process/LinearInterpolatedTimeDiscreteProcess.java
++++ b/net/finmath/montecarlo/process/LinearInterpolatedTimeDiscreteProcess.java
+@@ -91,7 +91,7 @@ public class LinearInterpolatedTimeDiscreteProcess implements Process {
+ 	 * @param function The function \( f \), a univariate function.
+ 	 * @return A new process consisting of the interpolation of the random variables obtained by applying the given function to this process discrete set of random variables.
+ 	 */
+-	public LinearInterpolatedTimeDiscreteProcess apply(final DoubleUnaryOperator function) {
++	public LinearInterpolatedTimeDiscreteProcess apply(final DoubleUnaryOperator function) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(25);
+ 		final Map<Double, RandomVariable> result = new HashMap<>();
+ 
+ 		for(final double time: timeDiscretization) {
+@@ -108,7 +108,7 @@ public class LinearInterpolatedTimeDiscreteProcess implements Process {
+ 	 * @param component The component to be returned (if this is a vector valued process), otherwise 0.
+ 	 * @return The random variable \( X(t) \).
+ 	 */
+-	public RandomVariable getProcessValue(final double time, final int component) {
++	public RandomVariable getProcessValue(final double time, final int component) { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(32);
+ 		final double timeLower = timeDiscretization.getTimeIndexNearestLessOrEqual(time);
+ 		final double timeUpper = timeDiscretization.getTimeIndexNearestGreaterOrEqual(time);
+ 		if(timeLower == timeUpper) {
+diff --git a/net/finmath/montecarlo/products/PortfolioMonteCarloProduct.java b/net/finmath/montecarlo/products/PortfolioMonteCarloProduct.java
+index 3088204..e78667d 100644
+--- a/net/finmath/montecarlo/products/PortfolioMonteCarloProduct.java
++++ b/net/finmath/montecarlo/products/PortfolioMonteCarloProduct.java
+@@ -91,7 +91,7 @@ public class PortfolioMonteCarloProduct extends AbstractMonteCarloProduct {
+ 	}
+ 
+ 	@Override
+-	public RandomVariable getValue(final double evaluationTime, final MonteCarloSimulationModel model) throws CalculationException {
++	public RandomVariable getValue(final double evaluationTime, final MonteCarloSimulationModel model) throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(8);
+ 
+ 		if(products == null || products.length == 0) {
+ 			return null;
+@@ -110,7 +110,7 @@ public class PortfolioMonteCarloProduct extends AbstractMonteCarloProduct {
+ 
+ 				final Callable<RandomVariable> worker = new  Callable<RandomVariable>() {
+ 					@Override
+-					public RandomVariable call() throws CalculationException {
++					public RandomVariable call() throws CalculationException { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(17);
+ 						return product.getValue(evaluationTime, model).mult(weight);
+ 					}
+ 				};
+diff --git a/net/finmath/montecarlo/templatemethoddesign/assetderivativevaluation/MonteCarloBlackScholesModel2.java b/net/finmath/montecarlo/templatemethoddesign/assetderivativevaluation/MonteCarloBlackScholesModel2.java
+index 2148b01..1ad22dd 100644
+--- a/net/finmath/montecarlo/templatemethoddesign/assetderivativevaluation/MonteCarloBlackScholesModel2.java
++++ b/net/finmath/montecarlo/templatemethoddesign/assetderivativevaluation/MonteCarloBlackScholesModel2.java
+@@ -91,12 +91,12 @@ public class MonteCarloBlackScholesModel2 extends LogNormalProcess implements As
+ 	}
+ 
+ 	@Override
+-	public LocalDateTime getReferenceDate() {
++	public LocalDateTime getReferenceDate() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(9);
+ 		throw new UnsupportedOperationException("This model does not provide a reference date. Reference dates will be mandatory in a future version.");
+ 	}
+ 
+ 	@Override
+-	public int getNumberOfAssets() {
++	public int getNumberOfAssets() { net.finmath.montecarlo.jmhbench.MutationSwitch.tick(18);
+ 		return 1;
+ 	}
+ 

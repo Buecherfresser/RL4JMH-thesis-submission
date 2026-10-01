@@ -1,0 +1,2244 @@
+diff --git a/br/com/six2six/fixturefactory/ExtendedTemplateHolder.java b/br/com/six2six/fixturefactory/ExtendedTemplateHolder.java
+index 1de8287..808f58a 100644
+--- a/br/com/six2six/fixturefactory/ExtendedTemplateHolder.java
++++ b/br/com/six2six/fixturefactory/ExtendedTemplateHolder.java
+@@ -1,19 +1,19 @@
+-package br.com.six2six.fixturefactory;
+-
+-public class ExtendedTemplateHolder {
+-	private final String label;
+-	private final TemplateHolder templateHolder;
+-	
+-	public ExtendedTemplateHolder(TemplateHolder templateHolder, String label) {
+-		this.templateHolder = templateHolder;
+-		this.label = label;
+-	}
+-	
+-	public TemplateHolder inherits(String baseTemplateLabel, Rule extendedRule) {
+-		Rule baseRule = templateHolder.getRules().get(baseTemplateLabel);
+-		if(baseRule == null) throw new IllegalArgumentException(String.format("%s-> No such template '%s' to be inherited.", templateHolder.getClazz().getName(), baseTemplateLabel));
+-		
+-		templateHolder.getRules().put(label, new Rule(baseRule, extendedRule));
+-		return templateHolder;
+-	}
+-}
++package br.com.six2six.fixturefactory;
++
++public class ExtendedTemplateHolder {
++	private final String label;
++	private final TemplateHolder templateHolder;
++	
++	public ExtendedTemplateHolder(TemplateHolder templateHolder, String label) {
++		this.templateHolder = templateHolder;
++		this.label = label;
++	}
++	
++	public TemplateHolder inherits(String baseTemplateLabel, Rule extendedRule) { br.com.six2six.jmhbench.MutationSwitch.tick(29);
++		Rule baseRule = templateHolder.getRules().get(baseTemplateLabel);
++		if(baseRule == null) throw new IllegalArgumentException(String.format("%s-> No such template '%s' to be inherited.", templateHolder.getClazz().getName(), baseTemplateLabel));
++		
++		templateHolder.getRules().put(label, new Rule(baseRule, extendedRule));
++		return templateHolder;
++	}
++}
+diff --git a/br/com/six2six/fixturefactory/Fixture.java b/br/com/six2six/fixturefactory/Fixture.java
+index 938655a..45d82a5 100644
+--- a/br/com/six2six/fixturefactory/Fixture.java
++++ b/br/com/six2six/fixturefactory/Fixture.java
+@@ -1,24 +1,24 @@
+-package br.com.six2six.fixturefactory;
+-
+-import java.util.LinkedHashMap;
+-import java.util.Map;
+-
+-public class Fixture {
+-
+-	private static Map<Class<?>, TemplateHolder> templates = new LinkedHashMap<Class<?>, TemplateHolder>();
+-	
+-	public static TemplateHolder of(Class<?> clazz) {
+-		TemplateHolder template = templates.get(clazz);
+-		
+-		if (template == null) {
+-			template = new TemplateHolder(clazz);
+-			templates.put(clazz, template);
+-		}
+-
+-		return template;
+-	}
+-	
+-	public static ObjectFactory from(Class<?> clazz) {
+-		return new ObjectFactory(of(clazz));
+-	}
+-}
++package br.com.six2six.fixturefactory;
++
++import java.util.LinkedHashMap;
++import java.util.Map;
++
++public class Fixture {
++
++	private static Map<Class<?>, TemplateHolder> templates = new LinkedHashMap<Class<?>, TemplateHolder>();
++	
++	public static TemplateHolder of(Class<?> clazz) { br.com.six2six.jmhbench.MutationSwitch.tick(30);
++		TemplateHolder template = templates.get(clazz);
++		
++		if (template == null) {
++			template = new TemplateHolder(clazz);
++			templates.put(clazz, template);
++		}
++
++		return template;
++	}
++	
++	public static ObjectFactory from(Class<?> clazz) { br.com.six2six.jmhbench.MutationSwitch.tick(31);
++		return new ObjectFactory(of(clazz));
++	}
++}
+diff --git a/br/com/six2six/fixturefactory/JavaVersion.java b/br/com/six2six/fixturefactory/JavaVersion.java
+index 5f0bc9a..e014e30 100644
+--- a/br/com/six2six/fixturefactory/JavaVersion.java
++++ b/br/com/six2six/fixturefactory/JavaVersion.java
+@@ -15,11 +15,11 @@ public class JavaVersion {
+ 	    this.minor = Integer.parseInt(fields[1]);
+ 	}
+ 	
+-	public boolean gte(JavaVersion version) {
++	public boolean gte(JavaVersion version) { br.com.six2six.jmhbench.MutationSwitch.tick(32);
+ 	    return this.major >= version.major && this.minor >= version.minor;
+ 	}
+ 	
+-	public static JavaVersion current(){
++	public static JavaVersion current(){ br.com.six2six.jmhbench.MutationSwitch.tick(33);
+ 		return new JavaVersion(System.getProperty("java.version"));
+ 	}
+ 
+diff --git a/br/com/six2six/fixturefactory/ObjectFactory.java b/br/com/six2six/fixturefactory/ObjectFactory.java
+index 2de890c..13a7cd2 100644
+--- a/br/com/six2six/fixturefactory/ObjectFactory.java
++++ b/br/com/six2six/fixturefactory/ObjectFactory.java
+@@ -51,13 +51,13 @@ public class ObjectFactory {
+ 	    this.processor = processor;
+ 	}
+ 
+-    public ObjectFactory uses(Processor processor) {
++    public ObjectFactory uses(Processor processor) { br.com.six2six.jmhbench.MutationSwitch.tick(34);
+         this.processor = processor;
+         return this;
+     }
+     
+ 	@SuppressWarnings("unchecked")
+-	public <T> T gimme(String label) {
++	public <T> T gimme(String label) { br.com.six2six.jmhbench.MutationSwitch.tick(35);
+ 		Rule rule = findRule(label);
+ 
+ 		return (T) this.createObject(rule);
+diff --git a/br/com/six2six/fixturefactory/Property.java b/br/com/six2six/fixturefactory/Property.java
+index 80f7e4c..e0ddec9 100644
+--- a/br/com/six2six/fixturefactory/Property.java
++++ b/br/com/six2six/fixturefactory/Property.java
+@@ -1,89 +1,89 @@
+-package br.com.six2six.fixturefactory;
+-
+-import br.com.six2six.fixturefactory.function.AtomicFunction;
+-import br.com.six2six.fixturefactory.function.Function;
+-import br.com.six2six.fixturefactory.function.RelationFunction;
+-import br.com.six2six.fixturefactory.function.impl.IdentityFunction;
+-import br.com.six2six.fixturefactory.processor.Processor;
+-
+-public class Property {
+-
+-	private String name;
+-	
+-	private Function function;
+-
+-	public Property(String name, Function function) {
+-	    if (name == null) {
+-	        throw new IllegalArgumentException("name must not be null");
+-	    }
+-	    
+-	    if (function == null) {
+-            throw new IllegalArgumentException("function must not be null");
+-        }
+-	    
+-		this.name = name;
+-		this.function = function;
+-	}
+-
+-	public Property(String name, Object value) {
+-	    this(name, new IdentityFunction(value));
+-	}
+-
+-	public String getName() {
+-		return this.name;
+-	}
+-
+-	public Object getValue() {
+-		return ((AtomicFunction) this.function).generateValue();
+-	}
+-	
+-	public Object getValue(Processor processor) {
+-		return ((RelationFunction) this.function).generateValue(processor);
+-	}
+-	
+-	public Object getValue(Object owner) {
+-		return ((RelationFunction) this.function).generateValue(owner);
+-	}
+-	
+-	public Object getValue(Object owner, Processor processor) {
+-		return ((RelationFunction) this.function).generateValue(owner, processor);
+-	}
+-	
+-	public boolean hasRelationFunction() {
+-		return this.function instanceof RelationFunction;
+-	}
+-
+-	public String getRootAttribute() {
+-		int index = this.name.indexOf(".");
+-		return index > 0 ? this.name.substring(0, index) : this.name;
+-	}
+-
+-    public Function getFunction() {
+-        return function;
+-    }
+-
+-    @Override
+-	public int hashCode() {
+-		final int prime = 31;
+-		int result = 1;
+-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+-		return result;
+-	}
+-
+-	@Override
+-	public boolean equals(Object obj) {
+-		if (this == obj)
+-			return true;
+-		if (obj == null)
+-			return false;
+-		if (getClass() != obj.getClass())
+-			return false;
+-		Property other = (Property) obj;
+-		if (name == null) {
+-			if (other.name != null)
+-				return false;
+-		} else if (!name.equals(other.name))
+-			return false;
+-		return true;
+-	}
+-}
++package br.com.six2six.fixturefactory;
++
++import br.com.six2six.fixturefactory.function.AtomicFunction;
++import br.com.six2six.fixturefactory.function.Function;
++import br.com.six2six.fixturefactory.function.RelationFunction;
++import br.com.six2six.fixturefactory.function.impl.IdentityFunction;
++import br.com.six2six.fixturefactory.processor.Processor;
++
++public class Property {
++
++	private String name;
++	
++	private Function function;
++
++	public Property(String name, Function function) {
++	    if (name == null) {
++	        throw new IllegalArgumentException("name must not be null");
++	    }
++	    
++	    if (function == null) {
++            throw new IllegalArgumentException("function must not be null");
++        }
++	    
++		this.name = name;
++		this.function = function;
++	}
++
++	public Property(String name, Object value) {
++	    this(name, new IdentityFunction(value));
++	}
++
++	public String getName() { br.com.six2six.jmhbench.MutationSwitch.tick(36);
++		return this.name;
++	}
++
++	public Object getValue() { br.com.six2six.jmhbench.MutationSwitch.tick(37);
++		return ((AtomicFunction) this.function).generateValue();
++	}
++	
++	public Object getValue(Processor processor) {
++		return ((RelationFunction) this.function).generateValue(processor);
++	}
++	
++	public Object getValue(Object owner) {
++		return ((RelationFunction) this.function).generateValue(owner);
++	}
++	
++	public Object getValue(Object owner, Processor processor) {
++		return ((RelationFunction) this.function).generateValue(owner, processor);
++	}
++	
++	public boolean hasRelationFunction() {
++		return this.function instanceof RelationFunction;
++	}
++
++	public String getRootAttribute() {
++		int index = this.name.indexOf(".");
++		return index > 0 ? this.name.substring(0, index) : this.name;
++	}
++
++    public Function getFunction() {
++        return function;
++    }
++
++    @Override
++	public int hashCode() {
++		final int prime = 31;
++		int result = 1;
++		result = prime * result + ((name == null) ? 0 : name.hashCode());
++		return result;
++	}
++
++	@Override
++	public boolean equals(Object obj) {
++		if (this == obj)
++			return true;
++		if (obj == null)
++			return false;
++		if (getClass() != obj.getClass())
++			return false;
++		Property other = (Property) obj;
++		if (name == null) {
++			if (other.name != null)
++				return false;
++		} else if (!name.equals(other.name))
++			return false;
++		return true;
++	}
++}
+diff --git a/br/com/six2six/fixturefactory/Rule.java b/br/com/six2six/fixturefactory/Rule.java
+index f46a5b7..059529a 100644
+--- a/br/com/six2six/fixturefactory/Rule.java
++++ b/br/com/six2six/fixturefactory/Rule.java
+@@ -1,208 +1,208 @@
+-package br.com.six2six.fixturefactory;
+-
+-import static br.com.six2six.fixturefactory.function.impl.DateTimeFunction.DateType.AFTER;
+-import static br.com.six2six.fixturefactory.function.impl.DateTimeFunction.DateType.BEFORE;
+-import static br.com.six2six.fixturefactory.function.impl.NameFunction.NameType.FIRST;
+-import static br.com.six2six.fixturefactory.function.impl.NameFunction.NameType.LAST;
+-import static br.com.six2six.fixturefactory.util.DateTimeUtils.toCalendar;
+-
+-import java.math.BigDecimal;
+-import java.math.MathContext;
+-import java.text.DateFormat;
+-import java.text.SimpleDateFormat;
+-import java.util.Arrays;
+-import java.util.LinkedHashSet;
+-import java.util.Set;
+-
+-import br.com.six2six.bfgex.Gender;
+-import br.com.six2six.fixturefactory.base.CalendarInterval;
+-import br.com.six2six.fixturefactory.base.CalendarSequence;
+-import br.com.six2six.fixturefactory.base.Interval;
+-import br.com.six2six.fixturefactory.base.Range;
+-import br.com.six2six.fixturefactory.base.Sequence;
+-import br.com.six2six.fixturefactory.function.AssociationFunction;
+-import br.com.six2six.fixturefactory.function.Chainable;
+-import br.com.six2six.fixturefactory.function.DateFunction;
+-import br.com.six2six.fixturefactory.function.FixtureFunction;
+-import br.com.six2six.fixturefactory.function.Function;
+-import br.com.six2six.fixturefactory.function.impl.AssociationFunctionImpl;
+-import br.com.six2six.fixturefactory.function.impl.ChronicFunction;
+-import br.com.six2six.fixturefactory.function.impl.CnpjFunction;
+-import br.com.six2six.fixturefactory.function.impl.DateTimeFunction;
+-import br.com.six2six.fixturefactory.function.impl.IdentityFunction;
+-import br.com.six2six.fixturefactory.function.impl.NameFunction;
+-import br.com.six2six.fixturefactory.function.impl.NumberSequence;
+-import br.com.six2six.fixturefactory.function.impl.RandomFunction;
+-import br.com.six2six.fixturefactory.function.impl.RegexFunction;
+-import br.com.six2six.fixturefactory.function.impl.SequenceFunction;
+-import br.com.six2six.fixturefactory.function.impl.UniqueRandomFunction;
+-import br.com.six2six.fixturefactory.util.ReflectionUtils;
+-
+-import com.mdimension.jchronic.Options;
+-
+-public class Rule {
+-
+-	public Rule() {}
+-
+-	public Rule(Rule baseRule, Rule extendedRule) {
+-		properties = new LinkedHashSet<Property>(baseRule.getProperties());
+-		for(Property property : extendedRule.getProperties()) {
+-			properties.remove(property);
+-			properties.add(property);
+-		}
+-	}
+-	
+-    private Set<Property> properties = new LinkedHashSet<Property>();
+-
+-    public void add(String property, Object value) {
+-        this.properties.add(new Property(property, value));
+-    }
+-
+-    public void add(String property, Function function) {
+-        if (function == null) {
+-            function = new IdentityFunction(null);
+-        }
+-    	this.properties.add(new Property(property, function));
+-    }
+-    
+-    /**
+-     * @deprecated use {@link one(clazz, label)} instead.
+-     */
+-    @Deprecated
+-	public Function fixture(Class<?> clazz, String label) {
+-    	return new FixtureFunction(clazz, label);
+-    }
+-
+-    /**
+-     * @deprecated use {@link has(quantity).of(clazz, label)} instead.
+-     */
+-    @Deprecated
+-	public Function fixture(Class<?> clazz, Integer quantity, String label) {
+-    	return new FixtureFunction(clazz, label, quantity);
+-    }
+-	
+-	public Chainable has(int quantity) {
+-		return new AssociationFunctionImpl(quantity);
+-	}
+-	
+-	public AssociationFunction one(Class<?> clazz, String label) {
+-		return new AssociationFunctionImpl(clazz, label);
+-	}
+-	
+-	public Function random(Class<?> clazz, Object... dataset) {
+-		return new RandomFunction(clazz, dataset);
+-	}
+-
+-	public Function random(Class<? extends BigDecimal> clazz, MathContext mc) {
+-	    return new RandomFunction(clazz, mc);
+-	}
+-
+-	public Function random(Object... dataset) {
+-		return new RandomFunction(dataset);
+-	}
+-	
+-	public Function random(Class<?> clazz, Range range) {
+-		return new RandomFunction(clazz, range);
+-	}
+-	
+-	public Function uniqueRandom(int minValue, int maxValue) {
+-		return new UniqueRandomFunction(minValue, maxValue);
+-	}
+-	
+-	public Function uniqueRandom(Object... dataset) {
+-		return new UniqueRandomFunction(dataset);
+-	}
+-	
+-	public Function uniqueRandom(Class<? extends Enum<?>> clazz) {
+-		return new UniqueRandomFunction(clazz);
+-	}
+-
+-	public Function name() {
+-		return new NameFunction();
+-	}
+-
+-	public Function name(Gender gender) {
+-		return new NameFunction(gender);
+-	}
+-
+-	public Function firstName() {
+-		return new NameFunction(FIRST);
+-	}
+-
+-	public Function firstName(Gender gender) {
+-		return new NameFunction(FIRST, gender);
+-	}
+-	
+-	public Function lastName() {
+-		return new NameFunction(LAST);
+-	}
+-
+-	public Function beforeDate(String source, SimpleDateFormat format) {
+-		return new DateTimeFunction(toCalendar(source, format), BEFORE);
+-	}
+-	
+-	public Function afterDate(String source, SimpleDateFormat format) {
+-		return new DateTimeFunction(toCalendar(source, format), AFTER);
+-	}
+-	
+-	public Function randomDate(String startDate, String endDate, DateFormat format) {
+-		return new DateTimeFunction(toCalendar(startDate, format), toCalendar(endDate, format));
+-	}
+-
+-	public Function regex(String regex) {
+-		return new RegexFunction(regex);
+-	}
+-	
+-	public Range range(Number start, Number end) {
+-		return new Range(start, end);
+-	}
+-
+-	public Function sequence(Sequence<?> sequence) {
+-		return new SequenceFunction(sequence);
+-	}
+-
+-	public Function sequence(Number startWith, int incrementBy) {
+-		return new SequenceFunction(new NumberSequence(startWith, incrementBy));
+-	}
+-	
+-	public Function sequence(Class<? extends Number> clazz) {
+-		Number number = ReflectionUtils.newInstance(clazz, Arrays.asList("1"));
+-		return new SequenceFunction(new NumberSequence(number, 1));
+-	}
+-	
+-	public Function sequenceDate(String base, CalendarInterval interval) {
+-		return this.sequenceDate(base, new SimpleDateFormat("yyyy-MM-dd"), interval);
+-	}
+-	
+-	public Function sequenceDate(String base, DateFormat simpleDateFormat, CalendarInterval interval) {
+-		return new SequenceFunction(new CalendarSequence(toCalendar(base, simpleDateFormat), interval));
+-	}
+-	
+-	public DateFunction instant(String dateText) {
+-	    return new ChronicFunction(dateText);
+-	}
+-
+-    public Function instant(String dateText, Options options) {
+-        return new ChronicFunction(dateText, options);
+-    }
+-    
+-    public Function cnpj() {
+-    	return new CnpjFunction();
+-    }
+-    
+-    public Function cnpj(boolean formatted) {
+-    	return new CnpjFunction(formatted);
+-    }
+-	
+-	public Interval increment(int interval) {
+-		return new Interval(interval);
+-	}
+-	
+-	public Interval decrement(int interval) {
+-		return new Interval(interval*(-1));
+-	}
+-	
+-	public Set<Property> getProperties() {
+-		return properties;
+-	}
+-}
++package br.com.six2six.fixturefactory;
++
++import static br.com.six2six.fixturefactory.function.impl.DateTimeFunction.DateType.AFTER;
++import static br.com.six2six.fixturefactory.function.impl.DateTimeFunction.DateType.BEFORE;
++import static br.com.six2six.fixturefactory.function.impl.NameFunction.NameType.FIRST;
++import static br.com.six2six.fixturefactory.function.impl.NameFunction.NameType.LAST;
++import static br.com.six2six.fixturefactory.util.DateTimeUtils.toCalendar;
++
++import java.math.BigDecimal;
++import java.math.MathContext;
++import java.text.DateFormat;
++import java.text.SimpleDateFormat;
++import java.util.Arrays;
++import java.util.LinkedHashSet;
++import java.util.Set;
++
++import br.com.six2six.bfgex.Gender;
++import br.com.six2six.fixturefactory.base.CalendarInterval;
++import br.com.six2six.fixturefactory.base.CalendarSequence;
++import br.com.six2six.fixturefactory.base.Interval;
++import br.com.six2six.fixturefactory.base.Range;
++import br.com.six2six.fixturefactory.base.Sequence;
++import br.com.six2six.fixturefactory.function.AssociationFunction;
++import br.com.six2six.fixturefactory.function.Chainable;
++import br.com.six2six.fixturefactory.function.DateFunction;
++import br.com.six2six.fixturefactory.function.FixtureFunction;
++import br.com.six2six.fixturefactory.function.Function;
++import br.com.six2six.fixturefactory.function.impl.AssociationFunctionImpl;
++import br.com.six2six.fixturefactory.function.impl.ChronicFunction;
++import br.com.six2six.fixturefactory.function.impl.CnpjFunction;
++import br.com.six2six.fixturefactory.function.impl.DateTimeFunction;
++import br.com.six2six.fixturefactory.function.impl.IdentityFunction;
++import br.com.six2six.fixturefactory.function.impl.NameFunction;
++import br.com.six2six.fixturefactory.function.impl.NumberSequence;
++import br.com.six2six.fixturefactory.function.impl.RandomFunction;
++import br.com.six2six.fixturefactory.function.impl.RegexFunction;
++import br.com.six2six.fixturefactory.function.impl.SequenceFunction;
++import br.com.six2six.fixturefactory.function.impl.UniqueRandomFunction;
++import br.com.six2six.fixturefactory.util.ReflectionUtils;
++
++import com.mdimension.jchronic.Options;
++
++public class Rule {
++
++	public Rule() {}
++
++	public Rule(Rule baseRule, Rule extendedRule) {
++		properties = new LinkedHashSet<Property>(baseRule.getProperties());
++		for(Property property : extendedRule.getProperties()) {
++			properties.remove(property);
++			properties.add(property);
++		}
++	}
++	
++    private Set<Property> properties = new LinkedHashSet<Property>();
++
++    public void add(String property, Object value) {
++        this.properties.add(new Property(property, value));
++    }
++
++    public void add(String property, Function function) {
++        if (function == null) {
++            function = new IdentityFunction(null);
++        }
++    	this.properties.add(new Property(property, function));
++    }
++    
++    /**
++     * @deprecated use {@link one(clazz, label)} instead.
++     */
++    @Deprecated
++	public Function fixture(Class<?> clazz, String label) { br.com.six2six.jmhbench.MutationSwitch.tick(38);
++    	return new FixtureFunction(clazz, label);
++    }
++
++    /**
++     * @deprecated use {@link has(quantity).of(clazz, label)} instead.
++     */
++    @Deprecated
++	public Function fixture(Class<?> clazz, Integer quantity, String label) { br.com.six2six.jmhbench.MutationSwitch.tick(39);
++    	return new FixtureFunction(clazz, label, quantity);
++    }
++	
++	public Chainable has(int quantity) {
++		return new AssociationFunctionImpl(quantity);
++	}
++	
++	public AssociationFunction one(Class<?> clazz, String label) {
++		return new AssociationFunctionImpl(clazz, label);
++	}
++	
++	public Function random(Class<?> clazz, Object... dataset) {
++		return new RandomFunction(clazz, dataset);
++	}
++
++	public Function random(Class<? extends BigDecimal> clazz, MathContext mc) {
++	    return new RandomFunction(clazz, mc);
++	}
++
++	public Function random(Object... dataset) {
++		return new RandomFunction(dataset);
++	}
++	
++	public Function random(Class<?> clazz, Range range) {
++		return new RandomFunction(clazz, range);
++	}
++	
++	public Function uniqueRandom(int minValue, int maxValue) {
++		return new UniqueRandomFunction(minValue, maxValue);
++	}
++	
++	public Function uniqueRandom(Object... dataset) {
++		return new UniqueRandomFunction(dataset);
++	}
++	
++	public Function uniqueRandom(Class<? extends Enum<?>> clazz) {
++		return new UniqueRandomFunction(clazz);
++	}
++
++	public Function name() {
++		return new NameFunction();
++	}
++
++	public Function name(Gender gender) {
++		return new NameFunction(gender);
++	}
++
++	public Function firstName() {
++		return new NameFunction(FIRST);
++	}
++
++	public Function firstName(Gender gender) {
++		return new NameFunction(FIRST, gender);
++	}
++	
++	public Function lastName() {
++		return new NameFunction(LAST);
++	}
++
++	public Function beforeDate(String source, SimpleDateFormat format) {
++		return new DateTimeFunction(toCalendar(source, format), BEFORE);
++	}
++	
++	public Function afterDate(String source, SimpleDateFormat format) {
++		return new DateTimeFunction(toCalendar(source, format), AFTER);
++	}
++	
++	public Function randomDate(String startDate, String endDate, DateFormat format) {
++		return new DateTimeFunction(toCalendar(startDate, format), toCalendar(endDate, format));
++	}
++
++	public Function regex(String regex) {
++		return new RegexFunction(regex);
++	}
++	
++	public Range range(Number start, Number end) {
++		return new Range(start, end);
++	}
++
++	public Function sequence(Sequence<?> sequence) {
++		return new SequenceFunction(sequence);
++	}
++
++	public Function sequence(Number startWith, int incrementBy) {
++		return new SequenceFunction(new NumberSequence(startWith, incrementBy));
++	}
++	
++	public Function sequence(Class<? extends Number> clazz) {
++		Number number = ReflectionUtils.newInstance(clazz, Arrays.asList("1"));
++		return new SequenceFunction(new NumberSequence(number, 1));
++	}
++	
++	public Function sequenceDate(String base, CalendarInterval interval) {
++		return this.sequenceDate(base, new SimpleDateFormat("yyyy-MM-dd"), interval);
++	}
++	
++	public Function sequenceDate(String base, DateFormat simpleDateFormat, CalendarInterval interval) {
++		return new SequenceFunction(new CalendarSequence(toCalendar(base, simpleDateFormat), interval));
++	}
++	
++	public DateFunction instant(String dateText) {
++	    return new ChronicFunction(dateText);
++	}
++
++    public Function instant(String dateText, Options options) {
++        return new ChronicFunction(dateText, options);
++    }
++    
++    public Function cnpj() {
++    	return new CnpjFunction();
++    }
++    
++    public Function cnpj(boolean formatted) {
++    	return new CnpjFunction(formatted);
++    }
++	
++	public Interval increment(int interval) {
++		return new Interval(interval);
++	}
++	
++	public Interval decrement(int interval) {
++		return new Interval(interval*(-1));
++	}
++	
++	public Set<Property> getProperties() {
++		return properties;
++	}
++}
+diff --git a/br/com/six2six/fixturefactory/TemplateHolder.java b/br/com/six2six/fixturefactory/TemplateHolder.java
+index 0da8930..0c50cd5 100644
+--- a/br/com/six2six/fixturefactory/TemplateHolder.java
++++ b/br/com/six2six/fixturefactory/TemplateHolder.java
+@@ -1,32 +1,32 @@
+-package br.com.six2six.fixturefactory;
+-
+-import java.util.LinkedHashMap;
+-import java.util.Map;
+-
+-public class TemplateHolder {
+-
+-	private Class<?> clazz;
+-	
+-	private Map<String, Rule> rules = new LinkedHashMap<String, Rule>();
+-	
+-	public TemplateHolder(Class<?> clazz) {
+-		this.clazz = clazz;
+-	}
+-
+-	public TemplateHolder addTemplate(String label, Rule rule) {
+-		rules.put(label, rule);
+-		return this;
+-	}
+-	
+-	public ExtendedTemplateHolder addTemplate(String label) {
+-		return new ExtendedTemplateHolder(this, label);
+-	}
+-
+-	public Class<?> getClazz() {
+-		return clazz;
+-	}
+-
+-	public Map<String, Rule> getRules() {
+-		return rules;
+-	}
+-}
++package br.com.six2six.fixturefactory;
++
++import java.util.LinkedHashMap;
++import java.util.Map;
++
++public class TemplateHolder {
++
++	private Class<?> clazz;
++	
++	private Map<String, Rule> rules = new LinkedHashMap<String, Rule>();
++	
++	public TemplateHolder(Class<?> clazz) {
++		this.clazz = clazz;
++	}
++
++	public TemplateHolder addTemplate(String label, Rule rule) { br.com.six2six.jmhbench.MutationSwitch.tick(40);
++		rules.put(label, rule);
++		return this;
++	}
++	
++	public ExtendedTemplateHolder addTemplate(String label) { br.com.six2six.jmhbench.MutationSwitch.tick(41);
++		return new ExtendedTemplateHolder(this, label);
++	}
++
++	public Class<?> getClazz() {
++		return clazz;
++	}
++
++	public Map<String, Rule> getRules() {
++		return rules;
++	}
++}
+diff --git a/br/com/six2six/fixturefactory/base/CalendarInterval.java b/br/com/six2six/fixturefactory/base/CalendarInterval.java
+index 5066cb0..6aaea49 100644
+--- a/br/com/six2six/fixturefactory/base/CalendarInterval.java
++++ b/br/com/six2six/fixturefactory/base/CalendarInterval.java
+@@ -14,11 +14,11 @@ public class CalendarInterval implements Serializable {
+ 		this.value = interval;
+ 	}
+ 
+-	public int getCalendarField() {
++	public int getCalendarField() { br.com.six2six.jmhbench.MutationSwitch.tick(42);
+ 		return this.calendarField;
+ 	}
+ 
+-	public int getValue() {
++	public int getValue() { br.com.six2six.jmhbench.MutationSwitch.tick(43);
+ 		return this.value;
+ 	}
+ }
+diff --git a/br/com/six2six/fixturefactory/base/CalendarSequence.java b/br/com/six2six/fixturefactory/base/CalendarSequence.java
+index b348f97..af3786e 100644
+--- a/br/com/six2six/fixturefactory/base/CalendarSequence.java
++++ b/br/com/six2six/fixturefactory/base/CalendarSequence.java
+@@ -14,7 +14,7 @@ public class CalendarSequence implements Sequence<Calendar> {
+ 	}
+ 
+ 	@Override
+-	public Calendar nextValue() {
++	public Calendar nextValue() { br.com.six2six.jmhbench.MutationSwitch.tick(44);
+ 		Calendar result = (Calendar) this.baseCalendar.clone();
+ 		result.add(this.interval.getCalendarField(), this.interval.getValue() * this.multiplier);
+ 		
+diff --git a/br/com/six2six/fixturefactory/base/Interval.java b/br/com/six2six/fixturefactory/base/Interval.java
+index b42a75c..9425b53 100644
+--- a/br/com/six2six/fixturefactory/base/Interval.java
++++ b/br/com/six2six/fixturefactory/base/Interval.java
+@@ -10,11 +10,11 @@ public class Interval {
+ 		this.value = value;
+ 	}
+ 	
+-	public CalendarInterval month() {
++	public CalendarInterval month() { br.com.six2six.jmhbench.MutationSwitch.tick(45);
+ 		return new CalendarInterval(this.value, Calendar.MONTH);
+ 	}
+ 	
+-	public CalendarInterval day() {
++	public CalendarInterval day() { br.com.six2six.jmhbench.MutationSwitch.tick(46);
+ 		return new CalendarInterval(this.value, Calendar.DAY_OF_MONTH);
+ 	}
+ 	
+diff --git a/br/com/six2six/fixturefactory/base/Range.java b/br/com/six2six/fixturefactory/base/Range.java
+index 6dd1620..7ba36c1 100644
+--- a/br/com/six2six/fixturefactory/base/Range.java
++++ b/br/com/six2six/fixturefactory/base/Range.java
+@@ -1,26 +1,26 @@
+-package br.com.six2six.fixturefactory.base;
+-
+-public class Range {
+-
+-	private Number start;
+-	
+-	private Number end;
+-
+-	public Range(Number start, Number end) {
+-		if (start.doubleValue() >= end.doubleValue()) {
+-			throw new IllegalArgumentException(String.format("incorrect range: [%d, %d]", start, end));
+-		}
+-		
+-		this.start = start;
+-		this.end = end;
+-	}
+-
+-	public Number getStart() {
+-		return start;
+-	}
+-
+-	public Number getEnd() {
+-		return end;
+-	}
+-	
+-}
++package br.com.six2six.fixturefactory.base;
++
++public class Range {
++
++	private Number start;
++	
++	private Number end;
++
++	public Range(Number start, Number end) {
++		if (start.doubleValue() >= end.doubleValue()) {
++			throw new IllegalArgumentException(String.format("incorrect range: [%d, %d]", start, end));
++		}
++		
++		this.start = start;
++		this.end = end;
++	}
++
++	public Number getStart() { br.com.six2six.jmhbench.MutationSwitch.tick(1);
++		return start;
++	}
++
++	public Number getEnd() { br.com.six2six.jmhbench.MutationSwitch.tick(2);
++		return end;
++	}
++	
++}
+diff --git a/br/com/six2six/fixturefactory/function/FixtureFunction.java b/br/com/six2six/fixturefactory/function/FixtureFunction.java
+index 8f71733..ec1dd2c 100644
+--- a/br/com/six2six/fixturefactory/function/FixtureFunction.java
++++ b/br/com/six2six/fixturefactory/function/FixtureFunction.java
+@@ -1,74 +1,74 @@
+-package br.com.six2six.fixturefactory.function;
+-
+-import java.util.Arrays;
+-import java.util.List;
+-
+-import br.com.six2six.fixturefactory.Fixture;
+-import br.com.six2six.fixturefactory.ObjectFactory;
+-import br.com.six2six.fixturefactory.processor.Processor;
+-
+-public class FixtureFunction implements AtomicFunction, RelationFunction {
+-
+-	private Class<?> clazz;
+-
+-	private List<String> labels;
+-	
+-	private Integer quantity;
+-
+-	public FixtureFunction(Class<?> clazz, String label) {
+-		this.clazz = clazz;
+-		this.labels = Arrays.asList(label);
+-	}
+-
+-	public FixtureFunction(Class<?> clazz, String label, Integer quantity) {
+-		this(clazz, Arrays.asList(label), quantity);
+-	}
+-	
+-	public FixtureFunction(Class<?> clazz, List<String> labels, Integer quantity) {
+-		this.clazz = clazz;
+-		this.labels = labels;
+-		this.quantity = quantity;
+-	}
+-
+-	@Override
+-	public <T> T generateValue() {
+-		return generate(Fixture.from(clazz));
+-	}
+-	
+-	@Override
+-	public <T> T generateValue(Processor processor) {
+-		return generate(Fixture.from(clazz).uses(processor));
+-	}
+-	
+-	@Override
+-	public <T> T generateValue(Object owner) {
+-		return generate(new ObjectFactory(Fixture.of(clazz), owner));
+-	}
+-
+-	@Override
+-	public <T> T generateValue(Object owner, Processor processor) {
+-	    return generate(Fixture.from(clazz).uses(processor));
+-	}
+-
+-	@SuppressWarnings("unchecked")
+-	private <T> T generate(ObjectFactory objectFactory) {
+-		if(quantity != null) {
+-			return gimmeWithQuantity(objectFactory);
+-		} else {
+-			return (T) objectFactory.gimme(getLabel());
+-		}
+-	}
+-
+-	@SuppressWarnings("unchecked")
+-	private <T> T gimmeWithQuantity(ObjectFactory objectFactory) {
+-		if(labels.size() == 1) {
+-			return (T) objectFactory.gimme(quantity, getLabel());
+-		} else {
+-			return (T) objectFactory.gimme(quantity, labels);
+-		}
+-	}
+-	
+-	private String getLabel() {
+-		return labels.get(0);
+-	}
+-}
++package br.com.six2six.fixturefactory.function;
++
++import java.util.Arrays;
++import java.util.List;
++
++import br.com.six2six.fixturefactory.Fixture;
++import br.com.six2six.fixturefactory.ObjectFactory;
++import br.com.six2six.fixturefactory.processor.Processor;
++
++public class FixtureFunction implements AtomicFunction, RelationFunction {
++
++	private Class<?> clazz;
++
++	private List<String> labels;
++	
++	private Integer quantity;
++
++	public FixtureFunction(Class<?> clazz, String label) {
++		this.clazz = clazz;
++		this.labels = Arrays.asList(label);
++	}
++
++	public FixtureFunction(Class<?> clazz, String label, Integer quantity) {
++		this(clazz, Arrays.asList(label), quantity);
++	}
++	
++	public FixtureFunction(Class<?> clazz, List<String> labels, Integer quantity) {
++		this.clazz = clazz;
++		this.labels = labels;
++		this.quantity = quantity;
++	}
++
++	@Override
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(3);
++		return generate(Fixture.from(clazz));
++	}
++	
++	@Override
++	public <T> T generateValue(Processor processor) { br.com.six2six.jmhbench.MutationSwitch.tick(4);
++		return generate(Fixture.from(clazz).uses(processor));
++	}
++	
++	@Override
++	public <T> T generateValue(Object owner) {
++		return generate(new ObjectFactory(Fixture.of(clazz), owner));
++	}
++
++	@Override
++	public <T> T generateValue(Object owner, Processor processor) {
++	    return generate(Fixture.from(clazz).uses(processor));
++	}
++
++	@SuppressWarnings("unchecked")
++	private <T> T generate(ObjectFactory objectFactory) {
++		if(quantity != null) {
++			return gimmeWithQuantity(objectFactory);
++		} else {
++			return (T) objectFactory.gimme(getLabel());
++		}
++	}
++
++	@SuppressWarnings("unchecked")
++	private <T> T gimmeWithQuantity(ObjectFactory objectFactory) {
++		if(labels.size() == 1) {
++			return (T) objectFactory.gimme(quantity, getLabel());
++		} else {
++			return (T) objectFactory.gimme(quantity, labels);
++		}
++	}
++	
++	private String getLabel() {
++		return labels.get(0);
++	}
++}
+diff --git a/br/com/six2six/fixturefactory/function/impl/AssociationFunctionImpl.java b/br/com/six2six/fixturefactory/function/impl/AssociationFunctionImpl.java
+index 39082d0..1350d06 100644
+--- a/br/com/six2six/fixturefactory/function/impl/AssociationFunctionImpl.java
++++ b/br/com/six2six/fixturefactory/function/impl/AssociationFunctionImpl.java
+@@ -35,12 +35,12 @@ public class AssociationFunctionImpl implements AssociationFunction {
+ 	}
+ 
+ 	@Override
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(5);
+ 		return new FixtureFunction(clazz, labels, quantity).generateValue();
+ 	}
+ 	
+ 	@Override
+-	public <T> T generateValue(Processor processor) {
++	public <T> T generateValue(Processor processor) { br.com.six2six.jmhbench.MutationSwitch.tick(6);
+ 		return new FixtureFunction(clazz, labels, quantity).generateValue(processor);
+ 	}
+ 	
+diff --git a/br/com/six2six/fixturefactory/function/impl/ChronicFunction.java b/br/com/six2six/fixturefactory/function/impl/ChronicFunction.java
+index 4f51a08..3781628 100644
+--- a/br/com/six2six/fixturefactory/function/impl/ChronicFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/ChronicFunction.java
+@@ -1,39 +1,39 @@
+-package br.com.six2six.fixturefactory.function.impl;
+-
+-import br.com.six2six.fixturefactory.function.AtomicFunction;
+-import br.com.six2six.fixturefactory.function.DateFunction;
+-
+-import com.mdimension.jchronic.Chronic;
+-import com.mdimension.jchronic.Options;
+-import com.mdimension.jchronic.utils.Span;
+-
+-public class ChronicFunction implements DateFunction {
+-
+-    private String dateText;
+-    
+-    private Options options;
+-    
+-    public ChronicFunction(String text) {
+-        this.dateText = text;
+-        this.options = new Options();
+-    }
+-    
+-    public ChronicFunction(String text, Options options) {
+-        this.dateText = text;
+-        this.options = options;
+-    }
+-    
+-    
+-    @SuppressWarnings("unchecked")
+-    @Override
+-    public <T> T generateValue() {
+-        Span span = Chronic.parse(dateText, options);
+-        return (T) (span != null ? span.getBeginCalendar() : null);
+-    }
+-
+-	@Override
+-	public AtomicFunction asString(String pattern) {
+-		return new DateAsStringFunction(this, pattern);
+-	}
+-
+-}
++package br.com.six2six.fixturefactory.function.impl;
++
++import br.com.six2six.fixturefactory.function.AtomicFunction;
++import br.com.six2six.fixturefactory.function.DateFunction;
++
++import com.mdimension.jchronic.Chronic;
++import com.mdimension.jchronic.Options;
++import com.mdimension.jchronic.utils.Span;
++
++public class ChronicFunction implements DateFunction {
++
++    private String dateText;
++    
++    private Options options;
++    
++    public ChronicFunction(String text) {
++        this.dateText = text;
++        this.options = new Options();
++    }
++    
++    public ChronicFunction(String text, Options options) {
++        this.dateText = text;
++        this.options = options;
++    }
++    
++    
++    @SuppressWarnings("unchecked")
++    @Override
++    public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(7);
++        Span span = Chronic.parse(dateText, options);
++        return (T) (span != null ? span.getBeginCalendar() : null);
++    }
++
++	@Override
++	public AtomicFunction asString(String pattern) { br.com.six2six.jmhbench.MutationSwitch.tick(8);
++		return new DateAsStringFunction(this, pattern);
++	}
++
++}
+diff --git a/br/com/six2six/fixturefactory/function/impl/CnpjFunction.java b/br/com/six2six/fixturefactory/function/impl/CnpjFunction.java
+index c01f4a2..97ebfa9 100644
+--- a/br/com/six2six/fixturefactory/function/impl/CnpjFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/CnpjFunction.java
+@@ -15,7 +15,7 @@ public class CnpjFunction implements AtomicFunction {
+ 	
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(9);
+ 		RandomFunction random = new RandomFunction(Integer.class, new Range(1, 9));
+ 		Integer a  = random.generateValue();
+ 		Integer b  = random.generateValue();
+diff --git a/br/com/six2six/fixturefactory/function/impl/CpfFunction.java b/br/com/six2six/fixturefactory/function/impl/CpfFunction.java
+index 64f8219..56f9390 100644
+--- a/br/com/six2six/fixturefactory/function/impl/CpfFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/CpfFunction.java
+@@ -15,7 +15,7 @@ public class CpfFunction implements AtomicFunction {
+ 
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(10);
+ 		RandomFunction random = new RandomFunction(Integer.class, new Range(1, 9));
+ 
+ 		Integer a = random.generateValue();
+diff --git a/br/com/six2six/fixturefactory/function/impl/DateAsStringFunction.java b/br/com/six2six/fixturefactory/function/impl/DateAsStringFunction.java
+index 9515a01..122274f 100644
+--- a/br/com/six2six/fixturefactory/function/impl/DateAsStringFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/DateAsStringFunction.java
+@@ -17,12 +17,12 @@ public class DateAsStringFunction implements AtomicFunction {
+ 
+ 	@SuppressWarnings("unchecked")
+ 	@Override
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(11);
+ 		Calendar date = dateFunction.generateValue();
+ 		return (T) dateFormat.format(date.getTime());
+ 	}
+ 	
+-	public static DateAsStringFunction dateAsString(AtomicFunction dateFunction, String pattern) {
++	public static DateAsStringFunction dateAsString(AtomicFunction dateFunction, String pattern) { br.com.six2six.jmhbench.MutationSwitch.tick(12);
+ 		return new DateAsStringFunction(dateFunction, pattern);
+ 	}
+ 
+diff --git a/br/com/six2six/fixturefactory/function/impl/DateTimeFunction.java b/br/com/six2six/fixturefactory/function/impl/DateTimeFunction.java
+index b242263..f3db2bf 100644
+--- a/br/com/six2six/fixturefactory/function/impl/DateTimeFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/DateTimeFunction.java
+@@ -33,7 +33,7 @@ public class DateTimeFunction implements AtomicFunction {
+ 
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(13);
+ 		Calendar result = Calendar.getInstance();
+ 		result.setTimeInMillis((Long) this.random.generateValue());
+ 		return (T) result;
+diff --git a/br/com/six2six/fixturefactory/function/impl/EnumFunction.java b/br/com/six2six/fixturefactory/function/impl/EnumFunction.java
+index 7be0af9..778db11 100644
+--- a/br/com/six2six/fixturefactory/function/impl/EnumFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/EnumFunction.java
+@@ -17,7 +17,7 @@ public class EnumFunction implements AtomicFunction {
+ 	
+ 	@SuppressWarnings("unchecked")
+ 	@Override
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(14);
+ 		List<T> results = new ArrayList<T>();
+ 		AtomicFunction function = new RandomFunction(clazz);
+ 		for (int i = 0; i < quantity; i++) {
+diff --git a/br/com/six2six/fixturefactory/function/impl/IdentityFunction.java b/br/com/six2six/fixturefactory/function/impl/IdentityFunction.java
+index a63b00c..43e382d 100644
+--- a/br/com/six2six/fixturefactory/function/impl/IdentityFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/IdentityFunction.java
+@@ -12,7 +12,7 @@ public class IdentityFunction implements AtomicFunction {
+     
+     @Override
+     @SuppressWarnings("unchecked")
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(15);
+ 		return (T) this.value;
+ 	}
+ }
+diff --git a/br/com/six2six/fixturefactory/function/impl/NameFunction.java b/br/com/six2six/fixturefactory/function/impl/NameFunction.java
+index 1181c2d..c71331a 100644
+--- a/br/com/six2six/fixturefactory/function/impl/NameFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/NameFunction.java
+@@ -27,7 +27,7 @@ public class NameFunction implements AtomicFunction {
+ 
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(16);
+ 		Object value = null;
+ 		
+ 		if (this.type != null && type == NameType.FIRST) {
+diff --git a/br/com/six2six/fixturefactory/function/impl/NumberSequence.java b/br/com/six2six/fixturefactory/function/impl/NumberSequence.java
+index 5893674..2f183ee 100644
+--- a/br/com/six2six/fixturefactory/function/impl/NumberSequence.java
++++ b/br/com/six2six/fixturefactory/function/impl/NumberSequence.java
+@@ -15,7 +15,7 @@ public class NumberSequence implements Sequence<Number> {
+ 	}
+ 
+ 	@Override
+-	public Number nextValue() {
++	public Number nextValue() { br.com.six2six.jmhbench.MutationSwitch.tick(17);
+ 		Number result = null;
+ 		
+ 		if (this.base instanceof Integer) {
+diff --git a/br/com/six2six/fixturefactory/function/impl/RandomFunction.java b/br/com/six2six/fixturefactory/function/impl/RandomFunction.java
+index a94c067..4a74059 100644
+--- a/br/com/six2six/fixturefactory/function/impl/RandomFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/RandomFunction.java
+@@ -1,125 +1,125 @@
+-package br.com.six2six.fixturefactory.function.impl;
+-
+-import br.com.six2six.fixturefactory.base.Range;
+-import br.com.six2six.fixturefactory.function.AtomicFunction;
+-
+-import java.math.BigDecimal;
+-import java.math.BigInteger;
+-import java.math.MathContext;
+-import java.math.RoundingMode;
+-import java.util.Random;
+-
+-public class RandomFunction implements AtomicFunction {
+-
+-    private Class<?> type;
+-    private Object[] dataset;
+-    private AtomicFunction[] functions;
+-    private Range range;
+-    private MathContext mathContext = MathContext.DECIMAL32;
+-
+-    public RandomFunction(Class<?> type) {
+-        this.type = type;
+-    }
+-
+-    public RandomFunction(Object[] dataset) {
+-        this.dataset = dataset;
+-    }
+-
+-    public RandomFunction(AtomicFunction[] functions) {
+-        this.functions = functions;
+-    }
+-
+-    public RandomFunction(Class<?> type, Object[] dataset) {
+-        this.type = type;
+-        this.dataset = dataset;
+-    }
+-
+-    public RandomFunction(Class<?> type, Range range) {
+-        this.type = type;
+-        this.range = range;
+-    }
+-
+-    public RandomFunction(Class<? extends BigDecimal> type, MathContext mathContext) {
+-        this.type = type;
+-        this.mathContext = mathContext;
+-    }
+-
+-    @Override
+-    @SuppressWarnings("unchecked")
+-    public <T> T generateValue() {
+-        Object result = null;
+-        Random random = new Random();
+-
+-        if (this.dataset != null && this.dataset.length > 0) {
+-            result = this.dataset[random.nextInt(this.dataset.length)];
+-
+-        } else if (this.functions != null && this.functions.length > 0) {
+-            result = this.functions[random.nextInt(this.functions.length)].generateValue();
+-
+-        } else if (this.type.isEnum()) {
+-            result = this.type.getEnumConstants()[random.nextInt(this.type.getEnumConstants().length)];
+-
+-        } else if (this.type.isAssignableFrom(Byte.class) || this.type.equals(byte.class)) {
+-            result = this.range == null ? (byte) random.nextInt(Byte.MAX_VALUE + 1) : (byte) getRandomLong(this.range);
+-
+-        } else if (this.type.isAssignableFrom(Short.class) || this.type.equals(short.class)) {
+-            result = this.range == null ? (short) random.nextInt(Short.MAX_VALUE + 1) : (short) getRandomLong(this.range);
+-
+-        } else if (this.type.isAssignableFrom(Integer.class) || this.type.equals(int.class)) {
+-            result = this.range == null ? random.nextInt() : (int) getRandomLong(this.range);
+-
+-        } else if (this.type.isAssignableFrom(Long.class) || this.type.equals(long.class)) {
+-            result = this.range == null ? random.nextLong() : getRandomLong(this.range);
+-
+-        } else if (this.type.isAssignableFrom(Float.class) || this.type.equals(float.class)) {
+-            result = this.range == null ? random.nextFloat() : (float) getRandomDouble(this.range);
+-
+-        } else if (this.type.isAssignableFrom(Double.class) || this.type.equals(double.class)) {
+-            result = this.range == null ? random.nextDouble() : getRandomDouble(this.range);
+-
+-        } else if (this.type.isAssignableFrom(Boolean.class) || this.type.equals(boolean.class)) {
+-            result = random.nextBoolean();
+-
+-        } else if (this.type.isAssignableFrom(BigDecimal.class)) {
+-            if (this.range == null) {
+-                result = new BigDecimal(random.nextDouble(), this.mathContext);
+-
+-            } else {
+-
+-                result = getRandomBigDecimalByRange();
+-
+-            }
+-
+-        } else if (this.type.isAssignableFrom(BigInteger.class)) {
+-            if (this.range == null) {
+-                result = new BigInteger(64, random);
+-
+-            } else {
+-
+-                result = getRandomBigDecimalByRange().toBigInteger();
+-
+-            }
+-        }
+-
+-        return (T) result;
+-    }
+-
+-    private long getRandomLong(Range range) {
+-        return Math.round(getRandomDouble(range));
+-    }
+-    
+-    private double getRandomDouble(Range range) {
+-        return range.getStart().doubleValue() + (Math.random() * (range.getEnd().doubleValue() - range.getStart().doubleValue()));
+-    }
+-    
+-    private BigDecimal getRandomBigDecimal(BigDecimal start, BigDecimal end) {
+-        int scale = start.scale() > end.scale() ? start.scale() : end.scale();
+-        return start.add(new BigDecimal(Math.random()).multiply(end.subtract(start))).setScale(scale, RoundingMode.HALF_EVEN);
+-    }
+-
+-    private BigDecimal getRandomBigDecimalByRange() {
+-        final BigDecimal start = new BigDecimal(this.range.getStart().toString());
+-        final BigDecimal end = new BigDecimal(this.range.getEnd().toString());
+-        return getRandomBigDecimal(start, end);
+-    }
+-}
++package br.com.six2six.fixturefactory.function.impl;
++
++import br.com.six2six.fixturefactory.base.Range;
++import br.com.six2six.fixturefactory.function.AtomicFunction;
++
++import java.math.BigDecimal;
++import java.math.BigInteger;
++import java.math.MathContext;
++import java.math.RoundingMode;
++import java.util.Random;
++
++public class RandomFunction implements AtomicFunction {
++
++    private Class<?> type;
++    private Object[] dataset;
++    private AtomicFunction[] functions;
++    private Range range;
++    private MathContext mathContext = MathContext.DECIMAL32;
++
++    public RandomFunction(Class<?> type) {
++        this.type = type;
++    }
++
++    public RandomFunction(Object[] dataset) {
++        this.dataset = dataset;
++    }
++
++    public RandomFunction(AtomicFunction[] functions) {
++        this.functions = functions;
++    }
++
++    public RandomFunction(Class<?> type, Object[] dataset) {
++        this.type = type;
++        this.dataset = dataset;
++    }
++
++    public RandomFunction(Class<?> type, Range range) {
++        this.type = type;
++        this.range = range;
++    }
++
++    public RandomFunction(Class<? extends BigDecimal> type, MathContext mathContext) {
++        this.type = type;
++        this.mathContext = mathContext;
++    }
++
++    @Override
++    @SuppressWarnings("unchecked")
++    public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(18);
++        Object result = null;
++        Random random = new Random();
++
++        if (this.dataset != null && this.dataset.length > 0) {
++            result = this.dataset[random.nextInt(this.dataset.length)];
++
++        } else if (this.functions != null && this.functions.length > 0) {
++            result = this.functions[random.nextInt(this.functions.length)].generateValue();
++
++        } else if (this.type.isEnum()) {
++            result = this.type.getEnumConstants()[random.nextInt(this.type.getEnumConstants().length)];
++
++        } else if (this.type.isAssignableFrom(Byte.class) || this.type.equals(byte.class)) {
++            result = this.range == null ? (byte) random.nextInt(Byte.MAX_VALUE + 1) : (byte) getRandomLong(this.range);
++
++        } else if (this.type.isAssignableFrom(Short.class) || this.type.equals(short.class)) {
++            result = this.range == null ? (short) random.nextInt(Short.MAX_VALUE + 1) : (short) getRandomLong(this.range);
++
++        } else if (this.type.isAssignableFrom(Integer.class) || this.type.equals(int.class)) {
++            result = this.range == null ? random.nextInt() : (int) getRandomLong(this.range);
++
++        } else if (this.type.isAssignableFrom(Long.class) || this.type.equals(long.class)) {
++            result = this.range == null ? random.nextLong() : getRandomLong(this.range);
++
++        } else if (this.type.isAssignableFrom(Float.class) || this.type.equals(float.class)) {
++            result = this.range == null ? random.nextFloat() : (float) getRandomDouble(this.range);
++
++        } else if (this.type.isAssignableFrom(Double.class) || this.type.equals(double.class)) {
++            result = this.range == null ? random.nextDouble() : getRandomDouble(this.range);
++
++        } else if (this.type.isAssignableFrom(Boolean.class) || this.type.equals(boolean.class)) {
++            result = random.nextBoolean();
++
++        } else if (this.type.isAssignableFrom(BigDecimal.class)) {
++            if (this.range == null) {
++                result = new BigDecimal(random.nextDouble(), this.mathContext);
++
++            } else {
++
++                result = getRandomBigDecimalByRange();
++
++            }
++
++        } else if (this.type.isAssignableFrom(BigInteger.class)) {
++            if (this.range == null) {
++                result = new BigInteger(64, random);
++
++            } else {
++
++                result = getRandomBigDecimalByRange().toBigInteger();
++
++            }
++        }
++
++        return (T) result;
++    }
++
++    private long getRandomLong(Range range) {
++        return Math.round(getRandomDouble(range));
++    }
++    
++    private double getRandomDouble(Range range) {
++        return range.getStart().doubleValue() + (Math.random() * (range.getEnd().doubleValue() - range.getStart().doubleValue()));
++    }
++    
++    private BigDecimal getRandomBigDecimal(BigDecimal start, BigDecimal end) {
++        int scale = start.scale() > end.scale() ? start.scale() : end.scale();
++        return start.add(new BigDecimal(Math.random()).multiply(end.subtract(start))).setScale(scale, RoundingMode.HALF_EVEN);
++    }
++
++    private BigDecimal getRandomBigDecimalByRange() {
++        final BigDecimal start = new BigDecimal(this.range.getStart().toString());
++        final BigDecimal end = new BigDecimal(this.range.getEnd().toString());
++        return getRandomBigDecimal(start, end);
++    }
++}
+diff --git a/br/com/six2six/fixturefactory/function/impl/RegexFunction.java b/br/com/six2six/fixturefactory/function/impl/RegexFunction.java
+index 9547707..1eb17e4 100644
+--- a/br/com/six2six/fixturefactory/function/impl/RegexFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/RegexFunction.java
+@@ -13,7 +13,7 @@ public class RegexFunction implements AtomicFunction {
+ 
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(19);
+ 		return (T) RegexGen.of(pattern);
+ 	}
+ 
+diff --git a/br/com/six2six/fixturefactory/function/impl/SequenceFunction.java b/br/com/six2six/fixturefactory/function/impl/SequenceFunction.java
+index 08c5953..4589710 100644
+--- a/br/com/six2six/fixturefactory/function/impl/SequenceFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/SequenceFunction.java
+@@ -13,7 +13,7 @@ public class SequenceFunction implements AtomicFunction {
+ 
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(20);
+ 		return (T) sequence.nextValue();
+ 	}
+ }
+diff --git a/br/com/six2six/fixturefactory/function/impl/UniqueRandomFunction.java b/br/com/six2six/fixturefactory/function/impl/UniqueRandomFunction.java
+index 72ec123..4cc2b72 100644
+--- a/br/com/six2six/fixturefactory/function/impl/UniqueRandomFunction.java
++++ b/br/com/six2six/fixturefactory/function/impl/UniqueRandomFunction.java
+@@ -57,7 +57,7 @@ public class UniqueRandomFunction implements AtomicFunction{
+ 	
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+-	public <T> T generateValue() {
++	public <T> T generateValue() { br.com.six2six.jmhbench.MutationSwitch.tick(21);
+ 		
+ 		if(this.nextValueIndex >= this.dataset.length) {
+ 			this.nextValueIndex = 0; 
+diff --git a/br/com/six2six/fixturefactory/loader/FixtureFactoryLoader.java b/br/com/six2six/fixturefactory/loader/FixtureFactoryLoader.java
+index e745818..1171bca 100644
+--- a/br/com/six2six/fixturefactory/loader/FixtureFactoryLoader.java
++++ b/br/com/six2six/fixturefactory/loader/FixtureFactoryLoader.java
+@@ -4,7 +4,7 @@ import static br.com.six2six.fixturefactory.util.ClassLoaderUtils.getClassesForP
+ 
+ public class FixtureFactoryLoader {
+ 
+-	public static void loadTemplates(String basePackage) {
++	public static void loadTemplates(String basePackage) { br.com.six2six.jmhbench.MutationSwitch.tick(47);
+         for (Class<?> clazz : getClassesForPackage(basePackage)) {
+             if (!clazz.isInterface() && TemplateLoader.class.isAssignableFrom(clazz)) {
+                 try {
+diff --git a/br/com/six2six/fixturefactory/processor/HibernateProcessor.java b/br/com/six2six/fixturefactory/processor/HibernateProcessor.java
+index f7d6a11..f0830ac 100644
+--- a/br/com/six2six/fixturefactory/processor/HibernateProcessor.java
++++ b/br/com/six2six/fixturefactory/processor/HibernateProcessor.java
+@@ -13,7 +13,7 @@ public class HibernateProcessor implements Processor {
+     }
+     
+     @Override
+-    public void execute(Object result) {
++    public void execute(Object result) { br.com.six2six.jmhbench.MutationSwitch.tick(48);
+         if(result.getClass().isAnnotationPresent(Embeddable.class)) return;
+     	session.save(result);
+     }
+diff --git a/br/com/six2six/fixturefactory/transformer/CalendarTransformer.java b/br/com/six2six/fixturefactory/transformer/CalendarTransformer.java
+index d51355f..5ec0d0f 100644
+--- a/br/com/six2six/fixturefactory/transformer/CalendarTransformer.java
++++ b/br/com/six2six/fixturefactory/transformer/CalendarTransformer.java
+@@ -14,7 +14,7 @@ import br.com.six2six.fixturefactory.JavaVersion;
+ 
+ public class CalendarTransformer implements Transformer {
+ 
+-	public <T> T transform(Object value, Class<T> type)  {
++	public <T> T transform(Object value, Class<T> type)  { br.com.six2six.jmhbench.MutationSwitch.tick(49);
+ 		Object returnValue = null;
+ 		
+ 		if (value == null) {
+@@ -44,7 +44,7 @@ public class CalendarTransformer implements Transformer {
+ 		return type.cast(returnValue);
+ 	}
+ 
+-    public boolean accepts(Object value, Class<?> type) {
++    public boolean accepts(Object value, Class<?> type) { br.com.six2six.jmhbench.MutationSwitch.tick(50);
+     	boolean instanceOfCalendar = value instanceof Calendar;
+         return JavaVersion.current().gte(JavaVersion.JAVA_8) ? instanceOfCalendar && !java.time.temporal.Temporal.class.isAssignableFrom(type) : instanceOfCalendar;
+     }
+diff --git a/br/com/six2six/fixturefactory/transformer/SetTransformer.java b/br/com/six2six/fixturefactory/transformer/SetTransformer.java
+index f159a83..262f73e 100644
+--- a/br/com/six2six/fixturefactory/transformer/SetTransformer.java
++++ b/br/com/six2six/fixturefactory/transformer/SetTransformer.java
+@@ -12,7 +12,7 @@ import br.com.six2six.fixturefactory.util.ReflectionUtils;
+ 
+ public class SetTransformer implements Transformer {
+ 
+-    public <T> T transform(Object value, Class<T> type) {
++    public <T> T transform(Object value, Class<T> type) { br.com.six2six.jmhbench.MutationSwitch.tick(22);
+         if (type.isAssignableFrom(value.getClass())) {
+             return type.cast(value);
+         } else {
+@@ -20,7 +20,7 @@ public class SetTransformer implements Transformer {
+         }
+     }
+ 
+-    public boolean accepts(Object value, Class<?> type) {
++    public boolean accepts(Object value, Class<?> type) { br.com.six2six.jmhbench.MutationSwitch.tick(23);
+         return value instanceof Collection && Set.class.isAssignableFrom(type);
+     }
+ 
+diff --git a/br/com/six2six/fixturefactory/util/ClassLoaderUtils.java b/br/com/six2six/fixturefactory/util/ClassLoaderUtils.java
+index b01c379..12134ec 100644
+--- a/br/com/six2six/fixturefactory/util/ClassLoaderUtils.java
++++ b/br/com/six2six/fixturefactory/util/ClassLoaderUtils.java
+@@ -13,7 +13,7 @@ import java.util.jar.JarInputStream;
+ 
+ public class ClassLoaderUtils {
+ 
+-	public static Set<Class<?>> getClassesForPackage(String packageName) {
++	public static Set<Class<?>> getClassesForPackage(String packageName) { br.com.six2six.jmhbench.MutationSwitch.tick(24);
+ 		Set<Class<?>> classes = new HashSet<Class<?>>();
+ 
+ 		JarInputStream jarInputStream = null;
+diff --git a/br/com/six2six/fixturefactory/util/DateTimeUtils.java b/br/com/six2six/fixturefactory/util/DateTimeUtils.java
+index 32446e4..4e20089 100644
+--- a/br/com/six2six/fixturefactory/util/DateTimeUtils.java
++++ b/br/com/six2six/fixturefactory/util/DateTimeUtils.java
+@@ -6,7 +6,7 @@ import java.util.Calendar;
+ 
+ public class DateTimeUtils {
+ 
+-	public static Calendar toCalendar(String source, DateFormat format) {
++	public static Calendar toCalendar(String source, DateFormat format) { br.com.six2six.jmhbench.MutationSwitch.tick(25);
+ 		Calendar date = Calendar.getInstance();
+ 		try {
+ 			date.setTimeInMillis(format.parse(source).getTime());
+@@ -16,7 +16,7 @@ public class DateTimeUtils {
+ 		return date;
+ 	}
+ 	
+-	public static java.time.ZonedDateTime toZonedDateTime(Calendar value) {
++	public static java.time.ZonedDateTime toZonedDateTime(Calendar value) { br.com.six2six.jmhbench.MutationSwitch.tick(26);
+ 		return value.toInstant().atZone(value.getTimeZone().toZoneId());
+ 	}
+ 	
+diff --git a/br/com/six2six/fixturefactory/util/ReflectionUtils.java b/br/com/six2six/fixturefactory/util/ReflectionUtils.java
+index 18992a7..ea2eb12 100644
+--- a/br/com/six2six/fixturefactory/util/ReflectionUtils.java
++++ b/br/com/six2six/fixturefactory/util/ReflectionUtils.java
+@@ -1,232 +1,232 @@
+-package br.com.six2six.fixturefactory.util;
+-
+-import java.lang.reflect.Constructor;
+-import java.lang.reflect.Field;
+-import java.lang.reflect.Modifier;
+-import java.lang.reflect.Proxy;
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.List;
+-
+-import net.vidageek.mirror.dsl.Mirror;
+-import net.vidageek.mirror.list.dsl.Matcher;
+-
+-import org.apache.commons.beanutils.BeanUtilsBean;
+-import org.apache.commons.beanutils.PropertyUtilsBean;
+-import org.apache.commons.lang.StringUtils;
+-
+-import com.thoughtworks.paranamer.AdaptiveParanamer;
+-import com.thoughtworks.paranamer.Paranamer;
+-
+-public class ReflectionUtils {
+-
+-    public static final String CGLIB_CLASS_SEPARATOR = "$$";
+-    private static final String NO_SUCH_ATTRIBUTE_MESSAGE = "%s-> No such attribute: %s[%s]";
+-    
+-    @SuppressWarnings("unchecked")
+-    public static <T> T cast(Object source){
+-        try {
+-            return source == null ? null : (T) source;
+-        } catch (Exception e) {
+-            throw new IllegalArgumentException("Cannot convert to type");
+-        }
+-    }
+-    
+-    @SuppressWarnings("unchecked")
+-    public static <T> T invokeGetter(Object bean, String attribute) {
+-        return (T) ReflectionUtils.invokeGetter(bean, attribute, true);
+-    }
+-    
+-    @SuppressWarnings("unchecked")
+-    public static <T> T invokeGetter(Object bean, String attribute, boolean fail) {
+-        try {
+-            return (T) getPropertyUtilsBean().getProperty(bean, attribute);
+-        }catch (Exception e) {
+-            if (fail) {
+-                throw new IllegalArgumentException("Error invoking get method for " + attribute);   
+-            } else {
+-                return null;
+-            }
+-        }
+-    }
+-    
+-    public static Object invokeRecursiveGetter(Object bean, String objectsPath) {
+-        Object lastValue = null;
+-        Object lastBean = bean;
+-        for (String propertyItem : objectsPath.split("\\.")) {
+-            lastValue = ReflectionUtils.invokeGetter(lastBean, propertyItem);
+-            lastBean = lastValue;
+-            if (lastValue == null) {
+-                break;
+-            }
+-        }
+-        return lastValue;
+-    }
+-    
+-    public static <T> void invokeSetter(Object bean, String attribute, Object value, boolean fail){
+-        try {
+-            new Mirror().on(bean).set().field(attribute).withValue(value);
+-        } catch (Exception ex){
+-            if(fail) {
+-                throw new IllegalArgumentException(String.format(NO_SUCH_ATTRIBUTE_MESSAGE, bean.getClass().getName(), attribute, value.getClass().getName()));
+-            }
+-        }   
+-    }
+-    
+-    public static <T> void invokeSetter(Object bean, String attribute, Object value){
+-        ReflectionUtils.invokeSetter(bean, attribute, value, true);
+-    }       
+-    
+-    public static void invokeRecursiveSetter(Object bean, String attribute, Object value) {
+-	    ReflectionUtils.invokeSetter(prepareInvokeRecursiveSetter(bean, attribute, value), attribute.substring(attribute.lastIndexOf(".") + 1), value, true);
+-	}
+-    
+-    public static Class<?> invokeRecursiveType(Class<?> clazz, String attribute) {
+-    	return invokeRecursiveField(clazz, attribute).getType();
+-    }
+-
+-    public static Field invokeRecursiveField(Class<?> clazz, String attribute) {
+-        Field field = null;
+-        Class<?> targetBeanClass = getTargetClass(clazz);
+-        
+-        for (String propertyItem : attribute.split("\\.")) {
+-            field = new Mirror().on(targetBeanClass).reflect().field(propertyItem);
+-            if (field == null) throw new IllegalArgumentException(String.format("%s-> Field %s doesn't exists", clazz.getName(), attribute));
+-            targetBeanClass = field.getType();
+-        }
+-
+-        return field;
+-    }
+-
+-    @SuppressWarnings("unchecked")
+-    public static <T> T newInstance(Class<?> clazz) {
+-        return (T) newInstance(clazz, Collections.emptyList());
+-    }
+-    
+-    public static <T> T newInstance(Class<T> target, List<? extends Object> parameters) {
+-		if (parameters.size() > 0) {
+-			return new Mirror().on(target).invoke().constructor().withArgs(parameters.toArray());			
+-		} else {
+-			return new Mirror().on(target).invoke().constructor().withoutArgs();
+-		}
+-	}
+-    
+-    public static <T> List<String> filterConstructorParameters(Class<T> target, Collection<String> names) {
+-		List<String> result = Collections.emptyList();
+-		Paranamer paranamer = new AdaptiveParanamer();
+-		
+-		for (Constructor<T> constructor : new Mirror().on(target).reflectAll().constructors()) {
+-		    List<String> constructorParameterNames = lookupParameterNames(paranamer, constructor);
+-		    
+-			if (result.size() < constructorParameterNames.size()) {
+-				if (names.containsAll(constructorParameterNames) 
+-						&& constructorParameterTypesMatch(target, constructorParameterNames, Arrays.asList(constructor.getParameterTypes())))
+-					result = constructorParameterNames;
+-			}
+-		}
+-		return result;
+-    }
+-
+-    private static <T> List<String> lookupParameterNames(Paranamer paranamer, Constructor<T> ctor) {
+-        String[] paramNames = paranamer.lookupParameterNames(ctor, false);
+-
+-        // as of jdk8, javac adds the "this$n" in the debug info.
+-        if (isInnerClass(ctor.getDeclaringClass()) && paramNames[0].startsWith("this$")) {
+-            paramNames = Arrays.copyOfRange(paramNames, 1, paramNames.length);
+-        }
+-
+-        return Arrays.asList(paramNames);
+-    }
+-    
+-    private static boolean constructorParameterTypesMatch(Class<?> target, List<String> parameterNames, List<Class<?>> parameterTypes) {
+-    	for (int idx = 0; idx < parameterNames.size(); idx++) {
+-    		String parameterName = parameterNames.get(idx);
+-    		Class<?> parameterType = parameterTypes.get(idx);
+-    		if (isInnerClass(target) && parameterType.equals(target.getEnclosingClass())) continue;
+-			if (!parameterType.equals(invokeRecursiveType(target, parameterName))) return false;
+-    	}
+-    	return true;
+-    }
+-    
+-    public static Class<?> getTargetClass(Class<?> clazz) {
+-        if (isCglibProxy(clazz) || Proxy.isProxyClass(clazz)) {
+-            clazz = clazz.getSuperclass();
+-        }
+-        return clazz;
+-    }
+-    
+-    public static boolean isCglibProxy(Class<?> clazz) {
+-        return (clazz != null && clazz.getName().indexOf(CGLIB_CLASS_SEPARATOR) != -1);
+-    }
+-    
+-    public static PropertyUtilsBean getPropertyUtilsBean() {
+-    	return BeanUtilsBean.getInstance().getPropertyUtils();
+-    }
+- 
+-    private static Object prepareInvokeRecursiveSetter(Object bean, String attribute, Object value) {
+-        Object targetBean = bean;
+-        Object lastBean = null;
+-        
+-        int lastAttributeIdx = attribute.lastIndexOf(".");
+-        
+-        String path  = null;
+-        if (lastAttributeIdx > 0) {
+-            path = StringUtils.defaultIfEmpty(attribute.substring(0, lastAttributeIdx), null);
+-        }
+-        
+-        if (path != null) {
+-            for (String propertyItem : path.split("\\.")) {
+-                lastBean = targetBean;
+-                targetBean = ReflectionUtils.invokeGetter(targetBean, propertyItem);
+-                if(targetBean == null) {
+-                	Class<?> type = invokeRecursiveType(lastBean.getClass(), propertyItem);
+-                    try {
+-                        List<Object> args = new ArrayList<Object>();
+-                        if (isInnerClass(type)) {
+-                            args.add(lastBean);
+-                        }
+-                        targetBean = newInstance(type, args);
+-                        ReflectionUtils.invokeSetter(lastBean, propertyItem, targetBean, true);                     
+-                    } catch (Exception e) {
+-                        throw new IllegalArgumentException(String.format(NO_SUCH_ATTRIBUTE_MESSAGE, lastBean.getClass().getName(), propertyItem, type.getName()));
+-                    }
+-                }
+-            }
+-        }
+-        
+-        return targetBean;
+-    }
+-    
+-    public static boolean isInnerClass(Class<?> clazz) {
+-    	return clazz.getEnclosingClass() != null && !Modifier.isStatic(clazz.getModifiers());
+-    }
+-    
+-    @SuppressWarnings("unchecked")
+-	public static <T,U> Collection<U> map(Collection<T> collection, String propertyName) {
+-    	Collection<U> map = null; 
+-	    try {
+-	         map = collection.getClass().newInstance();    
+-        } catch (Exception e) {
+-            map = new ArrayList<U>();
+-        }
+-	    
+-    	for (T item : collection) {
+-    		map.add((U) ReflectionUtils.invokeGetter(item, propertyName, true));
+-		};
+-		return map;
+-    }
+-
+-	public static <T> boolean hasDefaultConstructor(final Class<T> clazz) {
+-		return !new Mirror().on(clazz).reflectAll().constructors().matching(new Matcher<Constructor<T>>() {
+-			@Override
+-			public boolean accepts(Constructor<T> constructor) {
+-				if (ReflectionUtils.isInnerClass(clazz)) {
+-					return constructor.getParameterTypes().length == 1 && constructor.getParameterTypes()[0].equals(clazz.getEnclosingClass());
+-				}
+-				return Arrays.asList(constructor.getParameterTypes()).isEmpty();
+-			}
+-		}).isEmpty();
+-	}
+-}
++package br.com.six2six.fixturefactory.util;
++
++import java.lang.reflect.Constructor;
++import java.lang.reflect.Field;
++import java.lang.reflect.Modifier;
++import java.lang.reflect.Proxy;
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.Collection;
++import java.util.Collections;
++import java.util.List;
++
++import net.vidageek.mirror.dsl.Mirror;
++import net.vidageek.mirror.list.dsl.Matcher;
++
++import org.apache.commons.beanutils.BeanUtilsBean;
++import org.apache.commons.beanutils.PropertyUtilsBean;
++import org.apache.commons.lang.StringUtils;
++
++import com.thoughtworks.paranamer.AdaptiveParanamer;
++import com.thoughtworks.paranamer.Paranamer;
++
++public class ReflectionUtils {
++
++    public static final String CGLIB_CLASS_SEPARATOR = "$$";
++    private static final String NO_SUCH_ATTRIBUTE_MESSAGE = "%s-> No such attribute: %s[%s]";
++    
++    @SuppressWarnings("unchecked")
++    public static <T> T cast(Object source){ br.com.six2six.jmhbench.MutationSwitch.tick(27);
++        try {
++            return source == null ? null : (T) source;
++        } catch (Exception e) {
++            throw new IllegalArgumentException("Cannot convert to type");
++        }
++    }
++    
++    @SuppressWarnings("unchecked")
++    public static <T> T invokeGetter(Object bean, String attribute) { br.com.six2six.jmhbench.MutationSwitch.tick(28);
++        return (T) ReflectionUtils.invokeGetter(bean, attribute, true);
++    }
++    
++    @SuppressWarnings("unchecked")
++    public static <T> T invokeGetter(Object bean, String attribute, boolean fail) {
++        try {
++            return (T) getPropertyUtilsBean().getProperty(bean, attribute);
++        }catch (Exception e) {
++            if (fail) {
++                throw new IllegalArgumentException("Error invoking get method for " + attribute);   
++            } else {
++                return null;
++            }
++        }
++    }
++    
++    public static Object invokeRecursiveGetter(Object bean, String objectsPath) {
++        Object lastValue = null;
++        Object lastBean = bean;
++        for (String propertyItem : objectsPath.split("\\.")) {
++            lastValue = ReflectionUtils.invokeGetter(lastBean, propertyItem);
++            lastBean = lastValue;
++            if (lastValue == null) {
++                break;
++            }
++        }
++        return lastValue;
++    }
++    
++    public static <T> void invokeSetter(Object bean, String attribute, Object value, boolean fail){
++        try {
++            new Mirror().on(bean).set().field(attribute).withValue(value);
++        } catch (Exception ex){
++            if(fail) {
++                throw new IllegalArgumentException(String.format(NO_SUCH_ATTRIBUTE_MESSAGE, bean.getClass().getName(), attribute, value.getClass().getName()));
++            }
++        }   
++    }
++    
++    public static <T> void invokeSetter(Object bean, String attribute, Object value){
++        ReflectionUtils.invokeSetter(bean, attribute, value, true);
++    }       
++    
++    public static void invokeRecursiveSetter(Object bean, String attribute, Object value) {
++	    ReflectionUtils.invokeSetter(prepareInvokeRecursiveSetter(bean, attribute, value), attribute.substring(attribute.lastIndexOf(".") + 1), value, true);
++	}
++    
++    public static Class<?> invokeRecursiveType(Class<?> clazz, String attribute) {
++    	return invokeRecursiveField(clazz, attribute).getType();
++    }
++
++    public static Field invokeRecursiveField(Class<?> clazz, String attribute) {
++        Field field = null;
++        Class<?> targetBeanClass = getTargetClass(clazz);
++        
++        for (String propertyItem : attribute.split("\\.")) {
++            field = new Mirror().on(targetBeanClass).reflect().field(propertyItem);
++            if (field == null) throw new IllegalArgumentException(String.format("%s-> Field %s doesn't exists", clazz.getName(), attribute));
++            targetBeanClass = field.getType();
++        }
++
++        return field;
++    }
++
++    @SuppressWarnings("unchecked")
++    public static <T> T newInstance(Class<?> clazz) {
++        return (T) newInstance(clazz, Collections.emptyList());
++    }
++    
++    public static <T> T newInstance(Class<T> target, List<? extends Object> parameters) {
++		if (parameters.size() > 0) {
++			return new Mirror().on(target).invoke().constructor().withArgs(parameters.toArray());			
++		} else {
++			return new Mirror().on(target).invoke().constructor().withoutArgs();
++		}
++	}
++    
++    public static <T> List<String> filterConstructorParameters(Class<T> target, Collection<String> names) {
++		List<String> result = Collections.emptyList();
++		Paranamer paranamer = new AdaptiveParanamer();
++		
++		for (Constructor<T> constructor : new Mirror().on(target).reflectAll().constructors()) {
++		    List<String> constructorParameterNames = lookupParameterNames(paranamer, constructor);
++		    
++			if (result.size() < constructorParameterNames.size()) {
++				if (names.containsAll(constructorParameterNames) 
++						&& constructorParameterTypesMatch(target, constructorParameterNames, Arrays.asList(constructor.getParameterTypes())))
++					result = constructorParameterNames;
++			}
++		}
++		return result;
++    }
++
++    private static <T> List<String> lookupParameterNames(Paranamer paranamer, Constructor<T> ctor) {
++        String[] paramNames = paranamer.lookupParameterNames(ctor, false);
++
++        // as of jdk8, javac adds the "this$n" in the debug info.
++        if (isInnerClass(ctor.getDeclaringClass()) && paramNames[0].startsWith("this$")) {
++            paramNames = Arrays.copyOfRange(paramNames, 1, paramNames.length);
++        }
++
++        return Arrays.asList(paramNames);
++    }
++    
++    private static boolean constructorParameterTypesMatch(Class<?> target, List<String> parameterNames, List<Class<?>> parameterTypes) {
++    	for (int idx = 0; idx < parameterNames.size(); idx++) {
++    		String parameterName = parameterNames.get(idx);
++    		Class<?> parameterType = parameterTypes.get(idx);
++    		if (isInnerClass(target) && parameterType.equals(target.getEnclosingClass())) continue;
++			if (!parameterType.equals(invokeRecursiveType(target, parameterName))) return false;
++    	}
++    	return true;
++    }
++    
++    public static Class<?> getTargetClass(Class<?> clazz) {
++        if (isCglibProxy(clazz) || Proxy.isProxyClass(clazz)) {
++            clazz = clazz.getSuperclass();
++        }
++        return clazz;
++    }
++    
++    public static boolean isCglibProxy(Class<?> clazz) {
++        return (clazz != null && clazz.getName().indexOf(CGLIB_CLASS_SEPARATOR) != -1);
++    }
++    
++    public static PropertyUtilsBean getPropertyUtilsBean() {
++    	return BeanUtilsBean.getInstance().getPropertyUtils();
++    }
++ 
++    private static Object prepareInvokeRecursiveSetter(Object bean, String attribute, Object value) {
++        Object targetBean = bean;
++        Object lastBean = null;
++        
++        int lastAttributeIdx = attribute.lastIndexOf(".");
++        
++        String path  = null;
++        if (lastAttributeIdx > 0) {
++            path = StringUtils.defaultIfEmpty(attribute.substring(0, lastAttributeIdx), null);
++        }
++        
++        if (path != null) {
++            for (String propertyItem : path.split("\\.")) {
++                lastBean = targetBean;
++                targetBean = ReflectionUtils.invokeGetter(targetBean, propertyItem);
++                if(targetBean == null) {
++                	Class<?> type = invokeRecursiveType(lastBean.getClass(), propertyItem);
++                    try {
++                        List<Object> args = new ArrayList<Object>();
++                        if (isInnerClass(type)) {
++                            args.add(lastBean);
++                        }
++                        targetBean = newInstance(type, args);
++                        ReflectionUtils.invokeSetter(lastBean, propertyItem, targetBean, true);                     
++                    } catch (Exception e) {
++                        throw new IllegalArgumentException(String.format(NO_SUCH_ATTRIBUTE_MESSAGE, lastBean.getClass().getName(), propertyItem, type.getName()));
++                    }
++                }
++            }
++        }
++        
++        return targetBean;
++    }
++    
++    public static boolean isInnerClass(Class<?> clazz) {
++    	return clazz.getEnclosingClass() != null && !Modifier.isStatic(clazz.getModifiers());
++    }
++    
++    @SuppressWarnings("unchecked")
++	public static <T,U> Collection<U> map(Collection<T> collection, String propertyName) {
++    	Collection<U> map = null; 
++	    try {
++	         map = collection.getClass().newInstance();    
++        } catch (Exception e) {
++            map = new ArrayList<U>();
++        }
++	    
++    	for (T item : collection) {
++    		map.add((U) ReflectionUtils.invokeGetter(item, propertyName, true));
++		};
++		return map;
++    }
++
++	public static <T> boolean hasDefaultConstructor(final Class<T> clazz) {
++		return !new Mirror().on(clazz).reflectAll().constructors().matching(new Matcher<Constructor<T>>() {
++			@Override
++			public boolean accepts(Constructor<T> constructor) {
++				if (ReflectionUtils.isInnerClass(clazz)) {
++					return constructor.getParameterTypes().length == 1 && constructor.getParameterTypes()[0].equals(clazz.getEnclosingClass());
++				}
++				return Arrays.asList(constructor.getParameterTypes()).isEmpty();
++			}
++		}).isEmpty();
++	}
++}
+diff --git a/br/com/six2six/jmhbench/MutationSwitch.java b/br/com/six2six/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..1e1c8b9
+--- /dev/null
++++ b/br/com/six2six/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package br.com.six2six.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

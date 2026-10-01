@@ -1,0 +1,82 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link FlowableTakePublisher}.
+ *
+ * Measures the throughput of taking a limited number of items from a synchronous source.
+ * The benchmark runs in {@link Mode#Throughput} which reports operations per second.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize the source size to evaluate different workloads.
+ * - Use Blackhole to consume items and prevent dead‑code elimination.
+ * - Request Long.MAX_VALUE to avoid back‑pressure effects that would skew the measurement.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableTakePublisherBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({ "1000", "10000", "1000000" })
+    public int sourceSize;
+
+    /**
+     * Number of items to take from the source.
+     */
+    @Param({ "500", "5000", "500000" })
+    public int takeLimit;
+
+    private Publisher<Integer> source;
+
+    private FlowableTakePublisher<Integer> takePublisher;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Synchronous source that emits a known number of integers.
+        source = Flowable.range(0, sourceSize);
+        // The operator under test.
+        takePublisher = new FlowableTakePublisher<>(source, takeLimit);
+    }
+
+    @Benchmark
+    public void takeAndConsume(Blackhole bh) {
+        takePublisher.subscribe(new Subscriber<Integer>() {
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                // Request all items; the TakeSubscriber will enforce the limit.
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                // Consume the value to prevent dead‑code elimination.
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are not expected in this benchmark; rethrow to surface failures.
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // No-op; completion is part of the measured operation.
+            }
+        });
+    }
+}
+```

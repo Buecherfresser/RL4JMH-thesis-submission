@@ -1,0 +1,72 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Notification;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link FlowableDematerialize}.
+ *
+ * Measures the throughput of the dematerialize operator when processing a stream of
+ * {@link Notification}s generated from a simple integer range.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * - Warm‑up and measurement iterations are defined.
+ * - Multiple forks are used to mitigate JVM warm‑up effects.
+ * - State is scoped per thread to avoid contention.
+ * - Blackhole is used to consume results and prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class FlowableDematerializeBenchmark {
+
+    /** Number of items emitted by the source Flowable per subscription. */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /** Source Flowable that emits a range of integers. */
+    private Flowable<Integer> source;
+
+    /** Function that converts an integer into a {@link Notification}. */
+    private Function<Integer, Notification<Integer>> selector;
+
+    /** Flowable that applies the dematerialize operator to the source. */
+    private Flowable<Integer> dematerialized;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple range source; each element will be wrapped into a Notification.
+        source = Flowable.range(1, itemCount);
+        // Selector creates an onNext Notification for each integer.
+        selector = i -> Notification.createOnNext(i);
+        // Build the pipeline: map to Notification then dematerialize using the internal class.
+        Flowable<Notification<Integer>> materialized = source.map(selector);
+        dematerialized = new FlowableDematerialize<>(materialized, Function.identity());
+    }
+
+    /**
+     * Subscribes to the dematerialized Flowable and drains all items.
+     *
+     * The {@link TestSubscriber} is used because it provides a lightweight way to
+     * request all items and await completion without additional side effects.
+     */
+    @Benchmark
+    public void dematerializeThroughput(Blackhole bh) {
+        TestSubscriber<Integer> ts = new TestSubscriber<>(Integer.MAX_VALUE);
+        dematerialized.subscribe(ts);
+        // Wait for the upstream to finish; this is safe because the source is finite.
+        ts.awaitDone(1, TimeUnit.SECONDS);
+        // Consume the collected values to prevent dead‑code elimination.
+        bh.consume(ts.values());
+    }
+}
+```

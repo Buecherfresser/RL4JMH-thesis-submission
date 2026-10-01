@@ -1,0 +1,3116 @@
+diff --git a/com/baidu/unbiz/easymapper/ClassMapBuilder.java b/com/baidu/unbiz/easymapper/ClassMapBuilder.java
+index 6270843..edf7cef 100644
+--- a/com/baidu/unbiz/easymapper/ClassMapBuilder.java
++++ b/com/baidu/unbiz/easymapper/ClassMapBuilder.java
+@@ -106,7 +106,7 @@ public class ClassMapBuilder<A, B> implements MappedTypePair {
+      *
+      * @return ClassMapBuilder
+      */
+-    public ClassMapBuilder<A, B> field(String sourceField, String targetField) {
++    public ClassMapBuilder<A, B> field(String sourceField, String targetField) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(1);
+         putMappingExtension(sourceField, new MappingExtension(targetField));
+         return this;
+     }
+@@ -125,7 +125,7 @@ public class ClassMapBuilder<A, B> implements MappedTypePair {
+      * @return ClassMapBuilder
+      */
+     public <S, D> ClassMapBuilder<A, B> field(String sourceField, String targetField, Class<S> sourceType,
+-                                              Class<D> targetType, Transformer<S, D> transformer) {
++                                              Class<D> targetType, Transformer<S, D> transformer) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(2);
+         putMappingExtension(sourceField, new MappingExtension(targetField, (Transformer<Object, Object>) transformer));
+         return this;
+     }
+@@ -140,7 +140,7 @@ public class ClassMapBuilder<A, B> implements MappedTypePair {
+      *
+      * @return ClassMapBuilder
+      */
+-    public <S, D> ClassMapBuilder<A, B> field(String sourceField, String targetField, Transformer<S, D> transformer) {
++    public <S, D> ClassMapBuilder<A, B> field(String sourceField, String targetField, Transformer<S, D> transformer) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(3);
+         putMappingExtension(sourceField, new MappingExtension(targetField, (Transformer<Object, Object>) transformer));
+         return this;
+     }
+diff --git a/com/baidu/unbiz/easymapper/CopyByRefMapper.java b/com/baidu/unbiz/easymapper/CopyByRefMapper.java
+index 1fe6a27..3dc352f 100644
+--- a/com/baidu/unbiz/easymapper/CopyByRefMapper.java
++++ b/com/baidu/unbiz/easymapper/CopyByRefMapper.java
+@@ -49,7 +49,7 @@ public class CopyByRefMapper implements Mapper {
+     /**
+      * 清理
+      */
+-    public void clear() {
++    public void clear() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(4);
+         if (this.classMapCache != null) {
+             this.classMapCache.clear();
+         }
+@@ -69,12 +69,12 @@ public class CopyByRefMapper implements Mapper {
+      * @return 类型映射关系
+      */
+     @Override
+-    public <A, B> ClassMap<A, B> registerClassMap(MapperKey key, final ClassMapBuilder<A, B> builder) {
++    public <A, B> ClassMap<A, B> registerClassMap(MapperKey key, final ClassMapBuilder<A, B> builder) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(5);
+         try {
+             ClassMap<A, B> classMap = (ClassMap<A, B>) classMapCache.compute(key,
+                     new Computable<MapperKey, ClassMap<Object, Object>>() {
+                         @Override
+-                        public ClassMap<Object, Object> compute(MapperKey arg) throws Exception {
++                        public ClassMap<Object, Object> compute(MapperKey arg) throws Exception { com.baidu.unbiz.jmhbench.MutationSwitch.tick(6);
+                             return (ClassMap<Object, Object>) builder.build();
+                         }
+                     });
+diff --git a/com/baidu/unbiz/easymapper/MapperFactory.java b/com/baidu/unbiz/easymapper/MapperFactory.java
+index 8fc3579..38d727e 100644
+--- a/com/baidu/unbiz/easymapper/MapperFactory.java
++++ b/com/baidu/unbiz/easymapper/MapperFactory.java
+@@ -19,7 +19,7 @@ public class MapperFactory {
+      *
+      * @return Mapper
+      */
+-    public static Mapper getCopyByRefMapper() {
++    public static Mapper getCopyByRefMapper() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(7);
+         if (DEFAULT_MAPPER == null) {
+             synchronized(LOCK) {
+                 if (DEFAULT_MAPPER == null) {
+diff --git a/com/baidu/unbiz/easymapper/codegen/MappingCodeGenerator.java b/com/baidu/unbiz/easymapper/codegen/MappingCodeGenerator.java
+index 6636704..b37869b 100644
+--- a/com/baidu/unbiz/easymapper/codegen/MappingCodeGenerator.java
++++ b/com/baidu/unbiz/easymapper/codegen/MappingCodeGenerator.java
+@@ -40,7 +40,7 @@ public final class MappingCodeGenerator {
+      */
+     public static final GeneratedAtoBMappingBase ABSENT_MAPPING = new GeneratedAtoBMappingBase() {
+         @Override
+-        public void map(Object o, Object o2) {
++        public void map(Object o, Object o2) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(8);
+             // nothing to do
+         }
+     };
+@@ -61,7 +61,7 @@ public final class MappingCodeGenerator {
+      *
+      * @return 运行时生成{@link AtoBMapping}的具体实现对象
+      */
+-    public GeneratedAtoBMappingBase build(ClassMap<?, ?> classMap, Mapper mapper) {
++    public GeneratedAtoBMappingBase build(ClassMap<?, ?> classMap, Mapper mapper) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(9);
+         try {
+             SourceCodeContext sourceCodeContext =
+                     new SourceCodeContext(classMap.getMapperClassName(), GeneratedAtoBMappingBase.class);
+diff --git a/com/baidu/unbiz/easymapper/codegen/SourceCodeContext.java b/com/baidu/unbiz/easymapper/codegen/SourceCodeContext.java
+index 26a95e1..9ed7a22 100644
+--- a/com/baidu/unbiz/easymapper/codegen/SourceCodeContext.java
++++ b/com/baidu/unbiz/easymapper/codegen/SourceCodeContext.java
+@@ -112,14 +112,14 @@ public class SourceCodeContext {
+      *
+      * @return 源代码
+      */
+-    public String toSourceFile() {
++    public String toSourceFile() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(39);
+         return sourceBuilder.toString() + LF + "}";
+     }
+ 
+     /**
+      * 加入方法代码
+      */
+-    public void addMethod(String methodSource) {
++    public void addMethod(String methodSource) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(40);
+         sourceBuilder.append(LF);
+         sourceBuilder.append(methodSource);
+         sourceBuilder.append(LF);
+@@ -131,7 +131,7 @@ public class SourceCodeContext {
+      *
+      * @return mapper的名称，即客户端的入口
+      */
+-    public String getMapper() {
++    public String getMapper() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(41);
+         return "mapper";
+     }
+ 
+diff --git a/com/baidu/unbiz/easymapper/codegen/bytecode/JavassistByteCodeManipulator.java b/com/baidu/unbiz/easymapper/codegen/bytecode/JavassistByteCodeManipulator.java
+index 90aef98..974cde2 100644
+--- a/com/baidu/unbiz/easymapper/codegen/bytecode/JavassistByteCodeManipulator.java
++++ b/com/baidu/unbiz/easymapper/codegen/bytecode/JavassistByteCodeManipulator.java
+@@ -92,7 +92,7 @@ public class JavassistByteCodeManipulator implements ByteCodeManipulator {
+      *
+      * @return 编译后的class
+      */
+-    public Class<?> compileClass(SourceCodeContext sourceCode) throws MappingCodeGenerationException {
++    public Class<?> compileClass(SourceCodeContext sourceCode) throws MappingCodeGenerationException { com.baidu.unbiz.jmhbench.MutationSwitch.tick(42);
+         StringBuilder className = new StringBuilder(sourceCode.getClassName());
+         CtClass byteCodeClass = classPool.makeClass(className.toString());
+ 
+@@ -143,7 +143,7 @@ public class JavassistByteCodeManipulator implements ByteCodeManipulator {
+      *
+      * @throws IOException
+      */
+-    protected void writeClassFile(CtClass byteCodeClass) {
++    protected void writeClassFile(CtClass byteCodeClass) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(43);
+         if (byteCodeClass == null) {
+             return;
+         }
+@@ -164,7 +164,7 @@ public class JavassistByteCodeManipulator implements ByteCodeManipulator {
+      *
+      * @throws IOException
+      */
+-    protected void writeSourceFile(SourceCodeContext sourceCode) {
++    protected void writeSourceFile(SourceCodeContext sourceCode) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(44);
+         if (sourceCode == null) {
+             return;
+         }
+diff --git a/com/baidu/unbiz/easymapper/mapping/DefaultMappingStrategy.java b/com/baidu/unbiz/easymapper/mapping/DefaultMappingStrategy.java
+index cd2be9b..b53dd01 100644
+--- a/com/baidu/unbiz/easymapper/mapping/DefaultMappingStrategy.java
++++ b/com/baidu/unbiz/easymapper/mapping/DefaultMappingStrategy.java
+@@ -22,7 +22,7 @@ public class DefaultMappingStrategy {
+      * @return 源代码
+      */
+     public String generateMappingCode(FieldMap fieldMap, VariableRef source, VariableRef destination,
+-                                      SourceCodeContext code) {
++                                      SourceCodeContext code) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(10);
+         for (MappingHandler mappingHandler : ServiceLoaderHelper.getInstance().getServiceLoader()) {
+             if (mappingHandler.canApply(fieldMap)) {
+                 return mappingHandler.generateMappingCode(fieldMap, source, destination, code);
+diff --git a/com/baidu/unbiz/easymapper/mapping/ServiceLoaderHelper.java b/com/baidu/unbiz/easymapper/mapping/ServiceLoaderHelper.java
+index 82e27a3..0642bd8 100644
+--- a/com/baidu/unbiz/easymapper/mapping/ServiceLoaderHelper.java
++++ b/com/baidu/unbiz/easymapper/mapping/ServiceLoaderHelper.java
+@@ -19,7 +19,7 @@ public class ServiceLoaderHelper {
+      */
+     private static volatile ServiceLoader<MappingHandler> handlers;
+ 
+-    public static ServiceLoaderHelper getInstance() {
++    public static ServiceLoaderHelper getInstance() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(45);
+         if (INSTANCE == null) {
+             synchronized (LOCK) {
+                 if (INSTANCE == null) {
+@@ -30,7 +30,7 @@ public class ServiceLoaderHelper {
+         return INSTANCE;
+     }
+ 
+-    public ServiceLoader<MappingHandler> getServiceLoader() {
++    public ServiceLoader<MappingHandler> getServiceLoader() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(46);
+         return handlers;
+     }
+ 
+diff --git a/com/baidu/unbiz/easymapper/mapping/impl/AnyTypeToStringMappingHandler.java b/com/baidu/unbiz/easymapper/mapping/impl/AnyTypeToStringMappingHandler.java
+index 43e3d5a..a6c35db 100644
+--- a/com/baidu/unbiz/easymapper/mapping/impl/AnyTypeToStringMappingHandler.java
++++ b/com/baidu/unbiz/easymapper/mapping/impl/AnyTypeToStringMappingHandler.java
+@@ -13,13 +13,13 @@ import com.baidu.unbiz.easymapper.metadata.VariableRef;
+ public class AnyTypeToStringMappingHandler extends AbstractMappingHandler implements MappingHandler {
+ 
+     @Override
+-    public boolean canApply(FieldMap fieldMap) {
++    public boolean canApply(FieldMap fieldMap) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(11);
+         return String.class.equals(fieldMap.getDestination().getType().getRawType());
+     }
+ 
+     @Override
+     public String generateMappingCode(FieldMap fieldMap, VariableRef source, VariableRef destination,
+-                                      SourceCodeContext code) {
++                                      SourceCodeContext code) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(12);
+         if (source.isPrimitive()) {
+             return statement(destination.assign("\"\"+ %s", source));
+         } else {
+diff --git a/com/baidu/unbiz/easymapper/mapping/impl/CanBeAssignedMappingHandler.java b/com/baidu/unbiz/easymapper/mapping/impl/CanBeAssignedMappingHandler.java
+index 17d7525..98f1dd6 100644
+--- a/com/baidu/unbiz/easymapper/mapping/impl/CanBeAssignedMappingHandler.java
++++ b/com/baidu/unbiz/easymapper/mapping/impl/CanBeAssignedMappingHandler.java
+@@ -13,13 +13,13 @@ import com.baidu.unbiz.easymapper.metadata.VariableRef;
+ public class CanBeAssignedMappingHandler extends AbstractMappingHandler implements MappingHandler {
+ 
+     @Override
+-    public boolean canApply(FieldMap fieldMap) {
++    public boolean canApply(FieldMap fieldMap) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(13);
+         return fieldMap.getDestination().isAssignableFrom(fieldMap.getSource());
+     }
+ 
+     @Override
+     public String generateMappingCode(FieldMap fieldMap, VariableRef source, VariableRef destination,
+-                                      SourceCodeContext code) {
++                                      SourceCodeContext code) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(14);
+         StringBuilder out = new StringBuilder();
+         if (!source.isPrimitive()) {
+             out.append("\n" + source.ifNotNull() + "{");
+diff --git a/com/baidu/unbiz/easymapper/mapping/impl/EqualTypeOrPrimitiveAndWrapperMappingHandler.java b/com/baidu/unbiz/easymapper/mapping/impl/EqualTypeOrPrimitiveAndWrapperMappingHandler.java
+index 34b8ce7..09015a7 100644
+--- a/com/baidu/unbiz/easymapper/mapping/impl/EqualTypeOrPrimitiveAndWrapperMappingHandler.java
++++ b/com/baidu/unbiz/easymapper/mapping/impl/EqualTypeOrPrimitiveAndWrapperMappingHandler.java
+@@ -14,7 +14,7 @@ import com.baidu.unbiz.easymapper.metadata.VariableRef;
+ public class EqualTypeOrPrimitiveAndWrapperMappingHandler extends AbstractMappingHandler implements MappingHandler {
+ 
+     @Override
+-    public boolean canApply(FieldMap fieldMap) {
++    public boolean canApply(FieldMap fieldMap) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(15);
+         Type<?> sourceType = fieldMap.getAType();
+         Type<?> destinationType = fieldMap.getBType();
+         return (sourceType.equals(destinationType) || sourceType
+@@ -23,7 +23,7 @@ public class EqualTypeOrPrimitiveAndWrapperMappingHandler extends AbstractMappin
+ 
+     @Override
+     public String generateMappingCode(FieldMap fieldMap, VariableRef source, VariableRef destination,
+-                                      SourceCodeContext code) {
++                                      SourceCodeContext code) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(16);
+         String assignStatement = destination.assignIfPossible(source);
+         if (!source.isNullPossible()) {
+             return statement(assignStatement);
+diff --git a/com/baidu/unbiz/easymapper/mapping/impl/Object2ObjectMappingHandler.java b/com/baidu/unbiz/easymapper/mapping/impl/Object2ObjectMappingHandler.java
+index 64a82f0..681826e 100644
+--- a/com/baidu/unbiz/easymapper/mapping/impl/Object2ObjectMappingHandler.java
++++ b/com/baidu/unbiz/easymapper/mapping/impl/Object2ObjectMappingHandler.java
+@@ -19,14 +19,14 @@ import com.baidu.unbiz.easymapper.metadata.VariableRef;
+ public class Object2ObjectMappingHandler extends AbstractMappingHandler implements MappingHandler {
+ 
+     @Override
+-    public boolean canApply(FieldMap fieldMap) {
++    public boolean canApply(FieldMap fieldMap) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(17);
+         return !isPropertyArrayOrCollectionOrMap(fieldMap.getSource()) &&
+                 !isPropertyArrayOrCollectionOrMap(fieldMap.getDestination());
+     }
+ 
+     @Override
+     public String generateMappingCode(FieldMap fieldMap, VariableRef source, VariableRef destination,
+-                                      SourceCodeContext code) {
++                                      SourceCodeContext code) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(18);
+         String mapNewObject = destination.assignIfPossible(
+                 format("(%s)%s.map(%s, %s)", destination.typeName(), code.getMapper(), source,
+                         destination.type().getCanonicalName() + ".class"));
+diff --git a/com/baidu/unbiz/easymapper/mapping/impl/SpecifyTransformerMappingHandler.java b/com/baidu/unbiz/easymapper/mapping/impl/SpecifyTransformerMappingHandler.java
+index 505a7c8..7924117 100644
+--- a/com/baidu/unbiz/easymapper/mapping/impl/SpecifyTransformerMappingHandler.java
++++ b/com/baidu/unbiz/easymapper/mapping/impl/SpecifyTransformerMappingHandler.java
+@@ -13,13 +13,13 @@ import com.baidu.unbiz.easymapper.metadata.VariableRef;
+ public class SpecifyTransformerMappingHandler extends AbstractMappingHandler implements MappingHandler {
+ 
+     @Override
+-    public boolean canApply(FieldMap fieldMap) {
++    public boolean canApply(FieldMap fieldMap) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(19);
+         return fieldMap.getTransformer() != null;
+     }
+ 
+     @Override
+     public String generateMappingCode(FieldMap fieldMap, VariableRef source, VariableRef destination,
+-                                      SourceCodeContext code) {
++                                      SourceCodeContext code) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(20);
+         String assignStatement =
+                 destination.assignIfPossible("%s.transform(%s)", code.getTransformer(fieldMap.getTransformer()),
+                         source.asWrapper());
+diff --git a/com/baidu/unbiz/easymapper/metadata/ClassMap.java b/com/baidu/unbiz/easymapper/metadata/ClassMap.java
+index debddd6..d505e39 100644
+--- a/com/baidu/unbiz/easymapper/metadata/ClassMap.java
++++ b/com/baidu/unbiz/easymapper/metadata/ClassMap.java
+@@ -1,129 +1,129 @@
+-package com.baidu.unbiz.easymapper.metadata;
+-
+-import java.util.List;
+-
+-import com.baidu.unbiz.easymapper.codegen.AtoBMapping;
+-import com.baidu.unbiz.easymapper.util.MappedTypePair;
+-
+-/**
+- * 类型映射关系
+- *
+- * @param <A> 源类型
+- * @param <B> 目标类型
+- */
+-public class ClassMap<A, B> implements MappedTypePair<A, B> {
+-
+-    /**
+-     * 源类型
+-     */
+-    private Type<A> aType;
+-
+-    /**
+-     * 目标类型
+-     */
+-    private Type<B> bType;
+-
+-    /**
+-     * 待映射的属性关系列表
+-     */
+-    private List<FieldMap> fieldsMapping;
+-
+-    /**
+-     * 当源对象某个属性为空是否，是否映射到目标对象中
+-     */
+-    private Boolean mapOnNull;
+-
+-    /**
+-     * 用户自定义的mapping
+-     */
+-    private AtoBMapping<A, B> customMapping;
+-
+-    /**
+-     * 构造方法
+-     *
+-     * @param aType         源类型
+-     * @param bType         目标类型
+-     * @param fieldsMapping 待映射的属性关系列表
+-     * @param mapOnNull     当源对象某个属性为空是否，是否映射到目标对象中
+-     * @param customMapping 用户自定义的mapping
+-     */
+-    public ClassMap(Type<A> aType, Type<B> bType, List<FieldMap> fieldsMapping, boolean mapOnNull,
+-                    AtoBMapping<A, B> customMapping) {
+-        this.aType = aType;
+-        this.bType = bType;
+-        this.fieldsMapping = fieldsMapping;
+-        this.mapOnNull = mapOnNull;
+-        this.customMapping = customMapping;
+-    }
+-
+-    public Type<A> getAType() {
+-        return aType;
+-    }
+-
+-    public Type<B> getBType() {
+-        return bType;
+-    }
+-
+-    public String getATypeName() {
+-        return aType.getSimpleName();
+-    }
+-
+-    public String getBTypeName() {
+-        return bType.getSimpleName();
+-    }
+-
+-    public String getMapperClassName() {
+-        return "EasyMapper_" + getATypeName() + "_TO_" + getBTypeName() + "_Mapper";
+-    }
+-
+-    @Override
+-    public int hashCode() {
+-        int result = 31;
+-        result = result + (aType == null ? 0 : aType.hashCode());
+-        result = result + (bType == null ? 0 : bType.hashCode());
+-        return result;
+-    }
+-
+-    public String toString() {
+-        return getClass().getSimpleName() + "([A]:" + aType + ", [B]:" + bType + ")";
+-    }
+-
+-    @Override
+-    public boolean equals(Object o) {
+-        if (this == o) {
+-            return true;
+-        }
+-        if (o == null || getClass() != o.getClass()) {
+-            return false;
+-        }
+-        ClassMap<?, ?> classMap = (ClassMap<?, ?>) o;
+-        if (aType != null ? !aType.equals(classMap.aType) : classMap.aType != null) {
+-            return false;
+-        }
+-        if (bType != null ? !bType.equals(classMap.bType) : classMap.bType != null) {
+-            return false;
+-        }
+-        return true;
+-    }
+-
+-    public Type<A> getaType() {
+-        return aType;
+-    }
+-
+-    public Type<B> getbType() {
+-        return bType;
+-    }
+-
+-    public Boolean getMapOnNull() {
+-        return mapOnNull;
+-    }
+-
+-    public List<FieldMap> getFieldsMapping() {
+-        return fieldsMapping;
+-    }
+-
+-    public AtoBMapping<A, B> getCustomMapping() {
+-        return customMapping;
+-    }
+-
+-}
++package com.baidu.unbiz.easymapper.metadata;
++
++import java.util.List;
++
++import com.baidu.unbiz.easymapper.codegen.AtoBMapping;
++import com.baidu.unbiz.easymapper.util.MappedTypePair;
++
++/**
++ * 类型映射关系
++ *
++ * @param <A> 源类型
++ * @param <B> 目标类型
++ */
++public class ClassMap<A, B> implements MappedTypePair<A, B> {
++
++    /**
++     * 源类型
++     */
++    private Type<A> aType;
++
++    /**
++     * 目标类型
++     */
++    private Type<B> bType;
++
++    /**
++     * 待映射的属性关系列表
++     */
++    private List<FieldMap> fieldsMapping;
++
++    /**
++     * 当源对象某个属性为空是否，是否映射到目标对象中
++     */
++    private Boolean mapOnNull;
++
++    /**
++     * 用户自定义的mapping
++     */
++    private AtoBMapping<A, B> customMapping;
++
++    /**
++     * 构造方法
++     *
++     * @param aType         源类型
++     * @param bType         目标类型
++     * @param fieldsMapping 待映射的属性关系列表
++     * @param mapOnNull     当源对象某个属性为空是否，是否映射到目标对象中
++     * @param customMapping 用户自定义的mapping
++     */
++    public ClassMap(Type<A> aType, Type<B> bType, List<FieldMap> fieldsMapping, boolean mapOnNull,
++                    AtoBMapping<A, B> customMapping) {
++        this.aType = aType;
++        this.bType = bType;
++        this.fieldsMapping = fieldsMapping;
++        this.mapOnNull = mapOnNull;
++        this.customMapping = customMapping;
++    }
++
++    public Type<A> getAType() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(21);
++        return aType;
++    }
++
++    public Type<B> getBType() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(22);
++        return bType;
++    }
++
++    public String getATypeName() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(23);
++        return aType.getSimpleName();
++    }
++
++    public String getBTypeName() {
++        return bType.getSimpleName();
++    }
++
++    public String getMapperClassName() {
++        return "EasyMapper_" + getATypeName() + "_TO_" + getBTypeName() + "_Mapper";
++    }
++
++    @Override
++    public int hashCode() {
++        int result = 31;
++        result = result + (aType == null ? 0 : aType.hashCode());
++        result = result + (bType == null ? 0 : bType.hashCode());
++        return result;
++    }
++
++    public String toString() {
++        return getClass().getSimpleName() + "([A]:" + aType + ", [B]:" + bType + ")";
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) {
++            return true;
++        }
++        if (o == null || getClass() != o.getClass()) {
++            return false;
++        }
++        ClassMap<?, ?> classMap = (ClassMap<?, ?>) o;
++        if (aType != null ? !aType.equals(classMap.aType) : classMap.aType != null) {
++            return false;
++        }
++        if (bType != null ? !bType.equals(classMap.bType) : classMap.bType != null) {
++            return false;
++        }
++        return true;
++    }
++
++    public Type<A> getaType() {
++        return aType;
++    }
++
++    public Type<B> getbType() {
++        return bType;
++    }
++
++    public Boolean getMapOnNull() {
++        return mapOnNull;
++    }
++
++    public List<FieldMap> getFieldsMapping() {
++        return fieldsMapping;
++    }
++
++    public AtoBMapping<A, B> getCustomMapping() {
++        return customMapping;
++    }
++
++}
+diff --git a/com/baidu/unbiz/easymapper/metadata/FieldMap.java b/com/baidu/unbiz/easymapper/metadata/FieldMap.java
+index 452d5a7..db91f37 100644
+--- a/com/baidu/unbiz/easymapper/metadata/FieldMap.java
++++ b/com/baidu/unbiz/easymapper/metadata/FieldMap.java
+@@ -1,99 +1,99 @@
+-package com.baidu.unbiz.easymapper.metadata;
+-
+-import com.baidu.unbiz.easymapper.transformer.Transformer;
+-import com.baidu.unbiz.easymapper.util.MappedTypePair;
+-
+-/**
+- * 属性关系映射
+- */
+-public class FieldMap implements MappedTypePair<Object, Object> {
+-
+-    /**
+-     * 源属性
+-     */
+-    private final Property source;
+-
+-    /**
+-     * 目标属性
+-     */
+-    private final Property destination;
+-
+-    /**
+-     * 当源对象某个属性为空是否，是否映射到目标对象中
+-     */
+-    private final boolean mapOnNull;
+-
+-    /**
+-     * 用户自定义属性转换器
+-     */
+-    private final Transformer<Object, Object> transformer;
+-
+-    public FieldMap(Property a, Property b, boolean mapOnNull,
+-                    Transformer<Object, Object> transformer) {
+-        this.source = a;
+-        this.destination = b;
+-        this.mapOnNull = mapOnNull;
+-        this.transformer = transformer;
+-    }
+-
+-    public Property getSource() {
+-        return source;
+-    }
+-
+-    public Property getDestination() {
+-        return destination;
+-    }
+-
+-    public Type<Object> getAType() {
+-        return (Type<Object>) getSource().getType();
+-    }
+-
+-    public Type<Object> getBType() {
+-        return (Type<Object>) getDestination().getType();
+-    }
+-
+-    public Transformer<Object, Object> getTransformer() {
+-        return transformer;
+-    }
+-
+-    public boolean isMapOnNull() {
+-        return mapOnNull;
+-    }
+-
+-    @Override
+-    public String toString() {
+-        return "FieldMap[" + source.getName() + "(" + source.getType() + ")-->" + destination.getName() + "("
+-                + destination.getType() + ")]";
+-    }
+-
+-    @Override
+-    public int hashCode() {
+-        final int prime = 31;
+-        int result = 1;
+-        result = prime * result + ((destination == null) ? 0 : destination.hashCode());
+-        result = prime * result + ((source == null) ? 0 : source.hashCode());
+-        return result;
+-    }
+-
+-    @Override
+-    public boolean equals(Object o) {
+-        if (this == o) {
+-            return true;
+-        }
+-        if (o == null || getClass() != o.getClass()) {
+-            return false;
+-        }
+-
+-        FieldMap fieldMap = (FieldMap) o;
+-        if (mapOnNull != fieldMap.mapOnNull) {
+-            return false;
+-        }
+-        if (source != null ? !source.equals(fieldMap.source) : fieldMap.source != null) {
+-            return false;
+-        }
+-        if (destination != null ? !destination.equals(fieldMap.destination) : fieldMap.destination != null) {
+-            return false;
+-        }
+-        return !(transformer != null ? !transformer.equals(fieldMap.transformer) : fieldMap.transformer != null);
+-    }
+-}
++package com.baidu.unbiz.easymapper.metadata;
++
++import com.baidu.unbiz.easymapper.transformer.Transformer;
++import com.baidu.unbiz.easymapper.util.MappedTypePair;
++
++/**
++ * 属性关系映射
++ */
++public class FieldMap implements MappedTypePair<Object, Object> {
++
++    /**
++     * 源属性
++     */
++    private final Property source;
++
++    /**
++     * 目标属性
++     */
++    private final Property destination;
++
++    /**
++     * 当源对象某个属性为空是否，是否映射到目标对象中
++     */
++    private final boolean mapOnNull;
++
++    /**
++     * 用户自定义属性转换器
++     */
++    private final Transformer<Object, Object> transformer;
++
++    public FieldMap(Property a, Property b, boolean mapOnNull,
++                    Transformer<Object, Object> transformer) {
++        this.source = a;
++        this.destination = b;
++        this.mapOnNull = mapOnNull;
++        this.transformer = transformer;
++    }
++
++    public Property getSource() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(24);
++        return source;
++    }
++
++    public Property getDestination() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(25);
++        return destination;
++    }
++
++    public Type<Object> getAType() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(26);
++        return (Type<Object>) getSource().getType();
++    }
++
++    public Type<Object> getBType() {
++        return (Type<Object>) getDestination().getType();
++    }
++
++    public Transformer<Object, Object> getTransformer() {
++        return transformer;
++    }
++
++    public boolean isMapOnNull() {
++        return mapOnNull;
++    }
++
++    @Override
++    public String toString() {
++        return "FieldMap[" + source.getName() + "(" + source.getType() + ")-->" + destination.getName() + "("
++                + destination.getType() + ")]";
++    }
++
++    @Override
++    public int hashCode() {
++        final int prime = 31;
++        int result = 1;
++        result = prime * result + ((destination == null) ? 0 : destination.hashCode());
++        result = prime * result + ((source == null) ? 0 : source.hashCode());
++        return result;
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) {
++            return true;
++        }
++        if (o == null || getClass() != o.getClass()) {
++            return false;
++        }
++
++        FieldMap fieldMap = (FieldMap) o;
++        if (mapOnNull != fieldMap.mapOnNull) {
++            return false;
++        }
++        if (source != null ? !source.equals(fieldMap.source) : fieldMap.source != null) {
++            return false;
++        }
++        if (destination != null ? !destination.equals(fieldMap.destination) : fieldMap.destination != null) {
++            return false;
++        }
++        return !(transformer != null ? !transformer.equals(fieldMap.transformer) : fieldMap.transformer != null);
++    }
++}
+diff --git a/com/baidu/unbiz/easymapper/metadata/IntrospectorPropertyResolver.java b/com/baidu/unbiz/easymapper/metadata/IntrospectorPropertyResolver.java
+index f50fead..051981e 100644
+--- a/com/baidu/unbiz/easymapper/metadata/IntrospectorPropertyResolver.java
++++ b/com/baidu/unbiz/easymapper/metadata/IntrospectorPropertyResolver.java
+@@ -1,224 +1,224 @@
+-/*
+- * Orika - simpler, better and faster Java bean mapping
+- *
+- * Copyright (C) 2011-2013 Orika authors
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *      http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package com.baidu.unbiz.easymapper.metadata;
+-
+-import java.beans.BeanInfo;
+-import java.beans.IntrospectionException;
+-import java.beans.Introspector;
+-import java.beans.PropertyDescriptor;
+-import java.lang.reflect.Method;
+-import java.util.Map;
+-
+-/**
+- * IntrospectionPropertyResolver leverages JavaBeans introspector to resolve
+- * properties for provided types.<br>
+- */
+-public class IntrospectorPropertyResolver extends PropertyResolver {
+-
+-    /**
+-     * Constructs a new IntrospectorPropertyResolver that processes transient fields
+-     * (backward compatibility)
+-     *
+-     * @param includePublicFields whether properties for public fields should be processed as
+-     *                            properties
+-     */
+-    public IntrospectorPropertyResolver(boolean includePublicFields) {
+-        super(includePublicFields);
+-    }
+-
+-    /**
+-     * Constructs a new IntrospectorPropertyResolver which includes public
+-     * fields as properties
+-     */
+-    public IntrospectorPropertyResolver() {
+-        super(true);
+-    }
+-
+-    /**
+-     * Collects all properties for the specified type.
+-     *
+-     * @param type          the type for which to collect properties
+-     * @param referenceType the reference type for use in resolving generic parameters as
+-     *                      needed
+-     * @param properties    the properties collected for the current type
+-     */
+-    protected void collectProperties(Class<?> type, Type<?> referenceType, Map<String, Property> properties) {
+-
+-        try {
+-            BeanInfo beanInfo = Introspector.getBeanInfo(type);
+-            PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
+-
+-            for (final PropertyDescriptor pd : descriptors) {
+-                try {
+-                    Method readMethod = getReadMethod(pd, type);
+-                    Method writeMethod = getWriteMethod(pd, type, null);
+-
+-                    Property property =
+-                            processProperty(pd.getName(), pd.getPropertyType(), readMethod, writeMethod, type,
+-                                    referenceType, properties);
+-
+-                    postProcessProperty(property, pd, readMethod, writeMethod, type, referenceType, properties);
+-                } catch (final Exception e) {
+-                    throw new RuntimeException(
+-                            "Unexpected error while trying to resolve property " + referenceType.getCanonicalName()
+-                                    + ", [" + pd.getName() + "]", e);
+-                }
+-            }
+-        } catch (IntrospectionException e) {
+-            throw new RuntimeException(e);
+-        }
+-    }
+-
+-    /**
+-     * This method performs special handling to deal with deficiencies in older (pre java-7)
+-     * versions of the introspector, which don't properly match getters with setters in
+-     * cases where only one of the two came from a template method on an ancestor.
+-     *
+-     * @param property
+-     * @param pd
+-     * @param readMethod
+-     * @param writeMethod
+-     * @param type
+-     * @param referenceType
+-     * @param properties
+-     */
+-    private void postProcessProperty(Property property, PropertyDescriptor pd, Method readMethod,
+-                                     Method writeMethod, Class<?> type, Type<?> referenceType,
+-                                     Map<String, Property> properties) {
+-        if (writeMethod == null && property != null) {
+-            writeMethod = getWriteMethod(pd, type, property.getRawType());
+-            if (writeMethod != null) {
+-                processProperty(property.getName(), property.getRawType(), readMethod, writeMethod, type, referenceType,
+-                        properties);
+-            }
+-        }
+-    }
+-
+-    /**
+-     * Get the read method for the particular property descriptor
+-     *
+-     * @param pd the property descriptor
+-     *
+-     * @return the property's read method
+-     */
+-    private Method getReadMethod(PropertyDescriptor pd, Class<?> type) {
+-        final String capitalName = capitalize(pd.getName());
+-        Method readMethod = pd.getReadMethod();
+-
+-        if (readMethod == null) {
+-            /*
+-             * Special handling for older versions of Introspector: if
+-             * one of the getter or setter is fulfilling a templated type
+-             * and the other is not, they may not be returned as the same
+-             * property descriptor
+-             */
+-            try {
+-                readMethod = type.getMethod("get" + capitalName);
+-            } catch (NoSuchMethodException e) {
+-                readMethod = null;
+-            }
+-        }
+-
+-        if (readMethod == null && Boolean.class.equals(pd.getPropertyType())) {
+-            /*
+-             * Special handling for Boolean "is" read method; not strictly
+-             * compliant with the JavaBeans specification, but still very common
+-             */
+-            try {
+-                readMethod = type.getMethod("is" + capitalName);
+-            } catch (NoSuchMethodException e) {
+-                readMethod = null;
+-            }
+-        }
+-
+-        if (readMethod != null && readMethod.isBridge()) {
+-            /*
+-             * Special handling for a bug in sun jdk 1.6.0_u5
+-             * http://bugs.sun.com/view_bug.do?bug_id=6788525
+-             */
+-            readMethod = getNonBridgeAccessor(readMethod);
+-        }
+-
+-        return readMethod;
+-    }
+-
+-    /**
+-     * Gets the write method for the particular property descriptor
+-     *
+-     * @param pd the property descriptor
+-     *
+-     * @return the property's write method
+-     */
+-    private Method getWriteMethod(PropertyDescriptor pd, Class<?> type, Class<?> propertyType) {
+-
+-        final String capitalName = capitalize(pd.getName());
+-        final Class<?> parameterType = propertyType != null ? propertyType : pd.getPropertyType();
+-        Method writeMethod = pd.getWriteMethod();
+-
+-        if (writeMethod == null && !("Class".equals(capitalName) && Class.class.equals(parameterType))) {
+-            /*
+-             * Special handling for older versions of Introspector: if
+-             * one of the getter or setter is fulfilling a templated type
+-             * and the other is not, they may not be returned as the same
+-             * property descriptor
+-             */
+-            try {
+-                writeMethod = type.getMethod("set" + capitalName, parameterType);
+-            } catch (NoSuchMethodException e) {
+-                writeMethod = null;
+-            }
+-        }
+-
+-        if (writeMethod == null) {
+-            /*
+-             * Special handling for fluid APIs where setters return
+-             * a value
+-             */
+-            try {
+-                writeMethod = type.getMethod("set" + capitalName, parameterType);
+-            } catch (NoSuchMethodException e) {
+-                writeMethod = null;
+-            }
+-        }
+-        return writeMethod;
+-    }
+-
+-    /**
+-     * Get a real accessor from a bridge method. work around to
+-     * http://bugs.sun.com/view_bug.do?bug_id=6788525
+-     *
+-     * @param bridgeMethod any method that can potentially be a bridge method
+-     *
+-     * @return if it is not a problematic method, it is returned back
+-     * immediately if we can find a non-bridge method with the same name
+-     * we return that if we cannot find a non-bridge method we return
+-     * the bridge method back (to prevent any unintended breakage)
+-     */
+-    private static Method getNonBridgeAccessor(Method bridgeMethod) {
+-        Method realMethod = bridgeMethod;
+-        Method[] otherMethods = bridgeMethod.getDeclaringClass().getMethods();
+-        for (Method possibleRealMethod : otherMethods) {
+-            if (possibleRealMethod.getName().equals(bridgeMethod.getName()) && !possibleRealMethod.isBridge()
+-                    && possibleRealMethod.getParameterTypes().length == 0) {
+-                realMethod = possibleRealMethod;
+-                break;
+-            }
+-        }
+-        return realMethod;
+-    }
+-}
++/*
++ * Orika - simpler, better and faster Java bean mapping
++ *
++ * Copyright (C) 2011-2013 Orika authors
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.baidu.unbiz.easymapper.metadata;
++
++import java.beans.BeanInfo;
++import java.beans.IntrospectionException;
++import java.beans.Introspector;
++import java.beans.PropertyDescriptor;
++import java.lang.reflect.Method;
++import java.util.Map;
++
++/**
++ * IntrospectionPropertyResolver leverages JavaBeans introspector to resolve
++ * properties for provided types.<br>
++ */
++public class IntrospectorPropertyResolver extends PropertyResolver {
++
++    /**
++     * Constructs a new IntrospectorPropertyResolver that processes transient fields
++     * (backward compatibility)
++     *
++     * @param includePublicFields whether properties for public fields should be processed as
++     *                            properties
++     */
++    public IntrospectorPropertyResolver(boolean includePublicFields) {
++        super(includePublicFields);
++    }
++
++    /**
++     * Constructs a new IntrospectorPropertyResolver which includes public
++     * fields as properties
++     */
++    public IntrospectorPropertyResolver() {
++        super(true);
++    }
++
++    /**
++     * Collects all properties for the specified type.
++     *
++     * @param type          the type for which to collect properties
++     * @param referenceType the reference type for use in resolving generic parameters as
++     *                      needed
++     * @param properties    the properties collected for the current type
++     */
++    protected void collectProperties(Class<?> type, Type<?> referenceType, Map<String, Property> properties) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(47);
++
++        try {
++            BeanInfo beanInfo = Introspector.getBeanInfo(type);
++            PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
++
++            for (final PropertyDescriptor pd : descriptors) {
++                try {
++                    Method readMethod = getReadMethod(pd, type);
++                    Method writeMethod = getWriteMethod(pd, type, null);
++
++                    Property property =
++                            processProperty(pd.getName(), pd.getPropertyType(), readMethod, writeMethod, type,
++                                    referenceType, properties);
++
++                    postProcessProperty(property, pd, readMethod, writeMethod, type, referenceType, properties);
++                } catch (final Exception e) {
++                    throw new RuntimeException(
++                            "Unexpected error while trying to resolve property " + referenceType.getCanonicalName()
++                                    + ", [" + pd.getName() + "]", e);
++                }
++            }
++        } catch (IntrospectionException e) {
++            throw new RuntimeException(e);
++        }
++    }
++
++    /**
++     * This method performs special handling to deal with deficiencies in older (pre java-7)
++     * versions of the introspector, which don't properly match getters with setters in
++     * cases where only one of the two came from a template method on an ancestor.
++     *
++     * @param property
++     * @param pd
++     * @param readMethod
++     * @param writeMethod
++     * @param type
++     * @param referenceType
++     * @param properties
++     */
++    private void postProcessProperty(Property property, PropertyDescriptor pd, Method readMethod,
++                                     Method writeMethod, Class<?> type, Type<?> referenceType,
++                                     Map<String, Property> properties) {
++        if (writeMethod == null && property != null) {
++            writeMethod = getWriteMethod(pd, type, property.getRawType());
++            if (writeMethod != null) {
++                processProperty(property.getName(), property.getRawType(), readMethod, writeMethod, type, referenceType,
++                        properties);
++            }
++        }
++    }
++
++    /**
++     * Get the read method for the particular property descriptor
++     *
++     * @param pd the property descriptor
++     *
++     * @return the property's read method
++     */
++    private Method getReadMethod(PropertyDescriptor pd, Class<?> type) {
++        final String capitalName = capitalize(pd.getName());
++        Method readMethod = pd.getReadMethod();
++
++        if (readMethod == null) {
++            /*
++             * Special handling for older versions of Introspector: if
++             * one of the getter or setter is fulfilling a templated type
++             * and the other is not, they may not be returned as the same
++             * property descriptor
++             */
++            try {
++                readMethod = type.getMethod("get" + capitalName);
++            } catch (NoSuchMethodException e) {
++                readMethod = null;
++            }
++        }
++
++        if (readMethod == null && Boolean.class.equals(pd.getPropertyType())) {
++            /*
++             * Special handling for Boolean "is" read method; not strictly
++             * compliant with the JavaBeans specification, but still very common
++             */
++            try {
++                readMethod = type.getMethod("is" + capitalName);
++            } catch (NoSuchMethodException e) {
++                readMethod = null;
++            }
++        }
++
++        if (readMethod != null && readMethod.isBridge()) {
++            /*
++             * Special handling for a bug in sun jdk 1.6.0_u5
++             * http://bugs.sun.com/view_bug.do?bug_id=6788525
++             */
++            readMethod = getNonBridgeAccessor(readMethod);
++        }
++
++        return readMethod;
++    }
++
++    /**
++     * Gets the write method for the particular property descriptor
++     *
++     * @param pd the property descriptor
++     *
++     * @return the property's write method
++     */
++    private Method getWriteMethod(PropertyDescriptor pd, Class<?> type, Class<?> propertyType) {
++
++        final String capitalName = capitalize(pd.getName());
++        final Class<?> parameterType = propertyType != null ? propertyType : pd.getPropertyType();
++        Method writeMethod = pd.getWriteMethod();
++
++        if (writeMethod == null && !("Class".equals(capitalName) && Class.class.equals(parameterType))) {
++            /*
++             * Special handling for older versions of Introspector: if
++             * one of the getter or setter is fulfilling a templated type
++             * and the other is not, they may not be returned as the same
++             * property descriptor
++             */
++            try {
++                writeMethod = type.getMethod("set" + capitalName, parameterType);
++            } catch (NoSuchMethodException e) {
++                writeMethod = null;
++            }
++        }
++
++        if (writeMethod == null) {
++            /*
++             * Special handling for fluid APIs where setters return
++             * a value
++             */
++            try {
++                writeMethod = type.getMethod("set" + capitalName, parameterType);
++            } catch (NoSuchMethodException e) {
++                writeMethod = null;
++            }
++        }
++        return writeMethod;
++    }
++
++    /**
++     * Get a real accessor from a bridge method. work around to
++     * http://bugs.sun.com/view_bug.do?bug_id=6788525
++     *
++     * @param bridgeMethod any method that can potentially be a bridge method
++     *
++     * @return if it is not a problematic method, it is returned back
++     * immediately if we can find a non-bridge method with the same name
++     * we return that if we cannot find a non-bridge method we return
++     * the bridge method back (to prevent any unintended breakage)
++     */
++    private static Method getNonBridgeAccessor(Method bridgeMethod) {
++        Method realMethod = bridgeMethod;
++        Method[] otherMethods = bridgeMethod.getDeclaringClass().getMethods();
++        for (Method possibleRealMethod : otherMethods) {
++            if (possibleRealMethod.getName().equals(bridgeMethod.getName()) && !possibleRealMethod.isBridge()
++                    && possibleRealMethod.getParameterTypes().length == 0) {
++                realMethod = possibleRealMethod;
++                break;
++            }
++        }
++        return realMethod;
++    }
++}
+diff --git a/com/baidu/unbiz/easymapper/metadata/MapEntry.java b/com/baidu/unbiz/easymapper/metadata/MapEntry.java
+index 309c112..80e778a 100644
+--- a/com/baidu/unbiz/easymapper/metadata/MapEntry.java
++++ b/com/baidu/unbiz/easymapper/metadata/MapEntry.java
+@@ -1,190 +1,190 @@
+-/*
+- * Orika - simpler, better and faster Java bean mapping
+- *
+- * Copyright (C) 2011-2013 Orika authors
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *      http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package com.baidu.unbiz.easymapper.metadata;
+-
+-import java.util.Collection;
+-import java.util.Iterator;
+-import java.util.Map;
+-import java.util.Map.Entry;
+-import java.util.Set;
+-
+-/**
+- * MapEntry is a concrete implementation of Map.Entry which is created for
+- * use in registering mappings that involve java.util.Map instances.<br><br>
+- * <p>
+- * MapEntry should be used as the type when registering a mapping between an
+- * element type (iterable or array) and an entry type (map).
+- *
+- * @param <K> the key type
+- * @param <V> the value type
+- *
+- * @author matt.deboer@gmail.com
+- */
+-public class MapEntry<K, V> implements Entry<K, V> {
+-
+-    public MapEntry() {
+-    }
+-
+-    public MapEntry(K key, V value) {
+-        this.key = key;
+-        this.value = value;
+-    }
+-
+-    private MapEntry(Entry<K, V> copy) {
+-        this.key = copy.getKey();
+-        this.value = copy.getValue();
+-    }
+-
+-    private K key;
+-    public V value;
+-
+-    public K getKey() {
+-        return key;
+-    }
+-
+-    public V getValue() {
+-        return value;
+-    }
+-
+-    public void setKey(K key) {
+-        this.key = key;
+-    }
+-
+-    public V setValue(V value) {
+-        final V originalValue = this.value;
+-        this.value = value;
+-        return originalValue;
+-    }
+-
+-    /**
+-     * Returns the concrete <code>MapEntry&lt;K,V&gt;</code> type that represents the entries of the given map
+-     *
+-     * @param mapType
+-     *
+-     * @return
+-     */
+-    public static <K, V> Type<MapEntry<K, V>> concreteEntryType(Type<? extends Map<K, V>> mapType) {
+-
+-        Type<?> type = TypeFactory.valueOf(MapEntry.class, mapType.getActualTypeArguments());
+-        return (Type<MapEntry<K, V>>) type;
+-    }
+-
+-    public String toString() {
+-        return "[" + getKey() + "=" + getValue() + "]";
+-    }
+-
+-    /**
+-     * Returns the <code>Map.Entry&lt;K,V&gt;</code> type that represents the entries of the given map
+-     *
+-     * @param mapType
+-     *
+-     * @return
+-     */
+-    public static <K, V> Type<Entry<K, V>> entryType(Type<? extends Map<K, V>> mapType) {
+-        Type<?> type = TypeFactory.valueOf(Entry.class, mapType.getActualTypeArguments());
+-        return (Type<Entry<K, V>>) type;
+-    }
+-
+-    public static <K, V> Set<MapEntry<K, V>> entrySet(Map<K, V> map) {
+-        return new MapEntrySet<K, V>(map.entrySet());
+-    }
+-
+-    private static class MapEntrySet<K, V> implements Set<MapEntry<K, V>> {
+-
+-        private Set<Entry<K, V>> delegate;
+-
+-        private MapEntrySet(Set<Entry<K, V>> delegate) {
+-            this.delegate = delegate;
+-        }
+-
+-        public int size() {
+-            return delegate.size();
+-        }
+-
+-        public boolean isEmpty() {
+-            return delegate.isEmpty();
+-        }
+-
+-        public boolean contains(Object o) {
+-            throw new UnsupportedOperationException();
+-        }
+-
+-        public Iterator<MapEntry<K, V>> iterator() {
+-            return new MapEntryIterator<K, V>(delegate.iterator());
+-        }
+-
+-        public Object[] toArray() {
+-            // TODO Auto-generated method stub
+-            return null;
+-        }
+-
+-        public <T> T[] toArray(T[] a) {
+-            // TODO Auto-generated method stub
+-            return null;
+-        }
+-
+-        public boolean add(MapEntry<K, V> o) {
+-            throw new UnsupportedOperationException();
+-        }
+-
+-        public boolean remove(Object o) {
+-            throw new UnsupportedOperationException();
+-        }
+-
+-        public boolean containsAll(Collection<?> c) {
+-            throw new UnsupportedOperationException();
+-        }
+-
+-        public boolean addAll(Collection<? extends MapEntry<K, V>> c) {
+-            throw new UnsupportedOperationException();
+-        }
+-
+-        public boolean retainAll(Collection<?> c) {
+-            throw new UnsupportedOperationException();
+-        }
+-
+-        public boolean removeAll(Collection<?> c) {
+-            throw new UnsupportedOperationException();
+-        }
+-
+-        public void clear() {
+-            throw new UnsupportedOperationException();
+-        }
+-    }
+-
+-    private static class MapEntryIterator<K, V> implements Iterator<MapEntry<K, V>> {
+-
+-        private Iterator<Entry<K, V>> delegate;
+-
+-        private MapEntryIterator(Iterator<Entry<K, V>> delegate) {
+-            this.delegate = delegate;
+-        }
+-
+-        public boolean hasNext() {
+-            return delegate.hasNext();
+-        }
+-
+-        public MapEntry<K, V> next() {
+-            return new MapEntry<K, V>(delegate.next());
+-        }
+-
+-        public void remove() {
+-            throw new UnsupportedOperationException();
+-        }
+-    }
+-}
++/*
++ * Orika - simpler, better and faster Java bean mapping
++ *
++ * Copyright (C) 2011-2013 Orika authors
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.baidu.unbiz.easymapper.metadata;
++
++import java.util.Collection;
++import java.util.Iterator;
++import java.util.Map;
++import java.util.Map.Entry;
++import java.util.Set;
++
++/**
++ * MapEntry is a concrete implementation of Map.Entry which is created for
++ * use in registering mappings that involve java.util.Map instances.<br><br>
++ * <p>
++ * MapEntry should be used as the type when registering a mapping between an
++ * element type (iterable or array) and an entry type (map).
++ *
++ * @param <K> the key type
++ * @param <V> the value type
++ *
++ * @author matt.deboer@gmail.com
++ */
++public class MapEntry<K, V> implements Entry<K, V> {
++
++    public MapEntry() {
++    }
++
++    public MapEntry(K key, V value) {
++        this.key = key;
++        this.value = value;
++    }
++
++    private MapEntry(Entry<K, V> copy) {
++        this.key = copy.getKey();
++        this.value = copy.getValue();
++    }
++
++    private K key;
++    public V value;
++
++    public K getKey() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(27);
++        return key;
++    }
++
++    public V getValue() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(28);
++        return value;
++    }
++
++    public void setKey(K key) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(29);
++        this.key = key;
++    }
++
++    public V setValue(V value) {
++        final V originalValue = this.value;
++        this.value = value;
++        return originalValue;
++    }
++
++    /**
++     * Returns the concrete <code>MapEntry&lt;K,V&gt;</code> type that represents the entries of the given map
++     *
++     * @param mapType
++     *
++     * @return
++     */
++    public static <K, V> Type<MapEntry<K, V>> concreteEntryType(Type<? extends Map<K, V>> mapType) {
++
++        Type<?> type = TypeFactory.valueOf(MapEntry.class, mapType.getActualTypeArguments());
++        return (Type<MapEntry<K, V>>) type;
++    }
++
++    public String toString() {
++        return "[" + getKey() + "=" + getValue() + "]";
++    }
++
++    /**
++     * Returns the <code>Map.Entry&lt;K,V&gt;</code> type that represents the entries of the given map
++     *
++     * @param mapType
++     *
++     * @return
++     */
++    public static <K, V> Type<Entry<K, V>> entryType(Type<? extends Map<K, V>> mapType) {
++        Type<?> type = TypeFactory.valueOf(Entry.class, mapType.getActualTypeArguments());
++        return (Type<Entry<K, V>>) type;
++    }
++
++    public static <K, V> Set<MapEntry<K, V>> entrySet(Map<K, V> map) {
++        return new MapEntrySet<K, V>(map.entrySet());
++    }
++
++    private static class MapEntrySet<K, V> implements Set<MapEntry<K, V>> {
++
++        private Set<Entry<K, V>> delegate;
++
++        private MapEntrySet(Set<Entry<K, V>> delegate) {
++            this.delegate = delegate;
++        }
++
++        public int size() {
++            return delegate.size();
++        }
++
++        public boolean isEmpty() {
++            return delegate.isEmpty();
++        }
++
++        public boolean contains(Object o) {
++            throw new UnsupportedOperationException();
++        }
++
++        public Iterator<MapEntry<K, V>> iterator() {
++            return new MapEntryIterator<K, V>(delegate.iterator());
++        }
++
++        public Object[] toArray() {
++            // TODO Auto-generated method stub
++            return null;
++        }
++
++        public <T> T[] toArray(T[] a) {
++            // TODO Auto-generated method stub
++            return null;
++        }
++
++        public boolean add(MapEntry<K, V> o) {
++            throw new UnsupportedOperationException();
++        }
++
++        public boolean remove(Object o) {
++            throw new UnsupportedOperationException();
++        }
++
++        public boolean containsAll(Collection<?> c) {
++            throw new UnsupportedOperationException();
++        }
++
++        public boolean addAll(Collection<? extends MapEntry<K, V>> c) {
++            throw new UnsupportedOperationException();
++        }
++
++        public boolean retainAll(Collection<?> c) {
++            throw new UnsupportedOperationException();
++        }
++
++        public boolean removeAll(Collection<?> c) {
++            throw new UnsupportedOperationException();
++        }
++
++        public void clear() {
++            throw new UnsupportedOperationException();
++        }
++    }
++
++    private static class MapEntryIterator<K, V> implements Iterator<MapEntry<K, V>> {
++
++        private Iterator<Entry<K, V>> delegate;
++
++        private MapEntryIterator(Iterator<Entry<K, V>> delegate) {
++            this.delegate = delegate;
++        }
++
++        public boolean hasNext() {
++            return delegate.hasNext();
++        }
++
++        public MapEntry<K, V> next() {
++            return new MapEntry<K, V>(delegate.next());
++        }
++
++        public void remove() {
++            throw new UnsupportedOperationException();
++        }
++    }
++}
+diff --git a/com/baidu/unbiz/easymapper/metadata/MapperKey.java b/com/baidu/unbiz/easymapper/metadata/MapperKey.java
+index 22b0435..d958a5e 100644
+--- a/com/baidu/unbiz/easymapper/metadata/MapperKey.java
++++ b/com/baidu/unbiz/easymapper/metadata/MapperKey.java
+@@ -1,78 +1,78 @@
+-/*
+- * Orika - simpler, better and faster Java bean mapping
+- *
+- * Copyright (C) 2011-2013 Orika authors
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *      http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package com.baidu.unbiz.easymapper.metadata;
+-
+-import com.baidu.unbiz.easymapper.util.MappedTypePair;
+-
+-/**
+- * MapperKey represents a key which can be used to store the types mapped by a given Mapper.
+- */
+-public class MapperKey implements MappedTypePair<Object, Object> {
+-
+-    private Type<Object> aType;
+-    private Type<Object> bType;
+-
+-    /**
+-     * Constructs a new MapperKey instance
+-     *
+-     * @param aType
+-     * @param bType
+-     */
+-    public MapperKey(Type<?> aType, Type<?> bType) {
+-        this.aType = (Type<Object>) aType;
+-        this.bType = (Type<Object>) bType;
+-    }
+-
+-    @Override
+-    public boolean equals(Object o) {
+-        if (this == o) {
+-            return true;
+-        }
+-        if (o == null || getClass() != o.getClass()) {
+-            return false;
+-        }
+-
+-        final MapperKey mapperKey = (MapperKey) o;
+-
+-        return (equals(aType, mapperKey.aType) && equals(bType, mapperKey.bType));
+-
+-    }
+-
+-    private boolean equals(Type<?> a, Type<?> b) {
+-        return a == null ? b == null : a.equals(b);
+-    }
+-
+-    public String toString() {
+-        return "(" + aType + ", " + bType + ")";
+-    }
+-
+-    @Override
+-    public int hashCode() {
+-        int result = aType != null ? aType.hashCode() : 0;
+-        result = result + (bType != null ? bType.hashCode() : 0);
+-        return result;
+-    }
+-
+-    public Type<Object> getAType() {
+-        return aType;
+-    }
+-
+-    public Type<Object> getBType() {
+-        return bType;
+-    }
+-}
++/*
++ * Orika - simpler, better and faster Java bean mapping
++ *
++ * Copyright (C) 2011-2013 Orika authors
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.baidu.unbiz.easymapper.metadata;
++
++import com.baidu.unbiz.easymapper.util.MappedTypePair;
++
++/**
++ * MapperKey represents a key which can be used to store the types mapped by a given Mapper.
++ */
++public class MapperKey implements MappedTypePair<Object, Object> {
++
++    private Type<Object> aType;
++    private Type<Object> bType;
++
++    /**
++     * Constructs a new MapperKey instance
++     *
++     * @param aType
++     * @param bType
++     */
++    public MapperKey(Type<?> aType, Type<?> bType) {
++        this.aType = (Type<Object>) aType;
++        this.bType = (Type<Object>) bType;
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) {
++            return true;
++        }
++        if (o == null || getClass() != o.getClass()) {
++            return false;
++        }
++
++        final MapperKey mapperKey = (MapperKey) o;
++
++        return (equals(aType, mapperKey.aType) && equals(bType, mapperKey.bType));
++
++    }
++
++    private boolean equals(Type<?> a, Type<?> b) {
++        return a == null ? b == null : a.equals(b);
++    }
++
++    public String toString() {
++        return "(" + aType + ", " + bType + ")";
++    }
++
++    @Override
++    public int hashCode() {
++        int result = aType != null ? aType.hashCode() : 0;
++        result = result + (bType != null ? bType.hashCode() : 0);
++        return result;
++    }
++
++    public Type<Object> getAType() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(30);
++        return aType;
++    }
++
++    public Type<Object> getBType() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(31);
++        return bType;
++    }
++}
+diff --git a/com/baidu/unbiz/easymapper/metadata/Property.java b/com/baidu/unbiz/easymapper/metadata/Property.java
+index 2118921..243926b 100644
+--- a/com/baidu/unbiz/easymapper/metadata/Property.java
++++ b/com/baidu/unbiz/easymapper/metadata/Property.java
+@@ -1,590 +1,590 @@
+-/*
+- * Orika - simpler, better and faster Java bean mapping
+- *
+- * Copyright (C) 2011-2013 Orika authors
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *      http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package com.baidu.unbiz.easymapper.metadata;
+-
+-import java.lang.reflect.Method;
+-import java.util.Collection;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Set;
+-
+-/**
+- * Property is an immutable representation of an accessor/mutator pair (either
+- * of which may be null) that is used to generate code needed to copy data from
+- * one type to another.
+- */
+-public class Property {
+-
+-    private final String name;
+-
+-    private final String getter;
+-
+-    private final String setter;
+-
+-    private final Type<?> type;
+-
+-    private final Type<?> elementType;
+-
+-    /**
+-     * Constructs a new Property instance
+-     *
+-     * @param name
+-     * @param getter
+-     * @param setter
+-     * @param type
+-     * @param elementType
+-     */
+-    protected Property(final String name, final String getter, final String setter,
+-                       final Type<?> type,
+-                       final Type<?> elementType) {
+-        super();
+-        this.name = name;
+-        this.getter = getter;
+-        this.setter = setter;
+-        this.type = type;
+-        this.elementType = defaultElementType(type, elementType);
+-    }
+-
+-    private static Type<?> defaultElementType(final Type<?> type, final Type<?> elementType) {
+-        if (elementType != null) {
+-            return elementType;
+-        }
+-
+-        if (type.getActualTypeArguments().length > 0 && elementType == null) {
+-            return (Type<?>) type.getActualTypeArguments()[0];
+-        } else if (type.isCollection()) {
+-            Type<?> collectionElementType = elementType;
+-            Type<?> collection = type.findAncestor(Collection.class);
+-            if (collection != null) {
+-                collectionElementType = (Type<?>) collection.getActualTypeArguments()[0];
+-            }
+-            return collectionElementType;
+-        } else if (type.isMap()) {
+-            Type<?> mapElementType = elementType;
+-            Type<?> map = type.findAncestor(Map.class);
+-            if (map != null) {
+-                Type<? extends Map<Object, Object>> mapType = (Type<? extends Map<Object, Object>>) map;
+-                mapElementType = MapEntry.entryType(mapType);
+-            }
+-            return mapElementType;
+-
+-        } else {
+-            return elementType;
+-        }
+-    }
+-
+-    /**
+-     * @return the name of this property
+-     */
+-    public String getName() {
+-        return name;
+-    }
+-
+-    /**
+-     * @return the type of this property
+-     */
+-    public Type<?> getType() {
+-        return type;
+-    }
+-
+-    /**
+-     * @return the string description of the accessor for this property
+-     */
+-    public String getGetter() {
+-        return getter;
+-    }
+-
+-    /**
+-     * @return the string description of the mutator for this property
+-     */
+-    public String getSetter() {
+-        return setter;
+-    }
+-
+-    /**
+-     * @return the name of the setter method for this property
+-     */
+-    public String getSetterName() {
+-        return setter.split("[\\( \\=]")[0];
+-    }
+-
+-    /**
+-     * @return the name of the getter method for this property
+-     */
+-    public String getGetterName() {
+-        return getter.split("[\\( \\=]")[0];
+-    }
+-
+-    /**
+-     * @return the element type for this property
+-     */
+-    public Type<?> getElementType() {
+-        return elementType;
+-    }
+-
+-    /**
+-     * @return the raw type of this property
+-     */
+-    public Class<?> getRawType() {
+-        return getType().getRawType();
+-    }
+-
+-    @Override
+-    public boolean equals(final Object o) {
+-        if (this == o) {
+-            return true;
+-        }
+-        if (o == null || getClass() != o.getClass()) {
+-            return false;
+-        }
+-
+-        final Property property = (Property) o;
+-
+-        if (getter != null ? !getter.equals(property.getter) : property.getter != null) {
+-            return false;
+-        }
+-        if (setter != null ? !setter.equals(property.setter) : property.setter != null) {
+-            return false;
+-        }
+-        return !(type != null && !type.equals(property.type));
+-    }
+-
+-    /**
+-     * @return true if this property's type is primitive
+-     */
+-    public boolean isPrimitive() {
+-        return type.getRawType().isPrimitive();
+-    }
+-
+-    /**
+-     * @return tre if this property's type is an array
+-     */
+-    public boolean isArray() {
+-        return type.getRawType().isArray();
+-    }
+-
+-    /**
+-     * @param p
+-     *
+-     * @return true if this property is assignable from the other property p
+-     */
+-    public boolean isAssignableFrom(final Property p) {
+-        return type.isAssignableFrom(p.type);
+-    }
+-
+-    /**
+-     * @return true if this property's type is a Collection
+-     */
+-    public boolean isCollection() {
+-        return Collection.class.isAssignableFrom(type.getRawType());
+-    }
+-
+-    /**
+-     * @return true if this property's type is a Set
+-     */
+-    public boolean isSet() {
+-        return Set.class.isAssignableFrom(type.getRawType());
+-    }
+-
+-    /**
+-     * @return true if this property's type is a List
+-     */
+-    public boolean isList() {
+-        return List.class.isAssignableFrom(type.getRawType());
+-    }
+-
+-    /**
+-     * @return true if this property's type is a Map
+-     */
+-    public boolean isMap() {
+-        return Map.class.isAssignableFrom(type.getRawType());
+-    }
+-
+-    /**
+-     * @return true if this property represents a Map Key
+-     */
+-    public boolean isMapKey() {
+-        return false;
+-    }
+-
+-    /**
+-     * @return true if this property represents a list element
+-     */
+-    public boolean isListElement() {
+-        return false;
+-    }
+-
+-    /**
+-     * @return true if this property represents an array element
+-     */
+-    public boolean isArrayElement() {
+-        return false;
+-    }
+-
+-    @Override
+-    public int hashCode() {
+-        int result = name.hashCode();
+-        result = 31 * result + (getter != null ? getter.hashCode() : 0);
+-        result = 31 * result + (setter != null ? setter.hashCode() : 0);
+-        result = 31 * result + (type != null ? type.hashCode() : 0);
+-        return result;
+-    }
+-
+-    @Override
+-    public String toString() {
+-        return name + "(" + type + ")";
+-    }
+-
+-    /**
+-     * @return true if this property is an enum
+-     */
+-    public boolean isEnum() {
+-        return type.getRawType().isEnum();
+-    }
+-
+-    public boolean isAssignable() {
+-        return getSetter() != null;
+-    }
+-
+-    /**
+-     * Builder is used to construct immutable Property instances
+-     */
+-    public static class Builder {
+-        private Method getterMethod;
+-        private Method setterMethod;
+-        private String getter;
+-        private String setter;
+-        private String propertyTypeName;
+-        private Type<?> elementType;
+-        private Type<?> propertyType;
+-        private Type<?> owningType;
+-        private String name;
+-        private String expression;
+-
+-        @Override
+-        public String toString() {
+-            StringBuilder out = new StringBuilder();
+-            out.append(Builder.class.getSimpleName());
+-            out.append("(");
+-            out.append(expression);
+-            out.append("(");
+-            out.append(propertyType);
+-            out.append(")");
+-            out.append(")");
+-            return out.toString();
+-        }
+-
+-        /**
+-         * Creates a new Property.Builder
+-         */
+-        public Builder() {
+-
+-        }
+-
+-        /**
+-         * Merges the attributes of the specified property into this one
+-         *
+-         * @param property
+-         *
+-         * @return
+-         */
+-        public Builder merge(final Property property) {
+-            if (property.getter != null) {
+-                getter = property.getter;
+-                getterMethod = null;
+-            }
+-            if (property.setter != null) {
+-                setter = property.setter;
+-                setterMethod = null;
+-            }
+-            if (elementType == null || (property.elementType != null && elementType
+-                    .isAssignableFrom(property.elementType))) {
+-                elementType = property.elementType;
+-            }
+-            if (propertyType == null || (property.type != null && propertyType.isAssignableFrom(property.type))) {
+-                propertyType = property.type;
+-            }
+-            name = property.name;
+-
+-            return this;
+-        }
+-
+-        private String fixQuotes(final String methodExpression) {
+-            String expression = methodExpression;
+-            StringBuilder output = new StringBuilder();
+-            while (expression.length() > 0) {
+-                int currentDouble = expression.indexOf('"');
+-                int currentSingle = expression.indexOf("'");
+-                if (currentSingle > 0 && (currentSingle < currentDouble || currentDouble == -1)) {
+-                    output.append(expression.subSequence(0, currentSingle));
+-                    expression = expression.substring(currentSingle + 1);
+-
+-                    int nextSingle = expression.indexOf("'");
+-                    if (nextSingle == 1) {
+-                        output.append("'" + expression.substring(0, 2));
+-                    } else {
+-                        output.append("\"" + expression.substring(0, nextSingle) + "\"");
+-                    }
+-                    expression = expression.substring(nextSingle + 1);
+-                } else if (currentDouble > 0) {
+-                    output.append(expression.subSequence(0, currentDouble));
+-                    expression = expression.substring(currentDouble + 1);
+-
+-                    int nextDouble = expression.indexOf('"');
+-                    output.append("\"" + expression.substring(0, nextDouble) + "\"");
+-                    expression = expression.substring(nextDouble + 1);
+-                } else {
+-                    output.append(expression);
+-                    expression = "";
+-                }
+-            }
+-            return output.toString();
+-        }
+-
+-        /**
+-         * @param getter the getter to set
+-         */
+-        public Builder getter(final String getter) {
+-            this.getter = fixQuotes(getter);
+-            return this;
+-        }
+-
+-        /**
+-         * @param setter the setter to set
+-         */
+-        public Builder setter(final String setter) {
+-            this.setter = fixQuotes(setter);
+-            return this;
+-        }
+-
+-        /**
+-         * Sets the expression
+-         *
+-         * @param expression
+-         *
+-         * @return
+-         */
+-        public Builder expression(final String expression) {
+-            this.expression = expression;
+-            return this;
+-        }
+-
+-        /**
+-         * Set the name
+-         *
+-         * @param name
+-         *
+-         * @return
+-         */
+-        public Builder name(final String name) {
+-            this.name = name;
+-            return this;
+-        }
+-
+-        /**
+-         * Set the type
+-         *
+-         * @param type
+-         *
+-         * @return
+-         */
+-        public Builder type(final java.lang.reflect.Type type) {
+-            this.propertyType = TypeFactory.valueOf(type);
+-            return this;
+-        }
+-
+-        /**
+-         * Set the type by name
+-         *
+-         * @param typeName
+-         *
+-         * @return
+-         */
+-        public Builder type(final String typeName) {
+-            this.propertyTypeName = typeName;
+-            return this;
+-        }
+-
+-        /**
+-         * Set the element type
+-         *
+-         * @param elementType
+-         *
+-         * @return
+-         */
+-        public Builder elementType(final Type<?> elementType) {
+-            this.elementType = elementType;
+-            return this;
+-        }
+-
+-        /**
+-         * Set the getter/accessor method
+-         *
+-         * @param readMethod
+-         *
+-         * @return
+-         */
+-        public Builder getter(final Method readMethod) {
+-            this.getterMethod = readMethod;
+-            return this;
+-        }
+-
+-        /**
+-         * Get the getter/accessor method
+-         *
+-         * @return the readMethod
+-         */
+-        public Method getReadMethod() {
+-            return getterMethod;
+-        }
+-
+-        /**
+-         * Get the setter/mutator method
+-         *
+-         * @return the writeMethod
+-         */
+-        public Method getWriteMethod() {
+-            return setterMethod;
+-        }
+-
+-        /**
+-         * Set the setter/mutator method
+-         *
+-         * @param writeMethod
+-         *
+-         * @return
+-         */
+-        public Builder setter(final Method writeMethod) {
+-            this.setterMethod = writeMethod;
+-            return this;
+-        }
+-
+-        /**
+-         * Sets the owning type
+-         *
+-         * @param owningType
+-         *
+-         * @return
+-         */
+-        protected Builder owningType(final Type<?> owningType) {
+-            this.owningType = owningType;
+-            return this;
+-        }
+-
+-        /**
+-         * Builds the property
+-         *
+-         * @return the property specified by this builder
+-         */
+-        public Property build() {
+-            return build(null);
+-        }
+-
+-        /**
+-         * Builds the property, using the specified proeprtyResolver to validate
+-         * the property settings
+-         *
+-         * @param propertyResolver
+-         *
+-         * @return
+-         */
+-        public Property build(final PropertyResolver propertyResolver) {
+-            validate(propertyResolver);
+-
+-            if (propertyType == null && propertyTypeName != null) {
+-                propertyType = TypeFactory.valueOf(propertyTypeName);
+-            } else if (propertyType == null) {
+-                propertyType = TypeFactory.TYPE_OF_OBJECT;
+-            }
+-            if (getterMethod != null) {
+-                getter = getterMethod.getName() + "()";
+-            }
+-            if (setterMethod != null) {
+-                setter = setterMethod.getName() + "(%s)";
+-            }
+-            return new Property(name, getter, setter, propertyType, elementType);
+-        }
+-
+-        private void validate(final PropertyResolver propertyResolver) {
+-            if (getterMethod == null && setterMethod == null && getter == null && setter == null) {
+-                throw new IllegalArgumentException(
+-                        "property " + (owningType != null ? owningType.getCanonicalName() : "") + "[" + name
+-                                + "]" + " cannot be read or written");
+-            } else {
+-
+-                if (owningType != null && (!"".equals(getter) || !"".equals(setter))) {
+-                    for (Method m : owningType.getRawType().getMethods()) {
+-                        if (getter != null && m.getName().equals(getter) && m.getParameterTypes().length == 0) {
+-                            getter(m);
+-                        } else if (setter != null && m.getName().endsWith(setter)
+-                                && m.getParameterTypes().length == 1) {
+-                            setter(m);
+-                        }
+-                    }
+-                }
+-
+-                if (propertyResolver != null && getterMethod != null && this.propertyType == null) {
+-                    this.propertyType = propertyResolver
+-                            .resolvePropertyType(getterMethod, null, owningType.getRawType(), owningType);
+-                }
+-
+-                if (propertyResolver != null && setterMethod != null && setterMethod.getParameterTypes().length == 1) {
+-                    this.propertyType =
+-                            propertyResolver.resolvePropertyType(getterMethod, setterMethod.getParameterTypes()[0],
+-                                    owningType.getRawType(), owningType);
+-                }
+-
+-                if (setterMethod != null && setterMethod.getParameterTypes().length != 1) {
+-                    throw new IllegalArgumentException(
+-                            "writeMethod (" + setterMethod.getName() + ") for " + owningType.getCanonicalName()
+-                                    + "[" + name + "] does not have exactly 1 input argument ");
+-                }
+-
+-                if (getterMethod != null
+-                        && (getterMethod.getReturnType() == null || getterMethod.getReturnType().equals(Void.TYPE)
+-                                    || getterMethod.getReturnType()
+-                        .equals(Void.class))) {
+-                    throw new IllegalArgumentException(
+-                            "readMethod (" + getterMethod.getName() + ") for " + owningType.getCanonicalName()
+-                                    + "[" + name + "] does not return a value ");
+-                }
+-
+-                if (getterMethod != null && setterMethod != null && propertyType != null) {
+-
+-                    if (!getterMethod.getReturnType().isAssignableFrom(propertyType.getRawType())) {
+-                        /*
+-                         * If we've already parsed the write method, and the
+-                         * read method type is not a sub-type of the write
+-                         * method's type, the two should not be considered to
+-                         * form a 'property'.
+-                         */
+-                        throw new IllegalArgumentException("write method (" + setterMethod.getName() + ") for "
+-                                + owningType.getCanonicalName() + "[" + name + "]" + " has type ("
+-                                + setterMethod.getParameterTypes()[0].getCanonicalName() + ") "
+-                                + "is not assignable from the type ("
+-                                + getterMethod.getReturnType().getCanonicalName() + ") for "
+-                                + "the corresponding read method ("
+-                                + getterMethod.getName() + ")");
+-                    }
+-                }
+-            }
+-        }
+-
+-    }
+-
++/*
++ * Orika - simpler, better and faster Java bean mapping
++ *
++ * Copyright (C) 2011-2013 Orika authors
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.baidu.unbiz.easymapper.metadata;
++
++import java.lang.reflect.Method;
++import java.util.Collection;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++
++/**
++ * Property is an immutable representation of an accessor/mutator pair (either
++ * of which may be null) that is used to generate code needed to copy data from
++ * one type to another.
++ */
++public class Property {
++
++    private final String name;
++
++    private final String getter;
++
++    private final String setter;
++
++    private final Type<?> type;
++
++    private final Type<?> elementType;
++
++    /**
++     * Constructs a new Property instance
++     *
++     * @param name
++     * @param getter
++     * @param setter
++     * @param type
++     * @param elementType
++     */
++    protected Property(final String name, final String getter, final String setter,
++                       final Type<?> type,
++                       final Type<?> elementType) {
++        super();
++        this.name = name;
++        this.getter = getter;
++        this.setter = setter;
++        this.type = type;
++        this.elementType = defaultElementType(type, elementType);
++    }
++
++    private static Type<?> defaultElementType(final Type<?> type, final Type<?> elementType) {
++        if (elementType != null) {
++            return elementType;
++        }
++
++        if (type.getActualTypeArguments().length > 0 && elementType == null) {
++            return (Type<?>) type.getActualTypeArguments()[0];
++        } else if (type.isCollection()) {
++            Type<?> collectionElementType = elementType;
++            Type<?> collection = type.findAncestor(Collection.class);
++            if (collection != null) {
++                collectionElementType = (Type<?>) collection.getActualTypeArguments()[0];
++            }
++            return collectionElementType;
++        } else if (type.isMap()) {
++            Type<?> mapElementType = elementType;
++            Type<?> map = type.findAncestor(Map.class);
++            if (map != null) {
++                Type<? extends Map<Object, Object>> mapType = (Type<? extends Map<Object, Object>>) map;
++                mapElementType = MapEntry.entryType(mapType);
++            }
++            return mapElementType;
++
++        } else {
++            return elementType;
++        }
++    }
++
++    /**
++     * @return the name of this property
++     */
++    public String getName() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(48);
++        return name;
++    }
++
++    /**
++     * @return the type of this property
++     */
++    public Type<?> getType() {
++        return type;
++    }
++
++    /**
++     * @return the string description of the accessor for this property
++     */
++    public String getGetter() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(49);
++        return getter;
++    }
++
++    /**
++     * @return the string description of the mutator for this property
++     */
++    public String getSetter() { com.baidu.unbiz.jmhbench.MutationSwitch.tick(50);
++        return setter;
++    }
++
++    /**
++     * @return the name of the setter method for this property
++     */
++    public String getSetterName() {
++        return setter.split("[\\( \\=]")[0];
++    }
++
++    /**
++     * @return the name of the getter method for this property
++     */
++    public String getGetterName() {
++        return getter.split("[\\( \\=]")[0];
++    }
++
++    /**
++     * @return the element type for this property
++     */
++    public Type<?> getElementType() {
++        return elementType;
++    }
++
++    /**
++     * @return the raw type of this property
++     */
++    public Class<?> getRawType() {
++        return getType().getRawType();
++    }
++
++    @Override
++    public boolean equals(final Object o) {
++        if (this == o) {
++            return true;
++        }
++        if (o == null || getClass() != o.getClass()) {
++            return false;
++        }
++
++        final Property property = (Property) o;
++
++        if (getter != null ? !getter.equals(property.getter) : property.getter != null) {
++            return false;
++        }
++        if (setter != null ? !setter.equals(property.setter) : property.setter != null) {
++            return false;
++        }
++        return !(type != null && !type.equals(property.type));
++    }
++
++    /**
++     * @return true if this property's type is primitive
++     */
++    public boolean isPrimitive() {
++        return type.getRawType().isPrimitive();
++    }
++
++    /**
++     * @return tre if this property's type is an array
++     */
++    public boolean isArray() {
++        return type.getRawType().isArray();
++    }
++
++    /**
++     * @param p
++     *
++     * @return true if this property is assignable from the other property p
++     */
++    public boolean isAssignableFrom(final Property p) {
++        return type.isAssignableFrom(p.type);
++    }
++
++    /**
++     * @return true if this property's type is a Collection
++     */
++    public boolean isCollection() {
++        return Collection.class.isAssignableFrom(type.getRawType());
++    }
++
++    /**
++     * @return true if this property's type is a Set
++     */
++    public boolean isSet() {
++        return Set.class.isAssignableFrom(type.getRawType());
++    }
++
++    /**
++     * @return true if this property's type is a List
++     */
++    public boolean isList() {
++        return List.class.isAssignableFrom(type.getRawType());
++    }
++
++    /**
++     * @return true if this property's type is a Map
++     */
++    public boolean isMap() {
++        return Map.class.isAssignableFrom(type.getRawType());
++    }
++
++    /**
++     * @return true if this property represents a Map Key
++     */
++    public boolean isMapKey() {
++        return false;
++    }
++
++    /**
++     * @return true if this property represents a list element
++     */
++    public boolean isListElement() {
++        return false;
++    }
++
++    /**
++     * @return true if this property represents an array element
++     */
++    public boolean isArrayElement() {
++        return false;
++    }
++
++    @Override
++    public int hashCode() {
++        int result = name.hashCode();
++        result = 31 * result + (getter != null ? getter.hashCode() : 0);
++        result = 31 * result + (setter != null ? setter.hashCode() : 0);
++        result = 31 * result + (type != null ? type.hashCode() : 0);
++        return result;
++    }
++
++    @Override
++    public String toString() {
++        return name + "(" + type + ")";
++    }
++
++    /**
++     * @return true if this property is an enum
++     */
++    public boolean isEnum() {
++        return type.getRawType().isEnum();
++    }
++
++    public boolean isAssignable() {
++        return getSetter() != null;
++    }
++
++    /**
++     * Builder is used to construct immutable Property instances
++     */
++    public static class Builder {
++        private Method getterMethod;
++        private Method setterMethod;
++        private String getter;
++        private String setter;
++        private String propertyTypeName;
++        private Type<?> elementType;
++        private Type<?> propertyType;
++        private Type<?> owningType;
++        private String name;
++        private String expression;
++
++        @Override
++        public String toString() {
++            StringBuilder out = new StringBuilder();
++            out.append(Builder.class.getSimpleName());
++            out.append("(");
++            out.append(expression);
++            out.append("(");
++            out.append(propertyType);
++            out.append(")");
++            out.append(")");
++            return out.toString();
++        }
++
++        /**
++         * Creates a new Property.Builder
++         */
++        public Builder() {
++
++        }
++
++        /**
++         * Merges the attributes of the specified property into this one
++         *
++         * @param property
++         *
++         * @return
++         */
++        public Builder merge(final Property property) {
++            if (property.getter != null) {
++                getter = property.getter;
++                getterMethod = null;
++            }
++            if (property.setter != null) {
++                setter = property.setter;
++                setterMethod = null;
++            }
++            if (elementType == null || (property.elementType != null && elementType
++                    .isAssignableFrom(property.elementType))) {
++                elementType = property.elementType;
++            }
++            if (propertyType == null || (property.type != null && propertyType.isAssignableFrom(property.type))) {
++                propertyType = property.type;
++            }
++            name = property.name;
++
++            return this;
++        }
++
++        private String fixQuotes(final String methodExpression) {
++            String expression = methodExpression;
++            StringBuilder output = new StringBuilder();
++            while (expression.length() > 0) {
++                int currentDouble = expression.indexOf('"');
++                int currentSingle = expression.indexOf("'");
++                if (currentSingle > 0 && (currentSingle < currentDouble || currentDouble == -1)) {
++                    output.append(expression.subSequence(0, currentSingle));
++                    expression = expression.substring(currentSingle + 1);
++
++                    int nextSingle = expression.indexOf("'");
++                    if (nextSingle == 1) {
++                        output.append("'" + expression.substring(0, 2));
++                    } else {
++                        output.append("\"" + expression.substring(0, nextSingle) + "\"");
++                    }
++                    expression = expression.substring(nextSingle + 1);
++                } else if (currentDouble > 0) {
++                    output.append(expression.subSequence(0, currentDouble));
++                    expression = expression.substring(currentDouble + 1);
++
++                    int nextDouble = expression.indexOf('"');
++                    output.append("\"" + expression.substring(0, nextDouble) + "\"");
++                    expression = expression.substring(nextDouble + 1);
++                } else {
++                    output.append(expression);
++                    expression = "";
++                }
++            }
++            return output.toString();
++        }
++
++        /**
++         * @param getter the getter to set
++         */
++        public Builder getter(final String getter) {
++            this.getter = fixQuotes(getter);
++            return this;
++        }
++
++        /**
++         * @param setter the setter to set
++         */
++        public Builder setter(final String setter) {
++            this.setter = fixQuotes(setter);
++            return this;
++        }
++
++        /**
++         * Sets the expression
++         *
++         * @param expression
++         *
++         * @return
++         */
++        public Builder expression(final String expression) {
++            this.expression = expression;
++            return this;
++        }
++
++        /**
++         * Set the name
++         *
++         * @param name
++         *
++         * @return
++         */
++        public Builder name(final String name) {
++            this.name = name;
++            return this;
++        }
++
++        /**
++         * Set the type
++         *
++         * @param type
++         *
++         * @return
++         */
++        public Builder type(final java.lang.reflect.Type type) {
++            this.propertyType = TypeFactory.valueOf(type);
++            return this;
++        }
++
++        /**
++         * Set the type by name
++         *
++         * @param typeName
++         *
++         * @return
++         */
++        public Builder type(final String typeName) {
++            this.propertyTypeName = typeName;
++            return this;
++        }
++
++        /**
++         * Set the element type
++         *
++         * @param elementType
++         *
++         * @return
++         */
++        public Builder elementType(final Type<?> elementType) {
++            this.elementType = elementType;
++            return this;
++        }
++
++        /**
++         * Set the getter/accessor method
++         *
++         * @param readMethod
++         *
++         * @return
++         */
++        public Builder getter(final Method readMethod) {
++            this.getterMethod = readMethod;
++            return this;
++        }
++
++        /**
++         * Get the getter/accessor method
++         *
++         * @return the readMethod
++         */
++        public Method getReadMethod() {
++            return getterMethod;
++        }
++
++        /**
++         * Get the setter/mutator method
++         *
++         * @return the writeMethod
++         */
++        public Method getWriteMethod() {
++            return setterMethod;
++        }
++
++        /**
++         * Set the setter/mutator method
++         *
++         * @param writeMethod
++         *
++         * @return
++         */
++        public Builder setter(final Method writeMethod) {
++            this.setterMethod = writeMethod;
++            return this;
++        }
++
++        /**
++         * Sets the owning type
++         *
++         * @param owningType
++         *
++         * @return
++         */
++        protected Builder owningType(final Type<?> owningType) {
++            this.owningType = owningType;
++            return this;
++        }
++
++        /**
++         * Builds the property
++         *
++         * @return the property specified by this builder
++         */
++        public Property build() {
++            return build(null);
++        }
++
++        /**
++         * Builds the property, using the specified proeprtyResolver to validate
++         * the property settings
++         *
++         * @param propertyResolver
++         *
++         * @return
++         */
++        public Property build(final PropertyResolver propertyResolver) {
++            validate(propertyResolver);
++
++            if (propertyType == null && propertyTypeName != null) {
++                propertyType = TypeFactory.valueOf(propertyTypeName);
++            } else if (propertyType == null) {
++                propertyType = TypeFactory.TYPE_OF_OBJECT;
++            }
++            if (getterMethod != null) {
++                getter = getterMethod.getName() + "()";
++            }
++            if (setterMethod != null) {
++                setter = setterMethod.getName() + "(%s)";
++            }
++            return new Property(name, getter, setter, propertyType, elementType);
++        }
++
++        private void validate(final PropertyResolver propertyResolver) {
++            if (getterMethod == null && setterMethod == null && getter == null && setter == null) {
++                throw new IllegalArgumentException(
++                        "property " + (owningType != null ? owningType.getCanonicalName() : "") + "[" + name
++                                + "]" + " cannot be read or written");
++            } else {
++
++                if (owningType != null && (!"".equals(getter) || !"".equals(setter))) {
++                    for (Method m : owningType.getRawType().getMethods()) {
++                        if (getter != null && m.getName().equals(getter) && m.getParameterTypes().length == 0) {
++                            getter(m);
++                        } else if (setter != null && m.getName().endsWith(setter)
++                                && m.getParameterTypes().length == 1) {
++                            setter(m);
++                        }
++                    }
++                }
++
++                if (propertyResolver != null && getterMethod != null && this.propertyType == null) {
++                    this.propertyType = propertyResolver
++                            .resolvePropertyType(getterMethod, null, owningType.getRawType(), owningType);
++                }
++
++                if (propertyResolver != null && setterMethod != null && setterMethod.getParameterTypes().length == 1) {
++                    this.propertyType =
++                            propertyResolver.resolvePropertyType(getterMethod, setterMethod.getParameterTypes()[0],
++                                    owningType.getRawType(), owningType);
++                }
++
++                if (setterMethod != null && setterMethod.getParameterTypes().length != 1) {
++                    throw new IllegalArgumentException(
++                            "writeMethod (" + setterMethod.getName() + ") for " + owningType.getCanonicalName()
++                                    + "[" + name + "] does not have exactly 1 input argument ");
++                }
++
++                if (getterMethod != null
++                        && (getterMethod.getReturnType() == null || getterMethod.getReturnType().equals(Void.TYPE)
++                                    || getterMethod.getReturnType()
++                        .equals(Void.class))) {
++                    throw new IllegalArgumentException(
++                            "readMethod (" + getterMethod.getName() + ") for " + owningType.getCanonicalName()
++                                    + "[" + name + "] does not return a value ");
++                }
++
++                if (getterMethod != null && setterMethod != null && propertyType != null) {
++
++                    if (!getterMethod.getReturnType().isAssignableFrom(propertyType.getRawType())) {
++                        /*
++                         * If we've already parsed the write method, and the
++                         * read method type is not a sub-type of the write
++                         * method's type, the two should not be considered to
++                         * form a 'property'.
++                         */
++                        throw new IllegalArgumentException("write method (" + setterMethod.getName() + ") for "
++                                + owningType.getCanonicalName() + "[" + name + "]" + " has type ("
++                                + setterMethod.getParameterTypes()[0].getCanonicalName() + ") "
++                                + "is not assignable from the type ("
++                                + getterMethod.getReturnType().getCanonicalName() + ") for "
++                                + "the corresponding read method ("
++                                + getterMethod.getName() + ")");
++                    }
++                }
++            }
++        }
++
++    }
++
+ }
+\ No newline at end of file
+diff --git a/com/baidu/unbiz/easymapper/util/ClassUtil.java b/com/baidu/unbiz/easymapper/util/ClassUtil.java
+index c3b32b0..b738005 100644
+--- a/com/baidu/unbiz/easymapper/util/ClassUtil.java
++++ b/com/baidu/unbiz/easymapper/util/ClassUtil.java
+@@ -29,7 +29,7 @@ public class ClassUtil {
+      *
+      * @return
+      */
+-    public static boolean isPrimitiveWrapper(Class<?> type) {
++    public static boolean isPrimitiveWrapper(Class<?> type) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(32);
+         return PRIMITIVE_WRAPPER_TYPES.contains(type);
+     }
+ 
+@@ -41,7 +41,7 @@ public class ClassUtil {
+      *
+      * @return
+      */
+-    public static Class<?> getWrapperType(Class<?> primitiveType) {
++    public static Class<?> getWrapperType(Class<?> primitiveType) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(33);
+         if (boolean.class.equals(primitiveType)) {
+             return Boolean.class;
+         } else if (byte.class.equals(primitiveType)) {
+@@ -71,7 +71,7 @@ public class ClassUtil {
+      *
+      * @return the corresponding primitive type
+      */
+-    public static Class<?> getPrimitiveType(Class<?> wrapperType) {
++    public static Class<?> getPrimitiveType(Class<?> wrapperType) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(34);
+         if (Boolean.class.equals(wrapperType)) {
+             return Boolean.TYPE;
+         } else if (Byte.class.equals(wrapperType)) {
+diff --git a/com/baidu/unbiz/easymapper/util/ReflectionUtil.java b/com/baidu/unbiz/easymapper/util/ReflectionUtil.java
+index ff2cb74..3470b98 100644
+--- a/com/baidu/unbiz/easymapper/util/ReflectionUtil.java
++++ b/com/baidu/unbiz/easymapper/util/ReflectionUtil.java
+@@ -23,7 +23,7 @@ public class ReflectionUtil {
+      * @param <T>   T
+      * @return 对象
+      */
+-    public static <T> T newInstance(final Class<T> clazz) {
++    public static <T> T newInstance(final Class<T> clazz) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(35);
+         Constructor<?>[] constructors = getAllConstructorsOfClass(clazz, true);
+         if (constructors == null || constructors.length == 0) {
+             throw new MappingException("No constructors found for class " + clazz.getName());
+@@ -59,7 +59,7 @@ public class ReflectionUtil {
+      * @param accessible 是否可以访问
+      * @return 构造方法数组
+      */
+-    public static Constructor<?>[] getAllConstructorsOfClass(final Class<?> clazz, boolean accessible) {
++    public static Constructor<?>[] getAllConstructorsOfClass(final Class<?> clazz, boolean accessible) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(36);
+         if (clazz == null) {
+             return null;
+         }
+diff --git a/com/baidu/unbiz/easymapper/util/SystemPropertyUtil.java b/com/baidu/unbiz/easymapper/util/SystemPropertyUtil.java
+index 90bad86..c4d6579 100644
+--- a/com/baidu/unbiz/easymapper/util/SystemPropertyUtil.java
++++ b/com/baidu/unbiz/easymapper/util/SystemPropertyUtil.java
+@@ -41,7 +41,7 @@ public class SystemPropertyUtil {
+      *
+      * @return system property string
+      */
+-    public static String getSystemProperty(String key, String defautValue) {
++    public static String getSystemProperty(String key, String defautValue) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(37);
+         return getSystemProperty(key, key, defautValue);
+     }
+ 
+@@ -54,7 +54,7 @@ public class SystemPropertyUtil {
+      *
+      * @return system property string
+      */
+-    public static String getSystemProperty(String dKey, String shellKey, String defautValue) {
++    public static String getSystemProperty(String dKey, String shellKey, String defautValue) { com.baidu.unbiz.jmhbench.MutationSwitch.tick(38);
+         String value = System.getProperty(dKey);
+         if (value == null || value.length() == 0) {
+             value = System.getenv(shellKey);
+diff --git a/com/baidu/unbiz/jmhbench/MutationSwitch.java b/com/baidu/unbiz/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..225dc61
+--- /dev/null
++++ b/com/baidu/unbiz/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.baidu.unbiz.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

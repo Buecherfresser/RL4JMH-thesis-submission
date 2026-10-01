@@ -1,0 +1,22 @@
+--- a/bench/Decoder.java
++++ b/bench/Decoder.java
+@@ -1,12 +1,17 @@
+ package bench;
+ 
+-import java.nio.charset.StandardCharsets;
++import java.io.UnsupportedEncodingException;
+ 
+ public final class Decoder {
+ 
+     private Decoder() {}
+ 
++    // Regressed: look the charset up by name on every call.
+     public static String decode(byte[] b) {
+-        return new String(b, StandardCharsets.UTF_8);
++        try {
++            return new String(b, "UTF-8");
++        } catch (UnsupportedEncodingException e) {
++            throw new RuntimeException(e);
++        }
+     }
+ }

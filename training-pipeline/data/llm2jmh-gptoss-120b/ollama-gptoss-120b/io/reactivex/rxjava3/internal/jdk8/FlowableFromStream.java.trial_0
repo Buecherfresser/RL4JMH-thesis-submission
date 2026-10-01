@@ -1,0 +1,158 @@
+```
+package io.reactivex.rxjava3.internal.jdk8.benchmark;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.jdk8.FlowableFromStream;
+import io.reactivex.rxjava3.internal.subscriptions.EmptySubscription;
+import io.reactivex.rxjava3.operators.ConditionalSubscriber;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+/**
+ * JMH benchmark for {@link FlowableFromStream}.
+ *
+ * Measures the throughput of consuming a Flowable created from a Java {@link Stream}
+ * using both a regular {@link org.reactivestreams.Subscriber} and a {@link ConditionalSubscriber}.
+ *
+ * The benchmark runs with a fixed stream size (e.g., 10_000 elements) and requests
+ * {@code Long.MAX_VALUE} to simulate an unbounded downstream.
+ *
+ * Best‑practice notes:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Warm‑up and measurement iterations are configured via JMH defaults (can be overridden on the command line).
+ * - The subscriber implementation avoids any extra synchronization or allocation during onNext.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class FlowableFromStreamBenchmark {
+
+    /** Number of elements in the source stream. */
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    /** Reusable stream supplier – creates a fresh stream for each benchmark invocation. */
+    @State(Scope.Thread)
+    public static class StreamHolder {
+        private int size;
+
+        public void setSize(int size) {
+            this.size = size;
+        }
+
+        public Stream<Integer> newStream() {
+            // IntStream.range is fast and produces a sequential stream.
+            return IntStream.range(0, size).boxed();
+        }
+    }
+
+    /** Simple subscriber that requests Long.MAX_VALUE and counts received items. */
+    static final class CountingSubscriber<T> implements org.reactivestreams.Subscriber<T> {
+        private final AtomicLong count = new AtomicLong();
+
+        @Override
+        public void onSubscribe(org.reactivestreams.Subscription s) {
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(T t) {
+            count.incrementAndGet();
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            RxJavaPlugins.onError(t);
+        }
+
+        @Override
+        public void onComplete() {
+            // no‑op
+        }
+
+        public long getCount() {
+            return count.get();
+        }
+
+        public void reset() {
+            count.set(0);
+        }
+    }
+
+    /** ConditionalSubscriber implementation that forwards to a CountingSubscriber. */
+    static final class CountingConditionalSubscriber<T> implements ConditionalSubscriber<T> {
+        private final AtomicLong count = new AtomicLong();
+
+        @Override
+        public void onSubscribe(org.reactivestreams.Subscription s) {
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(T t) {
+            // This method is not used by FlowableFromStream when a ConditionalSubscriber is present.
+        }
+
+        @Override
+        public boolean tryOnNext(T t) {
+            count.incrementAndGet();
+            return true; // always accept
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            RxJavaPlugins.onError(t);
+        }
+
+        @Override
+        public void onComplete() {
+            // no‑op
+        }
+
+        public long getCount() {
+            return count.get();
+        }
+
+        public void reset() {
+            count.set(0);
+        }
+    }
+
+    @Setup(Level.Iteration)
+    public void setUp(StreamHolder holder) {
+        holder.setSize(size);
+    }
+
+    @Benchmark
+    public long regularSubscriber(StreamHolder holder) {
+        Stream<Integer> stream = holder.newStream();
+        Flowable<Integer> flowable = new FlowableFromStream<>(stream);
+        CountingSubscriber<Integer> subscriber = new CountingSubscriber<>();
+        flowable.subscribe(subscriber);
+        // The Flowable runs synchronously, so by the time subscribe returns all items are emitted.
+        long emitted = subscriber.getCount();
+        subscriber.reset();
+        return emitted;
+    }
+
+    @Benchmark
+    public long conditionalSubscriber(StreamHolder holder) {
+        Stream<Integer> stream = holder.newStream();
+        Flowable<Integer> flowable = new FlowableFromStream<>(stream);
+        CountingConditionalSubscriber<Integer> subscriber = new CountingConditionalSubscriber<>();
+        flowable.subscribe(subscriber);
+        long emitted = subscriber.getCount();
+        subscriber.reset();
+        return emitted;
+    }
+}
+```

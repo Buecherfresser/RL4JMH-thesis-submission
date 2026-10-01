@@ -1,0 +1,81 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link ObservableTakeUntilPredicate}.
+ *
+ * Measures the throughput (operations per second) of the operator when processing a stream of integers.
+ * The predicate is configured to become true on the last element, which forces the operator to
+ * forward all items and then complete.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Use @Param to vary the size of the source sequence.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Use blockingSubscribe to ensure the benchmark waits for completion.
+ * - Include warm‑up, measurement, and fork settings.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableTakeUntilPredicateBenchmark {
+
+    @Param({ "1000", "100000" })
+    public int // number of items emitted by the source Observable
+    size;
+
+    private Observable<Integer> source;
+
+    private Predicate<Integer> predicate;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a finite source Observable emitting a range of integers.
+        source = Observable.range(1, size);
+        // Predicate becomes true on the last element, causing the operator to complete at the end.
+        predicate = v -> v == size;
+    }
+
+    @Benchmark
+    public void takeUntilPredicate(Blackhole bh) {
+        // Apply the internal operator directly and block until the stream completes.
+        new ObservableTakeUntilPredicate<>(source, predicate).blockingSubscribe(bh::consume);
+    }
+}

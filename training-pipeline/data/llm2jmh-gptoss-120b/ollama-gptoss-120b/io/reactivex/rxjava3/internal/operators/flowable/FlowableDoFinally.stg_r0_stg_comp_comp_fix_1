@@ -1,0 +1,49 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Action;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@code FlowableDoFinally} operator measuring the throughput
+ * of a synchronous Flowable pipeline with a no‑op finally action.
+ */
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class FlowableDoFinallyBenchmark {
+
+    /** Number of items emitted by the source Flowable. */
+    @Param({ "1000000" })
+    private int size;
+
+    /** The Flowable under test: range -> doFinally (no‑op). */
+    private Flowable<Integer> flowable;
+
+    /** No‑op finally action. */
+    private static final Action NOOP = () -> { /* intentionally empty */ };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a synchronous source and attach the doFinally operator.
+        flowable = Flowable.range(1, size).doFinally(NOOP);
+    }
+
+    @Benchmark
+    public void doFinallyThroughput(Blackhole bh) {
+        // Subscribe with lambdas that forward all signals to the Blackhole.
+        flowable.subscribe(
+                bh::consume,   // onNext
+                bh::consume,   // onError
+                () -> {}       // onComplete (no‑op, as completion is already measured)
+        );
+    }
+}
+```

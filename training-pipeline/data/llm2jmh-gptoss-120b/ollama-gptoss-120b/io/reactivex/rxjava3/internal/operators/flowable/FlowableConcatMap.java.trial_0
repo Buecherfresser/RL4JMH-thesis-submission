@@ -1,0 +1,59 @@
+```
+package benchmark;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Publisher;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableConcatMap;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableConcatMap} in throughput mode.
+ * Measures how many items per second can be processed when using concatMap
+ * with a simple synchronous mapper.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableConcatMapBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     * Typical values are chosen to keep the benchmark short while still exercising the operator.
+     */
+    @Param({"1000", "10000"})
+    public int size;
+
+    private Flowable<Integer> source;
+    private Function<Integer, Publisher<Integer>> mapper;
+
+    /**
+     * Set up a synchronous source and a mapper that returns a single-item Flowable.
+     * The mapper is deliberately cheap to isolate the overhead of concatMap itself.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Flowable.range(1, size);
+        mapper = v -> Flowable.just(v * 2);
+    }
+
+    /**
+     * Benchmark the concatMap operator using the {@code IMMEDIATE} error mode
+     * and a prefetch of 128 (the default used in RxJava's internal tests).
+     * The {@code blockingForEach} call ensures the whole stream is consumed
+     * before the benchmark iteration finishes, providing a deterministic measurement.
+     *
+     * @param bh Blackhole to consume the emitted items and prevent dead-code elimination.
+     */
+    @Benchmark
+    public void concatMapThroughput(Blackhole bh) {
+        source.concatMap(mapper, 128, FlowableConcatMap.ErrorMode.IMMEDIATE)
+              .blockingForEach(bh::consume);
+    }
+}
+```

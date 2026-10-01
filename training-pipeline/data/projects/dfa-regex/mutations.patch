@@ -1,0 +1,2881 @@
+diff --git a/top/yatt/dfargx/MatchedText.java b/top/yatt/dfargx/MatchedText.java
+index 4240415..23c4520 100644
+--- a/top/yatt/dfargx/MatchedText.java
++++ b/top/yatt/dfargx/MatchedText.java
+@@ -12,11 +12,11 @@ public class MatchedText {
+         this.Pos = Pos;
+     }
+ 
+-    public String getText() {
++    public String getText() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(1);
+         return text;
+     }
+ 
+-    public int getPos() {
++    public int getPos() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(6);
+         return Pos;
+     }
+ 
+diff --git a/top/yatt/dfargx/RegexMatcher.java b/top/yatt/dfargx/RegexMatcher.java
+index 013c722..aceca29 100644
+--- a/top/yatt/dfargx/RegexMatcher.java
++++ b/top/yatt/dfargx/RegexMatcher.java
+@@ -1,41 +1,41 @@
+-package top.yatt.dfargx;
+-
+-import top.yatt.dfargx.automata.DFA;
+-import top.yatt.dfargx.automata.NFA;
+-import top.yatt.dfargx.tree.SyntaxTree;
+-
+-/**
+- * Created on 2015/5/11.
+- */
+-public class RegexMatcher {
+-    private int[][] transitionTable;
+-    private int is;
+-    private int rs;
+-    private boolean[] fs;
+-
+-    public RegexMatcher(String regex) {
+-        compile(regex);
+-    }
+-
+-    private void compile(String regex) {
+-        SyntaxTree syntaxTree = new SyntaxTree(regex);
+-        NFA nfa = new NFA(syntaxTree.getRoot());
+-        DFA dfa = new DFA(nfa.asBitmapStateManager());
+-        transitionTable = dfa.getTransitionTable();
+-        is = dfa.getInitState();
+-        fs = dfa.getFinalStates();
+-        rs = dfa.getRejectedState();
+-    }
+-
+-    public boolean match(String str) {
+-        int s = is;
+-        for (int i = 0, length = str.length(); i < length; i++) {
+-            char ch = str.charAt(i);
+-            s = transitionTable[s][ch];
+-            if (s == rs) {
+-                return false; // fast failed using rejected state
+-            }
+-        }
+-        return fs[s];
+-    }
+-}
++package top.yatt.dfargx;
++
++import top.yatt.dfargx.automata.DFA;
++import top.yatt.dfargx.automata.NFA;
++import top.yatt.dfargx.tree.SyntaxTree;
++
++/**
++ * Created on 2015/5/11.
++ */
++public class RegexMatcher {
++    private int[][] transitionTable;
++    private int is;
++    private int rs;
++    private boolean[] fs;
++
++    public RegexMatcher(String regex) {
++        compile(regex);
++    }
++
++    private void compile(String regex) {
++        SyntaxTree syntaxTree = new SyntaxTree(regex);
++        NFA nfa = new NFA(syntaxTree.getRoot());
++        DFA dfa = new DFA(nfa.asBitmapStateManager());
++        transitionTable = dfa.getTransitionTable();
++        is = dfa.getInitState();
++        fs = dfa.getFinalStates();
++        rs = dfa.getRejectedState();
++    }
++
++    public boolean match(String str) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(11);
++        int s = is;
++        for (int i = 0, length = str.length(); i < length; i++) {
++            char ch = str.charAt(i);
++            s = transitionTable[s][ch];
++            if (s == rs) {
++                return false; // fast failed using rejected state
++            }
++        }
++        return fs[s];
++    }
++}
+diff --git a/top/yatt/dfargx/RegexSearcher.java b/top/yatt/dfargx/RegexSearcher.java
+index e8856cc..48491e1 100644
+--- a/top/yatt/dfargx/RegexSearcher.java
++++ b/top/yatt/dfargx/RegexSearcher.java
+@@ -34,14 +34,14 @@ public class RegexSearcher implements Enumeration<MatchedText> {
+         rs = dfa.getRejectedState();
+     }
+ 
+-    public void search(String str) {
++    public void search(String str) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(16);
+         startPos = 0;
+         text = null;
+         this.str = str;
+     }
+ 
+     @Override
+-    public boolean hasMoreElements() {
++    public boolean hasMoreElements() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(20);
+         while (startPos < str.length()) {
+             int s = is;
+             for (int i = startPos; i < str.length(); i++) {
+@@ -61,7 +61,7 @@ public class RegexSearcher implements Enumeration<MatchedText> {
+     }
+ 
+     @Override
+-    public MatchedText nextElement() {
++    public MatchedText nextElement() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(24);
+         return text;
+     }
+ }
+diff --git a/top/yatt/dfargx/automata/DFA.java b/top/yatt/dfargx/automata/DFA.java
+index 6c57f5f..8832414 100644
+--- a/top/yatt/dfargx/automata/DFA.java
++++ b/top/yatt/dfargx/automata/DFA.java
+@@ -1,316 +1,316 @@
+-package top.yatt.dfargx.automata;
+-
+-import top.yatt.dfargx.util.CommonSets;
+-
+-import java.util.*;
+-
+-/**
+- * Created on 2015/5/10.
+- */
+-public class DFA {
+-
+-    private final NFABitmapStateManager nfaiStateManager;
+-    private final List<NFABitmapState> nfaiStates;
+-    private int[][] transitionTable;
+-    private int is; // init state
+-    private int rs; // rejected state
+-    private boolean[] fs; // final states
+-
+-    public DFA(NFABitmapStateManager nfaiStateManager) {
+-        this.nfaiStateManager = nfaiStateManager;
+-        this.nfaiStates = nfaiStateManager.getStates();
+-        transitionTable = null;
+-        is = rs = -1;
+-        fs = null;
+-        init();
+-    }
+-
+-    public int[][] getTransitionTable() {
+-        return transitionTable;
+-    }
+-
+-    public int getRejectedState() {
+-        return rs;
+-    }
+-
+-    public int getInitState() {
+-        return is;
+-    }
+-
+-    public boolean[] getFinalStates() {
+-        return fs;
+-    }
+-
+-    public boolean isEquivalentTo(DFA other) {
+-        int [][] checked = new int[transitionTable.length][other.transitionTable.length];
+-        return dfaEquivalenceCheck(other, is, other.is, checked);
+-    }
+-
+-    private boolean dfaEquivalenceCheck(DFA other, int initialState, int otherInitialState, int [][] checked) {
+-        // transitions for this DFA for state initialState
+-        int [] initialTransitions = transitionTable[initialState];
+-        // transitions for the other DFA for state otherInitialState
+-        int [] otherInitialTransitions = other.transitionTable[otherInitialState];
+-
+-        // For every possible transition from initialState (and otherInitialState)
+-        for (int i = 0; i < initialTransitions.length; i++) {
+-
+-            // if the target state is already computed in previous iterations, skip
+-            if (checked[initialTransitions[i]][otherInitialTransitions[i]] == 1) {
+-                continue;
+-            }
+-            // mark the transition as computed
+-            checked[initialTransitions[i]][otherInitialTransitions[i]] = 1;
+-
+-            if (fs[initialTransitions[i]] != other.fs[otherInitialTransitions[i]]) {
+-                // one transition goes to a final state and the other does not, this DFA is not equivalent
+-                return false;
+-            } else if ((initialTransitions[i] == rs && otherInitialTransitions[i] != other.rs)
+-                    || (initialTransitions[i] != rs && otherInitialTransitions[i] == other.rs)) {
+-                // one transition goes to rejected state and the other does not, this DFA is not equivalent
+-                return false;
+-            } else if (fs[initialTransitions[i]] == false && other.fs[otherInitialTransitions[i]] == false) {
+-                // both transitions go to intermediate states, needs further computing using current states as initial
+-                if (!dfaEquivalenceCheck(other, initialTransitions[i], otherInitialTransitions[i], checked)) {
+-                    // the transition is not equivalent further down, this DFA is not equivalent
+-                    return false;
+-                }
+-            }
+-        }
+-        // All transitions check were equivalent, this DFA is equivalent
+-        return true;
+-    }
+-
+-    private void init() {
+-        NFABitmapState initState = nfaiStates.get(0);
+-        NFABitmapState finalState = nfaiStates.get(1);
+-
+-        Map<NFABitmapState, NFABitmapStatePack> closureMap = calculateClosure(nfaiStates);
+-
+-        // construct a NFA first
+-        Map<NFABitmapState, Map<Character, NFABitmapStatePack>> nfaTransitionMap = new HashMap<>();
+-        for (NFABitmapState state : nfaiStates) {
+-            Map<Character, NFABitmapStatePack> subMap = new HashMap<>();
+-            for (char ch = 0; ch < CommonSets.ENCODING_LENGTH; ch++) {
+-                NFABitmapStatePack closure = closureMap.get(state);
+-                NFABitmapStatePack reachable = traceReachable(closure, ch, closureMap);
+-                if (!reachable.isEmpty()) {
+-                    subMap.put(ch, reachable);
+-                }
+-            }
+-            nfaTransitionMap.put(state, subMap);
+-        }
+-
+-        // Construct an original DFA using the constructed NFA. Each key which is set of nfa states is a new dfa state.
+-        Map<NFABitmapStatePack, Map<Character, NFABitmapStatePack>> originalDFATransitionMap = new HashMap<>();
+-        constructOriginalDFA(closureMap.get(initState), nfaTransitionMap, originalDFATransitionMap);
+-
+-        // construct minimum DFA
+-        minimize(originalDFATransitionMap, closureMap.get(initState), finalState);
+-    }
+-
+-    private void constructOriginalDFA(NFABitmapStatePack stateSet, Map<NFABitmapState, Map<Character, NFABitmapStatePack>> nfaTransitionMap, Map<NFABitmapStatePack, Map<Character, NFABitmapStatePack>> originalDFATransitionMap) {
+-
+-        Stack<NFABitmapStatePack> stack = new Stack<>();
+-        stack.push(stateSet);
+-
+-        do {
+-            NFABitmapStatePack pop = stack.pop();
+-            Map<Character, NFABitmapStatePack> subMap = originalDFATransitionMap.get(pop);
+-            if (subMap == null) {
+-                subMap = new HashMap<>();
+-                originalDFATransitionMap.put(pop, subMap);
+-            }
+-            for (char ch = 0; ch < CommonSets.ENCODING_LENGTH; ch++) {
+-                NFABitmapStatePack union = nfaiStateManager.newEmptyPack();
+-                for (NFABitmapState state : pop.asList()) {
+-                    NFABitmapStatePack nfaSet = nfaTransitionMap.get(state).get(ch);
+-                    if (nfaSet != null) {
+-                        union.addAll(nfaSet);
+-                    }
+-                }
+-                union.freeze();
+-                if (!union.isEmpty()) {
+-                    subMap.put(ch, union);
+-                    if (!originalDFATransitionMap.containsKey(union)) {
+-                        stack.push(union);
+-                    }
+-                }
+-            }
+-        } while (!stack.isEmpty());
+-    }
+-
+-    private Map<NFABitmapState, NFABitmapStatePack> calculateClosure(List<NFABitmapState> nfaStateList) {
+-        Map<NFABitmapState, NFABitmapStatePack> map = new HashMap<>();
+-        for (NFABitmapState state : nfaStateList) {
+-            NFABitmapStatePack closure = nfaiStateManager.newEmptyPack();
+-            dfsClosure(state, closure);
+-            closure.freeze();
+-            map.put(state, closure);
+-        }
+-        return map;
+-    }
+-
+-    private void dfsClosure(NFABitmapState state, NFABitmapStatePack closure) {
+-        Stack<NFABitmapState> nfaStack = new Stack<>();
+-        nfaStack.push(state);
+-        do {
+-            NFABitmapState pop = nfaStack.pop();
+-            closure.addState(pop.getId());
+-            for (NFABitmapState next : pop.getDirectTable().asList()) {
+-                if (!closure.contains(next.getId())) {
+-                    nfaStack.push(next);
+-                }
+-            }
+-        } while (!nfaStack.isEmpty());
+-    }
+-
+-    private NFABitmapStatePack traceReachable(NFABitmapStatePack closure, char ch, Map<NFABitmapState, NFABitmapStatePack> closureMap) {
+-        NFABitmapStatePack result = nfaiStateManager.newEmptyPack();
+-        for (NFABitmapState closureState : closure.asList()) {
+-            Map<Character, NFABitmapStatePack> transitionMap = closureState.getTransitionMap();
+-            NFABitmapStatePack stateSet = transitionMap.get(ch);
+-            if (stateSet != null) {
+-                for (NFABitmapState state : stateSet.asList()) {
+-                    result.addAll(closureMap.get(state)); // closure of all the reachable states by scanning a char of the given closure.
+-                }
+-            }
+-        }
+-        result.freeze();
+-        return result;
+-    }
+-
+-    private void minimize(Map<NFABitmapStatePack, Map<Character, NFABitmapStatePack>> oriDFATransitionMap, NFABitmapStatePack initClosure, NFABitmapState finalNFAIState) {
+-        Map<Integer, int[]> renamedDFATransitionTable = new HashMap<>();
+-        Map<Integer, Boolean> finalFlags = new HashMap<>();
+-        Map<NFABitmapStatePack, Integer> stateRenamingMap = new HashMap<>();
+-        int initStateAfterRenaming = -1;
+-        int renamingStateID = 1;
+-
+-        // rename all states
+-        for (NFABitmapStatePack nfaState : oriDFATransitionMap.keySet()) {
+-            if (initStateAfterRenaming == -1 && nfaState.equals(initClosure)) {
+-                initStateAfterRenaming = renamingStateID; // preserve init state id
+-            }
+-            stateRenamingMap.put(nfaState, renamingStateID++);
+-        }
+-
+-        renamedDFATransitionTable.put(0, newRejectedState()); // the rejected state 0
+-        finalFlags.put(0, false);
+-
+-        // construct renamed dfa transition table
+-        for (Map.Entry<NFABitmapStatePack, Map<Character, NFABitmapStatePack>> entry : oriDFATransitionMap.entrySet()) {
+-            renamingStateID = stateRenamingMap.get(entry.getKey());
+-            int[] state = newRejectedState();
+-            for (Map.Entry<Character, NFABitmapStatePack> row : entry.getValue().entrySet()) {
+-                state[row.getKey()] = stateRenamingMap.get(row.getValue());
+-            }
+-            renamedDFATransitionTable.put(renamingStateID, state);
+-            if (entry.getKey().contains(finalNFAIState.getId())) {
+-                finalFlags.put(renamingStateID, true);
+-            } else {
+-                finalFlags.put(renamingStateID, false);
+-            }
+-        }
+-
+-        // group states to final states and non-final states
+-        Map<Integer, Integer> groupFlags = new HashMap<>();
+-        for (int i = 0; i < finalFlags.size(); i++) {
+-            boolean b = finalFlags.get(i);
+-            if (b) {
+-                groupFlags.put(i, 0);
+-            } else {
+-                groupFlags.put(i, 1);
+-            }
+-        }
+-
+-        int groupTotal = 2;
+-        int prevGroupTotal;
+-        do { // splitting, group id is the final state id
+-            prevGroupTotal = groupTotal;
+-            for (int sensitiveGroup = 0; sensitiveGroup < prevGroupTotal; sensitiveGroup++) {
+-                //  <target group table, state id set>
+-                Map<Map<Integer, Integer>, Set<Integer>> invertMap = new HashMap<>();
+-                for (int sid = 0; sid < groupFlags.size(); sid++) { //use state id to iterate
+-                    int group = groupFlags.get(sid);
+-                    if (sensitiveGroup == group) {
+-                        Map<Integer, Integer> targetGroupTable = new HashMap<>(CommonSets.ENCODING_LENGTH);
+-                        for (char ch = 0; ch < CommonSets.ENCODING_LENGTH; ch++) {
+-                            int targetState = renamedDFATransitionTable.get(sid)[ch];
+-                            int targetGroup = groupFlags.get(targetState);
+-                            targetGroupTable.put((int) ch, targetGroup);
+-                        }
+-                        Set<Integer> stateIDSet = invertMap.get(targetGroupTable);
+-                        if (stateIDSet == null) {
+-                            stateIDSet = new HashSet<>();
+-                            invertMap.put(targetGroupTable, stateIDSet);
+-                        }
+-                        stateIDSet.add(sid);
+-                    }
+-                }
+-
+-                boolean first = true;
+-                for (Set<Integer> stateIDSet : invertMap.values()) {
+-                    if (first) {
+-                        first = false;
+-                    } else {
+-                        for (int sid : stateIDSet) {
+-                            groupFlags.put(sid, groupTotal);
+-                        }
+-                        groupTotal++;
+-                    }
+-                }
+-            }
+-        } while (prevGroupTotal != groupTotal);
+-
+-        // determine initial group state
+-        is = groupFlags.get(initStateAfterRenaming);
+-
+-        // determine rejected group state
+-        rs = groupFlags.get(0);
+-
+-        // determine final group states
+-        Set<Integer> finalGroupFlags = new HashSet<>();
+-        for (int i = 0, groupFlagsSize = groupFlags.size(); i < groupFlagsSize; i++) {
+-            Integer groupFlag = groupFlags.get(i);
+-            if (finalFlags.get(i)) {
+-                finalGroupFlags.add(groupFlag);
+-            }
+-        }
+-        fs = new boolean[groupTotal];
+-        for (int i = 0; i < groupTotal; i++) {
+-            fs[i] = finalGroupFlags.contains(i);
+-        }
+-
+-        // construct the output transition table
+-        transitionTable = new int[groupTotal][];
+-
+-        for (int groupID = 0; groupID < groupTotal; groupID++) {
+-            for (int sid = 0; sid < groupFlags.size(); sid++) {
+-                if (groupID == groupFlags.get(sid)) {
+-                    int[] oriState = renamedDFATransitionTable.get(sid);
+-                    int[] state = new int[CommonSets.ENCODING_LENGTH];
+-                    for (char ch = 0; ch < CommonSets.ENCODING_LENGTH; ch++) {
+-                        int next = oriState[ch];
+-                        state[ch] = groupFlags.get(next);
+-                    }
+-                    transitionTable[groupID] = state;
+-                    break;
+-                }
+-            }
+-        }
+-    }
+-
+-
+-    private int[] newRejectedState() {
+-        int[] state = new int[CommonSets.ENCODING_LENGTH];
+-        rejectAll(state);
+-        return state;
+-    }
+-
+-    private void rejectAll(int[] state) {
+-        for (int i = 0; i < state.length; i++) {
+-            state[i] = 0;
+-        }
+-    }
+-}
++package top.yatt.dfargx.automata;
++
++import top.yatt.dfargx.util.CommonSets;
++
++import java.util.*;
++
++/**
++ * Created on 2015/5/10.
++ */
++public class DFA {
++
++    private final NFABitmapStateManager nfaiStateManager;
++    private final List<NFABitmapState> nfaiStates;
++    private int[][] transitionTable;
++    private int is; // init state
++    private int rs; // rejected state
++    private boolean[] fs; // final states
++
++    public DFA(NFABitmapStateManager nfaiStateManager) {
++        this.nfaiStateManager = nfaiStateManager;
++        this.nfaiStates = nfaiStateManager.getStates();
++        transitionTable = null;
++        is = rs = -1;
++        fs = null;
++        init();
++    }
++
++    public int[][] getTransitionTable() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(2);
++        return transitionTable;
++    }
++
++    public int getRejectedState() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(7);
++        return rs;
++    }
++
++    public int getInitState() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(12);
++        return is;
++    }
++
++    public boolean[] getFinalStates() {
++        return fs;
++    }
++
++    public boolean isEquivalentTo(DFA other) {
++        int [][] checked = new int[transitionTable.length][other.transitionTable.length];
++        return dfaEquivalenceCheck(other, is, other.is, checked);
++    }
++
++    private boolean dfaEquivalenceCheck(DFA other, int initialState, int otherInitialState, int [][] checked) {
++        // transitions for this DFA for state initialState
++        int [] initialTransitions = transitionTable[initialState];
++        // transitions for the other DFA for state otherInitialState
++        int [] otherInitialTransitions = other.transitionTable[otherInitialState];
++
++        // For every possible transition from initialState (and otherInitialState)
++        for (int i = 0; i < initialTransitions.length; i++) {
++
++            // if the target state is already computed in previous iterations, skip
++            if (checked[initialTransitions[i]][otherInitialTransitions[i]] == 1) {
++                continue;
++            }
++            // mark the transition as computed
++            checked[initialTransitions[i]][otherInitialTransitions[i]] = 1;
++
++            if (fs[initialTransitions[i]] != other.fs[otherInitialTransitions[i]]) {
++                // one transition goes to a final state and the other does not, this DFA is not equivalent
++                return false;
++            } else if ((initialTransitions[i] == rs && otherInitialTransitions[i] != other.rs)
++                    || (initialTransitions[i] != rs && otherInitialTransitions[i] == other.rs)) {
++                // one transition goes to rejected state and the other does not, this DFA is not equivalent
++                return false;
++            } else if (fs[initialTransitions[i]] == false && other.fs[otherInitialTransitions[i]] == false) {
++                // both transitions go to intermediate states, needs further computing using current states as initial
++                if (!dfaEquivalenceCheck(other, initialTransitions[i], otherInitialTransitions[i], checked)) {
++                    // the transition is not equivalent further down, this DFA is not equivalent
++                    return false;
++                }
++            }
++        }
++        // All transitions check were equivalent, this DFA is equivalent
++        return true;
++    }
++
++    private void init() {
++        NFABitmapState initState = nfaiStates.get(0);
++        NFABitmapState finalState = nfaiStates.get(1);
++
++        Map<NFABitmapState, NFABitmapStatePack> closureMap = calculateClosure(nfaiStates);
++
++        // construct a NFA first
++        Map<NFABitmapState, Map<Character, NFABitmapStatePack>> nfaTransitionMap = new HashMap<>();
++        for (NFABitmapState state : nfaiStates) {
++            Map<Character, NFABitmapStatePack> subMap = new HashMap<>();
++            for (char ch = 0; ch < CommonSets.ENCODING_LENGTH; ch++) {
++                NFABitmapStatePack closure = closureMap.get(state);
++                NFABitmapStatePack reachable = traceReachable(closure, ch, closureMap);
++                if (!reachable.isEmpty()) {
++                    subMap.put(ch, reachable);
++                }
++            }
++            nfaTransitionMap.put(state, subMap);
++        }
++
++        // Construct an original DFA using the constructed NFA. Each key which is set of nfa states is a new dfa state.
++        Map<NFABitmapStatePack, Map<Character, NFABitmapStatePack>> originalDFATransitionMap = new HashMap<>();
++        constructOriginalDFA(closureMap.get(initState), nfaTransitionMap, originalDFATransitionMap);
++
++        // construct minimum DFA
++        minimize(originalDFATransitionMap, closureMap.get(initState), finalState);
++    }
++
++    private void constructOriginalDFA(NFABitmapStatePack stateSet, Map<NFABitmapState, Map<Character, NFABitmapStatePack>> nfaTransitionMap, Map<NFABitmapStatePack, Map<Character, NFABitmapStatePack>> originalDFATransitionMap) {
++
++        Stack<NFABitmapStatePack> stack = new Stack<>();
++        stack.push(stateSet);
++
++        do {
++            NFABitmapStatePack pop = stack.pop();
++            Map<Character, NFABitmapStatePack> subMap = originalDFATransitionMap.get(pop);
++            if (subMap == null) {
++                subMap = new HashMap<>();
++                originalDFATransitionMap.put(pop, subMap);
++            }
++            for (char ch = 0; ch < CommonSets.ENCODING_LENGTH; ch++) {
++                NFABitmapStatePack union = nfaiStateManager.newEmptyPack();
++                for (NFABitmapState state : pop.asList()) {
++                    NFABitmapStatePack nfaSet = nfaTransitionMap.get(state).get(ch);
++                    if (nfaSet != null) {
++                        union.addAll(nfaSet);
++                    }
++                }
++                union.freeze();
++                if (!union.isEmpty()) {
++                    subMap.put(ch, union);
++                    if (!originalDFATransitionMap.containsKey(union)) {
++                        stack.push(union);
++                    }
++                }
++            }
++        } while (!stack.isEmpty());
++    }
++
++    private Map<NFABitmapState, NFABitmapStatePack> calculateClosure(List<NFABitmapState> nfaStateList) {
++        Map<NFABitmapState, NFABitmapStatePack> map = new HashMap<>();
++        for (NFABitmapState state : nfaStateList) {
++            NFABitmapStatePack closure = nfaiStateManager.newEmptyPack();
++            dfsClosure(state, closure);
++            closure.freeze();
++            map.put(state, closure);
++        }
++        return map;
++    }
++
++    private void dfsClosure(NFABitmapState state, NFABitmapStatePack closure) {
++        Stack<NFABitmapState> nfaStack = new Stack<>();
++        nfaStack.push(state);
++        do {
++            NFABitmapState pop = nfaStack.pop();
++            closure.addState(pop.getId());
++            for (NFABitmapState next : pop.getDirectTable().asList()) {
++                if (!closure.contains(next.getId())) {
++                    nfaStack.push(next);
++                }
++            }
++        } while (!nfaStack.isEmpty());
++    }
++
++    private NFABitmapStatePack traceReachable(NFABitmapStatePack closure, char ch, Map<NFABitmapState, NFABitmapStatePack> closureMap) {
++        NFABitmapStatePack result = nfaiStateManager.newEmptyPack();
++        for (NFABitmapState closureState : closure.asList()) {
++            Map<Character, NFABitmapStatePack> transitionMap = closureState.getTransitionMap();
++            NFABitmapStatePack stateSet = transitionMap.get(ch);
++            if (stateSet != null) {
++                for (NFABitmapState state : stateSet.asList()) {
++                    result.addAll(closureMap.get(state)); // closure of all the reachable states by scanning a char of the given closure.
++                }
++            }
++        }
++        result.freeze();
++        return result;
++    }
++
++    private void minimize(Map<NFABitmapStatePack, Map<Character, NFABitmapStatePack>> oriDFATransitionMap, NFABitmapStatePack initClosure, NFABitmapState finalNFAIState) {
++        Map<Integer, int[]> renamedDFATransitionTable = new HashMap<>();
++        Map<Integer, Boolean> finalFlags = new HashMap<>();
++        Map<NFABitmapStatePack, Integer> stateRenamingMap = new HashMap<>();
++        int initStateAfterRenaming = -1;
++        int renamingStateID = 1;
++
++        // rename all states
++        for (NFABitmapStatePack nfaState : oriDFATransitionMap.keySet()) {
++            if (initStateAfterRenaming == -1 && nfaState.equals(initClosure)) {
++                initStateAfterRenaming = renamingStateID; // preserve init state id
++            }
++            stateRenamingMap.put(nfaState, renamingStateID++);
++        }
++
++        renamedDFATransitionTable.put(0, newRejectedState()); // the rejected state 0
++        finalFlags.put(0, false);
++
++        // construct renamed dfa transition table
++        for (Map.Entry<NFABitmapStatePack, Map<Character, NFABitmapStatePack>> entry : oriDFATransitionMap.entrySet()) {
++            renamingStateID = stateRenamingMap.get(entry.getKey());
++            int[] state = newRejectedState();
++            for (Map.Entry<Character, NFABitmapStatePack> row : entry.getValue().entrySet()) {
++                state[row.getKey()] = stateRenamingMap.get(row.getValue());
++            }
++            renamedDFATransitionTable.put(renamingStateID, state);
++            if (entry.getKey().contains(finalNFAIState.getId())) {
++                finalFlags.put(renamingStateID, true);
++            } else {
++                finalFlags.put(renamingStateID, false);
++            }
++        }
++
++        // group states to final states and non-final states
++        Map<Integer, Integer> groupFlags = new HashMap<>();
++        for (int i = 0; i < finalFlags.size(); i++) {
++            boolean b = finalFlags.get(i);
++            if (b) {
++                groupFlags.put(i, 0);
++            } else {
++                groupFlags.put(i, 1);
++            }
++        }
++
++        int groupTotal = 2;
++        int prevGroupTotal;
++        do { // splitting, group id is the final state id
++            prevGroupTotal = groupTotal;
++            for (int sensitiveGroup = 0; sensitiveGroup < prevGroupTotal; sensitiveGroup++) {
++                //  <target group table, state id set>
++                Map<Map<Integer, Integer>, Set<Integer>> invertMap = new HashMap<>();
++                for (int sid = 0; sid < groupFlags.size(); sid++) { //use state id to iterate
++                    int group = groupFlags.get(sid);
++                    if (sensitiveGroup == group) {
++                        Map<Integer, Integer> targetGroupTable = new HashMap<>(CommonSets.ENCODING_LENGTH);
++                        for (char ch = 0; ch < CommonSets.ENCODING_LENGTH; ch++) {
++                            int targetState = renamedDFATransitionTable.get(sid)[ch];
++                            int targetGroup = groupFlags.get(targetState);
++                            targetGroupTable.put((int) ch, targetGroup);
++                        }
++                        Set<Integer> stateIDSet = invertMap.get(targetGroupTable);
++                        if (stateIDSet == null) {
++                            stateIDSet = new HashSet<>();
++                            invertMap.put(targetGroupTable, stateIDSet);
++                        }
++                        stateIDSet.add(sid);
++                    }
++                }
++
++                boolean first = true;
++                for (Set<Integer> stateIDSet : invertMap.values()) {
++                    if (first) {
++                        first = false;
++                    } else {
++                        for (int sid : stateIDSet) {
++                            groupFlags.put(sid, groupTotal);
++                        }
++                        groupTotal++;
++                    }
++                }
++            }
++        } while (prevGroupTotal != groupTotal);
++
++        // determine initial group state
++        is = groupFlags.get(initStateAfterRenaming);
++
++        // determine rejected group state
++        rs = groupFlags.get(0);
++
++        // determine final group states
++        Set<Integer> finalGroupFlags = new HashSet<>();
++        for (int i = 0, groupFlagsSize = groupFlags.size(); i < groupFlagsSize; i++) {
++            Integer groupFlag = groupFlags.get(i);
++            if (finalFlags.get(i)) {
++                finalGroupFlags.add(groupFlag);
++            }
++        }
++        fs = new boolean[groupTotal];
++        for (int i = 0; i < groupTotal; i++) {
++            fs[i] = finalGroupFlags.contains(i);
++        }
++
++        // construct the output transition table
++        transitionTable = new int[groupTotal][];
++
++        for (int groupID = 0; groupID < groupTotal; groupID++) {
++            for (int sid = 0; sid < groupFlags.size(); sid++) {
++                if (groupID == groupFlags.get(sid)) {
++                    int[] oriState = renamedDFATransitionTable.get(sid);
++                    int[] state = new int[CommonSets.ENCODING_LENGTH];
++                    for (char ch = 0; ch < CommonSets.ENCODING_LENGTH; ch++) {
++                        int next = oriState[ch];
++                        state[ch] = groupFlags.get(next);
++                    }
++                    transitionTable[groupID] = state;
++                    break;
++                }
++            }
++        }
++    }
++
++
++    private int[] newRejectedState() {
++        int[] state = new int[CommonSets.ENCODING_LENGTH];
++        rejectAll(state);
++        return state;
++    }
++
++    private void rejectAll(int[] state) {
++        for (int i = 0; i < state.length; i++) {
++            state[i] = 0;
++        }
++    }
++}
+diff --git a/top/yatt/dfargx/automata/NFA.java b/top/yatt/dfargx/automata/NFA.java
+index 9dca43c..83a6812 100644
+--- a/top/yatt/dfargx/automata/NFA.java
++++ b/top/yatt/dfargx/automata/NFA.java
+@@ -1,94 +1,94 @@
+-package top.yatt.dfargx.automata;
+-
+-import top.yatt.dfargx.tree.node.*;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-import java.util.Stack;
+-
+-/**
+- * Only able to accept wfs accessing order, the class constructs a NFA by iterating the input syntax tree recursively
+- * from the root node.
+- *
+- * Created on 2015/5/10.
+- */
+-public class NFA {
+-
+-    private final Stack<NFAState> stateStack;
+-    private final NFAStateFactory stateFactory;
+-    private final List<NFAState> stateList;
+-
+-    public NFA(Node root) {
+-        stateList = new ArrayList<>();
+-        stateFactory = new NFAStateFactory();
+-        NFAState initState = newState();
+-        NFAState finalState = newState();
+-        stateStack = new Stack<>();
+-        stateStack.push(finalState);
+-        stateStack.push(initState);
+-        dfs(root);
+-    }
+-
+-    private NFAState newState() {
+-        NFAState nfaState = stateFactory.newState();
+-        stateList.add(nfaState);
+-        return nfaState;
+-    }
+-
+-    private void dfs(Node node) {
+-        node.accept(this);
+-        if (node.hasLeft()) {
+-            dfs(node.left());
+-            dfs(node.right());
+-        }
+-    }
+-
+-    public NFABitmapStateManager asBitmapStateManager() {
+-        return new NFABitmapStateManager(stateList);
+-    }
+-
+-    public void visit(LChar lChar) {
+-        NFAState i = stateStack.pop();
+-        NFAState f = stateStack.pop();
+-        i.transitionRule(lChar.c, f);
+-    }
+-
+-    public void visit(LNull lNull) {
+-        // do nothing
+-    }
+-
+-    public void visit(BOr bOr) {
+-        NFAState i = stateStack.pop();
+-        NFAState f = stateStack.pop();
+-        stateStack.push(f);
+-        stateStack.push(i);
+-        stateStack.push(f);
+-        stateStack.push(i);
+-    }
+-
+-    public void visit(BConcat bConcat) {
+-        NFAState i = stateStack.pop();
+-        NFAState f = stateStack.pop();
+-        NFAState n = newState();
+-        stateStack.push(f);
+-        stateStack.push(n);
+-        stateStack.push(n);
+-        stateStack.push(i);
+-    }
+-
+-    public void visit(BMany bMany) {
+-        NFAState i = stateStack.pop();
+-        NFAState f = stateStack.pop();
+-        NFAState n = newState();
+-        i.directRule(n);
+-        n.directRule(f);
+-        stateStack.push(n);
+-        stateStack.push(n);
+-    }
+-
+-    public void visit(LClosure lClosure) {
+-        NFAState i = stateStack.pop();
+-        NFAState f = stateStack.pop();
+-        i.directRule(f);
+-    }
+-}
++package top.yatt.dfargx.automata;
++
++import top.yatt.dfargx.tree.node.*;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Stack;
++
++/**
++ * Only able to accept wfs accessing order, the class constructs a NFA by iterating the input syntax tree recursively
++ * from the root node.
++ *
++ * Created on 2015/5/10.
++ */
++public class NFA {
++
++    private final Stack<NFAState> stateStack;
++    private final NFAStateFactory stateFactory;
++    private final List<NFAState> stateList;
++
++    public NFA(Node root) {
++        stateList = new ArrayList<>();
++        stateFactory = new NFAStateFactory();
++        NFAState initState = newState();
++        NFAState finalState = newState();
++        stateStack = new Stack<>();
++        stateStack.push(finalState);
++        stateStack.push(initState);
++        dfs(root);
++    }
++
++    private NFAState newState() {
++        NFAState nfaState = stateFactory.newState();
++        stateList.add(nfaState);
++        return nfaState;
++    }
++
++    private void dfs(Node node) {
++        node.accept(this);
++        if (node.hasLeft()) {
++            dfs(node.left());
++            dfs(node.right());
++        }
++    }
++
++    public NFABitmapStateManager asBitmapStateManager() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(17);
++        return new NFABitmapStateManager(stateList);
++    }
++
++    public void visit(LChar lChar) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(21);
++        NFAState i = stateStack.pop();
++        NFAState f = stateStack.pop();
++        i.transitionRule(lChar.c, f);
++    }
++
++    public void visit(LNull lNull) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(25);
++        // do nothing
++    }
++
++    public void visit(BOr bOr) {
++        NFAState i = stateStack.pop();
++        NFAState f = stateStack.pop();
++        stateStack.push(f);
++        stateStack.push(i);
++        stateStack.push(f);
++        stateStack.push(i);
++    }
++
++    public void visit(BConcat bConcat) {
++        NFAState i = stateStack.pop();
++        NFAState f = stateStack.pop();
++        NFAState n = newState();
++        stateStack.push(f);
++        stateStack.push(n);
++        stateStack.push(n);
++        stateStack.push(i);
++    }
++
++    public void visit(BMany bMany) {
++        NFAState i = stateStack.pop();
++        NFAState f = stateStack.pop();
++        NFAState n = newState();
++        i.directRule(n);
++        n.directRule(f);
++        stateStack.push(n);
++        stateStack.push(n);
++    }
++
++    public void visit(LClosure lClosure) {
++        NFAState i = stateStack.pop();
++        NFAState f = stateStack.pop();
++        i.directRule(f);
++    }
++}
+diff --git a/top/yatt/dfargx/automata/NFABitmapState.java b/top/yatt/dfargx/automata/NFABitmapState.java
+index 70eff96..283a314 100644
+--- a/top/yatt/dfargx/automata/NFABitmapState.java
++++ b/top/yatt/dfargx/automata/NFABitmapState.java
+@@ -22,7 +22,7 @@ public class NFABitmapState {
+         this.manager = manager;
+     }
+ 
+-    public void transitionRule(char ch, int targetID) {
++    public void transitionRule(char ch, int targetID) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(28);
+         ensureWritable();
+         NFABitmapStatePack pack = transitionMap.get(ch);
+         if (pack == null) {
+@@ -32,12 +32,12 @@ public class NFABitmapState {
+         pack.addState(targetID);
+     }
+ 
+-    public void directRule(int targetID) {
++    public void directRule(int targetID) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(30);
+         ensureWritable();
+         directTable.addState(targetID);
+     }
+ 
+-    public NFABitmapStatePack getDirectTable() {
++    public NFABitmapStatePack getDirectTable() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(32);
+         return directTable;
+     }
+ 
+diff --git a/top/yatt/dfargx/automata/NFABitmapStateManager.java b/top/yatt/dfargx/automata/NFABitmapStateManager.java
+index 063f929..9eb2f01 100644
+--- a/top/yatt/dfargx/automata/NFABitmapStateManager.java
++++ b/top/yatt/dfargx/automata/NFABitmapStateManager.java
+@@ -33,15 +33,15 @@ public class NFABitmapStateManager {
+         }
+     }
+ 
+-    public NFABitmapState getState(int id) {
++    public NFABitmapState getState(int id) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(34);
+         return iStates[id];
+     }
+ 
+-    public List<NFABitmapState> getStates() {
++    public List<NFABitmapState> getStates() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(36);
+         return Collections.unmodifiableList(Arrays.asList(iStates));
+     }
+ 
+-    public int stateCount() {
++    public int stateCount() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(38);
+         return iStates.length;
+     }
+ 
+diff --git a/top/yatt/dfargx/automata/NFABitmapStatePack.java b/top/yatt/dfargx/automata/NFABitmapStatePack.java
+index 86a3187..e247db1 100644
+--- a/top/yatt/dfargx/automata/NFABitmapStatePack.java
++++ b/top/yatt/dfargx/automata/NFABitmapStatePack.java
+@@ -25,7 +25,7 @@ public class NFABitmapStatePack {
+         return new long[length];
+     }
+ 
+-    public void addState(int stateID) {
++    public void addState(int stateID) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(40);
+         ensureWritable();
+         int bucket = stateID / 63;
+         int offset = stateID % 63;
+@@ -33,7 +33,7 @@ public class NFABitmapStatePack {
+         stateBitmap[bucket] |= f;
+     }
+ 
+-    public void addAll(NFABitmapStatePack other) {
++    public void addAll(NFABitmapStatePack other) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(42);
+         ensureWritable();
+         if (manager != other.manager) {
+             throw new IllegalArgumentException("MFAIStatePack to union must share the same manager with the union target");
+@@ -50,7 +50,7 @@ public class NFABitmapStatePack {
+         return (stateBitmap[bucket] & f) != 0L;
+     }
+     
+-    public boolean isEmpty() {
++    public boolean isEmpty() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(44);
+         for (long b : stateBitmap) {
+             if (b != 0L) {
+                 return false;
+diff --git a/top/yatt/dfargx/automata/NFAState.java b/top/yatt/dfargx/automata/NFAState.java
+index c0a8d84..35a0830 100644
+--- a/top/yatt/dfargx/automata/NFAState.java
++++ b/top/yatt/dfargx/automata/NFAState.java
+@@ -1,68 +1,68 @@
+-package top.yatt.dfargx.automata;
+-
+-import java.util.*;
+-
+-/**
+- * Created on 2015/5/10.
+- */
+-public class NFAState {
+-
+-    private Set<NFAState> directTable;
+-    private Map<Character, Set<NFAState>> transitionMap;
+-    private int id;
+-
+-    public NFAState(int id) {
+-        directTable = new HashSet<>();
+-        transitionMap = new HashMap<>();
+-        this.id = id;
+-    }
+-
+-    public void transitionRule(char ch, NFAState state) {
+-        Set<NFAState> stateSet = transitionMap.get(ch);
+-        if (stateSet == null) {
+-            stateSet = new HashSet<>();
+-            transitionMap.put(ch, stateSet);
+-        }
+-        stateSet.add(state);
+-    }
+-
+-    public void directRule(NFAState state) {
+-        directTable.add(state);
+-    }
+-
+-    public int getId() {
+-        return id;
+-    }
+-
+-    @Override
+-    public boolean equals(Object o) {
+-        if (this == o) {
+-            return true;
+-        }
+-        if (o == null || getClass() != o.getClass()) {
+-            return false;
+-        }
+-        NFAState state = (NFAState) o;
+-        return Objects.equals(id, state.id);
+-    }
+-
+-    @Override
+-    public int hashCode() {
+-        return Objects.hash(id);
+-    }
+-
+-    public Set<NFAState> getDirectTable() {
+-        return directTable;
+-    }
+-
+-    public Map<Character, Set<NFAState>> getTransitionMap() {
+-        return transitionMap;
+-    }
+-
+-    @Override
+-    public String toString() {
+-        return "NFAState{" +
+-                "id=" + id +
+-                '}';
+-    }
+-}
++package top.yatt.dfargx.automata;
++
++import java.util.*;
++
++/**
++ * Created on 2015/5/10.
++ */
++public class NFAState {
++
++    private Set<NFAState> directTable;
++    private Map<Character, Set<NFAState>> transitionMap;
++    private int id;
++
++    public NFAState(int id) {
++        directTable = new HashSet<>();
++        transitionMap = new HashMap<>();
++        this.id = id;
++    }
++
++    public void transitionRule(char ch, NFAState state) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(46);
++        Set<NFAState> stateSet = transitionMap.get(ch);
++        if (stateSet == null) {
++            stateSet = new HashSet<>();
++            transitionMap.put(ch, stateSet);
++        }
++        stateSet.add(state);
++    }
++
++    public void directRule(NFAState state) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(48);
++        directTable.add(state);
++    }
++
++    public int getId() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(50);
++        return id;
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) {
++            return true;
++        }
++        if (o == null || getClass() != o.getClass()) {
++            return false;
++        }
++        NFAState state = (NFAState) o;
++        return Objects.equals(id, state.id);
++    }
++
++    @Override
++    public int hashCode() {
++        return Objects.hash(id);
++    }
++
++    public Set<NFAState> getDirectTable() {
++        return directTable;
++    }
++
++    public Map<Character, Set<NFAState>> getTransitionMap() {
++        return transitionMap;
++    }
++
++    @Override
++    public String toString() {
++        return "NFAState{" +
++                "id=" + id +
++                '}';
++    }
++}
+diff --git a/top/yatt/dfargx/jmhbench/MutationSwitch.java b/top/yatt/dfargx/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..dc539bd
+--- /dev/null
++++ b/top/yatt/dfargx/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package top.yatt.dfargx.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/top/yatt/dfargx/stack/OperatingStack.java b/top/yatt/dfargx/stack/OperatingStack.java
+index d13136c..7df6afc 100644
+--- a/top/yatt/dfargx/stack/OperatingStack.java
++++ b/top/yatt/dfargx/stack/OperatingStack.java
+@@ -1,45 +1,45 @@
+-package top.yatt.dfargx.stack;
+-
+-import top.yatt.dfargx.tree.node.BranchNode;
+-import top.yatt.dfargx.tree.node.LeafNode;
+-import top.yatt.dfargx.tree.node.Node;
+-
+-import java.util.Stack;
+-
+-/**
+- * Created on 2015/5/9.
+- */
+-public class OperatingStack {
+-
+-    private Stack<Node> stack;
+-
+-    public OperatingStack() {
+-        this.stack = new Stack<>();
+-    }
+-
+-    public void visit(LeafNode leafNode) {
+-        stack.push(leafNode);
+-    }
+-
+-    public void visit(BranchNode branchNode) {
+-        Node right = stack.pop();
+-        Node left = stack.pop();
+-        branchNode.operate(left, right);
+-        stack.push(branchNode);
+-    }
+-
+-    public Node pop() {
+-        return stack.pop();
+-    }
+-
+-    public boolean isEmpty() {
+-        return stack.isEmpty();
+-    }
+-
+-    @Override
+-    public String toString() {
+-        return "OperatingStack{" +
+-                "stack=" + stack +
+-                '}';
+-    }
+-}
++package top.yatt.dfargx.stack;
++
++import top.yatt.dfargx.tree.node.BranchNode;
++import top.yatt.dfargx.tree.node.LeafNode;
++import top.yatt.dfargx.tree.node.Node;
++
++import java.util.Stack;
++
++/**
++ * Created on 2015/5/9.
++ */
++public class OperatingStack {
++
++    private Stack<Node> stack;
++
++    public OperatingStack() {
++        this.stack = new Stack<>();
++    }
++
++    public void visit(LeafNode leafNode) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(3);
++        stack.push(leafNode);
++    }
++
++    public void visit(BranchNode branchNode) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(8);
++        Node right = stack.pop();
++        Node left = stack.pop();
++        branchNode.operate(left, right);
++        stack.push(branchNode);
++    }
++
++    public Node pop() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(13);
++        return stack.pop();
++    }
++
++    public boolean isEmpty() {
++        return stack.isEmpty();
++    }
++
++    @Override
++    public String toString() {
++        return "OperatingStack{" +
++                "stack=" + stack +
++                '}';
++    }
++}
+diff --git a/top/yatt/dfargx/stack/ShuntingStack.java b/top/yatt/dfargx/stack/ShuntingStack.java
+index afee451..18893bc 100644
+--- a/top/yatt/dfargx/stack/ShuntingStack.java
++++ b/top/yatt/dfargx/stack/ShuntingStack.java
+@@ -1,67 +1,67 @@
+-package top.yatt.dfargx.stack;
+-
+-import top.yatt.dfargx.tree.node.BranchNode;
+-import top.yatt.dfargx.tree.node.LeafNode;
+-import top.yatt.dfargx.tree.node.Node;
+-import top.yatt.dfargx.tree.node.bracket.LeftBracket;
+-import top.yatt.dfargx.tree.node.bracket.RightBracket;
+-import top.yatt.dfargx.util.InvalidSyntaxException;
+-
+-import java.util.EmptyStackException;
+-import java.util.Stack;
+-
+-/**
+- * Created on 2015/5/9.
+- */
+-public class ShuntingStack { // powered by Shunting Yard Algorithm.
+-    private Stack<Node> finalStack;
+-    private Stack<BranchNode> branchStack;
+-
+-    public ShuntingStack() {
+-        finalStack = new Stack<>();
+-        branchStack = new Stack<>();
+-    }
+-
+-    public void visit(LeftBracket leftBracket) {
+-        branchStack.push(leftBracket);
+-    }
+-
+-    public void visit(RightBracket rightBracket) {
+-        try {
+-            for (Node node = branchStack.pop(); !(node instanceof LeftBracket); node = branchStack.pop()) {
+-                finalStack.push(node);
+-            }
+-        } catch (EmptyStackException e) {
+-            throw new InvalidSyntaxException(e);
+-        }
+-    }
+-
+-    public void visit(LeafNode leafNode) {
+-        finalStack.push(leafNode);
+-    }
+-
+-    public void visit(BranchNode branchNode) {
+-        while (!branchStack.isEmpty() && branchNode.getPri() != -1 && branchNode.getPri() <= branchStack.peek().getPri()) {
+-            finalStack.push(branchStack.pop());
+-        }
+-        branchStack.push(branchNode);
+-    }
+-
+-    public Stack<Node> finish() {
+-        while (!branchStack.isEmpty()) {
+-            finalStack.push(branchStack.pop());
+-        }
+-        Stack<Node> reversedStack = new Stack<>();
+-        while (!finalStack.isEmpty()) {
+-            reversedStack.push(finalStack.pop());
+-        }
+-        return reversedStack;
+-    }
+-
+-    @Override
+-    public String toString() {
+-        return "ShuntingStack{" +
+-                "finalStack=" + finalStack +
+-                '}';
+-    }
+-}
++package top.yatt.dfargx.stack;
++
++import top.yatt.dfargx.tree.node.BranchNode;
++import top.yatt.dfargx.tree.node.LeafNode;
++import top.yatt.dfargx.tree.node.Node;
++import top.yatt.dfargx.tree.node.bracket.LeftBracket;
++import top.yatt.dfargx.tree.node.bracket.RightBracket;
++import top.yatt.dfargx.util.InvalidSyntaxException;
++
++import java.util.EmptyStackException;
++import java.util.Stack;
++
++/**
++ * Created on 2015/5/9.
++ */
++public class ShuntingStack { // powered by Shunting Yard Algorithm.
++    private Stack<Node> finalStack;
++    private Stack<BranchNode> branchStack;
++
++    public ShuntingStack() {
++        finalStack = new Stack<>();
++        branchStack = new Stack<>();
++    }
++
++    public void visit(LeftBracket leftBracket) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(18);
++        branchStack.push(leftBracket);
++    }
++
++    public void visit(RightBracket rightBracket) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(22);
++        try {
++            for (Node node = branchStack.pop(); !(node instanceof LeftBracket); node = branchStack.pop()) {
++                finalStack.push(node);
++            }
++        } catch (EmptyStackException e) {
++            throw new InvalidSyntaxException(e);
++        }
++    }
++
++    public void visit(LeafNode leafNode) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(26);
++        finalStack.push(leafNode);
++    }
++
++    public void visit(BranchNode branchNode) {
++        while (!branchStack.isEmpty() && branchNode.getPri() != -1 && branchNode.getPri() <= branchStack.peek().getPri()) {
++            finalStack.push(branchStack.pop());
++        }
++        branchStack.push(branchNode);
++    }
++
++    public Stack<Node> finish() {
++        while (!branchStack.isEmpty()) {
++            finalStack.push(branchStack.pop());
++        }
++        Stack<Node> reversedStack = new Stack<>();
++        while (!finalStack.isEmpty()) {
++            reversedStack.push(finalStack.pop());
++        }
++        return reversedStack;
++    }
++
++    @Override
++    public String toString() {
++        return "ShuntingStack{" +
++                "finalStack=" + finalStack +
++                '}';
++    }
++}
+diff --git a/top/yatt/dfargx/tree/SyntaxTree.java b/top/yatt/dfargx/tree/SyntaxTree.java
+index 2e95c52..579c716 100644
+--- a/top/yatt/dfargx/tree/SyntaxTree.java
++++ b/top/yatt/dfargx/tree/SyntaxTree.java
+@@ -1,296 +1,296 @@
+-package top.yatt.dfargx.tree;
+-
+-import top.yatt.dfargx.stack.OperatingStack;
+-import top.yatt.dfargx.stack.ShuntingStack;
+-import top.yatt.dfargx.tree.node.*;
+-import top.yatt.dfargx.tree.node.bracket.LeftBracket;
+-import top.yatt.dfargx.tree.node.bracket.RightBracket;
+-import top.yatt.dfargx.util.CommonSets;
+-import top.yatt.dfargx.util.InvalidSyntaxException;
+-
+-import java.util.*;
+-
+-/**
+- * Created on 2015/5/8.
+- */
+-public class SyntaxTree {
+-    private String regex;
+-    private boolean itemTerminated;
+-    private List<Node> nodeList;
+-    private Stack<Node> nodeStack;
+-
+-    private Node root;
+-
+-    public SyntaxTree(String regex) {
+-        root = null;
+-        this.regex = regex;
+-        nodeList = new ArrayList<>();
+-        itemTerminated = false;
+-        normalize();
+-        shunt();
+-        buildTree();
+-    }
+-
+-    private void buildTree() {
+-        OperatingStack operatingStack = new OperatingStack();
+-        while (!nodeStack.isEmpty()) {
+-            Node node = nodeStack.pop();
+-            node.accept(operatingStack);
+-        }
+-        try {
+-            root = operatingStack.pop();
+-        } catch (EmptyStackException e) {
+-            throw new InvalidSyntaxException(e);
+-        }
+-        if (!operatingStack.isEmpty()) {
+-            throw new InvalidSyntaxException();
+-        }
+-    }
+-
+-    private void shunt() {
+-        ShuntingStack shuntingStack = new ShuntingStack();
+-        for (Node node : nodeList) {
+-            node.accept(shuntingStack);
+-        }
+-        nodeStack = shuntingStack.finish();
+-    }
+-
+-    private void normalize() {
+-        int index = 0;
+-        while (index < regex.length()) {
+-            char ch = regex.charAt(index++);
+-            switch (ch) {
+-                case '[': {
+-                    tryConcat();
+-                    List<Character> all = new ArrayList<>();
+-                    boolean isComplementarySet;
+-                    if (regex.charAt(index) == '^') {
+-                        isComplementarySet = true;
+-                        index++;
+-                    } else {
+-                        isComplementarySet = false;
+-                    }
+-                    for (char next = regex.charAt(index++); next != ']'; next = regex.charAt(index++)) {
+-                        if (next == '\\' || next == '.') {
+-                            String token;
+-                            if (next == '\\') {
+-                                char nextNext = regex.charAt(index++);
+-                                token = new String(new char[]{next, nextNext});
+-                            } else {
+-                                token = String.valueOf(next);
+-                            }
+-                            List<Character> tokenSet = CommonSets.interpretToken(token);
+-                            all.addAll(tokenSet);
+-                        } else {
+-                            all.add(next);
+-                        }
+-                    }
+-                    char[] chSet = CommonSets.minimum(CommonSets.listToArray(all));
+-                    if (isComplementarySet) {
+-                        chSet = CommonSets.complementarySet(chSet);
+-                    }
+-                    nodeList.add(new LeftBracket());
+-                    for (int i = 0; i < chSet.length; i++) {
+-                        nodeList.add(new LChar(chSet[i]));
+-                        if (i == chSet.length - 1 || chSet[i + 1] == 0) {
+-                            break;
+-                        }
+-                        nodeList.add(new BOr());
+-                    }
+-                    nodeList.add(new RightBracket());
+-                    itemTerminated = true;
+-                    break;
+-                }
+-                case '{': {
+-                    int least;
+-                    int most = -1;
+-                    boolean deterministicLength = false;
+-                    StringBuilder sb = new StringBuilder();
+-                    for (char next = regex.charAt(index++); ; ) {
+-                        sb.append(next);
+-                        next = regex.charAt(index++);
+-                        if (next == '}') {
+-                            deterministicLength = true;
+-                            break;
+-                        } else if (next == ',') {
+-                            break;
+-                        }
+-                    }
+-                    least = Integer.parseInt(sb.toString());
+-
+-                    if (!deterministicLength) {
+-                        char next = regex.charAt(index);
+-                        if (next != '}') {
+-                            sb = new StringBuilder();
+-                            for (char nextNext = regex.charAt(index++); nextNext != '}'; nextNext = regex.charAt(index++)) {
+-                                sb.append(nextNext);
+-                            }
+-                            if (sb.length() != 0) {
+-                                most = Integer.parseInt(sb.toString());
+-                            }
+-                        }
+-                    } else {
+-                        most = least;
+-                    }
+-
+-                    performMany(least, most);
+-                    itemTerminated = true;
+-                    break;
+-                }
+-                case '(': {
+-                    tryConcat();
+-                    nodeList.add(new LeftBracket());
+-                    itemTerminated = false;
+-                    break;
+-                }
+-                case ')': {
+-                    nodeList.add(new RightBracket());
+-                    itemTerminated = true;
+-                    break;
+-                }
+-                case '*': {
+-                    performMany(0, -1);
+-                    itemTerminated = true;
+-                    break;
+-                }
+-                case '?': {
+-                    performMany(0, 1);
+-                    itemTerminated = true;
+-                    break;
+-                }
+-                case '+': {
+-                    performMany(1, -1);
+-                    itemTerminated = true;
+-                    break;
+-                }
+-                case '|': {
+-                    nodeList.add(new BOr());
+-                    itemTerminated = false;
+-                    break;
+-                }
+-                default: {
+-                    tryConcat();
+-                    if (ch == '\\' || ch == '.') {
+-                        String token;
+-                        if (ch == '\\') {
+-                            char next = regex.charAt(index++);
+-                            token = new String(new char[]{ch, next});
+-                        } else {
+-                            token = String.valueOf(ch);
+-                        }
+-                        List<Character> tokenSet = CommonSets.interpretToken(token);
+-                        nodeList.add(new LeftBracket());
+-                        nodeList.add(new LChar(tokenSet.get(0)));
+-                        for (int i = 1; i < tokenSet.size(); i++) {
+-                            nodeList.add(new BOr());
+-                            nodeList.add(new LChar(tokenSet.get(i)));
+-                        }
+-                        nodeList.add(new RightBracket());
+-                    } else {
+-                        nodeList.add(new LChar(ch));
+-                    }
+-
+-                    itemTerminated = true;
+-                    break;
+-                }
+-            }
+-        }
+-    }
+-
+-    // look back for a completed term
+-    private void performMany(int least, int most) {
+-        if (!(least == 1 && most == 1)) {
+-            if (least == 0 && most == -1) {
+-                nodeList.add(new BMany());
+-                nodeList.add(new LNull());
+-            } else {
+-                List<Node> sample;
+-                if (last() instanceof RightBracket) {
+-                    sample = new LinkedList<>();
+-                    sample.add(nodeList.remove(nodeList.size() - 1));
+-                    int stack = 1;
+-                    for (int i = nodeList.size() - 1; i >= 0; i--) {
+-                        Node node = nodeList.remove(i);
+-                        if (node instanceof RightBracket) {
+-                            stack++;
+-                        } else if (node instanceof LeftBracket) {
+-                            stack--;
+-                        }
+-                        sample.add(0, node);
+-                        if (stack == 0) {
+-                            break;
+-                        }
+-                    }
+-                } else {
+-                    sample = Collections.singletonList(nodeList.remove(nodeList.size() - 1));
+-                }
+-
+-                if (most == -1) {
+-                    for (int i = 0; i < least; i++) {
+-                        nodeList.addAll(copyNodes(sample));
+-                        nodeList.add(new BConcat());
+-                    }
+-                    nodeList.addAll(copyNodes(sample));
+-                    nodeList.add(new BMany());
+-                    nodeList.add(new LNull());
+-                } else {
+-                    if (least != most) {
+-                        nodeList.add(new LeftBracket());
+-                        for (int i = least; i <= most; i++) {
+-                            nodeList.add(new LeftBracket());
+-                            if (i == 0) {
+-                                nodeList.add(new LClosure());
+-                            } else {
+-                                for (int j = 0; j < i; j++) {
+-                                    nodeList.addAll(copyNodes(sample));
+-                                    if (j != i - 1) {
+-                                        nodeList.add(new BConcat());
+-                                    }
+-                                }
+-                            }
+-                            nodeList.add(new RightBracket());
+-                            if (i != most) {
+-                                nodeList.add(new BOr());
+-                            }
+-                        }
+-                        nodeList.add(new RightBracket());
+-                    } else {
+-                        nodeList.add(new LeftBracket());
+-                        for (int i = 0; i < least; i++) {
+-                            nodeList.addAll(copyNodes(sample));
+-                            if (i != least - 1) {
+-                                nodeList.add(new BConcat());
+-                            }
+-                        }
+-                        nodeList.add(new RightBracket());
+-                    }
+-                }
+-            }
+-        }
+-    }
+-
+-    public List<Node> copyNodes(List<Node> sample) {
+-        List<Node> result = new ArrayList<>(sample.size());
+-        for (Node node : sample) {
+-            result.add(node.copy());
+-        }
+-        return result;
+-    }
+-
+-    private Node last() {
+-        return nodeList.get(nodeList.size() - 1);
+-    }
+-
+-
+-    private void tryConcat() {
+-        if (itemTerminated) {
+-            nodeList.add(new BConcat());
+-            itemTerminated = false;
+-        }
+-    }
+-
+-    public Node getRoot() {
+-        return root;
+-    }
+-
+-}
++package top.yatt.dfargx.tree;
++
++import top.yatt.dfargx.stack.OperatingStack;
++import top.yatt.dfargx.stack.ShuntingStack;
++import top.yatt.dfargx.tree.node.*;
++import top.yatt.dfargx.tree.node.bracket.LeftBracket;
++import top.yatt.dfargx.tree.node.bracket.RightBracket;
++import top.yatt.dfargx.util.CommonSets;
++import top.yatt.dfargx.util.InvalidSyntaxException;
++
++import java.util.*;
++
++/**
++ * Created on 2015/5/8.
++ */
++public class SyntaxTree {
++    private String regex;
++    private boolean itemTerminated;
++    private List<Node> nodeList;
++    private Stack<Node> nodeStack;
++
++    private Node root;
++
++    public SyntaxTree(String regex) {
++        root = null;
++        this.regex = regex;
++        nodeList = new ArrayList<>();
++        itemTerminated = false;
++        normalize();
++        shunt();
++        buildTree();
++    }
++
++    private void buildTree() {
++        OperatingStack operatingStack = new OperatingStack();
++        while (!nodeStack.isEmpty()) {
++            Node node = nodeStack.pop();
++            node.accept(operatingStack);
++        }
++        try {
++            root = operatingStack.pop();
++        } catch (EmptyStackException e) {
++            throw new InvalidSyntaxException(e);
++        }
++        if (!operatingStack.isEmpty()) {
++            throw new InvalidSyntaxException();
++        }
++    }
++
++    private void shunt() {
++        ShuntingStack shuntingStack = new ShuntingStack();
++        for (Node node : nodeList) {
++            node.accept(shuntingStack);
++        }
++        nodeStack = shuntingStack.finish();
++    }
++
++    private void normalize() {
++        int index = 0;
++        while (index < regex.length()) {
++            char ch = regex.charAt(index++);
++            switch (ch) {
++                case '[': {
++                    tryConcat();
++                    List<Character> all = new ArrayList<>();
++                    boolean isComplementarySet;
++                    if (regex.charAt(index) == '^') {
++                        isComplementarySet = true;
++                        index++;
++                    } else {
++                        isComplementarySet = false;
++                    }
++                    for (char next = regex.charAt(index++); next != ']'; next = regex.charAt(index++)) {
++                        if (next == '\\' || next == '.') {
++                            String token;
++                            if (next == '\\') {
++                                char nextNext = regex.charAt(index++);
++                                token = new String(new char[]{next, nextNext});
++                            } else {
++                                token = String.valueOf(next);
++                            }
++                            List<Character> tokenSet = CommonSets.interpretToken(token);
++                            all.addAll(tokenSet);
++                        } else {
++                            all.add(next);
++                        }
++                    }
++                    char[] chSet = CommonSets.minimum(CommonSets.listToArray(all));
++                    if (isComplementarySet) {
++                        chSet = CommonSets.complementarySet(chSet);
++                    }
++                    nodeList.add(new LeftBracket());
++                    for (int i = 0; i < chSet.length; i++) {
++                        nodeList.add(new LChar(chSet[i]));
++                        if (i == chSet.length - 1 || chSet[i + 1] == 0) {
++                            break;
++                        }
++                        nodeList.add(new BOr());
++                    }
++                    nodeList.add(new RightBracket());
++                    itemTerminated = true;
++                    break;
++                }
++                case '{': {
++                    int least;
++                    int most = -1;
++                    boolean deterministicLength = false;
++                    StringBuilder sb = new StringBuilder();
++                    for (char next = regex.charAt(index++); ; ) {
++                        sb.append(next);
++                        next = regex.charAt(index++);
++                        if (next == '}') {
++                            deterministicLength = true;
++                            break;
++                        } else if (next == ',') {
++                            break;
++                        }
++                    }
++                    least = Integer.parseInt(sb.toString());
++
++                    if (!deterministicLength) {
++                        char next = regex.charAt(index);
++                        if (next != '}') {
++                            sb = new StringBuilder();
++                            for (char nextNext = regex.charAt(index++); nextNext != '}'; nextNext = regex.charAt(index++)) {
++                                sb.append(nextNext);
++                            }
++                            if (sb.length() != 0) {
++                                most = Integer.parseInt(sb.toString());
++                            }
++                        }
++                    } else {
++                        most = least;
++                    }
++
++                    performMany(least, most);
++                    itemTerminated = true;
++                    break;
++                }
++                case '(': {
++                    tryConcat();
++                    nodeList.add(new LeftBracket());
++                    itemTerminated = false;
++                    break;
++                }
++                case ')': {
++                    nodeList.add(new RightBracket());
++                    itemTerminated = true;
++                    break;
++                }
++                case '*': {
++                    performMany(0, -1);
++                    itemTerminated = true;
++                    break;
++                }
++                case '?': {
++                    performMany(0, 1);
++                    itemTerminated = true;
++                    break;
++                }
++                case '+': {
++                    performMany(1, -1);
++                    itemTerminated = true;
++                    break;
++                }
++                case '|': {
++                    nodeList.add(new BOr());
++                    itemTerminated = false;
++                    break;
++                }
++                default: {
++                    tryConcat();
++                    if (ch == '\\' || ch == '.') {
++                        String token;
++                        if (ch == '\\') {
++                            char next = regex.charAt(index++);
++                            token = new String(new char[]{ch, next});
++                        } else {
++                            token = String.valueOf(ch);
++                        }
++                        List<Character> tokenSet = CommonSets.interpretToken(token);
++                        nodeList.add(new LeftBracket());
++                        nodeList.add(new LChar(tokenSet.get(0)));
++                        for (int i = 1; i < tokenSet.size(); i++) {
++                            nodeList.add(new BOr());
++                            nodeList.add(new LChar(tokenSet.get(i)));
++                        }
++                        nodeList.add(new RightBracket());
++                    } else {
++                        nodeList.add(new LChar(ch));
++                    }
++
++                    itemTerminated = true;
++                    break;
++                }
++            }
++        }
++    }
++
++    // look back for a completed term
++    private void performMany(int least, int most) {
++        if (!(least == 1 && most == 1)) {
++            if (least == 0 && most == -1) {
++                nodeList.add(new BMany());
++                nodeList.add(new LNull());
++            } else {
++                List<Node> sample;
++                if (last() instanceof RightBracket) {
++                    sample = new LinkedList<>();
++                    sample.add(nodeList.remove(nodeList.size() - 1));
++                    int stack = 1;
++                    for (int i = nodeList.size() - 1; i >= 0; i--) {
++                        Node node = nodeList.remove(i);
++                        if (node instanceof RightBracket) {
++                            stack++;
++                        } else if (node instanceof LeftBracket) {
++                            stack--;
++                        }
++                        sample.add(0, node);
++                        if (stack == 0) {
++                            break;
++                        }
++                    }
++                } else {
++                    sample = Collections.singletonList(nodeList.remove(nodeList.size() - 1));
++                }
++
++                if (most == -1) {
++                    for (int i = 0; i < least; i++) {
++                        nodeList.addAll(copyNodes(sample));
++                        nodeList.add(new BConcat());
++                    }
++                    nodeList.addAll(copyNodes(sample));
++                    nodeList.add(new BMany());
++                    nodeList.add(new LNull());
++                } else {
++                    if (least != most) {
++                        nodeList.add(new LeftBracket());
++                        for (int i = least; i <= most; i++) {
++                            nodeList.add(new LeftBracket());
++                            if (i == 0) {
++                                nodeList.add(new LClosure());
++                            } else {
++                                for (int j = 0; j < i; j++) {
++                                    nodeList.addAll(copyNodes(sample));
++                                    if (j != i - 1) {
++                                        nodeList.add(new BConcat());
++                                    }
++                                }
++                            }
++                            nodeList.add(new RightBracket());
++                            if (i != most) {
++                                nodeList.add(new BOr());
++                            }
++                        }
++                        nodeList.add(new RightBracket());
++                    } else {
++                        nodeList.add(new LeftBracket());
++                        for (int i = 0; i < least; i++) {
++                            nodeList.addAll(copyNodes(sample));
++                            if (i != least - 1) {
++                                nodeList.add(new BConcat());
++                            }
++                        }
++                        nodeList.add(new RightBracket());
++                    }
++                }
++            }
++        }
++    }
++
++    public List<Node> copyNodes(List<Node> sample) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(4);
++        List<Node> result = new ArrayList<>(sample.size());
++        for (Node node : sample) {
++            result.add(node.copy());
++        }
++        return result;
++    }
++
++    private Node last() {
++        return nodeList.get(nodeList.size() - 1);
++    }
++
++
++    private void tryConcat() {
++        if (itemTerminated) {
++            nodeList.add(new BConcat());
++            itemTerminated = false;
++        }
++    }
++
++    public Node getRoot() { top.yatt.dfargx.jmhbench.MutationSwitch.tick(9);
++        return root;
++    }
++
++}
+diff --git a/top/yatt/dfargx/tree/node/BConcat.java b/top/yatt/dfargx/tree/node/BConcat.java
+index 06bae61..84b63ad 100644
+--- a/top/yatt/dfargx/tree/node/BConcat.java
++++ b/top/yatt/dfargx/tree/node/BConcat.java
+@@ -1,42 +1,42 @@
+-package top.yatt.dfargx.tree.node;
+-
+-import top.yatt.dfargx.automata.NFA;
+-import top.yatt.dfargx.stack.OperatingStack;
+-import top.yatt.dfargx.stack.ShuntingStack;
+-
+-/**
+- * Created on 2015/5/10.
+- */
+-public class BConcat extends BranchNode {
+-
+-    @Override
+-    public String toString() {
+-        return "[C]";
+-    }
+-
+-    @Override
+-    public void accept(NFA nfa) {
+-        nfa.visit(this);
+-    }
+-
+-    @Override
+-
+-    public Node copy() {
+-        return new BConcat();
+-    }
+-
+-    @Override
+-    public void accept(OperatingStack operatingStack) {
+-        operatingStack.visit(this);
+-    }
+-
+-    @Override
+-    public void accept(ShuntingStack shuntingStack) {
+-        shuntingStack.visit(this);
+-    }
+-
+-    @Override
+-    public int getPri() {
+-        return 1;
+-    }
+-}
++package top.yatt.dfargx.tree.node;
++
++import top.yatt.dfargx.automata.NFA;
++import top.yatt.dfargx.stack.OperatingStack;
++import top.yatt.dfargx.stack.ShuntingStack;
++
++/**
++ * Created on 2015/5/10.
++ */
++public class BConcat extends BranchNode {
++
++    @Override
++    public String toString() {
++        return "[C]";
++    }
++
++    @Override
++    public void accept(NFA nfa) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(14);
++        nfa.visit(this);
++    }
++
++    @Override
++
++    public Node copy() {
++        return new BConcat();
++    }
++
++    @Override
++    public void accept(OperatingStack operatingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(19);
++        operatingStack.visit(this);
++    }
++
++    @Override
++    public void accept(ShuntingStack shuntingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(23);
++        shuntingStack.visit(this);
++    }
++
++    @Override
++    public int getPri() {
++        return 1;
++    }
++}
+diff --git a/top/yatt/dfargx/tree/node/BMany.java b/top/yatt/dfargx/tree/node/BMany.java
+index 71e7d8c..bf25814 100644
+--- a/top/yatt/dfargx/tree/node/BMany.java
++++ b/top/yatt/dfargx/tree/node/BMany.java
+@@ -1,40 +1,40 @@
+-package top.yatt.dfargx.tree.node;
+-
+-import top.yatt.dfargx.automata.NFA;
+-import top.yatt.dfargx.stack.OperatingStack;
+-import top.yatt.dfargx.stack.ShuntingStack;
+-
+-/**
+- * Created on 2015/5/10.
+- */
+-public class BMany extends BranchNode {
+-    @Override
+-    public String toString() {
+-        return "[M]";
+-    }
+-
+-    @Override
+-    public void accept(NFA nfa) {
+-        nfa.visit(this);
+-    }
+-
+-    @Override
+-    public Node copy() {
+-        return new BMany();
+-    }
+-
+-    @Override
+-    public void accept(OperatingStack operatingStack) {
+-        operatingStack.visit(this);
+-    }
+-
+-    @Override
+-    public void accept(ShuntingStack shuntingStack) {
+-        shuntingStack.visit(this);
+-    }
+-
+-    @Override
+-    public int getPri() {
+-        return 2;
+-    }
+-}
++package top.yatt.dfargx.tree.node;
++
++import top.yatt.dfargx.automata.NFA;
++import top.yatt.dfargx.stack.OperatingStack;
++import top.yatt.dfargx.stack.ShuntingStack;
++
++/**
++ * Created on 2015/5/10.
++ */
++public class BMany extends BranchNode {
++    @Override
++    public String toString() {
++        return "[M]";
++    }
++
++    @Override
++    public void accept(NFA nfa) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(27);
++        nfa.visit(this);
++    }
++
++    @Override
++    public Node copy() {
++        return new BMany();
++    }
++
++    @Override
++    public void accept(OperatingStack operatingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(29);
++        operatingStack.visit(this);
++    }
++
++    @Override
++    public void accept(ShuntingStack shuntingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(31);
++        shuntingStack.visit(this);
++    }
++
++    @Override
++    public int getPri() {
++        return 2;
++    }
++}
+diff --git a/top/yatt/dfargx/tree/node/BOr.java b/top/yatt/dfargx/tree/node/BOr.java
+index 4f79c1d..80890fb 100644
+--- a/top/yatt/dfargx/tree/node/BOr.java
++++ b/top/yatt/dfargx/tree/node/BOr.java
+@@ -1,41 +1,41 @@
+-package top.yatt.dfargx.tree.node;
+-
+-import top.yatt.dfargx.automata.NFA;
+-import top.yatt.dfargx.stack.OperatingStack;
+-import top.yatt.dfargx.stack.ShuntingStack;
+-
+-/**
+- * Created on 2015/5/10.
+- */
+-public class BOr extends BranchNode {
+-
+-    @Override
+-    public String toString() {
+-        return "[O]";
+-    }
+-
+-    @Override
+-    public void accept(NFA nfa) {
+-        nfa.visit(this);
+-    }
+-
+-    @Override
+-    public Node copy() {
+-        return new BOr();
+-    }
+-
+-    @Override
+-    public void accept(OperatingStack operatingStack) {
+-        operatingStack.visit(this);
+-    }
+-
+-    @Override
+-    public void accept(ShuntingStack shuntingStack) {
+-        shuntingStack.visit(this);
+-    }
+-
+-    @Override
+-    public int getPri() {
+-        return 0;
+-    }
+-}
++package top.yatt.dfargx.tree.node;
++
++import top.yatt.dfargx.automata.NFA;
++import top.yatt.dfargx.stack.OperatingStack;
++import top.yatt.dfargx.stack.ShuntingStack;
++
++/**
++ * Created on 2015/5/10.
++ */
++public class BOr extends BranchNode {
++
++    @Override
++    public String toString() {
++        return "[O]";
++    }
++
++    @Override
++    public void accept(NFA nfa) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(33);
++        nfa.visit(this);
++    }
++
++    @Override
++    public Node copy() {
++        return new BOr();
++    }
++
++    @Override
++    public void accept(OperatingStack operatingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(35);
++        operatingStack.visit(this);
++    }
++
++    @Override
++    public void accept(ShuntingStack shuntingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(37);
++        shuntingStack.visit(this);
++    }
++
++    @Override
++    public int getPri() {
++        return 0;
++    }
++}
+diff --git a/top/yatt/dfargx/tree/node/LChar.java b/top/yatt/dfargx/tree/node/LChar.java
+index 9ceac78..8ed5ad4 100644
+--- a/top/yatt/dfargx/tree/node/LChar.java
++++ b/top/yatt/dfargx/tree/node/LChar.java
+@@ -1,50 +1,50 @@
+-package top.yatt.dfargx.tree.node;
+-
+-import top.yatt.dfargx.automata.NFA;
+-import top.yatt.dfargx.stack.OperatingStack;
+-import top.yatt.dfargx.stack.ShuntingStack;
+-
+-/**
+- * Created on 2015/5/10.
+- */
+-public class LChar extends LeafNode {
+-
+-    public final char c;
+-
+-    public LChar(char c) {
+-        this.c = c;
+-    }
+-
+-    @Override
+-    public void accept(NFA nfa) {
+-        nfa.visit(this);
+-    }
+-
+-    @Override
+-    public String toString() {
+-        String result;
+-        if (c == ' ') {
+-            result = "\\s";
+-        } else if (c == '\t') {
+-            result = "\\t";
+-        } else {
+-            result = String.valueOf(c);
+-        }
+-        return result;
+-    }
+-
+-    @Override
+-    public Node copy() {
+-        return new LChar(c);
+-    }
+-
+-    @Override
+-    public void accept(OperatingStack operatingStack) {
+-        operatingStack.visit(this);
+-    }
+-
+-    @Override
+-    public void accept(ShuntingStack shuntingStack) {
+-        shuntingStack.visit(this);
+-    }
+-}
++package top.yatt.dfargx.tree.node;
++
++import top.yatt.dfargx.automata.NFA;
++import top.yatt.dfargx.stack.OperatingStack;
++import top.yatt.dfargx.stack.ShuntingStack;
++
++/**
++ * Created on 2015/5/10.
++ */
++public class LChar extends LeafNode {
++
++    public final char c;
++
++    public LChar(char c) {
++        this.c = c;
++    }
++
++    @Override
++    public void accept(NFA nfa) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(39);
++        nfa.visit(this);
++    }
++
++    @Override
++    public String toString() {
++        String result;
++        if (c == ' ') {
++            result = "\\s";
++        } else if (c == '\t') {
++            result = "\\t";
++        } else {
++            result = String.valueOf(c);
++        }
++        return result;
++    }
++
++    @Override
++    public Node copy() {
++        return new LChar(c);
++    }
++
++    @Override
++    public void accept(OperatingStack operatingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(41);
++        operatingStack.visit(this);
++    }
++
++    @Override
++    public void accept(ShuntingStack shuntingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(43);
++        shuntingStack.visit(this);
++    }
++}
+diff --git a/top/yatt/dfargx/tree/node/LClosure.java b/top/yatt/dfargx/tree/node/LClosure.java
+index 279a3e3..4b197be 100644
+--- a/top/yatt/dfargx/tree/node/LClosure.java
++++ b/top/yatt/dfargx/tree/node/LClosure.java
+@@ -1,35 +1,35 @@
+-package top.yatt.dfargx.tree.node;
+-
+-import top.yatt.dfargx.automata.NFA;
+-import top.yatt.dfargx.stack.OperatingStack;
+-import top.yatt.dfargx.stack.ShuntingStack;
+-
+-/**
+- * Created on 2015/5/10.
+- */
+-public class LClosure extends LeafNode {
+-    @Override
+-    public void accept(NFA nfa) {
+-        nfa.visit(this);
+-    }
+-
+-    @Override
+-    public Node copy() {
+-        return new LClosure();
+-    }
+-
+-    @Override
+-    public String toString() {
+-        return "{ε}";
+-    }
+-
+-    @Override
+-    public void accept(OperatingStack operatingStack) {
+-        operatingStack.visit(this);
+-    }
+-
+-    @Override
+-    public void accept(ShuntingStack shuntingStack) {
+-        shuntingStack.visit(this);
+-    }
+-}
++package top.yatt.dfargx.tree.node;
++
++import top.yatt.dfargx.automata.NFA;
++import top.yatt.dfargx.stack.OperatingStack;
++import top.yatt.dfargx.stack.ShuntingStack;
++
++/**
++ * Created on 2015/5/10.
++ */
++public class LClosure extends LeafNode {
++    @Override
++    public void accept(NFA nfa) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(45);
++        nfa.visit(this);
++    }
++
++    @Override
++    public Node copy() {
++        return new LClosure();
++    }
++
++    @Override
++    public String toString() {
++        return "{ε}";
++    }
++
++    @Override
++    public void accept(OperatingStack operatingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(47);
++        operatingStack.visit(this);
++    }
++
++    @Override
++    public void accept(ShuntingStack shuntingStack) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(49);
++        shuntingStack.visit(this);
++    }
++}
+diff --git a/top/yatt/dfargx/util/CommonSets.java b/top/yatt/dfargx/util/CommonSets.java
+index 9690365..fd4d6e0 100644
+--- a/top/yatt/dfargx/util/CommonSets.java
++++ b/top/yatt/dfargx/util/CommonSets.java
+@@ -1,159 +1,159 @@
+-package top.yatt.dfargx.util;
+-
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.Collections;
+-import java.util.List;
+-
+-/**
+- * Created on 2015/5/9.
+- */
+-public class CommonSets {
+-    private static final char[] SLW; // slash lower w \w
+-
+-    static {
+-        List<Character> chList = new ArrayList<>();
+-        for (char i = 'a'; i <= 'z'; i++) {
+-            chList.add(i);
+-        }
+-        for (char i = 'A'; i <= 'Z'; i++) {
+-            chList.add(i);
+-        }
+-        for (char i = '0'; i <= '9'; i++) {
+-            chList.add(i);
+-        }
+-        chList.add('_');
+-        SLW = listToArray(chList);
+-    }
+-
+-    private static final char[] SUW = complementarySet(SLW); // slash upper w \W
+-
+-    private static final char[] SLS = new char[]{' ', '\t'}; // slash lower s \s
+-
+-    private static final char[] SUS = complementarySet(SLS); // slash upper s \S
+-
+-    private static final char[] SLD = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+-
+-    private static final char[] SUD = complementarySet(SLD);
+-
+-    private static final char[] DOT = complementarySet(new char[]{'\n'});
+-
+-    private static final List<Character> SLW_L = Collections.unmodifiableList(arrayToList(SLW));
+-
+-    private static final List<Character> SUW_L = Collections.unmodifiableList(arrayToList(SUW));
+-
+-    private static final List<Character> SLD_L = Collections.unmodifiableList(arrayToList(SLD));
+-
+-    private static final List<Character> SUD_L = Collections.unmodifiableList(arrayToList(SUD));
+-
+-    private static final List<Character> SLS_L = Collections.unmodifiableList(arrayToList(SLS));
+-
+-    private static final List<Character> SUS_L = Collections.unmodifiableList(arrayToList(SUS));
+-
+-    private static final List<Character> DOT_L = Collections.unmodifiableList(arrayToList(DOT));
+-
+-    public static final int ENCODING_LENGTH = 128; // ascii encoding length, to support unicode, change this num, and change above sets also.
+-
+-    public static char[] listToArray(List<Character> charList) {
+-        char[] result = new char[charList.size()];
+-        for (int i = 0; i < charList.size(); i++) {
+-            result[i] = charList.get(i);
+-        }
+-        return result;
+-    }
+-
+-    public static List<Character> arrayToList(char[] charArr) {
+-        List<Character> chList = new ArrayList<>(charArr.length);
+-        for (char ch : charArr) {
+-            chList.add(ch);
+-        }
+-        return chList;
+-    }
+-
+-    public static char[] complementarySet(char[] set) { // complementary set among ascii
+-        boolean[] book = emptyBook(true);
+-        int cardinality = ENCODING_LENGTH; // number of unique chars
+-        for (char b : set) {
+-            if (book[b]) {
+-                cardinality--;
+-                book[b] = false;
+-            }
+-        }
+-        return bookToSet(book, cardinality);
+-    }
+-
+-    public static char[] minimum(char[] set) { // [e, a, d, f, f, c, c, k, \s] -> {a, c, d, e, f, k, \0, \t}
+-        boolean[] book = emptyBook(false);
+-        int cardinality = 0; // number of unique chars
+-        for (char b : set) {
+-            if (!book[b]) {
+-                cardinality++;
+-                book[b] = true;
+-            }
+-        }
+-        return bookToSet(book, cardinality);
+-    }
+-
+-    public static List<Character> interpretToken(String token) {
+-        List<Character> result;
+-        if (token.length() == 1) {
+-            if (token.charAt(0) == '.') {
+-                result = DOT_L;
+-            } else {
+-                result = Collections.singletonList(token.charAt(0));
+-            }
+-        } else if (token.length() != 2 || token.charAt(0) != '\\') {
+-            throw new InvalidSyntaxException("Unrecognized token: " + token);
+-        } else {
+-            switch (token.charAt(1)) {
+-                case 'n':
+-                    result = Collections.singletonList('\n');
+-                    break;
+-                case 'r':
+-                    result = Collections.singletonList('\r');
+-                    break;
+-                case 't':
+-                    result = Collections.singletonList('\t');
+-                    break;
+-                case 'w':
+-                    result = SLW_L;
+-                    break;
+-                case 'W':
+-                    result = SUW_L;
+-                    break;
+-                case 's':
+-                    result = SLS_L;
+-                    break;
+-                case 'S':
+-                    result = SUS_L;
+-                    break;
+-                case 'd':
+-                    result = SLD_L;
+-                    break;
+-                case 'D':
+-                    result = SUD_L;
+-                    break;
+-                default:
+-                    result = Collections.singletonList(token.charAt(1));
+-            }
+-        }
+-        return result;
+-    }
+-
+-    private static boolean[] emptyBook(boolean fill) {
+-        boolean[] book = new boolean[ENCODING_LENGTH];
+-        Arrays.fill(book, fill);
+-        return book;
+-    }
+-
+-    private static char[] bookToSet(boolean[] book, int cardinality) {
+-        char[] newSet = new char[cardinality];
+-        int i = 0;
+-        for (char j = 0; j < book.length; j++) {
+-            if (book[j]) {
+-                newSet[i++] = j;
+-            }
+-        }
+-        return newSet;
+-    }
+-}
++package top.yatt.dfargx.util;
++
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.Collections;
++import java.util.List;
++
++/**
++ * Created on 2015/5/9.
++ */
++public class CommonSets {
++    private static final char[] SLW; // slash lower w \w
++
++    static {
++        List<Character> chList = new ArrayList<>();
++        for (char i = 'a'; i <= 'z'; i++) {
++            chList.add(i);
++        }
++        for (char i = 'A'; i <= 'Z'; i++) {
++            chList.add(i);
++        }
++        for (char i = '0'; i <= '9'; i++) {
++            chList.add(i);
++        }
++        chList.add('_');
++        SLW = listToArray(chList);
++    }
++
++    private static final char[] SUW = complementarySet(SLW); // slash upper w \W
++
++    private static final char[] SLS = new char[]{' ', '\t'}; // slash lower s \s
++
++    private static final char[] SUS = complementarySet(SLS); // slash upper s \S
++
++    private static final char[] SLD = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
++
++    private static final char[] SUD = complementarySet(SLD);
++
++    private static final char[] DOT = complementarySet(new char[]{'\n'});
++
++    private static final List<Character> SLW_L = Collections.unmodifiableList(arrayToList(SLW));
++
++    private static final List<Character> SUW_L = Collections.unmodifiableList(arrayToList(SUW));
++
++    private static final List<Character> SLD_L = Collections.unmodifiableList(arrayToList(SLD));
++
++    private static final List<Character> SUD_L = Collections.unmodifiableList(arrayToList(SUD));
++
++    private static final List<Character> SLS_L = Collections.unmodifiableList(arrayToList(SLS));
++
++    private static final List<Character> SUS_L = Collections.unmodifiableList(arrayToList(SUS));
++
++    private static final List<Character> DOT_L = Collections.unmodifiableList(arrayToList(DOT));
++
++    public static final int ENCODING_LENGTH = 128; // ascii encoding length, to support unicode, change this num, and change above sets also.
++
++    public static char[] listToArray(List<Character> charList) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(5);
++        char[] result = new char[charList.size()];
++        for (int i = 0; i < charList.size(); i++) {
++            result[i] = charList.get(i);
++        }
++        return result;
++    }
++
++    public static List<Character> arrayToList(char[] charArr) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(10);
++        List<Character> chList = new ArrayList<>(charArr.length);
++        for (char ch : charArr) {
++            chList.add(ch);
++        }
++        return chList;
++    }
++
++    public static char[] complementarySet(char[] set) { top.yatt.dfargx.jmhbench.MutationSwitch.tick(15); // complementary set among ascii
++        boolean[] book = emptyBook(true);
++        int cardinality = ENCODING_LENGTH; // number of unique chars
++        for (char b : set) {
++            if (book[b]) {
++                cardinality--;
++                book[b] = false;
++            }
++        }
++        return bookToSet(book, cardinality);
++    }
++
++    public static char[] minimum(char[] set) { // [e, a, d, f, f, c, c, k, \s] -> {a, c, d, e, f, k, \0, \t}
++        boolean[] book = emptyBook(false);
++        int cardinality = 0; // number of unique chars
++        for (char b : set) {
++            if (!book[b]) {
++                cardinality++;
++                book[b] = true;
++            }
++        }
++        return bookToSet(book, cardinality);
++    }
++
++    public static List<Character> interpretToken(String token) {
++        List<Character> result;
++        if (token.length() == 1) {
++            if (token.charAt(0) == '.') {
++                result = DOT_L;
++            } else {
++                result = Collections.singletonList(token.charAt(0));
++            }
++        } else if (token.length() != 2 || token.charAt(0) != '\\') {
++            throw new InvalidSyntaxException("Unrecognized token: " + token);
++        } else {
++            switch (token.charAt(1)) {
++                case 'n':
++                    result = Collections.singletonList('\n');
++                    break;
++                case 'r':
++                    result = Collections.singletonList('\r');
++                    break;
++                case 't':
++                    result = Collections.singletonList('\t');
++                    break;
++                case 'w':
++                    result = SLW_L;
++                    break;
++                case 'W':
++                    result = SUW_L;
++                    break;
++                case 's':
++                    result = SLS_L;
++                    break;
++                case 'S':
++                    result = SUS_L;
++                    break;
++                case 'd':
++                    result = SLD_L;
++                    break;
++                case 'D':
++                    result = SUD_L;
++                    break;
++                default:
++                    result = Collections.singletonList(token.charAt(1));
++            }
++        }
++        return result;
++    }
++
++    private static boolean[] emptyBook(boolean fill) {
++        boolean[] book = new boolean[ENCODING_LENGTH];
++        Arrays.fill(book, fill);
++        return book;
++    }
++
++    private static char[] bookToSet(boolean[] book, int cardinality) {
++        char[] newSet = new char[cardinality];
++        int i = 0;
++        for (char j = 0; j < book.length; j++) {
++            if (book[j]) {
++                newSet[i++] = j;
++            }
++        }
++        return newSet;
++    }
++}

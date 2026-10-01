@@ -1,0 +1,49 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ObservableFlatMapCompletableBenchmark {
+
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    private Observable<Integer> source;
+
+    private Function<Integer, CompletableSource> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Emit a fixed number of integers
+        source = Observable.range(1, size);
+
+        // Simple mapper that returns a completed Completable.
+        // Replace with a more expensive Completable (e.g., timer) to simulate work.
+        mapper = v -> Completable.complete();
+    }
+
+    @Benchmark
+    public void flatMapCompletable(Blackhole bh) {
+        // Execute the operator and wait for completion.
+        // blockingAwait() returns true when completed without error.
+        boolean completed = source
+                .flatMapCompletable(mapper, false)
+                .blockingAwait();
+
+        // Consume the result to avoid dead‑code elimination.
+        bh.consume(completed);
+    }
+}
+```

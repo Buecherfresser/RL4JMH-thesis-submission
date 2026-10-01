@@ -1,0 +1,129 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableUsing}.
+ *
+ * The benchmark measures the throughput (operations per second) of subscribing to a
+ * {@code FlowableUsing} that emits a fixed number of integer values.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - Separate {@code @Setup} method to create the Flowable once per thread.
+ * - Use {@code Blackhole} to consume emitted items and prevent dead-code elimination.
+ * - Warm‑up and measurement iterations are defined to let the JIT stabilize.
+ * - The benchmark runs in {@code Mode.Throughput} with results expressed in operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableUsingBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({ "1", "10", "1000", "100000" })
+    public int itemCount;
+
+    /**
+     * The Flowable under test.
+     */
+    private Flowable<Integer> flowableUsing;
+
+    /**
+     * A simple resource that will be created and disposed for each subscription.
+     */
+    private static final Supplier<String> RESOURCE_SUPPLIER = () -> "resource";
+
+    /**
+     * Disposer that pretends to clean up the resource.
+     */
+    private static final Consumer<String> DISPOSER = r -> {
+        // No‑op; in a real scenario this could close a file, release a lock, etc.
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Source Flowable that emits a range of integers.
+        Flowable<Integer> source = Flowable.range(1, itemCount);
+        // Create the FlowableUsing operator with eager disposal disabled (eager = false)
+        // to focus on the typical use‑case where disposal happens after termination.
+        flowableUsing = Flowable.using(RESOURCE_SUPPLIER, resource -> source, DISPOSER, false);
+    }
+
+    /**
+     * Subscribes to the {@code FlowableUsing} and consumes all emitted items.
+     *
+     * @param bh Blackhole to consume items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        flowableUsing.subscribe(new Subscriber<Integer>() {
+
+            private Subscription upstream;
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                // Request all items in one go to keep the benchmark simple.
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are not expected in this benchmark; rethrow to fail fast.
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // No action needed on completion.
+            }
+        });
+    }
+}

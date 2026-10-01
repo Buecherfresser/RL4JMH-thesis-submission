@@ -1,0 +1,113 @@
+```
+package io.reactivex.rxjava3.internal.operators.maybe.benchmark;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeMergeArray;
+import io.reactivex.rxjava3.subscribers.DefaultSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link MaybeMergeArray}.
+ *
+ * The benchmark measures the throughput of merging a configurable number of {@code Maybe}
+ * sources into a {@link Flowable} and consuming all emitted items.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Allocate all immutable test data in @Setup(Level.Trial) to exclude construction cost.
+ * - Use a custom {@link DefaultSubscriber} that counts items and signals completion via a latch.
+ * - Blackhole is used to consume the items to prevent dead-code elimination.
+ * - Benchmark mode is Throughput (operations per second) with a 1‑second time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class MaybeMergeArrayThroughputBenchmark {
+
+    /** Number of Maybe sources to merge. Adjust to explore scaling behaviour. */
+    @Param({"10", "100", "1000"})
+    public int sourceCount;
+
+    /** The MaybeMergeArray instance reused across benchmark iterations. */
+    private MaybeMergeArray<Integer> mergeArray;
+
+    /** Pre‑created Maybe sources (just values) to avoid allocation overhead in the benchmark. */
+    private MaybeSource<Integer>[] sources;
+
+    /** Latch used to wait for the Flowable to complete. */
+    private CountDownLatch latch;
+
+    /** Simple subscriber that forwards items to a Blackhole and counts completions. */
+    private static final class BlackholeSubscriber<T> extends DefaultSubscriber<T> {
+        private final Blackhole bh;
+        private final CountDownLatch latch;
+        private final AtomicInteger received = new AtomicInteger();
+
+        BlackholeSubscriber(Blackhole bh, CountDownLatch latch) {
+            this.bh = bh;
+            this.latch = latch;
+        }
+
+        @Override
+        public void onNext(T t) {
+            bh.consume(t);
+            received.incrementAndGet();
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // Errors are not expected in this benchmark; rethrow to fail fast.
+            throw new RuntimeException(t);
+        }
+
+        @Override
+        public void onComplete() {
+            latch.countDown();
+        }
+
+        int getReceived() {
+            return received.get();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create an array of Maybe.just(i) sources.
+        sources = new MaybeSource[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            final int value = i;
+            sources[i] = Maybe.just(value);
+        }
+        // Instantiate the operator under test.
+        mergeArray = new MaybeMergeArray<>(sources);
+    }
+
+    @Setup(Level.Iteration)
+    public void setUpIteration() {
+        // Reset latch for each iteration.
+        latch = new CountDownLatch(1);
+    }
+
+    @Benchmark
+    public void mergeAndConsume(Blackhole bh) throws InterruptedException {
+        // Subscribe a fresh subscriber for each operation.
+        BlackholeSubscriber<Integer> subscriber = new BlackholeSubscriber<>(bh, latch);
+        mergeArray.subscribe(subscriber);
+        // Wait until the Flowable signals onComplete.
+        latch.await();
+        // Optional sanity check (can be removed for pure throughput measurement).
+        // if (subscriber.getReceived() != sourceCount) {
+        //     throw new AssertionError("Unexpected item count");
+        // }
+    }
+}
+```

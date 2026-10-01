@@ -1,0 +1,64 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableRangeLong;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableRangeLong}.
+ *
+ * Measures the throughput (items emitted per second) of the range operator
+ * in a typical subscription scenario. The benchmark runs with different
+ * range sizes to observe scaling behavior.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Trial) creates the Observable once per trial to avoid
+ *   measuring allocation overhead.
+ * - Blackhole consumes emitted items to prevent dead-code elimination.
+ * - @BenchmarkMode(Mode.Throughput) reports operations per second.
+ * - @OutputTimeUnit(TimeUnit.SECONDS) makes the result easy to interpret.
+ * - @Warmup and @Measurement annotations provide stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ObservableRangeLongBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items to emit. Typical values cover small, medium and large ranges.
+         */
+        @Param({"1000", "10000", "1000000"})
+        public long count;
+
+        /**
+         * The Observable under test. Created once per trial to exclude construction cost.
+         */
+        public Observable<Long> observable;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // start at 0 for simplicity; the actual start value does not affect throughput.
+            observable = new ObservableRangeLong(0, count);
+        }
+    }
+
+    /**
+     * Subscribes to the ObservableRangeLong and drains all emitted items.
+     * The Blackhole ensures that the emitted values are consumed and not optimized away.
+     */
+    @Benchmark
+    public void rangeLongThroughput(BenchmarkState state, Blackhole bh) {
+        state.observable.subscribe(bh::consume);
+    }
+}
+```

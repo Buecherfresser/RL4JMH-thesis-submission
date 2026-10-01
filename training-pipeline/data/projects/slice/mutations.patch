@@ -1,0 +1,564 @@
+diff --git a/io/airlift/slice/BasicSliceInput.java b/io/airlift/slice/BasicSliceInput.java
+index 9e8aab5..99898b7 100644
+--- a/io/airlift/slice/BasicSliceInput.java
++++ b/io/airlift/slice/BasicSliceInput.java
+@@ -41,19 +41,19 @@ public final class BasicSliceInput
+ 
+     @Override
+     public long length()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(10);
+         return slice.length();
+     }
+ 
+     @Override
+     public long position()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(11);
+         return position;
+     }
+ 
+     @Override
+     public void setPosition(long position)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(12);
+         // allow position to be set to the end of the slice
+         checkIndex(position, slice.length() + 1);
+         this.position = (int) position;
+@@ -61,7 +61,7 @@ public final class BasicSliceInput
+ 
+     @Override
+     public boolean isReadable()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(13);
+         return position < slice.length();
+     }
+ 
+diff --git a/io/airlift/slice/BasicSliceOutput.java b/io/airlift/slice/BasicSliceOutput.java
+index d3da54b..6182d30 100644
+--- a/io/airlift/slice/BasicSliceOutput.java
++++ b/io/airlift/slice/BasicSliceOutput.java
+@@ -44,13 +44,13 @@ public class BasicSliceOutput
+ 
+     @Override
+     public void reset()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(14);
+         size = 0;
+     }
+ 
+     @Override
+     public void reset(int position)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(15);
+         checkArgument(position >= 0, "position is negative");
+         checkArgument(position <= size, "position is larger than size");
+         size = position;
+@@ -58,13 +58,13 @@ public class BasicSliceOutput
+ 
+     @Override
+     public int size()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(16);
+         return size;
+     }
+ 
+     @Override
+     public long getRetainedSize()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(17);
+         return slice.getRetainedSize() + INSTANCE_SIZE;
+     }
+ 
+diff --git a/io/airlift/slice/ChunkedSliceInput.java b/io/airlift/slice/ChunkedSliceInput.java
+index 258d8fd..f7ec148 100644
+--- a/io/airlift/slice/ChunkedSliceInput.java
++++ b/io/airlift/slice/ChunkedSliceInput.java
+@@ -50,19 +50,19 @@ public final class ChunkedSliceInput
+ 
+     @Override
+     public long length()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(18);
+         return globalLength;
+     }
+ 
+     @Override
+     public long position()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(19);
+         return globalPosition + bufferPosition;
+     }
+ 
+     @Override
+     public void setPosition(long position)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(20);
+         if (position < 0 || position > globalLength) {
+             throw new IndexOutOfBoundsException("Invalid position " + position + " for slice with length " + globalLength);
+         }
+@@ -78,7 +78,7 @@ public final class ChunkedSliceInput
+ 
+     @Override
+     public boolean isReadable()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(21);
+         return bufferPosition < bufferLength;
+     }
+ 
+diff --git a/io/airlift/slice/DynamicSliceOutput.java b/io/airlift/slice/DynamicSliceOutput.java
+index 581b752..c520d14 100644
+--- a/io/airlift/slice/DynamicSliceOutput.java
++++ b/io/airlift/slice/DynamicSliceOutput.java
+@@ -43,13 +43,13 @@ public class DynamicSliceOutput
+ 
+     @Override
+     public void reset()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(22);
+         size = 0;
+     }
+ 
+     @Override
+     public void reset(int position)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(23);
+         checkArgument(position >= 0, "position is negative");
+         checkArgument(position <= size, "position is larger than size");
+         size = position;
+@@ -57,13 +57,13 @@ public class DynamicSliceOutput
+ 
+     @Override
+     public int size()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(24);
+         return size;
+     }
+ 
+     @Override
+     public long getRetainedSize()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(25);
+         return slice.getRetainedSize() + INSTANCE_SIZE;
+     }
+ 
+diff --git a/io/airlift/slice/FnvHash.java b/io/airlift/slice/FnvHash.java
+index 66b4f85..a163a01 100644
+--- a/io/airlift/slice/FnvHash.java
++++ b/io/airlift/slice/FnvHash.java
+@@ -29,7 +29,7 @@ public class FnvHash
+     }
+ 
+     public static int hash32(Slice data)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(26);
+         int hash = FNV_32_OFFSET_BASIS;
+ 
+         for (int i = 0; i < data.length(); ++i) {
+@@ -42,7 +42,7 @@ public class FnvHash
+     }
+ 
+     public static long hash64(Slice data)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(27);
+         long hash = FNV_64_OFFSET_BASIS;
+ 
+         for (int i = 0; i < data.length(); ++i) {
+diff --git a/io/airlift/slice/InputStreamSliceInput.java b/io/airlift/slice/InputStreamSliceInput.java
+index 254a28f..796a99b 100644
+--- a/io/airlift/slice/InputStreamSliceInput.java
++++ b/io/airlift/slice/InputStreamSliceInput.java
+@@ -68,13 +68,13 @@ public final class InputStreamSliceInput
+ 
+     @Override
+     public long position()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(1);
+         return checkedCast(bufferOffset + bufferPosition);
+     }
+ 
+     @Override
+     public void setPosition(long position)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(3);
+         throw new UnsupportedOperationException();
+     }
+ 
+@@ -90,13 +90,13 @@ public final class InputStreamSliceInput
+ 
+     @Override
+     public boolean isReadable()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(4);
+         return available() > 0;
+     }
+ 
+     @Override
+     public int skipBytes(int n)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(5);
+         return (int) skip(n);
+     }
+ 
+diff --git a/io/airlift/slice/InvalidCodePointException.java b/io/airlift/slice/InvalidCodePointException.java
+index 6107f05..dfe50aa 100644
+--- a/io/airlift/slice/InvalidCodePointException.java
++++ b/io/airlift/slice/InvalidCodePointException.java
+@@ -27,7 +27,7 @@ public class InvalidCodePointException
+     }
+ 
+     public int getCodePoint()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(28);
+         return codePoint;
+     }
+ }
+diff --git a/io/airlift/slice/Murmur3Hash128.java b/io/airlift/slice/Murmur3Hash128.java
+index a646791..a1d4c6b 100644
+--- a/io/airlift/slice/Murmur3Hash128.java
++++ b/io/airlift/slice/Murmur3Hash128.java
+@@ -25,18 +25,18 @@ public final class Murmur3Hash128
+     private Murmur3Hash128() {}
+ 
+     public static Slice hash(Slice data)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(29);
+         return hash(data, 0, data.length());
+     }
+ 
+     public static Slice hash(Slice data, int offset, int length)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(30);
+         return hash(DEFAULT_SEED, data, offset, length);
+     }
+ 
+     @SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
+     public static Slice hash(long seed, Slice data, int offset, int length)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(31);
+         final int fastLimit = offset + length - (2 * SizeOf.SIZE_OF_LONG) + 1;
+ 
+         long h1 = seed;
+@@ -139,7 +139,7 @@ public final class Murmur3Hash128
+      * Returns the 64 most significant bits of the Murmur128 hash of the provided value
+      */
+     public static long hash64(Slice data)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(32);
+         return hash64(data, 0, data.length());
+     }
+ 
+diff --git a/io/airlift/slice/Murmur3Hash32.java b/io/airlift/slice/Murmur3Hash32.java
+index 9a5c2dd..07c2244 100644
+--- a/io/airlift/slice/Murmur3Hash32.java
++++ b/io/airlift/slice/Murmur3Hash32.java
+@@ -25,18 +25,18 @@ public final class Murmur3Hash32
+     private Murmur3Hash32() {}
+ 
+     public static int hash(Slice data)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(33);
+         return hash(data, 0, data.length());
+     }
+ 
+     public static int hash(Slice data, int offset, int length)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(34);
+         return hash(DEFAULT_SEED, data, offset, length);
+     }
+ 
+     @SuppressFBWarnings({"SF_SWITCH_NO_DEFAULT", "SF_SWITCH_FALLTHROUGH"})
+     public static int hash(int seed, Slice data, int offset, int length)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(35);
+         final int fastLimit = offset + length - SizeOf.SIZE_OF_INT + 1;
+ 
+         int h1 = seed;
+@@ -68,7 +68,7 @@ public final class Murmur3Hash32
+      * Special-purpose version for hashing a single int value. Value is treated as little-endian
+      */
+     public static int hash(int input)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(36);
+         int k1 = mixK1(input);
+         int h1 = mixH1(DEFAULT_SEED, k1);
+ 
+diff --git a/io/airlift/slice/OutputStreamSliceOutput.java b/io/airlift/slice/OutputStreamSliceOutput.java
+index 90dadef..0a891fc 100644
+--- a/io/airlift/slice/OutputStreamSliceOutput.java
++++ b/io/airlift/slice/OutputStreamSliceOutput.java
+@@ -82,7 +82,7 @@ public class OutputStreamSliceOutput
+     @Override
+     public void close()
+             throws IOException
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(6);
+         try (Closeable ignored = outputStream) {
+             flushBufferToOutputStream();
+         }
+@@ -90,19 +90,19 @@ public class OutputStreamSliceOutput
+ 
+     @Override
+     public void reset()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(7);
+         throw new UnsupportedOperationException("OutputStream cannot be reset");
+     }
+ 
+     @Override
+     public void reset(int position)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(8);
+         throw new UnsupportedOperationException("OutputStream cannot be reset");
+     }
+ 
+     @Override
+     public int size()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(9);
+         return toIntExact(longSize());
+     }
+ 
+diff --git a/io/airlift/slice/Preconditions.java b/io/airlift/slice/Preconditions.java
+index b99a2bf..cf4710f 100644
+--- a/io/airlift/slice/Preconditions.java
++++ b/io/airlift/slice/Preconditions.java
+@@ -21,14 +21,14 @@ final class Preconditions
+     private Preconditions() {}
+ 
+     public static void checkArgument(boolean expression, String errorMessage)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(37);
+         if (!expression) {
+             throw new IllegalArgumentException(errorMessage);
+         }
+     }
+ 
+     public static void verify(boolean condition)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(38);
+         if (!condition) {
+             throw new AssertionError();
+         }
+diff --git a/io/airlift/slice/SizeOf.java b/io/airlift/slice/SizeOf.java
+index a81771d..528799d 100644
+--- a/io/airlift/slice/SizeOf.java
++++ b/io/airlift/slice/SizeOf.java
+@@ -121,22 +121,22 @@ public final class SizeOf
+     private static final int SIMPLE_ENTRY_INSTANCE_SIZE = instanceSize(AbstractMap.SimpleEntry.class);
+ 
+     public static long sizeOf(boolean[] array)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(39);
+         return (array == null) ? 0 : sizeOfBooleanArray(array.length);
+     }
+ 
+     public static long sizeOf(byte[] array)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(40);
+         return (array == null) ? 0 : sizeOfByteArray(array.length);
+     }
+ 
+     public static long sizeOf(short[] array)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(41);
+         return (array == null) ? 0 : sizeOfShortArray(array.length);
+     }
+ 
+     public static long sizeOf(char[] array)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(42);
+         return (array == null) ? 0 : sizeOfCharArray(array.length);
+     }
+ 
+diff --git a/io/airlift/slice/Slice.java b/io/airlift/slice/Slice.java
+index a150bc3..19e4e24 100644
+--- a/io/airlift/slice/Slice.java
++++ b/io/airlift/slice/Slice.java
+@@ -144,7 +144,7 @@ public final class Slice
+      * Length of this slice.
+      */
+     public int length()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(43);
+         return size;
+     }
+ 
+@@ -152,7 +152,7 @@ public final class Slice
+      * Approximate number of bytes retained by this slice.
+      */
+     public long getRetainedSize()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(44);
+         return retainedSize;
+     }
+ 
+@@ -161,7 +161,7 @@ public final class Slice
+      * As a result, it cannot be a view of a bigger slice.
+      */
+     public boolean isCompact()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(45);
+         return baseOffset == 0 && size == base.length;
+     }
+ 
+@@ -171,7 +171,7 @@ public final class Slice
+      */
+     @SuppressFBWarnings("EI_EXPOSE_REP")
+     public byte[] byteArray()
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(46);
+         return base;
+     }
+ 
+diff --git a/io/airlift/slice/SliceUtf8.java b/io/airlift/slice/SliceUtf8.java
+index e630e95..bd6c606 100644
+--- a/io/airlift/slice/SliceUtf8.java
++++ b/io/airlift/slice/SliceUtf8.java
+@@ -77,7 +77,7 @@ public final class SliceUtf8
+      * Does the slice contain only 7-bit ASCII characters.
+      */
+     public static boolean isAscii(Slice utf8)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(47);
+         return isAscii(utf8.byteArray(), utf8.byteArrayOffset(), utf8.length());
+     }
+ 
+@@ -85,7 +85,7 @@ public final class SliceUtf8
+      * Does the byte array range contain only 7-bit ASCII characters.
+      */
+     public static boolean isAscii(byte[] utf8, int offset, int length)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(48);
+         checkFromIndexSize(offset, length, utf8.length);
+         return isAsciiRaw(utf8, offset, length);
+     }
+@@ -126,7 +126,7 @@ public final class SliceUtf8
+      * return incorrect results or throw an exception for invalid UTF-8.
+      */
+     public static int countCodePoints(Slice utf8)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(49);
+         return countCodePoints(utf8.byteArray(), utf8.byteArrayOffset(), utf8.length());
+     }
+ 
+@@ -137,7 +137,7 @@ public final class SliceUtf8
+      * return incorrect results or throw an exception for invalid UTF-8.
+      */
+     public static int countCodePoints(byte[] utf8, int offset, int length)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(50);
+         checkFromIndexSize(offset, length, utf8.length);
+         return countCodePoints(utf8, offset, length, 0, length);
+     }
+diff --git a/io/airlift/slice/jmhbench/MutationSwitch.java b/io/airlift/slice/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..d7af720
+--- /dev/null
++++ b/io/airlift/slice/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.airlift.slice.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/io/airlift/slice/testing/SliceAssertions.java b/io/airlift/slice/testing/SliceAssertions.java
+index 57b4b49..dfc97a6 100644
+--- a/io/airlift/slice/testing/SliceAssertions.java
++++ b/io/airlift/slice/testing/SliceAssertions.java
+@@ -20,7 +20,7 @@ public final class SliceAssertions
+     private SliceAssertions() {}
+ 
+     public static void assertSlicesEqual(Slice actual, Slice expected)
+-    {
++    { io.airlift.slice.jmhbench.MutationSwitch.tick(2);
+         if (actual == null && expected == null) {
+             return;
+         }

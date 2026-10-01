@@ -1,0 +1,103 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableConcatMapScheduler;
+import io.reactivex.rxjava3.internal.util.ErrorMode;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+/**
+ * JMH benchmark for {@link ObservableConcatMapScheduler}.
+ * Measures throughput of the operator when concatenating a simple range of integers.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Benchmark)
+public class ObservableConcatMapSchedulerBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Buffer size used by the operator. */
+    @Param({"32", "128", "1024"})
+    public int bufferSize;
+
+    /** Scheduler on which inner Observables are subscribed. */
+    private Scheduler scheduler;
+
+    /** Source Observable emitting a range of integers. */
+    private ObservableSource<Integer> source;
+
+    /** Mapping function turning each integer into an Observable that emits the same integer. */
+    private Function<Integer, ObservableSource<Integer>> mapper;
+
+    /** The operator instance under test. */
+    private Observable<Integer> operator;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        scheduler = Schedulers.computation();
+
+        source = Observable.range(1, itemCount);
+
+        mapper = v -> Observable.just(v);
+
+        // Create the internal operator directly.
+        ObservableConcatMapScheduler<Integer, Integer> internal =
+                new ObservableConcatMapScheduler<>(
+                        source,
+                        mapper,
+                        bufferSize,
+                        ErrorMode.IMMEDIATE,
+                        scheduler);
+
+        // Expose it as a regular Observable for subscription.
+        operator = Observable.wrap(internal);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        scheduler.shutdown();
+    }
+
+    @Benchmark
+    public void concatMapSchedulerThroughput(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+
+        operator.subscribe(new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                // no-op
+            }
+
+            @Override
+            public void onNext(Integer value) {
+                bh.consume(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        // Wait for the whole stream to finish.
+        latch.await();
+    }
+}
+```

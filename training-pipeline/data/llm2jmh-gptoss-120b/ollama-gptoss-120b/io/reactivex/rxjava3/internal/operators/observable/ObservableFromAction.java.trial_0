@@ -1,0 +1,98 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable.benchmark;
+
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableFromAction;
+import io.reactivex.rxjava3.functions.Action;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableFromAction}.
+ *
+ * <p>Measures the throughput of subscribing to an {@code ObservableFromAction}
+ * that executes a no‑op {@link Action}. The benchmark follows best practices:
+ *
+ * <ul>
+ *   <li>Uses {@code @State(Scope.Thread)} to avoid sharing mutable state across threads.</li>
+ *   <li>Initialises the observable and a lightweight observer in {@code @Setup}.</li>
+ *   <li>Runs in {@code Mode.Throughput} with a time unit of operations per second.</li>
+ *   <li>Consumes any emitted values or terminal signals via {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Specifies warm‑up and measurement iterations to obtain stable results.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableFromActionBenchmark {
+
+    /** Observable that runs a no‑op Action when subscribed. */
+    private ObservableFromAction<Void> observable;
+
+    /** Simple observer that forwards terminal events to a Blackhole. */
+    private Observer<Void> observer;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // No‑op Action – the work we want to measure is the RxJava plumbing, not the Action itself.
+        Action noOp = () -> { /* intentionally empty */ };
+
+        observable = new ObservableFromAction<>(noOp);
+
+        observer = new Observer<Void>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                // No resource management needed for the benchmark.
+            }
+
+            @Override
+            public void onNext(Void value) {
+                // No values are emitted; method kept for completeness.
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // Forward any unexpected error to Blackhole to avoid dead‑code elimination.
+                Blackhole bh = new Blackhole("Today's password is swordfish. I am not a robot.");
+                bh.consume(e);
+            }
+
+            @Override
+            public void onComplete() {
+                // Completion is expected; consume a dummy value to keep the method hot.
+                Blackhole bh = new Blackhole("Today's password is swordfish. I am not a robot.");
+                bh.consume(true);
+            }
+        };
+    }
+
+    /**
+     * Benchmark the subscription path of {@link ObservableFromAction}.
+     *
+     * @param bh Blackhole to consume any side‑effects.
+     */
+    @Benchmark
+    public void subscribe(Blackhole bh) {
+        // Subscribe using the pre‑created observer. The observer itself forwards terminal
+        // signals to the Blackhole, ensuring the JIT cannot eliminate the call.
+        observable.subscribe(observer);
+    }
+
+    /**
+     * Benchmark the {@link ObservableFromAction#get()} method which directly invokes the Action.
+     *
+     * @param bh Blackhole to consume the (null) result.
+     */
+    @Benchmark
+    public void get(Blackhole bh) throws Throwable {
+        // The Supplier interface returns null for this operator; we still consume it.
+        bh.consume(observable.get());
+    }
+}
+```

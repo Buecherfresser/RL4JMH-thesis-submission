@@ -1,0 +1,73 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark measuring the throughput of the {@code Maybe.peek} operator
+ * (implemented internally by {@code MaybePeek}) compared to a plain {@code Maybe.just}.
+ *
+ * The benchmark runs in {@link Mode#Throughput} which reports the number of
+ * operations per time unit. All side‑effect callbacks are no‑ops to isolate the
+ * overhead of the operator itself.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class MaybePeekBenchmark {
+
+    /** A simple source emitting a constant value. */
+    private Maybe<Integer> source;
+
+    /** The same source with a peek operator attached (all callbacks are no‑ops). */
+    private Maybe<Integer> peeked;
+
+    /** No‑op consumer used for onSuccess, onError and onSubscribe callbacks. */
+    private static final Consumer<Object> NOOP_CONSUMER = o -> { /* no‑op */ };
+
+    /** No‑op action used for onComplete, onAfterTerminate and onDispose callbacks. */
+    private static final Action NOOP_ACTION = () -> { /* no‑op */ };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Baseline source
+        source = Maybe.just(1);
+
+        // Peeked source – this will internally create a MaybePeek instance.
+        peeked = source.doOnSubscribe(d -> NOOP_CONSUMER.accept(d))
+                       .doOnSuccess(v -> NOOP_CONSUMER.accept(v))
+                       .doOnError(e -> NOOP_CONSUMER.accept(e))
+                       .doOnComplete(NOOP_ACTION)
+                       .doAfterTerminate(NOOP_ACTION)
+                       .doOnDispose(NOOP_ACTION);
+    }
+
+    /**
+     * Baseline benchmark: subscribe to a plain {@code Maybe.just} and block for the result.
+     */
+    @Benchmark
+    public void baseline(Blackhole bh) {
+        // blockingGet is used to force the subscription to complete synchronously.
+        Integer v = source.blockingGet();
+        bh.consume(v);
+    }
+
+    /**
+     * Benchmark the {@code Maybe.peek} operator (implemented by {@code MaybePeek}).
+     */
+    @Benchmark
+    public void peekOperator(Blackhole bh) {
+        Integer v = peeked.blockingGet();
+        bh.consume(v);
+    }
+}
+```

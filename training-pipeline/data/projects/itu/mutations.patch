@@ -1,0 +1,609 @@
+diff --git a/com/ethlo/time/DateTime.java b/com/ethlo/time/DateTime.java
+index a890670..99f08b6 100644
+--- a/com/ethlo/time/DateTime.java
++++ b/com/ethlo/time/DateTime.java
+@@ -103,7 +103,7 @@ public class DateTime implements TemporalAccessor
+      * @return A DateTime with second granularity
+      */
+     public static DateTime of(int year, int month, int day, int hour, int minute, int second, TimezoneOffset offset)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(9);
+         return new DateTime(Field.SECOND, year, month, day, hour, minute, second, 0, offset, 0);
+     }
+ 
+@@ -122,7 +122,7 @@ public class DateTime implements TemporalAccessor
+      * @return A DateTime with nanosecond granularity
+      */
+     public static DateTime of(int year, int month, int day, int hour, int minute, int second, int nanos, TimezoneOffset offset, final int fractionDigits)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(11);
+         return new DateTime(Field.NANO, year, month, day, hour, minute, second, nanos, offset, fractionDigits);
+     }
+ 
+@@ -133,7 +133,7 @@ public class DateTime implements TemporalAccessor
+      * @return a new instance with year granularity from the input parameters
+      */
+     public static DateTime ofYear(int year)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(13);
+         return new DateTime(Field.YEAR, year, 0, 0, 0, 0, 0, 0, null, 0);
+     }
+ 
+diff --git a/com/ethlo/time/DateTimeParsers.java b/com/ethlo/time/DateTimeParsers.java
+index c974ec9..1d5dc37 100644
+--- a/com/ethlo/time/DateTimeParsers.java
++++ b/com/ethlo/time/DateTimeParsers.java
+@@ -54,17 +54,17 @@ public class DateTimeParsers
+     );
+ 
+     public static DateTimeParser of(DateTimeToken... tokens)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(1);
+         return ConfigurableDateTimeParser.of(tokens);
+     }
+ 
+     public static DateTimeParser rfc3339()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(4);
+         return ITUParser.getInstance();
+     }
+ 
+     public static DateTimeParser localDate()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(7);
+         return DATE;
+     }
+ 
+diff --git a/com/ethlo/time/DateTimeTokens.java b/com/ethlo/time/DateTimeTokens.java
+index b861531..4893378 100644
+--- a/com/ethlo/time/DateTimeTokens.java
++++ b/com/ethlo/time/DateTimeTokens.java
+@@ -30,7 +30,7 @@ import com.ethlo.time.token.DateTimeToken;
+ public class DateTimeTokens
+ {
+     public static DateTimeToken separators(char... anyOf)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(15);
+         if (anyOf == null || anyOf.length == 0)
+         {
+             throw new IllegalArgumentException("Need at least one separator character");
+@@ -44,12 +44,12 @@ public class DateTimeTokens
+     }
+ 
+     public static DateTimeToken digits(Field field, int length)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(17);
+         return new DigitsToken(field, length);
+     }
+ 
+     public static DateTimeToken fractions()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(19);
+         return new FractionsToken();
+     }
+ 
+diff --git a/com/ethlo/time/Duration.java b/com/ethlo/time/Duration.java
+index 3004e3d..b78827d 100644
+--- a/com/ethlo/time/Duration.java
++++ b/com/ethlo/time/Duration.java
+@@ -73,7 +73,7 @@ public class Duration implements Comparable<Duration>
+      * @return A corresponding Duration instance.
+      */
+     public static Duration ofMillis(long millis)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(21);
+         return ofNanos(Math.multiplyExact(NANOS_PER_MILLISECOND, millis));
+     }
+ 
+@@ -84,7 +84,7 @@ public class Duration implements Comparable<Duration>
+      * @return A corresponding Duration instance.
+      */
+     public static Duration ofMicros(long micros)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(23);
+         return ofNanos(Math.multiplyExact(NANOS_PER_MICROSECOND, micros));
+     }
+ 
+@@ -95,7 +95,7 @@ public class Duration implements Comparable<Duration>
+      * @return A corresponding Duration instance.
+      */
+     public static Duration ofNanos(long nanos)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(25);
+         long seconds = nanos / NANOS_PER_SECOND;
+         final int remainderNanos = (int) (nanos % NANOS_PER_SECOND);
+         int nano = remainderNanos;
+diff --git a/com/ethlo/time/Field.java b/com/ethlo/time/Field.java
+index 93bc858..c7c230d 100644
+--- a/com/ethlo/time/Field.java
++++ b/com/ethlo/time/Field.java
+@@ -75,7 +75,7 @@ public enum Field
+     }
+ 
+     public static Field valueOf(Class<? extends Temporal> type)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(27);
+         if (Year.class.equals(type))
+         {
+             return YEAR;
+@@ -97,7 +97,7 @@ public enum Field
+     }
+ 
+     public static Field of(TemporalField temporalField)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(29);
+         if (temporalField.equals(ChronoField.YEAR))
+         {
+             return YEAR;
+@@ -130,7 +130,7 @@ public enum Field
+     }
+ 
+     public int getRequiredLength()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(31);
+         return requiredLength;
+     }
+ }
+diff --git a/com/ethlo/time/ITU.java b/com/ethlo/time/ITU.java
+index 4670e77..cab3f5a 100644
+--- a/com/ethlo/time/ITU.java
++++ b/com/ethlo/time/ITU.java
+@@ -43,7 +43,7 @@ public class ITU
+      * @return The date and time parsed
+      */
+     public static OffsetDateTime parseDateTime(String text)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(33);
+         return ITUParser.parseDateTime(text, 0);
+     }
+ 
+@@ -91,7 +91,7 @@ public class ITU
+      * @throws java.time.format.DateTimeParseException if the input does not conform to the expected format
+      */
+     public static Duration parseDuration(String text)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(35);
+         return ItuDurationParser.parse(text, 0);
+     }
+ 
+@@ -104,7 +104,7 @@ public class ITU
+      * @throws java.time.format.DateTimeParseException if the input does not conform to the expected format
+      */
+     public static Duration parseDuration(String text, int offset)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(37);
+         return ItuDurationParser.parse(text, offset);
+     }
+ 
+diff --git a/com/ethlo/time/LeapSecondException.java b/com/ethlo/time/LeapSecondException.java
+index 4b32b2c..00de35f 100644
+--- a/com/ethlo/time/LeapSecondException.java
++++ b/com/ethlo/time/LeapSecondException.java
+@@ -46,7 +46,7 @@ public class LeapSecondException extends DateTimeException
+      * @return The number of seconds in this parsed date-time
+      */
+     public int getSecondsInMinute()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(39);
+         return secondsInMinute;
+     }
+ 
+@@ -56,7 +56,7 @@ public class LeapSecondException extends DateTimeException
+      * @return The date-time
+      */
+     public OffsetDateTime getNearestDateTime()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(41);
+         return nearestDateTime;
+     }
+ 
+@@ -66,7 +66,7 @@ public class LeapSecondException extends DateTimeException
+      * @return True if known, otherwise false
+      */
+     public boolean isVerifiedValidLeapYearMonth()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(43);
+         return isVerifiedValidLeapYearMonth;
+     }
+ }
+diff --git a/com/ethlo/time/ParseConfig.java b/com/ethlo/time/ParseConfig.java
+index 1d4ef8d..6ac4a61 100644
+--- a/com/ethlo/time/ParseConfig.java
++++ b/com/ethlo/time/ParseConfig.java
+@@ -44,12 +44,12 @@ public class ParseConfig
+     }
+ 
+     public char[] getFractionSeparators()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(45);
+         return fractionSeparators;
+     }
+ 
+     public ParseConfig withDateTimeSeparators(char... allowed)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(47);
+         assertChars(allowed);
+         return new ParseConfig(allowed, fractionSeparators);
+     }
+@@ -67,7 +67,7 @@ public class ParseConfig
+     }
+ 
+     public ParseConfig withFractionSeparators(char... allowed)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(49);
+         assertChars(allowed);
+         return new ParseConfig(dateTimeSeparators, allowed);
+     }
+diff --git a/com/ethlo/time/TimezoneOffset.java b/com/ethlo/time/TimezoneOffset.java
+index 3a2a5c0..f980746 100644
+--- a/com/ethlo/time/TimezoneOffset.java
++++ b/com/ethlo/time/TimezoneOffset.java
+@@ -42,7 +42,7 @@ public class TimezoneOffset
+     }
+ 
+     public static TimezoneOffset ofHoursMinutes(int hours, int minutes)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(50);
+         return new TimezoneOffset(hours, minutes);
+     }
+ 
+diff --git a/com/ethlo/time/internal/DurationPartsConsumer.java b/com/ethlo/time/internal/DurationPartsConsumer.java
+index da7e133..2dc6e8c 100644
+--- a/com/ethlo/time/internal/DurationPartsConsumer.java
++++ b/com/ethlo/time/internal/DurationPartsConsumer.java
+@@ -56,12 +56,12 @@ class DurationPartsConsumer
+     }
+ 
+     protected static void error(final String errorMessage, final String text, int index)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(26);
+         throw new DateTimeParseException(errorMessage + ": " + text, text, index);
+     }
+ 
+     public final void accept(final String text, final int index, final int length, final char unit, final long value)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(28);
+         final int relIndex = index - startOffset;
+ 
+         // Check for initial 'P' (must be at the start)
+@@ -236,7 +236,7 @@ class DurationPartsConsumer
+     }
+ 
+     public void validate(String chars, int index)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(30);
+         if (afterT && hFound + mFound + sFound == 0)
+         {
+             error("Expected at least one value and unit after the 'T'", chars, index);
+diff --git a/com/ethlo/time/internal/ItuDurationParser.java b/com/ethlo/time/internal/ItuDurationParser.java
+index bb0f2df..825b420 100644
+--- a/com/ethlo/time/internal/ItuDurationParser.java
++++ b/com/ethlo/time/internal/ItuDurationParser.java
+@@ -55,12 +55,12 @@ public class ItuDurationParser
+     public static final char UNIT_UNDEFINED = '\0';
+ 
+     public static Duration parse(final String chars)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(2);
+         return parse(chars, 0);
+     }
+ 
+     public static Duration parse(final String text, final int offset)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(5);
+         final int availableLength = sanityCheckInputParams(text, offset);
+         if (availableLength == 0)
+         {
+diff --git a/com/ethlo/time/internal/fixed/ITUFormatter.java b/com/ethlo/time/internal/fixed/ITUFormatter.java
+index 1efe741..b7584c5 100644
+--- a/com/ethlo/time/internal/fixed/ITUFormatter.java
++++ b/com/ethlo/time/internal/fixed/ITUFormatter.java
+@@ -42,7 +42,7 @@ public class ITUFormatter
+     private static final int[] widths = new int[]{100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_000, 100, 10, 1};
+ 
+     public static String finish(final char[] buf, final int length, final TimezoneOffset tz)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(32);
+         int tzLen = 0;
+         if (tz != null)
+         {
+@@ -69,12 +69,12 @@ public class ITUFormatter
+     }
+ 
+     public static String formatUtc(OffsetDateTime date, int fractionDigits)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(34);
+         return doFormat(date, ZoneOffset.UTC, Field.SECOND, fractionDigits);
+     }
+ 
+     public static String formatUtc(OffsetDateTime date, Field lastIncluded)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(36);
+         return doFormat(date, ZoneOffset.UTC, lastIncluded, 0);
+     }
+ 
+diff --git a/com/ethlo/time/internal/fixed/ITUParser.java b/com/ethlo/time/internal/fixed/ITUParser.java
+index 33bb4b4..76898c4 100644
+--- a/com/ethlo/time/internal/fixed/ITUParser.java
++++ b/com/ethlo/time/internal/fixed/ITUParser.java
+@@ -165,7 +165,7 @@ public class ITUParser implements DateTimeParser
+     }
+ 
+     public static DateTime parseLenient(final String chars, final ParseConfig parseConfig, int offset)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(8);
+         final int availableLength = sanityCheckInputParams(chars, offset);
+ 
+         // Date portion
+@@ -211,7 +211,7 @@ public class ITUParser implements DateTimeParser
+     }
+ 
+     public static int sanityCheckInputParams(String chars, int offset)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(10);
+         if (chars == null)
+         {
+             throw new NullPointerException("text cannot be null");
+@@ -339,7 +339,7 @@ public class ITUParser implements DateTimeParser
+     }
+ 
+     public static OffsetDateTime parseDateTime(final String chars, int offset)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(12);
+         final DateTime dateTime = parseLenient(chars, ParseConfig.DEFAULT, offset);
+         if (dateTime.includesGranularity(Field.SECOND))
+         {
+diff --git a/com/ethlo/time/internal/token/DigitsToken.java b/com/ethlo/time/internal/token/DigitsToken.java
+index 1674c7f..1b1dc26 100644
+--- a/com/ethlo/time/internal/token/DigitsToken.java
++++ b/com/ethlo/time/internal/token/DigitsToken.java
+@@ -48,7 +48,7 @@ public class DigitsToken implements DateTimeToken
+     }
+ 
+     public Field getField()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(38);
+         return field;
+     }
+ 
+diff --git a/com/ethlo/time/internal/token/FractionsToken.java b/com/ethlo/time/internal/token/FractionsToken.java
+index 9825403..94a47e5 100644
+--- a/com/ethlo/time/internal/token/FractionsToken.java
++++ b/com/ethlo/time/internal/token/FractionsToken.java
+@@ -55,7 +55,7 @@ public class FractionsToken implements DateTimeToken
+ 
+     @Override
+     public Field getField()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(40);
+         return Field.NANO;
+     }
+ }
+diff --git a/com/ethlo/time/internal/token/ZoneOffsetToken.java b/com/ethlo/time/internal/token/ZoneOffsetToken.java
+index a253872..68afd9b 100644
+--- a/com/ethlo/time/internal/token/ZoneOffsetToken.java
++++ b/com/ethlo/time/internal/token/ZoneOffsetToken.java
+@@ -84,7 +84,7 @@ public class ZoneOffsetToken implements DateTimeToken
+ 
+     @Override
+     public Field getField()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(42);
+         return Field.ZONE_OFFSET;
+     }
+ }
+diff --git a/com/ethlo/time/internal/util/ArrayUtils.java b/com/ethlo/time/internal/util/ArrayUtils.java
+index 68f7b70..a9ab1ac 100644
+--- a/com/ethlo/time/internal/util/ArrayUtils.java
++++ b/com/ethlo/time/internal/util/ArrayUtils.java
+@@ -27,7 +27,7 @@ public class ArrayUtils
+     }
+ 
+     public static char[] merge(char[] a, char[] b)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(14);
+         final char[] result = new char[a.length + b.length];
+         System.arraycopy(a, 0, result, 0, a.length);
+         System.arraycopy(b, 0, result, a.length, b.length);
+diff --git a/com/ethlo/time/internal/util/DateTimeMath.java b/com/ethlo/time/internal/util/DateTimeMath.java
+index af43cc2..6b7f0d2 100644
+--- a/com/ethlo/time/internal/util/DateTimeMath.java
++++ b/com/ethlo/time/internal/util/DateTimeMath.java
+@@ -26,7 +26,7 @@ package com.ethlo.time.internal.util;
+ public class DateTimeMath
+ {
+     public static long daysFromCivil(int y, final int m, final int d)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(16);
+         // Returns number of days since civil 1970-01-01.  Negative values indicate
+         //    days prior to 1970-01-01.
+         // Preconditions:  y-m-d represents a date in the civil (Gregorian) calendar
+diff --git a/com/ethlo/time/internal/util/DefaultLeapSecondHandler.java b/com/ethlo/time/internal/util/DefaultLeapSecondHandler.java
+index 746bd32..c50a69a 100644
+--- a/com/ethlo/time/internal/util/DefaultLeapSecondHandler.java
++++ b/com/ethlo/time/internal/util/DefaultLeapSecondHandler.java
+@@ -63,13 +63,13 @@ public class DefaultLeapSecondHandler implements LeapSecondHandler
+ 
+     @Override
+     public boolean isValidLeapSecondDate(YearMonth needle)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(44);
+         return leapSecondMonths.contains(needle);
+     }
+ 
+     @Override
+     public YearMonth getLastKnownLeapSecond()
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(46);
+         return lastLeapKnown;
+     }
+ }
+diff --git a/com/ethlo/time/internal/util/DurationFormatter.java b/com/ethlo/time/internal/util/DurationFormatter.java
+index e95679e..69dff30 100644
+--- a/com/ethlo/time/internal/util/DurationFormatter.java
++++ b/com/ethlo/time/internal/util/DurationFormatter.java
+@@ -32,7 +32,7 @@ public class DurationFormatter
+     private static final long SECONDS_IN_WEEK = 604800;
+ 
+     public static String normalizeDuration(Duration duration)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(48);
+         long seconds = duration.getSeconds();
+         int nanos = duration.getNanos();
+ 
+diff --git a/com/ethlo/time/internal/util/ErrorUtil.java b/com/ethlo/time/internal/util/ErrorUtil.java
+index 57e4272..68164ea 100644
+--- a/com/ethlo/time/internal/util/ErrorUtil.java
++++ b/com/ethlo/time/internal/util/ErrorUtil.java
+@@ -34,17 +34,17 @@ public class ErrorUtil
+     }
+ 
+     public static DateTimeParseException raiseUnexpectedCharacter(String chars, int index, char... expected)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(18);
+         throw new DateTimeParseException(String.format("Expected character %s at position %d, found %s: %s", Arrays.toString(expected), index + 1, chars.charAt(index), chars), chars, index);
+     }
+ 
+     public static DateTimeParseException raiseUnexpectedEndOfText(final String chars, final int offset)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(20);
+         throw new DateTimeParseException(String.format("Unexpected end of input: %s", chars), chars, offset);
+     }
+ 
+     public static DateTimeParseException raiseMissingGranularity(Field field, final String chars, final int offset)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(22);
+         throw new DateTimeParseException(String.format("Unexpected end of input, missing field %s: %s", field.name(), chars), chars, offset);
+     }
+ 
+diff --git a/com/ethlo/time/internal/util/LimitedCharArrayIntegerUtil.java b/com/ethlo/time/internal/util/LimitedCharArrayIntegerUtil.java
+index 88960a3..c5f8959 100644
+--- a/com/ethlo/time/internal/util/LimitedCharArrayIntegerUtil.java
++++ b/com/ethlo/time/internal/util/LimitedCharArrayIntegerUtil.java
+@@ -48,7 +48,7 @@ public final class LimitedCharArrayIntegerUtil
+     }
+ 
+     public static int parsePositiveInt(final String strNum, int startInclusive, int endExclusive)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(24);
+         int result = 0;
+         try
+         {
+diff --git a/com/ethlo/time/jmhbench/MutationSwitch.java b/com/ethlo/time/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..681c02d
+--- /dev/null
++++ b/com/ethlo/time/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.ethlo.time.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/ethlo/time/token/ConfigurableDateTimeParser.java b/com/ethlo/time/token/ConfigurableDateTimeParser.java
+index 7a924e0..57e8e59 100644
+--- a/com/ethlo/time/token/ConfigurableDateTimeParser.java
++++ b/com/ethlo/time/token/ConfigurableDateTimeParser.java
+@@ -61,13 +61,13 @@ public class ConfigurableDateTimeParser implements DateTimeParser
+      * @return A new parser instance
+      */
+     public static DateTimeParser of(DateTimeToken... tokens)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(3);
+         return new ConfigurableDateTimeParser(tokens);
+     }
+ 
+     @Override
+     public DateTime parse(String text, ParsePosition parsePosition)
+-    {
++    { com.ethlo.time.jmhbench.MutationSwitch.tick(6);
+         try
+         {
+             return doParse(text, parsePosition);

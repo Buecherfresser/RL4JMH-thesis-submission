@@ -1,0 +1,72 @@
+```
+package benchmark;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableFlatMap}.
+ *
+ * The benchmark measures the throughput (operations per second) of the flatMap operator
+ * under various configurations. It uses a simple synchronous source and inner observables
+ * to focus on the operator's internal overhead without external scheduling effects.
+ */
+@State(Scope.Thread)
+public class ObservableFlatMapBenchmark {
+
+    /** Number of items emitted by the outer source Observable. */
+    @Param({"1000"})
+    public int outerCount;
+
+    /** Number of items emitted by each inner Observable created by the mapper. */
+    @Param({"10"})
+    public int innerCount;
+
+    /** Maximum number of concurrent inner subscriptions. */
+    @Param({"1", "10", "100"})
+    public int maxConcurrency;
+
+    /** Whether errors from inner sources are delayed until all sources terminate. */
+    @Param({"true", "false"})
+    public boolean delayErrors;
+
+    /** Buffer size used by the operator for internal queues. */
+    @Param({"128", "1024"})
+    public int bufferSize;
+
+    /** The outer source Observable. */
+    private Observable<Integer> source;
+
+    /** Mapper function that creates an inner Observable for each upstream item. */
+    private Function<Integer, ObservableSource<Integer>> mapper;
+
+    /** Prepare the source and mapper once per trial. */
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Synchronous source to avoid scheduler overhead.
+        source = Observable.range(1, outerCount);
+
+        // Each outer item maps to a small synchronous inner Observable.
+        mapper = i -> Observable.range(1, innerCount);
+    }
+
+    /**
+     * Benchmark the flatMap operator in throughput mode.
+     *
+     * @param bh Blackhole to consume the emitted items and prevent dead-code elimination.
+     */
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    public void flatMapThroughput(Blackhole bh) {
+        source
+            .flatMap(mapper, delayErrors, maxConcurrency, bufferSize)
+            .subscribe(bh::consume);
+    }
+}
+```

@@ -1,0 +1,109 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.operators.maybe;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.BiPredicate;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeEqualSingle;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link MaybeEqualSingle}.
+ *
+ * The benchmark measures the throughput of the equality operator when both sources emit a value,
+ * when one source is empty, and when both are empty. The {@code BiPredicate} used is {@link Object#equals(Object)}.
+ *
+ * Best practices applied:
+ * - Use @State with Scope.Thread to avoid sharing mutable state across threads.
+ * - Pre‑create the Maybe sources and the BiPredicate in the @Setup method to exclude their construction from the measurement.
+ * - Use Single.blockingGet() to force the subscription to complete synchronously.
+ * - Blackhole is not required because the result is consumed by the benchmark method.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class MaybeEqualSingleBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        // Sources that emit a value
+        Maybe<Integer> justOne;
+        Maybe<Integer> justTwo;
+
+        // Sources that complete without a value
+        Maybe<Integer> empty;
+
+        // Equality predicate (Object.equals)
+        BiPredicate<Integer, Integer> predicate;
+
+        // The operator under test (created per iteration to avoid caching side‑effects)
+        MaybeEqualSingle<Integer> operator;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            justOne = Maybe.just(1);
+            justTwo = Maybe.just(2);
+            empty = Maybe.empty();
+            predicate = (a, b) -> a.equals(b);
+        }
+
+        /**
+         * Prepare the operator for the "both have value" scenario.
+         */
+        @Setup(Level.Invocation)
+        public void prepareBothValues() {
+            operator = new MaybeEqualSingle<>(justOne, justTwo, predicate);
+        }
+
+        /**
+         * Prepare the operator for the "one empty, one value" scenario.
+         */
+        @Setup(Level.Invocation)
+        public void prepareOneEmpty() {
+            operator = new MaybeEqualSingle<>(justOne, empty, predicate);
+        }
+
+        /**
+         * Prepare the operator for the "both empty" scenario.
+         */
+        @Setup(Level.Invocation)
+        public void prepareBothEmpty() {
+            operator = new MaybeEqualSingle<>(empty, empty, predicate);
+        }
+    }
+
+    /**
+     * Benchmark where both Maybe sources emit a value.
+     */
+    @Benchmark
+    public boolean bothValues(BenchmarkState state) {
+        // The operator is prepared in the corresponding @Setup(Level.Invocation) method.
+        Single<Boolean> result = state.operator;
+        return result.blockingGet();
+    }
+
+    /**
+     * Benchmark where the first Maybe emits a value and the second is empty.
+     */
+    @Benchmark
+    public boolean firstValueSecondEmpty(BenchmarkState state) {
+        Single<Boolean> result = state.operator;
+        return result.blockingGet();
+    }
+
+    /**
+     * Benchmark where both Maybes are empty.
+     */
+    @Benchmark
+    public boolean bothEmpty(BenchmarkState state) {
+        Single<Boolean> result = state.operator;
+        return result.blockingGet();
+    }
+}
+```

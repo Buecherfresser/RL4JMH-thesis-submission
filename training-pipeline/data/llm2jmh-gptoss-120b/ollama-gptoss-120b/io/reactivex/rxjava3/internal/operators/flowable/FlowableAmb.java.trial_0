@@ -1,0 +1,44 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableAmbBenchmark {
+
+    @Param({"2", "4", "8", "16"})
+    public int sourceCount;
+
+    private Flowable<Integer> ambFlowable;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        @SuppressWarnings("unchecked")
+        Flowable<Integer>[] sources = new Flowable[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            // Each source emits a fixed number of items on a separate thread.
+            sources[i] = Flowable.range(1, 1_000)
+                                 .subscribeOn(Schedulers.computation());
+        }
+        ambFlowable = Flowable.ambArray(sources);
+    }
+
+    @Benchmark
+    public void ambThroughput(Blackhole bh) throws Exception {
+        TestSubscriber<Integer> ts = new TestSubscriber<>();
+        ambFlowable.subscribe(ts);
+        // Wait for the flowable to complete to ensure fair measurement.
+        ts.awaitDone(5, TimeUnit.SECONDS);
+        // Consume the emitted items to prevent dead‑code elimination.
+        bh.consume(ts.values());
+    }
+}
+```

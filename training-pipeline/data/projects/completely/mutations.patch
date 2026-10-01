@@ -1,0 +1,606 @@
+diff --git a/com/miguelfonseca/completely/Aggregator.java b/com/miguelfonseca/completely/Aggregator.java
+index b9979e1..78cbe46 100644
+--- a/com/miguelfonseca/completely/Aggregator.java
++++ b/com/miguelfonseca/completely/Aggregator.java
+@@ -56,7 +56,7 @@ public class Aggregator<T>
+      * @throws NullPointerException if {@code elements} is null or contains a null element;
+      */
+     public boolean addAll(Collection<ScoredObject<T>> elements)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(1);
+         checkPointer(elements != null);
+         boolean result = false;
+         for (ScoredObject<T> element : elements)
+@@ -81,7 +81,7 @@ public class Aggregator<T>
+      * Returns {@code true} if no elements exist.
+      */
+     public boolean isEmpty()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(6);
+         return scores.isEmpty();
+     }
+ 
+@@ -91,7 +91,7 @@ public class Aggregator<T>
+      * @throws NullPointerException if {@code element} is null;
+      */
+     public boolean retain(ScoredObject<T> element)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(11);
+         return retainAll(Arrays.asList(element));
+     }
+ 
+@@ -101,7 +101,7 @@ public class Aggregator<T>
+      * @throws NullPointerException if {@code elements} is null or contains a null element;
+      */
+     public boolean retainAll(Collection<ScoredObject<T>> elements)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(16);
+         checkPointer(elements != null);
+         // Intersect
+         Collection<T> set = new HashSet<>();
+@@ -132,7 +132,7 @@ public class Aggregator<T>
+      * Returns the number of elements.
+      */
+     public int size()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(21);
+         return scores.size();
+     }
+ 
+@@ -140,7 +140,7 @@ public class Aggregator<T>
+      * Returns a {@link List} of all objects scored, sorted according to the default comparator.
+      */
+     public List<T> values()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(25);
+         List<ScoredObject<T>> list = new ArrayList<>();
+         for (Entry<T, Double> entry : scores.entrySet())
+         {
+diff --git a/com/miguelfonseca/completely/AutocompleteEngine.java b/com/miguelfonseca/completely/AutocompleteEngine.java
+index 283063b..7278773 100644
+--- a/com/miguelfonseca/completely/AutocompleteEngine.java
++++ b/com/miguelfonseca/completely/AutocompleteEngine.java
+@@ -58,7 +58,7 @@ public final class AutocompleteEngine<T extends Indexable>
+      * @throws NullPointerException if {@code elements} is null or contains a null element;
+      */
+     public boolean addAll(Collection<T> elements)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(28);
+         checkPointer(elements != null);
+         boolean result = false;
+         for (T element : elements)
+@@ -99,7 +99,7 @@ public final class AutocompleteEngine<T extends Indexable>
+      * @throws NullPointerException if {@code elements} is null or contains a null element;
+      */
+     public boolean removeAll(Collection<T> elements)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(31);
+         checkPointer(elements != null);
+         boolean result = false;
+         for (T element : elements)
+@@ -125,7 +125,7 @@ public final class AutocompleteEngine<T extends Indexable>
+      * @throws NullPointerException if {@code query} is null;
+      */
+     public List<T> search(String query)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(33);
+         checkPointer(query != null);
+         read.lock();
+         try
+@@ -160,7 +160,7 @@ public final class AutocompleteEngine<T extends Indexable>
+      * @throws IllegalArgumentException if {@code limit} is negative;
+      */
+     public List<T> search(String query, int limit)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(35);
+         checkArgument(limit >= 0);
+         List<T> result = search(query);
+         if (result.size() > limit)
+@@ -188,7 +188,7 @@ public final class AutocompleteEngine<T extends Indexable>
+             {
+                 @Override
+                 public Collection<String> apply(Collection<String> input)
+-                {
++                { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(37);
+                     return new ArrayList<>(input);
+                 }
+             };
+@@ -198,7 +198,7 @@ public final class AutocompleteEngine<T extends Indexable>
+          * Set the analyzer.
+          */
+         public Builder<T> setAnalyzer(Analyzer analyzer)
+-        {
++        { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(39);
+             this.analyzer = analyzer;
+             return this;
+         }
+diff --git a/com/miguelfonseca/completely/AutocompleteEngineSample.java b/com/miguelfonseca/completely/AutocompleteEngineSample.java
+index 64e1706..cfe3e12 100644
+--- a/com/miguelfonseca/completely/AutocompleteEngineSample.java
++++ b/com/miguelfonseca/completely/AutocompleteEngineSample.java
+@@ -12,7 +12,7 @@ public final class AutocompleteEngineSample
+     private AutocompleteEngineSample() { }
+ 
+     public static void main(String[] args)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(41);
+         AutocompleteEngine<SampleRecord> engine = new AutocompleteEngine.Builder<SampleRecord>()
+             .setIndex(new SampleAdapter())
+             .setAnalyzers(new LowerCaseTransformer(), new WordTokenizer())
+diff --git a/com/miguelfonseca/completely/common/Precondition.java b/com/miguelfonseca/completely/common/Precondition.java
+index aa68aef..47ce4fd 100644
+--- a/com/miguelfonseca/completely/common/Precondition.java
++++ b/com/miguelfonseca/completely/common/Precondition.java
+@@ -17,7 +17,7 @@ public final class Precondition
+      * @throws IllegalArgumentException if {@code expression} is false;
+      */
+     public static void checkArgument(boolean expression)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(7);
+         if (!expression)
+         {
+             throw new IllegalArgumentException();
+@@ -30,7 +30,7 @@ public final class Precondition
+      * @throws IllegalArgumentException if {@code expression} is false;
+      */
+     public static void checkArgument(boolean expression, @Nullable String message)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(12);
+         if (!expression)
+         {
+             throw new IllegalArgumentException(message);
+@@ -43,7 +43,7 @@ public final class Precondition
+      * @throws ArithmeticException if {@code expression} is false;
+      */
+     public static void checkArithmetic(boolean expression)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(17);
+         if (!expression)
+         {
+             throw new ArithmeticException();
+@@ -56,7 +56,7 @@ public final class Precondition
+      * @throws ArithmeticException if {@code expression} is false;
+      */
+     public static void checkArithmetic(boolean expression, @Nullable String message)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(22);
+         if (!expression)
+         {
+             throw new ArithmeticException(message);
+@@ -69,7 +69,7 @@ public final class Precondition
+      * @throws NoSuchElementException if {@code expression} is false;
+      */
+     public static void checkElement(boolean expression)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(26);
+         if (!expression)
+         {
+             throw new NoSuchElementException();
+@@ -82,7 +82,7 @@ public final class Precondition
+      * @throws NoSuchElementException if {@code expression} is false;
+      */
+     public static void checkElement(boolean expression, @Nullable String message)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(29);
+         if (!expression)
+         {
+             throw new NoSuchElementException(message);
+diff --git a/com/miguelfonseca/completely/common/Strings.java b/com/miguelfonseca/completely/common/Strings.java
+index cb54afd..5bb8098 100644
+--- a/com/miguelfonseca/completely/common/Strings.java
++++ b/com/miguelfonseca/completely/common/Strings.java
+@@ -14,7 +14,7 @@ public final class Strings
+      * Returns the longest common prefix length.
+      */
+     public static int getCommonPrefixLength(@Nullable String a, @Nullable String b)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(2);
+         if (a == null || b == null)
+         {
+             return 0;
+diff --git a/com/miguelfonseca/completely/data/SampleRecord.java b/com/miguelfonseca/completely/data/SampleRecord.java
+index 5fc180c..cd49988 100644
+--- a/com/miguelfonseca/completely/data/SampleRecord.java
++++ b/com/miguelfonseca/completely/data/SampleRecord.java
+@@ -14,12 +14,12 @@ public class SampleRecord implements Indexable
+ 
+     @Override
+     public List<String> getFields()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(3);
+         return Arrays.asList(name);
+     }
+ 
+     public String getName()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(8);
+         return name;
+     }
+ }
+diff --git a/com/miguelfonseca/completely/data/ScoredObject.java b/com/miguelfonseca/completely/data/ScoredObject.java
+index e06fcda..802adf2 100644
+--- a/com/miguelfonseca/completely/data/ScoredObject.java
++++ b/com/miguelfonseca/completely/data/ScoredObject.java
+@@ -26,7 +26,7 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>>
+      * Returns the decorated object.
+      */
+     public T getObject()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(13);
+         return object;
+     }
+ 
+@@ -34,13 +34,13 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>>
+      * Returns the score.
+      */
+     public double getScore()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(18);
+         return score;
+     }
+ 
+     @Override
+     public int compareTo(ScoredObject<T> other)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(23);
+         checkPointer(other != null);
+         return Double.compare(other.score, score);
+     }
+diff --git a/com/miguelfonseca/completely/jmhbench/MutationSwitch.java b/com/miguelfonseca/completely/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..b587d22
+--- /dev/null
++++ b/com/miguelfonseca/completely/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.miguelfonseca.completely.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/miguelfonseca/completely/text/analyze/ChainedAnalyzer.java b/com/miguelfonseca/completely/text/analyze/ChainedAnalyzer.java
+index fc0a06c..bb7d4b8 100644
+--- a/com/miguelfonseca/completely/text/analyze/ChainedAnalyzer.java
++++ b/com/miguelfonseca/completely/text/analyze/ChainedAnalyzer.java
+@@ -23,7 +23,7 @@ public class ChainedAnalyzer extends Analyzer
+ 
+     @Override
+     public Collection<String> apply(Collection<String> input)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(30);
+         checkPointer(input != null);
+         Collection<String> result = new ArrayList<>(input);
+         for (Analyzer analyzer : chain)
+diff --git a/com/miguelfonseca/completely/text/analyze/filter/LengthFilter.java b/com/miguelfonseca/completely/text/analyze/filter/LengthFilter.java
+index 233cb2c..891265c 100644
+--- a/com/miguelfonseca/completely/text/analyze/filter/LengthFilter.java
++++ b/com/miguelfonseca/completely/text/analyze/filter/LengthFilter.java
+@@ -25,7 +25,7 @@ public class LengthFilter extends Analyzer
+ 
+     @Override
+     public Collection<String> apply(Collection<String> input)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(32);
+         checkPointer(input != null);
+         List<String> result = new LinkedList<>();
+         for (String text : input)
+diff --git a/com/miguelfonseca/completely/text/analyze/filter/NullFilter.java b/com/miguelfonseca/completely/text/analyze/filter/NullFilter.java
+index 24b3883..6bef0fa 100644
+--- a/com/miguelfonseca/completely/text/analyze/filter/NullFilter.java
++++ b/com/miguelfonseca/completely/text/analyze/filter/NullFilter.java
+@@ -14,7 +14,7 @@ public class NullFilter extends Analyzer
+ {
+     @Override
+     public Collection<String> apply(Collection<String> input)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(34);
+         checkPointer(input != null);
+         List<String> result = new LinkedList<>();
+         for (String text : input)
+diff --git a/com/miguelfonseca/completely/text/analyze/tokenize/QGramTokenizer.java b/com/miguelfonseca/completely/text/analyze/tokenize/QGramTokenizer.java
+index 86bbcd3..eefa755 100644
+--- a/com/miguelfonseca/completely/text/analyze/tokenize/QGramTokenizer.java
++++ b/com/miguelfonseca/completely/text/analyze/tokenize/QGramTokenizer.java
+@@ -28,7 +28,7 @@ public class QGramTokenizer extends Analyzer
+ 
+     @Override
+     public Collection<String> apply(Collection<String> input)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(36);
+         checkPointer(input != null);
+         List<String> result = new LinkedList<>();
+         for (String text : input)
+diff --git a/com/miguelfonseca/completely/text/analyze/tokenize/WordTokenizer.java b/com/miguelfonseca/completely/text/analyze/tokenize/WordTokenizer.java
+index 8493fed..580768e 100644
+--- a/com/miguelfonseca/completely/text/analyze/tokenize/WordTokenizer.java
++++ b/com/miguelfonseca/completely/text/analyze/tokenize/WordTokenizer.java
+@@ -25,7 +25,7 @@ public class WordTokenizer extends Analyzer
+ 
+     @Override
+     public Collection<String> apply(Collection<String> input)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(38);
+         checkPointer(input != null);
+         List<String> result = new LinkedList<>();
+         for (String text : input)
+diff --git a/com/miguelfonseca/completely/text/analyze/transform/DiacriticsTransformer.java b/com/miguelfonseca/completely/text/analyze/transform/DiacriticsTransformer.java
+index 74d588c..aafa104 100644
+--- a/com/miguelfonseca/completely/text/analyze/transform/DiacriticsTransformer.java
++++ b/com/miguelfonseca/completely/text/analyze/transform/DiacriticsTransformer.java
+@@ -15,7 +15,7 @@ public class DiacriticsTransformer extends Analyzer
+ {
+     @Override
+     public Collection<String> apply(Collection<String> input)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(40);
+         checkPointer(input != null);
+         List<String> result = new LinkedList<>();
+         for (String text : input)
+diff --git a/com/miguelfonseca/completely/text/analyze/transform/LowerCaseTransformer.java b/com/miguelfonseca/completely/text/analyze/transform/LowerCaseTransformer.java
+index 2842656..4fb47e5 100644
+--- a/com/miguelfonseca/completely/text/analyze/transform/LowerCaseTransformer.java
++++ b/com/miguelfonseca/completely/text/analyze/transform/LowerCaseTransformer.java
+@@ -36,7 +36,7 @@ public class LowerCaseTransformer extends Analyzer
+ 
+     @Override
+     public Collection<String> apply(Collection<String> input)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(42);
+         checkPointer(input != null);
+         List<String> result = new LinkedList<>();
+         for (String text : input)
+diff --git a/com/miguelfonseca/completely/text/index/HashMultiMap.java b/com/miguelfonseca/completely/text/index/HashMultiMap.java
+index d1faa92..d7c5c6b 100644
+--- a/com/miguelfonseca/completely/text/index/HashMultiMap.java
++++ b/com/miguelfonseca/completely/text/index/HashMultiMap.java
+@@ -29,13 +29,13 @@ public class HashMultiMap<V> extends AbstractIndex<V>
+ 
+     @Override
+     public void clear()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(4);
+         map.clear();
+     }
+ 
+     @Override
+     public Set<V> getAll(String key)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(9);
+         checkPointer(key != null);
+         Set<V> value = map.get(key);
+         if (value != null)
+@@ -47,13 +47,13 @@ public class HashMultiMap<V> extends AbstractIndex<V>
+ 
+     @Override
+     public boolean isEmpty()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(14);
+         return map.isEmpty();
+     }
+ 
+     @Override
+     public boolean putAll(String key, Collection<V> values)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(19);
+         checkPointer(key != null);
+         checkPointer(values != null);
+         Set<V> value = map.get(key);
+@@ -67,7 +67,7 @@ public class HashMultiMap<V> extends AbstractIndex<V>
+ 
+     @Override
+     public boolean removeAll(Collection<V> values)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(24);
+         checkPointer(values != null);
+         boolean result = false;
+         for (Iterator<Set<V>> iterator = map.values().iterator(); iterator.hasNext();)
+@@ -87,7 +87,7 @@ public class HashMultiMap<V> extends AbstractIndex<V>
+ 
+     @Override
+     public Set<V> removeAll(String key)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(27);
+         checkPointer(key != null);
+         Set<V> value = map.remove(key);
+         return value != null ? value : new HashSet<>();
+diff --git a/com/miguelfonseca/completely/text/index/PatriciaTrie.java b/com/miguelfonseca/completely/text/index/PatriciaTrie.java
+index 446d9c2..6247e75 100644
+--- a/com/miguelfonseca/completely/text/index/PatriciaTrie.java
++++ b/com/miguelfonseca/completely/text/index/PatriciaTrie.java
+@@ -38,13 +38,13 @@ public class PatriciaTrie<V> extends AbstractIndex<V> implements FuzzyIndex<V>
+ 
+     @Override
+     public void clear()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(43);
+         root = new Node();
+     }
+ 
+     @Override
+     public Set<V> getAll(String key)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(44);
+         checkPointer(key != null);
+         Node node = find(root, key);
+         if (node != null)
+@@ -56,7 +56,7 @@ public class PatriciaTrie<V> extends AbstractIndex<V> implements FuzzyIndex<V>
+ 
+     @Override
+     public Set<ScoredObject<V>> getAny(String fragment)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(45);
+         checkPointer(fragment != null);
+         Set<ScoredObject<V>> result = new HashSet<>();
+         for (FuzzyMatch match : findAll(root, new EqualityAutomaton(fragment), ""))
+@@ -68,7 +68,7 @@ public class PatriciaTrie<V> extends AbstractIndex<V> implements FuzzyIndex<V>
+ 
+     @Override
+     public Set<ScoredObject<V>> getAny(Automaton matcher)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(46);
+         checkPointer(matcher != null);
+         Set<ScoredObject<V>> result = new HashSet<>();
+         for (FuzzyMatch match : findAll(root, matcher, ""))
+@@ -80,13 +80,13 @@ public class PatriciaTrie<V> extends AbstractIndex<V> implements FuzzyIndex<V>
+ 
+     @Override
+     public boolean isEmpty()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(47);
+         return root.isEmpty();
+     }
+ 
+     @Override
+     public boolean putAll(String key, Collection<V> values)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(48);
+         checkPointer(key != null);
+         checkPointer(values != null);
+         return putAll(root, key, values);
+diff --git a/com/miguelfonseca/completely/text/match/EditDistanceAutomaton.java b/com/miguelfonseca/completely/text/match/EditDistanceAutomaton.java
+index 4c72707..25347db 100644
+--- a/com/miguelfonseca/completely/text/match/EditDistanceAutomaton.java
++++ b/com/miguelfonseca/completely/text/match/EditDistanceAutomaton.java
+@@ -46,7 +46,7 @@ public final class EditDistanceAutomaton extends AbstractAutomaton
+ 
+     @Override
+     public double getScore()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(49);
+         int length = Math.max(patternLength, wordLength);
+         if (length == 0)
+         {
+@@ -57,7 +57,7 @@ public final class EditDistanceAutomaton extends AbstractAutomaton
+ 
+     @Override
+     public boolean isWordAccepted()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(50);
+         return getDistance() <= threshold;
+     }
+ 
+diff --git a/com/miguelfonseca/completely/util/ArraySet.java b/com/miguelfonseca/completely/util/ArraySet.java
+index 15301c6..e463ab7 100644
+--- a/com/miguelfonseca/completely/util/ArraySet.java
++++ b/com/miguelfonseca/completely/util/ArraySet.java
+@@ -43,14 +43,14 @@ public class ArraySet<E> extends AbstractSet<E>
+ 
+     @Override
+     public boolean addAll(Collection<? extends E> elements)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(5);
+         checkPointer(elements != null);
+         return addAll(elements.toArray());
+     }
+ 
+     @Override
+     public Iterator<E> iterator()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(10);
+         return new Itr();
+     }
+ 
+@@ -72,7 +72,7 @@ public class ArraySet<E> extends AbstractSet<E>
+ 
+     @Override
+     public boolean removeAll(Collection<?> elements)
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(15);
+         checkPointer(elements != null);
+         int length = array.length;
+         if (length > 0)
+@@ -100,7 +100,7 @@ public class ArraySet<E> extends AbstractSet<E>
+ 
+     @Override
+     public int size()
+-    {
++    { com.miguelfonseca.completely.jmhbench.MutationSwitch.tick(20);
+         return array.length;
+     }
+ 

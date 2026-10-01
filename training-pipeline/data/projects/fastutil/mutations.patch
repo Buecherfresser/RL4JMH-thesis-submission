@@ -1,0 +1,535 @@
+diff --git a/it/unimi/dsi/fastutil/HashCommon.java b/it/unimi/dsi/fastutil/HashCommon.java
+index a1f9b2b..962eb93 100644
+--- a/it/unimi/dsi/fastutil/HashCommon.java
++++ b/it/unimi/dsi/fastutil/HashCommon.java
+@@ -39,7 +39,7 @@ public class HashCommon {
+ 	 * @param x an integer.
+ 	 * @return a hash value with good avalanching properties.
+ 	 */
+-	public static int murmurHash3(int x) {
++	public static int murmurHash3(int x) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(12);
+ 		x ^= x >>> 16;
+ 		x *= 0x85ebca6b;
+ 		x ^= x >>> 13;
+@@ -77,7 +77,7 @@ public class HashCommon {
+ 	 * @return a hash value obtained by mixing the bits of {@code x}.
+ 	 * @see #invMix(int)
+ 	 */
+-	public static int mix(final int x) {
++	public static int mix(final int x) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(13);
+ 		final int h = x * INT_PHI;
+ 		return h ^ (h >>> 16);
+ 	}
+@@ -156,7 +156,7 @@ public class HashCommon {
+ 	 * @param x an integer smaller than or equal to 2<sup>30</sup>.
+ 	 * @return the least power of two greater than or equal to the specified value.
+ 	 */
+-	public static int nextPowerOfTwo(final int x) {
++	public static int nextPowerOfTwo(final int x) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(14);
+ 		return 1 << (32 - Integer.numberOfLeadingZeros(x - 1));
+ 	}
+ 
+@@ -211,7 +211,7 @@ public class HashCommon {
+ 	 * @return the minimum possible size for a backing array.
+ 	 * @throws IllegalArgumentException if the necessary size is larger than 2<sup>30</sup>.
+ 	 */
+-	public static int arraySize(final int expected, final float f) {
++	public static int arraySize(final int expected, final float f) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(15);
+ 		/*
+ 		 * The cast to double is essential to avoid a precision
+ 		 * loss due to a cast to float before the call to Math.ceil.
+diff --git a/it/unimi/dsi/fastutil/doubles/DoubleArrayList.java b/it/unimi/dsi/fastutil/doubles/DoubleArrayList.java
+index 0ab6db9..79c24b2 100644
+--- a/it/unimi/dsi/fastutil/doubles/DoubleArrayList.java
++++ b/it/unimi/dsi/fastutil/doubles/DoubleArrayList.java
+@@ -329,7 +329,7 @@ public class DoubleArrayList extends AbstractDoubleList implements RandomAccess,
+ 	}
+ 
+ 	@Override
+-	public boolean add(final double k) {
++	public boolean add(final double k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(24);
+ 		grow(size + 1);
+ 		a[size++] = k;
+ 		assert size <= a.length;
+@@ -337,13 +337,13 @@ public class DoubleArrayList extends AbstractDoubleList implements RandomAccess,
+ 	}
+ 
+ 	@Override
+-	public double getDouble(final int index) {
++	public double getDouble(final int index) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(25);
+ 		if (index >= size) throw new IndexOutOfBoundsException("Index (" + index + ") is greater than or equal to list size (" + size + ")");
+ 		return a[index];
+ 	}
+ 
+ 	@Override
+-	public int indexOf(final double k) {
++	public int indexOf(final double k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(26);
+ 		final double[] a = this.a;
+ 		for (int i = 0; i < size; i++) if ((Double.doubleToLongBits(k) == Double.doubleToLongBits(a[i]))) return i;
+ 		return -1;
+diff --git a/it/unimi/dsi/fastutil/ints/Int2IntOpenHashMap.java b/it/unimi/dsi/fastutil/ints/Int2IntOpenHashMap.java
+index a740081..13addb3 100644
+--- a/it/unimi/dsi/fastutil/ints/Int2IntOpenHashMap.java
++++ b/it/unimi/dsi/fastutil/ints/Int2IntOpenHashMap.java
+@@ -253,7 +253,7 @@ public class Int2IntOpenHashMap extends AbstractInt2IntMap implements java.io.Se
+ 	}
+ 
+ 	@Override
+-	public int put(final int k, final int v) {
++	public int put(final int k, final int v) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(8);
+ 		final int pos = find(k);
+ 		if (pos < 0) {
+ 			insert(-pos - 1, k, v);
+@@ -335,7 +335,7 @@ public class Int2IntOpenHashMap extends AbstractInt2IntMap implements java.io.Se
+ 
+ 	@Override
+ 
+-	public int remove(final int k) {
++	public int remove(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(11);
+ 		if (((k) == (0))) {
+ 			if (containsNullKey) return removeNullEntry();
+ 			return defRetValue;
+@@ -354,7 +354,7 @@ public class Int2IntOpenHashMap extends AbstractInt2IntMap implements java.io.Se
+ 
+ 	@Override
+ 
+-	public int get(final int k) {
++	public int get(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(9);
+ 		if (((k) == (0))) return containsNullKey ? value[n] : defRetValue;
+ 		int curr;
+ 		final int[] key = this.key;
+@@ -371,7 +371,7 @@ public class Int2IntOpenHashMap extends AbstractInt2IntMap implements java.io.Se
+ 
+ 	@Override
+ 
+-	public boolean containsKey(final int k) {
++	public boolean containsKey(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(10);
+ 		if (((k) == (0))) return containsNullKey;
+ 		int curr;
+ 		final int[] key = this.key;
+diff --git a/it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.java b/it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.java
+index a418531..ab3a79e 100644
+--- a/it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.java
++++ b/it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.java
+@@ -257,7 +257,7 @@ public class Int2ObjectOpenHashMap<V> extends AbstractInt2ObjectMap<V> implement
+ 	}
+ 
+ 	@Override
+-	public V put(final int k, final V v) {
++	public V put(final int k, final V v) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(42);
+ 		final int pos = find(k);
+ 		if (pos < 0) {
+ 			insert(-pos - 1, k, v);
+@@ -299,7 +299,7 @@ public class Int2ObjectOpenHashMap<V> extends AbstractInt2ObjectMap<V> implement
+ 
+ 	@Override
+ 
+-	public V remove(final int k) {
++	public V remove(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(45);
+ 		if (((k) == (0))) {
+ 			if (containsNullKey) return removeNullEntry();
+ 			return defRetValue;
+@@ -318,7 +318,7 @@ public class Int2ObjectOpenHashMap<V> extends AbstractInt2ObjectMap<V> implement
+ 
+ 	@Override
+ 
+-	public V get(final int k) {
++	public V get(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(43);
+ 		if (((k) == (0))) return containsNullKey ? value[n] : defRetValue;
+ 		int curr;
+ 		final int[] key = this.key;
+@@ -335,7 +335,7 @@ public class Int2ObjectOpenHashMap<V> extends AbstractInt2ObjectMap<V> implement
+ 
+ 	@Override
+ 
+-	public boolean containsKey(final int k) {
++	public boolean containsKey(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(44);
+ 		if (((k) == (0))) return containsNullKey;
+ 		int curr;
+ 		final int[] key = this.key;
+diff --git a/it/unimi/dsi/fastutil/ints/IntArrayFIFOQueue.java b/it/unimi/dsi/fastutil/ints/IntArrayFIFOQueue.java
+index 88d1c32..75398ac 100644
+--- a/it/unimi/dsi/fastutil/ints/IntArrayFIFOQueue.java
++++ b/it/unimi/dsi/fastutil/ints/IntArrayFIFOQueue.java
+@@ -81,7 +81,7 @@ public class IntArrayFIFOQueue implements IntPriorityQueue, Serializable {
+ 	}
+ 
+ 	@Override
+-	public int dequeueInt() {
++	public int dequeueInt() { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(37);
+ 		if (start == end) throw new NoSuchElementException();
+ 		final int t = array[start];
+ 		if (++start == length) start = 0;
+@@ -127,7 +127,7 @@ public class IntArrayFIFOQueue implements IntPriorityQueue, Serializable {
+ 	}
+ 
+ 	@Override
+-	public void enqueue(int x) {
++	public void enqueue(int x) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(36);
+ 		array[end++] = x;
+ 		if (end == length) end = 0;
+ 		if (end == start) expand();
+@@ -177,7 +177,7 @@ public class IntArrayFIFOQueue implements IntPriorityQueue, Serializable {
+ 	}
+ 
+ 	@Override
+-	public int size() {
++	public int size() { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(38);
+ 		final int apparentLength = end - start;
+ 		return apparentLength >= 0 ? apparentLength : length + apparentLength;
+ 	}
+diff --git a/it/unimi/dsi/fastutil/ints/IntArrayList.java b/it/unimi/dsi/fastutil/ints/IntArrayList.java
+index 67bfe3d..7982609 100644
+--- a/it/unimi/dsi/fastutil/ints/IntArrayList.java
++++ b/it/unimi/dsi/fastutil/ints/IntArrayList.java
+@@ -329,7 +329,7 @@ public class IntArrayList extends AbstractIntList implements RandomAccess, Clone
+ 	}
+ 
+ 	@Override
+-	public boolean add(final int k) {
++	public boolean add(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(1);
+ 		grow(size + 1);
+ 		a[size++] = k;
+ 		assert size <= a.length;
+@@ -337,13 +337,13 @@ public class IntArrayList extends AbstractIntList implements RandomAccess, Clone
+ 	}
+ 
+ 	@Override
+-	public int getInt(final int index) {
++	public int getInt(final int index) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(2);
+ 		if (index >= size) throw new IndexOutOfBoundsException("Index (" + index + ") is greater than or equal to list size (" + size + ")");
+ 		return a[index];
+ 	}
+ 
+ 	@Override
+-	public int indexOf(final int k) {
++	public int indexOf(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(3);
+ 		final int[] a = this.a;
+ 		for (int i = 0; i < size; i++) if (((k) == (a[i]))) return i;
+ 		return -1;
+@@ -357,7 +357,7 @@ public class IntArrayList extends AbstractIntList implements RandomAccess, Clone
+ 	}
+ 
+ 	@Override
+-	public int removeInt(final int index) {
++	public int removeInt(final int index) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(4);
+ 		if (index >= size) throw new IndexOutOfBoundsException("Index (" + index + ") is greater than or equal to list size (" + size + ")");
+ 		final int[] a = this.a;
+ 		final int old = a[index];
+diff --git a/it/unimi/dsi/fastutil/ints/IntHeapPriorityQueue.java b/it/unimi/dsi/fastutil/ints/IntHeapPriorityQueue.java
+index c3387c6..68b5c12 100644
+--- a/it/unimi/dsi/fastutil/ints/IntHeapPriorityQueue.java
++++ b/it/unimi/dsi/fastutil/ints/IntHeapPriorityQueue.java
+@@ -190,14 +190,14 @@ public class IntHeapPriorityQueue implements IntPriorityQueue, java.io.Serializa
+ 	}
+ 
+ 	@Override
+-	public void enqueue(int x) {
++	public void enqueue(int x) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(16);
+ 		if (size == heap.length) heap = IntArrays.grow(heap, size + 1);
+ 		heap[size++] = x;
+ 		IntHeaps.upHeap(heap, size, size - 1, c);
+ 	}
+ 
+ 	@Override
+-	public int dequeueInt() {
++	public int dequeueInt() { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(17);
+ 		if (size == 0) throw new NoSuchElementException();
+ 		final int result = heap[0];
+ 		heap[0] = heap[--size];
+diff --git a/it/unimi/dsi/fastutil/ints/IntLinkedOpenHashSet.java b/it/unimi/dsi/fastutil/ints/IntLinkedOpenHashSet.java
+index ace3f49..2571d21 100644
+--- a/it/unimi/dsi/fastutil/ints/IntLinkedOpenHashSet.java
++++ b/it/unimi/dsi/fastutil/ints/IntLinkedOpenHashSet.java
+@@ -433,7 +433,7 @@ public class IntLinkedOpenHashSet extends AbstractIntSortedSet implements java.i
+ 	}
+ 
+ 	@Override
+-	public boolean add(final int k) {
++	public boolean add(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(30);
+ 		int pos;
+ 		if (((k) == (0))) {
+ 			if (containsNull) return false;
+@@ -508,7 +508,7 @@ public class IntLinkedOpenHashSet extends AbstractIntSortedSet implements java.i
+ 	}
+ 
+ 	@Override
+-	public boolean remove(final int k) {
++	public boolean remove(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(32);
+ 		if (((k) == (0))) {
+ 			if (containsNull) return removeNullEntry();
+ 			return false;
+@@ -526,7 +526,7 @@ public class IntLinkedOpenHashSet extends AbstractIntSortedSet implements java.i
+ 	}
+ 
+ 	@Override
+-	public boolean contains(final int k) {
++	public boolean contains(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(31);
+ 		if (((k) == (0))) return containsNull;
+ 		int curr;
+ 		final int[] key = this.key;
+diff --git a/it/unimi/dsi/fastutil/ints/IntOpenHashSet.java b/it/unimi/dsi/fastutil/ints/IntOpenHashSet.java
+index 6afacab..0d23510 100644
+--- a/it/unimi/dsi/fastutil/ints/IntOpenHashSet.java
++++ b/it/unimi/dsi/fastutil/ints/IntOpenHashSet.java
+@@ -388,7 +388,7 @@ public class IntOpenHashSet extends AbstractIntSet implements java.io.Serializab
+ 	}
+ 
+ 	@Override
+-	public boolean add(final int k) {
++	public boolean add(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(5);
+ 		int pos;
+ 		if (((k) == (0))) {
+ 			if (containsNull) return false;
+@@ -450,7 +450,7 @@ public class IntOpenHashSet extends AbstractIntSet implements java.io.Serializab
+ 	}
+ 
+ 	@Override
+-	public boolean remove(final int k) {
++	public boolean remove(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(7);
+ 		if (((k) == (0))) {
+ 			if (containsNull) return removeNullEntry();
+ 			return false;
+@@ -468,7 +468,7 @@ public class IntOpenHashSet extends AbstractIntSet implements java.io.Serializab
+ 	}
+ 
+ 	@Override
+-	public boolean contains(final int k) {
++	public boolean contains(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(6);
+ 		if (((k) == (0))) return containsNull;
+ 		int curr;
+ 		final int[] key = this.key;
+diff --git a/it/unimi/dsi/fastutil/ints/IntRBTreeSet.java b/it/unimi/dsi/fastutil/ints/IntRBTreeSet.java
+index 7730970..c7cb0b2 100644
+--- a/it/unimi/dsi/fastutil/ints/IntRBTreeSet.java
++++ b/it/unimi/dsi/fastutil/ints/IntRBTreeSet.java
+@@ -259,7 +259,7 @@ public class IntRBTreeSet extends AbstractIntSortedSet implements java.io.Serial
+ 	}
+ 
+ 	@Override
+-	public boolean add(final int k) {
++	public boolean add(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(33);
+ 
+ 		int maxDepth = 0;
+ 		if (tree == null) { // The case of the empty tree is treated separately.
+@@ -385,7 +385,7 @@ public class IntRBTreeSet extends AbstractIntSortedSet implements java.io.Serial
+ 	}
+ 
+ 	@Override
+-	public boolean remove(final int k) {
++	public boolean remove(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(35);
+ 		if (tree == null) return false;
+ 		Entry p = tree;
+ 		int cmp;
+@@ -592,7 +592,7 @@ public class IntRBTreeSet extends AbstractIntSortedSet implements java.io.Serial
+ 	}
+ 
+ 	@Override
+-	public boolean contains(final int k) {
++	public boolean contains(final int k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(34);
+ 		return findKey(k) != null;
+ 	}
+ 
+diff --git a/it/unimi/dsi/fastutil/jmhbench/MutationSwitch.java b/it/unimi/dsi/fastutil/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..e421efb
+--- /dev/null
++++ b/it/unimi/dsi/fastutil/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package it.unimi.dsi.fastutil.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 45;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/it/unimi/dsi/fastutil/longs/LongArrayList.java b/it/unimi/dsi/fastutil/longs/LongArrayList.java
+index 590e440..8c700ed 100644
+--- a/it/unimi/dsi/fastutil/longs/LongArrayList.java
++++ b/it/unimi/dsi/fastutil/longs/LongArrayList.java
+@@ -329,7 +329,7 @@ public class LongArrayList extends AbstractLongList implements RandomAccess, Clo
+ 	}
+ 
+ 	@Override
+-	public boolean add(final long k) {
++	public boolean add(final long k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(21);
+ 		grow(size + 1);
+ 		a[size++] = k;
+ 		assert size <= a.length;
+@@ -337,13 +337,13 @@ public class LongArrayList extends AbstractLongList implements RandomAccess, Clo
+ 	}
+ 
+ 	@Override
+-	public long getLong(final int index) {
++	public long getLong(final int index) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(22);
+ 		if (index >= size) throw new IndexOutOfBoundsException("Index (" + index + ") is greater than or equal to list size (" + size + ")");
+ 		return a[index];
+ 	}
+ 
+ 	@Override
+-	public int indexOf(final long k) {
++	public int indexOf(final long k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(23);
+ 		final long[] a = this.a;
+ 		for (int i = 0; i < size; i++) if (((k) == (a[i]))) return i;
+ 		return -1;
+diff --git a/it/unimi/dsi/fastutil/objects/Object2IntOpenHashMap.java b/it/unimi/dsi/fastutil/objects/Object2IntOpenHashMap.java
+index 51f71a1..255b6f0 100644
+--- a/it/unimi/dsi/fastutil/objects/Object2IntOpenHashMap.java
++++ b/it/unimi/dsi/fastutil/objects/Object2IntOpenHashMap.java
+@@ -256,7 +256,7 @@ public class Object2IntOpenHashMap<K> extends AbstractObject2IntMap<K> implement
+ 	}
+ 
+ 	@Override
+-	public int put(final K k, final int v) {
++	public int put(final K k, final int v) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(27);
+ 		final int pos = find(k);
+ 		if (pos < 0) {
+ 			insert(-pos - 1, k, v);
+@@ -357,7 +357,7 @@ public class Object2IntOpenHashMap<K> extends AbstractObject2IntMap<K> implement
+ 
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+-	public int getInt(final Object k) {
++	public int getInt(final Object k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(28);
+ 		if ((((K)k) == null)) return containsNullKey ? value[n] : defRetValue;
+ 		K curr;
+ 		final K[] key = this.key;
+@@ -374,7 +374,7 @@ public class Object2IntOpenHashMap<K> extends AbstractObject2IntMap<K> implement
+ 
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+-	public boolean containsKey(final Object k) {
++	public boolean containsKey(final Object k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(29);
+ 		if ((((K)k) == null)) return containsNullKey;
+ 		K curr;
+ 		final K[] key = this.key;
+diff --git a/it/unimi/dsi/fastutil/objects/ObjectArrayList.java b/it/unimi/dsi/fastutil/objects/ObjectArrayList.java
+index 222b0c8..33cc7fa 100644
+--- a/it/unimi/dsi/fastutil/objects/ObjectArrayList.java
++++ b/it/unimi/dsi/fastutil/objects/ObjectArrayList.java
+@@ -370,7 +370,7 @@ public class ObjectArrayList<K> extends AbstractObjectList<K> implements RandomA
+ 	}
+ 
+ 	@Override
+-	public boolean add(final K k) {
++	public boolean add(final K k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(18);
+ 		grow(size + 1);
+ 		a[size++] = k;
+ 		assert size <= a.length;
+@@ -378,13 +378,13 @@ public class ObjectArrayList<K> extends AbstractObjectList<K> implements RandomA
+ 	}
+ 
+ 	@Override
+-	public K get(final int index) {
++	public K get(final int index) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(19);
+ 		if (index >= size) throw new IndexOutOfBoundsException("Index (" + index + ") is greater than or equal to list size (" + size + ")");
+ 		return a[index];
+ 	}
+ 
+ 	@Override
+-	public int indexOf(final Object k) {
++	public int indexOf(final Object k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(20);
+ 		final Object[] a = this.a;
+ 		for (int i = 0; i < size; i++) if (java.util.Objects.equals(k, a[i])) return i;
+ 		return -1;
+diff --git a/it/unimi/dsi/fastutil/objects/ObjectOpenHashSet.java b/it/unimi/dsi/fastutil/objects/ObjectOpenHashSet.java
+index 7aa6eaa..2264f1d 100644
+--- a/it/unimi/dsi/fastutil/objects/ObjectOpenHashSet.java
++++ b/it/unimi/dsi/fastutil/objects/ObjectOpenHashSet.java
+@@ -355,7 +355,7 @@ public class ObjectOpenHashSet<K> extends AbstractObjectSet<K> implements java.i
+ 	}
+ 
+ 	@Override
+-	public boolean add(final K k) {
++	public boolean add(final K k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(39);
+ 		int pos;
+ 		if (((k) == null)) {
+ 			if (containsNull) return false;
+@@ -451,7 +451,7 @@ public class ObjectOpenHashSet<K> extends AbstractObjectSet<K> implements java.i
+ 
+ 	@SuppressWarnings("unchecked")
+ 	@Override
+-	public boolean remove(final Object k) {
++	public boolean remove(final Object k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(41);
+ 		if ((((K)k) == null)) {
+ 			if (containsNull) return removeNullEntry();
+ 			return false;
+@@ -470,7 +470,7 @@ public class ObjectOpenHashSet<K> extends AbstractObjectSet<K> implements java.i
+ 
+ 	@SuppressWarnings("unchecked")
+ 	@Override
+-	public boolean contains(final Object k) {
++	public boolean contains(final Object k) { it.unimi.dsi.fastutil.jmhbench.MutationSwitch.tick(40);
+ 		if ((((K)k) == null)) return containsNull;
+ 		K curr;
+ 		final K[] key = this.key;

@@ -1,0 +1,67 @@
+```java
+package io.reactivex.rxjava3.internal.operators.completable.jmh;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.operators.completable.CompletableCache;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link CompletableCache}.
+ *
+ * Measures the throughput of subscribing observers to a freshly created CompletableCache.
+ * The benchmark uses a source that completes immediately to focus on the caching logic
+ * (add/remove of observers, atomic state handling) rather than the work of the source.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Benchmark)
+public class CompletableCacheBenchmark {
+
+    /**
+     * A no‑op CompletableObserver used in the benchmark.
+     */
+    static final class NoOpObserver implements CompletableObserver, Disposable {
+        @Override public void onSubscribe(Disposable d) { /* no‑op */ }
+        @Override public void onError(Throwable e) { /* no‑op */ }
+        @Override public void onComplete() { /* no‑op */ }
+        @Override public void dispose() { /* no‑op */ }
+        @Override public boolean isDisposed() { return false; }
+    }
+
+    /** Source that completes immediately. */
+    private CompletableSource source;
+
+    /** Reusable observer instance (stateless). */
+    private NoOpObserver observer;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        source = Completable.complete();
+        observer = new NoOpObserver();
+    }
+
+    /**
+     * Benchmark method that creates a new {@link CompletableCache},
+     * subscribes a no‑op observer and discards the result.
+     *
+     * The method returns the {@link Disposable} from the subscription to prevent
+     * dead‑code elimination; the Blackhole consumes it.
+     */
+    @Benchmark
+    public void subscribeCache(Blackhole bh) {
+        CompletableCache cache = new CompletableCache(source);
+        cache.subscribe(observer);
+        // The cache does not expose the Disposable directly, but the observer
+        // receives it via onSubscribe. The NoOpObserver ignores it, so we just
+        // pass a dummy value to the Blackhole to keep the JIT from optimizing away the call.
+        bh.consume(cache);
+    }
+}
+```

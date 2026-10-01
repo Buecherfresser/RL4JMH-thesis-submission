@@ -1,0 +1,75 @@
+```
+package io.reactivex.rxjava3.internal.operators.single;
+
+import org.openjdk.jmh.annotations.*;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.internal.operators.single.SingleTimeInterval;
+import io.reactivex.rxjava3.schedulers.Timed;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link SingleTimeInterval}.
+ *
+ * Measures the throughput of the operator when applied to a simple {@link Single}
+ * that emits a constant value. Two variants are benchmarked:
+ *   - with the start timestamp captured (start = true)
+ *   - without the start timestamp (start = false)
+ *
+ * Best‑practice JMH settings are used:
+ *   - warm‑up iterations to let the JIT stabilize
+ *   - measurement iterations for reliable results
+ *   - multiple forks to reduce JVM‑specific noise
+ *   - @State(Scope.Thread) to avoid sharing mutable state between threads
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3)
+@State(Scope.Thread)
+public class SingleTimeIntervalBenchmark {
+
+    /** Simple source Single that emits a constant integer. */
+    private Single<Integer> source;
+
+    /** Operator instance that records the start time. */
+    private Single<Timed<Integer>> withStart;
+
+    /** Operator instance that does not record the start time. */
+    private Single<Timed<Integer>> withoutStart;
+
+    /**
+     * Set up the benchmark state. This method is executed once per thread
+     * before any benchmark iteration.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Single.just(1);
+        // Use a high‑resolution time unit to expose any overhead of the operator.
+        withStart = new SingleTimeInterval<>(source, TimeUnit.NANOSECONDS, Schedulers.computation(), true);
+        withoutStart = new SingleTimeInterval<>(source, TimeUnit.NANOSECONDS, Schedulers.computation(), false);
+    }
+
+    /**
+     * Benchmark the operator when the start timestamp is captured.
+     *
+     * @return the {@link Timed} result; returning the value prevents dead‑code elimination.
+     */
+    @Benchmark
+    public Timed<Integer> withStart() {
+        return withStart.blockingGet();
+    }
+
+    /**
+     * Benchmark the operator when the start timestamp is not captured.
+     *
+     * @return the {@link Timed} result; returning the value prevents dead‑code elimination.
+     */
+    @Benchmark
+    public Timed<Integer> withoutStart() {
+        return withoutStart.blockingGet();
+    }
+}
+```

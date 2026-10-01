@@ -1,0 +1,138 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link MaybeUsing} operator.
+ *
+ * <p>Measures the throughput (operations per second) of subscribing to a {@code MaybeUsing}
+ * instance under two different disposal strategies: eager and non‑eager.</p>
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@code @State} for shared immutable data.</li>
+ *   <li>Use {@code @Param} to toggle the {@code eager} flag.</li>
+ *   <li>Pre‑create the {@code MaybeUsing} instance in {@code @Setup(Level.Trial)} to avoid
+ *       measuring construction overhead.</li>
+ *   <li>Consume the result with {@link TestObserver} to prevent dead‑code elimination.</li>
+ *   <li>Configure warm‑up, measurement, forks and time units for reliable results.</li>
+ * </ul>
+ * </p>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, warmups = 1)
+@State(Scope.Benchmark)
+public class MaybeUsingBenchmark {
+
+    /**
+     * Toggle eager disposal (true) vs lazy disposal (false).
+     */
+    @Param({ "true", "false" })
+    public boolean eager;
+
+    /**
+     * Number of times the resource supplier is invoked per subscription (for sanity).
+     */
+    private static final AtomicInteger RESOURCE_COUNTER = new AtomicInteger();
+
+    /**
+     * The {@code MaybeUsing} instance under test.
+     */
+    private Maybe<Integer> maybeUsing;
+
+    /**
+     * Simple resource type used by the benchmark.
+     */
+    static final class DummyResource {
+
+        final int id;
+
+        DummyResource(int id) {
+            this.id = id;
+        }
+    }
+
+    /**
+     * A no‑op disposer that just increments a counter (simulating work).
+     */
+    private static final Consumer<DummyResource> DISPOSER = r -> {
+        // Simulate minimal work to avoid being completely optimized away.
+        if (r.id == -1) {
+            throw new IllegalStateException();
+        }
+        RESOURCE_COUNTER.incrementAndGet();
+    };
+
+    /**
+     * Supplier that creates a new {@link DummyResource}.
+     */
+    private static final Supplier<DummyResource> RESOURCE_SUPPLIER = () -> new DummyResource(RESOURCE_COUNTER.incrementAndGet());
+
+    /**
+     * Source supplier that returns a successful {@code Maybe} emitting a constant value.
+     */
+    private static final Function<DummyResource, MaybeSource<Integer>> SOURCE_SUPPLIER = r -> Maybe.just(42);
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Build the MaybeUsing operator once per trial; construction cost is not part of the benchmark.
+        maybeUsing = new MaybeUsing<>(RESOURCE_SUPPLIER, SOURCE_SUPPLIER, DISPOSER, eager);
+    }
+
+    @Benchmark
+    public void subscribeAndConsume(TestObserver<Integer> observer) {
+        // Subscribe a fresh TestObserver for each operation to avoid state leakage.
+        maybeUsing.subscribe(observer);
+        // Ensure the observer has received the terminal event; this blocks only for the
+        // duration of the Maybe (which is immediate in this benchmark).
+        observer.awaitDone(1, TimeUnit.SECONDS);
+        // Reset the observer for the next iteration.
+        observer.clear();
+    }
+
+    /**
+     * JMH provides a convenient way to inject a fresh TestObserver per iteration.
+     */
+    @State(Scope.Thread)
+    public static class TestObserver<T> extends io.reactivex.rxjava3.observers.TestObserver<T> {
+        // No additional code needed; the class exists solely to give JMH a per‑thread instance.
+    }
+}

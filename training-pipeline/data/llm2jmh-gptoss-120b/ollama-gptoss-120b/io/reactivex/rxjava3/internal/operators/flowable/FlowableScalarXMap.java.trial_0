@@ -1,0 +1,87 @@
+```
+package io.reactivex.rxjava3.benchmark;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableScalarXMap;
+import io.reactivex.rxjava3.functions.Function;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for the scalarXMap optimization in RxJava.
+ *
+ * The benchmark measures throughput (operations per second) of the scalar
+ * optimized path versus a regular Flowable.map() path.
+ *
+ * Best‑practice notes:
+ * - Use @State with Scope.Thread to avoid sharing mutable state across threads.
+ * - Blackhole consumes the emitted items to prevent dead‑code elimination.
+ * - Warmup and measurement iterations are kept short but sufficient for JIT
+ *   stabilization; adjust as needed for more precise results.
+ * - Forking isolates JVM state between runs.
+ */
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableScalarXMapBenchmark {
+
+    /** Simple integer value used as the scalar source. */
+    private int value;
+
+    /** Mapper that returns a scalar Publisher (Flowable.just). */
+    private Function<Integer, Flowable<Integer>> scalarMapper;
+
+    /** Mapper that returns a non‑scalar Publisher (Flowable.fromArray). */
+    private Function<Integer, Flowable<Integer>> nonScalarMapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        value = 42;
+        scalarMapper = v -> Flowable.just(v + 1);
+        // Using fromArray forces the non‑scalar path (no Supplier implementation)
+        nonScalarMapper = v -> Flowable.fromArray(v + 1);
+    }
+
+    /**
+     * Benchmark the scalarXMap optimization path.
+     *
+     * The FlowableScalarXMap.scalarXMap method creates a Flowable that, when
+     * subscribed to, should take the fast scalar route because both the source
+     * value and the mapper result implement {@code Supplier}.
+     */
+    @Benchmark
+    public void scalarXMap(Blackhole bh) {
+        Flowable<Integer> flowable = FlowableScalarXMap.scalarXMap(value, scalarMapper);
+        flowable.blockingSubscribe(bh::consume);
+    }
+
+    /**
+     * Benchmark a regular Flowable.map() path for comparison.
+     *
+     * This uses Flowable.just(value) followed by a standard map operator,
+     * which also ends up on the scalar path but goes through the regular
+     * operator chain, providing a baseline.
+     */
+    @Benchmark
+    public void regularMap(Blackhole bh) {
+        Flowable<Integer> flowable = Flowable.just(value).map(v -> v + 1);
+        flowable.blockingSubscribe(bh::consume);
+    }
+
+    /**
+     * Benchmark a non‑scalar mapping scenario where the mapper returns a
+     * Publisher that does not implement {@code Supplier}. This forces the
+     * fallback path inside {@code scalarXMap}.
+     */
+    @Benchmark
+    public void scalarXMapNonScalar(Blackhole bh) {
+        Flowable<Integer> flowable = FlowableScalarXMap.scalarXMap(value, nonScalarMapper);
+        flowable.blockingSubscribe(bh::consume);
+    }
+}
+```

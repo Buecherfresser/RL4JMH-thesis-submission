@@ -1,0 +1,579 @@
+diff --git a/com/linkedin/paldb/api/Configuration.java b/com/linkedin/paldb/api/Configuration.java
+index 1298da4..71a67d7 100644
+--- a/com/linkedin/paldb/api/Configuration.java
++++ b/com/linkedin/paldb/api/Configuration.java
+@@ -165,7 +165,7 @@ public class Configuration implements Serializable {
+    * @param defaultValue default value if key not found
+    * @return value or <code>defaultValue</code> if not found
+    */
+-  public boolean getBoolean(String key, boolean defaultValue) {
++  public boolean getBoolean(String key, boolean defaultValue) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(1);
+     if (containsKey(key)) {
+       return "true".equalsIgnoreCase(get(key));
+     } else {
+@@ -180,7 +180,7 @@ public class Configuration implements Serializable {
+    * @throws java.lang.IllegalArgumentException if the key is not found
+    * @return value
+    */
+-  public boolean getBoolean(String key) {
++  public boolean getBoolean(String key) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(4);
+     if (containsKey(key)) {
+       return "true".equalsIgnoreCase(get(key));
+     } else {
+@@ -195,7 +195,7 @@ public class Configuration implements Serializable {
+    * @param defaultValue default value if key not found
+    * @return value or <code>defaultValue</code> if not found
+    */
+-  public short getShort(String key, short defaultValue) {
++  public short getShort(String key, short defaultValue) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(7);
+     if (containsKey(key)) {
+       return Short.parseShort(get(key));
+     } else {
+@@ -210,7 +210,7 @@ public class Configuration implements Serializable {
+    * @throws java.lang.IllegalArgumentException if the key is not found
+    * @return value
+    */
+-  public short getShort(String key) {
++  public short getShort(String key) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(10);
+     if (containsKey(key)) {
+       return Short.parseShort(get(key));
+     } else {
+diff --git a/com/linkedin/paldb/api/PalDB.java b/com/linkedin/paldb/api/PalDB.java
+index 35feb30..9ba2bf9 100644
+--- a/com/linkedin/paldb/api/PalDB.java
++++ b/com/linkedin/paldb/api/PalDB.java
+@@ -42,7 +42,7 @@ public final class PalDB {
+    * @param file a PalDB store file
+    * @return a store reader
+    */
+-  public static StoreReader createReader(File file) {
++  public static StoreReader createReader(File file) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(13);
+     return StoreImpl.createReader(file, newConfiguration());
+   }
+ 
+@@ -55,7 +55,7 @@ public final class PalDB {
+    * @param config configuration
+    * @return a store reader
+    */
+-  public static StoreReader createReader(File file, Configuration config) {
++  public static StoreReader createReader(File file, Configuration config) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(16);
+     return StoreImpl.createReader(file, config);
+   }
+ 
+@@ -69,7 +69,7 @@ public final class PalDB {
+    * @param config configuration
+    * @return a store reader
+    */
+-  public static StoreReader createReader(InputStream stream, Configuration config) {
++  public static StoreReader createReader(InputStream stream, Configuration config) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(19);
+     return StoreImpl.createReader(stream, config);
+   }
+ 
+@@ -81,7 +81,7 @@ public final class PalDB {
+    * @param file location of the output file
+    * @return a store writer
+    */
+-  public static StoreWriter createWriter(File file) {
++  public static StoreWriter createWriter(File file) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(22);
+     return StoreImpl.createWriter(file, newConfiguration());
+   }
+ 
+diff --git a/com/linkedin/paldb/impl/ReaderImpl.java b/com/linkedin/paldb/impl/ReaderImpl.java
+index ded364a..208d97e 100644
+--- a/com/linkedin/paldb/impl/ReaderImpl.java
++++ b/com/linkedin/paldb/impl/ReaderImpl.java
+@@ -72,7 +72,7 @@ public final class ReaderImpl implements StoreReader {
+   }
+ 
+   @Override
+-  public void close() {
++  public void close() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(2);
+     checkOpen();
+     try {
+       LOGGER.log(Level.INFO, "Closing reader storage");
+@@ -84,18 +84,18 @@ public final class ReaderImpl implements StoreReader {
+   }
+ 
+   @Override
+-  public long size() {
++  public long size() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(5);
+     checkOpen();
+     return storage.getKeyCount();
+   }
+ 
+   @Override
+-  public Configuration getConfiguration() {
++  public Configuration getConfiguration() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(8);
+     return config;
+   }
+ 
+   @Override
+-  public File getFile() {
++  public File getFile() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(11);
+     return file;
+   }
+ 
+diff --git a/com/linkedin/paldb/impl/ReaderIterable.java b/com/linkedin/paldb/impl/ReaderIterable.java
+index 4497152..21fe654 100644
+--- a/com/linkedin/paldb/impl/ReaderIterable.java
++++ b/com/linkedin/paldb/impl/ReaderIterable.java
+@@ -42,7 +42,7 @@ public final class ReaderIterable<K, V> implements Iterable<Map.Entry<K, V>> {
+   }
+ 
+   @Override
+-  public Iterator<Map.Entry<K, V>> iterator() {
++  public Iterator<Map.Entry<K, V>> iterator() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(14);
+     return new ReaderIterator<K, V>(byteIterable.iterator(), serialization);
+   }
+ 
+@@ -115,17 +115,17 @@ public final class ReaderIterable<K, V> implements Iterable<Map.Entry<K, V>> {
+       }
+ 
+       @Override
+-      public K getKey() {
++      public K getKey() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(17);
+         return key;
+       }
+ 
+       @Override
+-      public V getValue() {
++      public V getValue() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(20);
+         return val;
+       }
+ 
+       @Override
+-      public Object setValue(Object value) {
++      public Object setValue(Object value) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(23);
+         throw new UnsupportedOperationException("Not supported.");
+       }
+     }
+diff --git a/com/linkedin/paldb/impl/ReaderKeyIterable.java b/com/linkedin/paldb/impl/ReaderKeyIterable.java
+index 505615a..2e26d8a 100644
+--- a/com/linkedin/paldb/impl/ReaderKeyIterable.java
++++ b/com/linkedin/paldb/impl/ReaderKeyIterable.java
+@@ -43,7 +43,7 @@ public final class ReaderKeyIterable<K> implements Iterable<K> {
+   }
+ 
+   @Override
+-  public Iterator<K> iterator() {
++  public Iterator<K> iterator() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(25);
+     return new ReaderKeyIterator<K>(byteIterable.iterator(), serialization);
+   }
+ 
+diff --git a/com/linkedin/paldb/impl/Serializers.java b/com/linkedin/paldb/impl/Serializers.java
+index 4601a7a..65031c7 100644
+--- a/com/linkedin/paldb/impl/Serializers.java
++++ b/com/linkedin/paldb/impl/Serializers.java
+@@ -59,7 +59,7 @@ public final class Serializers implements Serializable {
+    *
+    * @param serializer serializer
+    */
+-  public synchronized void registerSerializer(Serializer serializer) {
++  public synchronized void registerSerializer(Serializer serializer) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(27);
+     Class objClass = getSerializerType(serializer);
+     if (!serializers.containsKey(objClass)) {
+       int index = COUNTER.getAndIncrement();
+@@ -81,7 +81,7 @@ public final class Serializers implements Serializable {
+    * @param cls object class
+    * @return serializer instance or null if not found
+    */
+-  public Serializer getSerializer(Class cls) {
++  public Serializer getSerializer(Class cls) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(29);
+     SerializerWrapper w = getSerializerWrapper(cls);
+     if (w != null) {
+       return w.serializer;
+diff --git a/com/linkedin/paldb/impl/StorageCache.java b/com/linkedin/paldb/impl/StorageCache.java
+index d40ba39..9b69c48 100644
+--- a/com/linkedin/paldb/impl/StorageCache.java
++++ b/com/linkedin/paldb/impl/StorageCache.java
+@@ -77,7 +77,7 @@ public class StorageCache {
+     cache = new LinkedHashMap(config.getInt(Configuration.CACHE_INITIAL_CAPACITY),
+         config.getFloat(Configuration.CACHE_LOAD_FACTOR), true) {
+       @Override
+-      protected boolean removeEldestEntry(Map.Entry eldest) {
++      protected boolean removeEldestEntry(Map.Entry eldest) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(31);
+         boolean res = currentWeight > maxWeight;
+         if (res) {
+           Object key = eldest.getKey();
+@@ -214,7 +214,7 @@ public class StorageCache {
+    *
+    * @param maxWeight max weight
+    */
+-  public void setMaxWeight(long maxWeight) {
++  public void setMaxWeight(long maxWeight) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(33);
+     this.maxWeight = maxWeight;
+   }
+ 
+@@ -223,7 +223,7 @@ public class StorageCache {
+    *
+    * @return cache size
+    */
+-  public int size() {
++  public int size() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(35);
+     return cache.size();
+   }
+ 
+@@ -232,7 +232,7 @@ public class StorageCache {
+    *
+    * @return weight
+    */
+-  public long getWeight() {
++  public long getWeight() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(37);
+     return currentWeight;
+   }
+ 
+diff --git a/com/linkedin/paldb/impl/StorageReader.java b/com/linkedin/paldb/impl/StorageReader.java
+index 2a1e22a..70b156c 100644
+--- a/com/linkedin/paldb/impl/StorageReader.java
++++ b/com/linkedin/paldb/impl/StorageReader.java
+@@ -280,7 +280,7 @@ public class StorageReader implements Iterable<Map.Entry<byte[], byte[]>> {
+ 
+   //Close the reader channel
+   public void close()
+-      throws IOException {
++      throws IOException { com.linkedin.paldb.jmhbench.MutationSwitch.tick(38);
+     channel.close();
+     mappedFile.close();
+     indexBuffer = null;
+@@ -290,7 +290,7 @@ public class StorageReader implements Iterable<Map.Entry<byte[], byte[]>> {
+     System.gc();
+   }
+ 
+-  public int getKeyCount() {
++  public int getKeyCount() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(39);
+     return keyCount;
+   }
+ 
+@@ -383,11 +383,11 @@ public class StorageReader implements Iterable<Map.Entry<byte[], byte[]>> {
+   }
+ 
+   @Override
+-  public Iterator<Map.Entry<byte[], byte[]>> iterator() {
++  public Iterator<Map.Entry<byte[], byte[]>> iterator() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(40);
+     return new StorageIterator(true);
+   }
+ 
+-  public Iterator<Map.Entry<byte[], byte[]>> keys() {
++  public Iterator<Map.Entry<byte[], byte[]>> keys() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(41);
+     return new StorageIterator(false);
+   }
+ 
+diff --git a/com/linkedin/paldb/impl/StorageSerialization.java b/com/linkedin/paldb/impl/StorageSerialization.java
+index 97afdd3..82d45dd 100644
+--- a/com/linkedin/paldb/impl/StorageSerialization.java
++++ b/com/linkedin/paldb/impl/StorageSerialization.java
+@@ -61,7 +61,7 @@ public final class StorageSerialization {
+    * @throws IOException if an io error occurs
+    */
+   public byte[] serializeKey(Object key)
+-      throws IOException {
++      throws IOException { com.linkedin.paldb.jmhbench.MutationSwitch.tick(42);
+     if (key == null) {
+       throw new NullPointerException();
+     }
+@@ -77,7 +77,7 @@ public final class StorageSerialization {
+    * @throws IOException if an io error occurs
+    */
+   public void serializeKey(Object key, DataOutput dataOutput)
+-      throws IOException {
++      throws IOException { com.linkedin.paldb.jmhbench.MutationSwitch.tick(43);
+     serializeObject(key, dataOutput, false);
+   }
+ 
+@@ -89,7 +89,7 @@ public final class StorageSerialization {
+    * @throws IOException if an io error occurs
+    */
+   public byte[] serializeValue(Object value)
+-      throws IOException {
++      throws IOException { com.linkedin.paldb.jmhbench.MutationSwitch.tick(44);
+ 
+     serializeObject(value, dataInputOutput.reset(), compression);
+     return dataInputOutput.toByteArray();
+@@ -103,7 +103,7 @@ public final class StorageSerialization {
+    * @throws IOException if an io error occurs
+    */
+   public void serializeValue(Object value, DataOutput dataOutput)
+-      throws IOException {
++      throws IOException { com.linkedin.paldb.jmhbench.MutationSwitch.tick(45);
+     serializeObject(value, dataOutput, compression);
+   }
+ 
+diff --git a/com/linkedin/paldb/impl/StorageWriter.java b/com/linkedin/paldb/impl/StorageWriter.java
+index 69437ea..870f209 100644
+--- a/com/linkedin/paldb/impl/StorageWriter.java
++++ b/com/linkedin/paldb/impl/StorageWriter.java
+@@ -147,7 +147,7 @@ public class StorageWriter {
+   }
+ 
+   public void close()
+-      throws IOException {
++      throws IOException { com.linkedin.paldb.jmhbench.MutationSwitch.tick(46);
+     // Close the data and index streams
+     for (DataOutputStream dos : dataStreams) {
+       if (dos != null) {
+diff --git a/com/linkedin/paldb/impl/StoreImpl.java b/com/linkedin/paldb/impl/StoreImpl.java
+index 6ac350b..6f18a72 100644
+--- a/com/linkedin/paldb/impl/StoreImpl.java
++++ b/com/linkedin/paldb/impl/StoreImpl.java
+@@ -36,7 +36,7 @@ public final class StoreImpl {
+   private StoreImpl() {
+   }
+ 
+-  public static StoreReader createReader(File file, Configuration config) {
++  public static StoreReader createReader(File file, Configuration config) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(47);
+     if (file == null || config == null) {
+       throw new NullPointerException();
+     }
+@@ -44,7 +44,7 @@ public final class StoreImpl {
+     return new ReaderImpl(config, file);
+   }
+ 
+-  public static StoreReader createReader(InputStream stream, Configuration config) {
++  public static StoreReader createReader(InputStream stream, Configuration config) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(48);
+     if (stream == null || config == null) {
+       throw new NullPointerException();
+     }
+@@ -58,7 +58,7 @@ public final class StoreImpl {
+     }
+   }
+ 
+-  public static StoreWriter createWriter(File file, Configuration config) {
++  public static StoreWriter createWriter(File file, Configuration config) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(49);
+     if (file == null || config == null) {
+       throw new NullPointerException();
+     }
+@@ -78,7 +78,7 @@ public final class StoreImpl {
+     }
+   }
+ 
+-  public static StoreWriter createWriter(OutputStream stream, Configuration config) {
++  public static StoreWriter createWriter(OutputStream stream, Configuration config) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(50);
+     if (stream == null || config == null) {
+       throw new NullPointerException();
+     }
+diff --git a/com/linkedin/paldb/jmhbench/MutationSwitch.java b/com/linkedin/paldb/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c0b9da0
+--- /dev/null
++++ b/com/linkedin/paldb/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.linkedin.paldb.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/linkedin/paldb/utils/DataInputOutput.java b/com/linkedin/paldb/utils/DataInputOutput.java
+index 83aae98..2018bda 100644
+--- a/com/linkedin/paldb/utils/DataInputOutput.java
++++ b/com/linkedin/paldb/utils/DataInputOutput.java
+@@ -40,21 +40,21 @@ public final class DataInputOutput implements DataInput, DataOutput, ObjectInput
+     count = data.length;
+   }
+ 
+-  public byte[] getBuf() {
++  public byte[] getBuf() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(21);
+     return buf;
+   }
+ 
+-  public int getPos() {
++  public int getPos() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(24);
+     return pos;
+   }
+ 
+-  public DataInputOutput reset() {
++  public DataInputOutput reset() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(26);
+     pos = 0;
+     count = 0;
+     return this;
+   }
+ 
+-  public void resetForReading() {
++  public void resetForReading() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(28);
+     count = pos;
+     pos = 0;
+   }
+diff --git a/com/linkedin/paldb/utils/FormatVersion.java b/com/linkedin/paldb/utils/FormatVersion.java
+index ff251dd..07b820b 100644
+--- a/com/linkedin/paldb/utils/FormatVersion.java
++++ b/com/linkedin/paldb/utils/FormatVersion.java
+@@ -32,7 +32,7 @@ public enum FormatVersion {
+    * @param fv a format version
+    * @return true if <code>fv</code> is equals to <code>this</code> enum
+    */
+-  public boolean is(FormatVersion fv) {
++  public boolean is(FormatVersion fv) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(30);
+     return fv.equals(this);
+   }
+ 
+@@ -41,7 +41,7 @@ public enum FormatVersion {
+    *
+    * @return format version byte representation
+    */
+-  public byte[] getBytes() {
++  public byte[] getBytes() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(32);
+     try {
+       DataInputOutput dio = new DataInputOutput();
+       dio.writeUTF(this.name());
+@@ -58,7 +58,7 @@ public enum FormatVersion {
+    * @param bytes byte representation
+    * @return format version or null if not found
+    */
+-  public static FormatVersion fromBytes(byte[] bytes) {
++  public static FormatVersion fromBytes(byte[] bytes) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(34);
+     String version = null;
+     try {
+       byte[] withSize = new byte[bytes.length + 1];
+@@ -81,7 +81,7 @@ public enum FormatVersion {
+    *
+    * @return prefix byte representation
+    */
+-  public static byte[] getPrefixBytes() {
++  public static byte[] getPrefixBytes() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(36);
+     try {
+       DataInputOutput dio = new DataInputOutput();
+       dio.writeUTF("PALDB");
+diff --git a/com/linkedin/paldb/utils/HashUtils.java b/com/linkedin/paldb/utils/HashUtils.java
+index bcc707b..e6364e8 100644
+--- a/com/linkedin/paldb/utils/HashUtils.java
++++ b/com/linkedin/paldb/utils/HashUtils.java
+@@ -31,7 +31,7 @@ public class HashUtils {
+    * @param bytes bytes to hash
+    * @return hash
+    */
+-  public int hash(byte[] bytes) {
++  public int hash(byte[] bytes) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(3);
+     hash.reset();
+     hash.update(bytes);
+     return hash.getIntValue() & 0x7fffffff;
+@@ -120,11 +120,11 @@ public class HashUtils {
+     }
+ 
+     @Override
+-    public long getValue() {
++    public long getValue() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(6);
+       return 0xFFFFFFFFL & getIntValue();
+     }
+ 
+-    public int getIntValue() {
++    public int getIntValue() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(9);
+       int finished = h1;
+       if (partialK1Pos > 0) {
+         int k1 = partialK1 * C1;
+@@ -145,7 +145,7 @@ public class HashUtils {
+     }
+ 
+     @Override
+-    public void reset() {
++    public void reset() { com.linkedin.paldb.jmhbench.MutationSwitch.tick(12);
+       h1 = seed;
+       length = 0;
+       partialK1Pos = 0;
+diff --git a/com/linkedin/paldb/utils/TempUtils.java b/com/linkedin/paldb/utils/TempUtils.java
+index 5ea361e..1588729 100644
+--- a/com/linkedin/paldb/utils/TempUtils.java
++++ b/com/linkedin/paldb/utils/TempUtils.java
+@@ -38,7 +38,7 @@ public final class TempUtils {
+    * @param prefix folder prefix
+    * @return temporary folder
+    */
+-  public static File createTempDir(String prefix) {
++  public static File createTempDir(String prefix) { com.linkedin.paldb.jmhbench.MutationSwitch.tick(15);
+     File baseDir = new File(System.getProperty("java.io.tmpdir"));
+     String baseName = prefix + System.currentTimeMillis() + "-";
+ 
+@@ -62,7 +62,7 @@ public final class TempUtils {
+    * @throws IOException if an IO error occurs
+    */
+   public static File copyIntoTempFile(String fileName, InputStream inputStream)
+-      throws IOException {
++      throws IOException { com.linkedin.paldb.jmhbench.MutationSwitch.tick(18);
+     BufferedInputStream bufferedStream = inputStream instanceof BufferedInputStream ? (BufferedInputStream) inputStream
+         : new BufferedInputStream(inputStream);
+     File destFile = null;

@@ -1,0 +1,92 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.MaybeObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeFromCallable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link MaybeFromCallable}.
+ *
+ * Measures the throughput of subscribing to a {@code MaybeFromCallable}
+ * that emits a constant value. The benchmark follows JMH best practices:
+ * <ul>
+ *   <li>Proper warm‑up and measurement iterations.</li>
+ *   <li>Separate {@code @State} for thread‑local data.</li>
+ *   <li>Use of {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Forking to isolate JVM optimisations.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class MaybeFromCallableBenchmark {
+
+    /** Callable that always returns the same integer. */
+    private Callable<Integer> constantCallable;
+
+    /** The Maybe operator under test. */
+    private MaybeFromCallable<Integer> maybeFromCallable;
+
+    /** A lightweight observer that forwards the emitted value to a Blackhole. */
+    private BenchmarkObserver observer;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        constantCallable = () -> 42;
+        maybeFromCallable = new MaybeFromCallable<>(constantCallable);
+        observer = new BenchmarkObserver();
+    }
+
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        // The observer captures the Blackhole for each subscription.
+        observer.setBlackhole(bh);
+        maybeFromCallable.subscribe(observer);
+    }
+
+    /**
+     * Simple {@link MaybeObserver} implementation that forwards the success value
+     * (or completion) to the provided {@link Blackhole}. Errors are also consumed
+     * to avoid side‑effects.
+     */
+    private static class BenchmarkObserver implements MaybeObserver<Integer> {
+
+        private Blackhole bh;
+
+        void setBlackhole(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            // No need to keep the disposable; the benchmark always disposes via the operator logic.
+        }
+
+        @Override
+        public void onSuccess(Integer value) {
+            bh.consume(value);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // Consume the exception to prevent dead‑code elimination.
+            bh.consume(e);
+        }
+
+        @Override
+        public void onComplete() {
+            // Signal completion; nothing to consume.
+            bh.consume(true);
+        }
+    }
+}
+```

@@ -1,0 +1,87 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for the internal {@code FlowableMergeWithMaybe} operator.
+ * The benchmark merges a {@link Flowable} emitting {@code count} items with a {@link Maybe}
+ * that emits a single item. The merge operation is exercised in a realistic way
+ * (subscription, back‑pressure handling, queueing) and the downstream consumption
+ * is performed via {@link Blackhole} to avoid dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class FlowableMergeWithMaybeBenchmark {
+
+    /**
+     * Number of items emitted by the main {@link Flowable}.
+     * Typical values cover small, medium and large streams.
+     */
+    @Param({ "100", "1000", "100000" })
+    public int count;
+
+    private Flowable<Integer> source;
+
+    private Maybe<Integer> other;
+
+    /**
+     * Prepare the sources for each trial. Using {@code Flowable.range} and {@code Maybe.just}
+     * ensures that the operator under test is exercised without additional overhead from
+     * custom publishers.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        // The source Flowable emits a sequence of integers [1 .. count]
+        source = Flowable.range(1, count);
+        // The Maybe emits a single sentinel value
+        other = Maybe.just(-1);
+    }
+
+    /**
+     * Benchmark the mergeWith operation. The subscription is performed inside the benchmark
+     * method to include the full lifecycle (subscription, request, emission, completion).
+     * {@link Blackhole#consume(Object)} guarantees that the emitted items are observed.
+     */
+    @Benchmark
+    public void mergeWithMaybe(Blackhole bh) {
+        source.mergeWith(other).blockingSubscribe(bh::consume);
+    }
+}

@@ -1,0 +1,119 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable.jmh;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableDelaySubscriptionOther;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableDelaySubscriptionOther}.
+ *
+ * The benchmark measures the throughput of subscribing to the operator
+ * where the main source emits a fixed number of items and the "other"
+ * source completes immediately. This mimics the common use‑case of
+ * delaying subscription until a trigger completes.
+ *
+ * Best‑practice notes:
+ * • {@link State.Scope#Thread} is used to avoid sharing mutable state
+ *   between benchmark threads.
+ * • All RxJava sources are created in {@link Setup} to exclude
+ *   allocation overhead from the measured section.
+ * • A {@link CountDownLatch} is used to wait for the stream to finish;
+ *   the latch is reset for each iteration to keep the measurement
+ *   focused on the operator itself.
+ * • {@link Blackhole} consumes the emitted items to prevent dead‑code
+ *   elimination.
+ * • The benchmark runs in {@link Mode#Throughput} with a time unit of
+ *   seconds, which is the most common mode for measuring how many
+ *   subscriptions can be processed per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 1, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class ObservableDelaySubscriptionOtherBenchmark {
+
+    /** Number of items emitted by the main source per subscription. */
+    @Param({"1", "10", "1000"})
+    public int itemCount;
+
+    /** Main source that emits {@code itemCount} integers. */
+    private Observable<Integer> mainSource;
+
+    /** "Other" source that completes immediately (no delay). */
+    private Observable<Object> otherSource;
+
+    /** The operator under test. */
+    private Observable<Integer> operator;
+
+    /** Latch used to wait for completion of each subscription. */
+    private CountDownLatch latch;
+
+    @Setup(Level.Trial)
+    public void setUpTrial() {
+        // Create a cold main source that emits a fixed number of items.
+        mainSource = Observable.range(1, itemCount);
+
+        // The "other" source completes immediately; using Observable.empty()
+        // ensures the subscription to the main source happens without extra work.
+        otherSource = Observable.empty();
+
+        // Build the operator instance.
+        operator = new ObservableDelaySubscriptionOther<>(mainSource, otherSource);
+    }
+
+    @Setup(Level.Iteration)
+    public void setUpIteration() {
+        // Reset latch for each iteration (one subscription per benchmark call).
+        latch = new CountDownLatch(1);
+    }
+
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) throws InterruptedException {
+        operator.subscribe(new BenchmarkObserver(bh, latch));
+        // Wait for the stream to finish to ensure the measurement includes the whole
+        // subscription lifecycle (onSubscribe → onNext* → onComplete).
+        latch.await();
+    }
+
+    /** Observer that forwards received items to a {@link Blackhole} and signals completion. */
+    private static final class BenchmarkObserver implements Observer<Integer> {
+        private final Blackhole bh;
+        private final CountDownLatch latch;
+
+        BenchmarkObserver(Blackhole bh, CountDownLatch latch) {
+            this.bh = bh;
+            this.latch = latch;
+        }
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            // No need to keep the disposable; the benchmark runs synchronously.
+        }
+
+        @Override
+        public void onNext(Integer value) {
+            bh.consume(value);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // Propagate errors to the benchmark harness.
+            throw new RuntimeException(e);
+        }
+
+        @Override
+        public void onComplete() {
+            latch.countDown();
+        }
+    }
+}
+```

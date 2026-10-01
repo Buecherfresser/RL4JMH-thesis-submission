@@ -1,0 +1,61 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleSource;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.internal.operators.single.SingleDoOnSuccess;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link SingleDoOnSuccess} measuring the throughput of the
+ * {@code doOnSuccess} operator when the side‑effect is a no‑op.
+ *
+ * The benchmark follows JMH best practices:
+ * - Use @State with Scope.Thread to avoid sharing mutable state between threads.
+ * - Perform heavy setup in @Setup(Level.Trial) to exclude construction cost from the measurement.
+ * - Use Blackhole to consume the result and prevent dead‑code elimination.
+ * - Configure warm‑up, measurement, and fork parameters.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class SingleDoOnSuccessBenchmark {
+
+    /** Source Single that emits a constant value. */
+    private SingleSource<Integer> source;
+
+    /** No‑op consumer used for the side‑effect. */
+    private Consumer<Integer> noOpConsumer;
+
+    /** The Single instance under test (SingleDoOnSuccess). */
+    private Single<Integer> singleUnderTest;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source that always emits the integer 1.
+        source = Single.just(1);
+
+        // Consumer that does nothing; this isolates the overhead of the operator itself.
+        noOpConsumer = value -> {
+            // intentionally empty
+        };
+
+        // Create the SingleDoOnSuccess instance once per trial.
+        singleUnderTest = new SingleDoOnSuccess<>(source, noOpConsumer);
+    }
+
+    @Benchmark
+    public void doOnSuccessThroughput(Blackhole bh) {
+        // blockingGet forces the subscription chain to execute synchronously.
+        // The result is consumed by Blackhole to avoid dead‑code elimination.
+        bh.consume(singleUnderTest.blockingGet());
+    }
+}
+```

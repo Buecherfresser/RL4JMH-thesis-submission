@@ -1,0 +1,96 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableFromAction}.
+ *
+ * <p>Measures the throughput of subscribing to an {@code ObservableFromAction}
+ * that executes a no‑op {@link Action}. The observer forwards terminal events
+ * to a {@link Blackhole} supplied by the benchmark method, avoiding the
+ * illegal direct instantiation of {@code Blackhole}.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableFromActionBenchmark {
+
+    /** Observable that runs a no‑op Action when subscribed. */
+    private ObservableFromAction<Void> observable;
+
+    /** Observer that forwards terminal signals to the current Blackhole. */
+    private Observer<Void> observer;
+
+    /** Blackhole set by each benchmark invocation. */
+    private volatile Blackhole bh;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // No‑op Action – we want to measure only the RxJava plumbing.
+        Action noOp = () -> { /* intentionally empty */ };
+        observable = new ObservableFromAction<>(noOp);
+
+        observer = new Observer<Void>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                // No resource handling needed for the benchmark.
+            }
+
+            @Override
+            public void onNext(Void value) {
+                // No values are emitted.
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // Forward any unexpected error to the benchmark's Blackhole.
+                Blackhole localBh = bh;
+                if (localBh != null) {
+                    localBh.consume(e);
+                }
+            }
+
+            @Override
+            public void onComplete() {
+                // Signal completion to the Blackhole.
+                Blackhole localBh = bh;
+                if (localBh != null) {
+                    localBh.consume(true);
+                }
+            }
+        };
+    }
+
+    /**
+     * Benchmark the subscription path of {@link ObservableFromAction}.
+     *
+     * @param bh Blackhole provided by JMH to consume side‑effects.
+     */
+    @Benchmark
+    public void subscribe(Blackhole bh) {
+        // Make the Blackhole visible to the observer.
+        this.bh = bh;
+        observable.subscribe(observer);
+    }
+
+    /**
+     * Benchmark the {@link ObservableFromAction#get()} method which directly invokes the Action.
+     *
+     * @param bh Blackhole to consume the (null) result.
+     */
+    @Benchmark
+    public void get(Blackhole bh) throws Throwable {
+        bh.consume(observable.get());
+    }
+}
+```

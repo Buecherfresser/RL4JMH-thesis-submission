@@ -1,0 +1,66 @@
+```java
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Publisher;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeDelayOtherPublisherBenchmark {
+
+    private Maybe<Integer> upstream;
+    private Publisher<Object> other;
+    private Maybe<Integer> delayedMaybe;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        upstream = Maybe.just(42);
+        other = Flowable.empty(); // Flowable implements Publisher
+        delayedMaybe = upstream.delay(other);
+    }
+
+    @Benchmark
+    public void subscribeAndBlock(Blackhole bh) {
+        Integer result = delayedMaybe.blockingGet();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void subscribeWithObserver(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        delayedMaybe.subscribe(new MaybeObserver<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                // no-op
+            }
+
+            @Override
+            public void onSuccess(Integer value) {
+                bh.consume(value);
+                latch.countDown();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                bh.consume(e);
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        latch.await();
+    }
+}
+```

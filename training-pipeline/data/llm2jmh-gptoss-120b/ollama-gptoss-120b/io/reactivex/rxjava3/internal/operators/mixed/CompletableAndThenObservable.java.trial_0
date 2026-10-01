@@ -1,0 +1,66 @@
+```
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableSource;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link CompletableAndThenObservable}.
+ *
+ * Measures the throughput of subscribing to the operator which first runs a Completable
+ * and then emits items from an Observable. The benchmark uses {@code blockingSubscribe}
+ * to ensure each iteration completes before the next one starts, providing a stable
+ * measurement of end‑to‑end latency and throughput.
+ *
+ * Best‑practice JMH settings:
+ * - Warm‑up iterations to let the JIT stabilize.
+ * - Multiple measurement iterations for statistical confidence.
+ * - Forks to isolate JVM state.
+ * - Scope.Thread to avoid shared mutable state between benchmark threads.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class CompletableAndThenObservableBenchmark {
+
+    /** A Completable that completes immediately. */
+    private CompletableSource completable;
+
+    /** An Observable that emits a fixed number of items. */
+    private ObservableSource<Integer> observable;
+
+    /** The operator under test. */
+    private CompletableAndThenObservable<Integer> operator;
+
+    /**
+     * Sets up the sources and the operator once per JVM fork.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        completable = Completable.complete();
+        // Emit a moderate number of items to keep the benchmark realistic without being dominated by allocation.
+        observable = Observable.range(0, 1_000);
+        operator = new CompletableAndThenObservable<>(completable, observable);
+    }
+
+    /**
+     * Benchmark method that measures how many complete subscriptions can be performed per second.
+     *
+     * @param bh Blackhole to consume emitted items and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        // blockingSubscribe ensures the subscription finishes before the next iteration starts.
+        operator.blockingSubscribe(bh::consume);
+    }
+}
+```

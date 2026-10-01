@@ -1,0 +1,61 @@
+```
+package benchmark;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.observers.SerializedObserver;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+
+import java.util.concurrent.TimeUnit;
+
+@State(Scope.Benchmark)
+public class SerializedObserverBenchmark {
+
+    private SerializedObserver<Integer> serializedObserver;
+    private DummyObserver dummyObserver;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        dummyObserver = new DummyObserver();
+        serializedObserver = new SerializedObserver<>(dummyObserver);
+        // Simulate a subscription
+        serializedObserver.onSubscribe(new Disposable() {
+            volatile boolean disposed;
+
+            @Override
+            public void dispose() {
+                disposed = true;
+            }
+
+            @Override
+            public boolean isDisposed() {
+                return disposed;
+            }
+        });
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void onNextSingleThread() {
+        serializedObserver.onNext(42);
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Threads(4)
+    public void onNextMultiThread() {
+        serializedObserver.onNext(42);
+    }
+
+    // A no‑op downstream observer used to isolate the SerializedObserver's overhead.
+    static class DummyObserver implements Observer<Integer> {
+        @Override public void onSubscribe(Disposable d) { /* no‑op */ }
+        @Override public void onNext(Integer t) { /* no‑op */ }
+        @Override public void onError(Throwable e) { /* no‑op */ }
+        @Override public void onComplete() { /* no‑op */ }
+    }
+}
+```

@@ -1,0 +1,169 @@
+package io.reactivex.rxjava3.disposables;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link CompositeDisposable}.
+ *
+ * <p>These benchmarks focus on the most common operations:
+ * <ul>
+ *   <li>{@code add}</li>
+ *   <li>{@code remove}</li>
+ *   <li>{@code clear}</li>
+ *   <li>{@code size}</li>
+ *   <li>{@code addAll}</li>
+ * </ul>
+ *
+ * <p>All benchmarks run in {@link Mode#Throughput} and report operations per second.
+ * The state is recreated for each fork to avoid cross‑iteration contamination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class CompositeDisposableBenchmark {
+
+    /**
+     * Simple {@link Disposable} implementation that does nothing on {@code dispose}.
+     */
+    static final class NoOpDisposable implements Disposable {
+
+        @Override
+        public void dispose() {
+            /* no‑op */
+        }
+
+        @Override
+        public boolean isDisposed() {
+            return false;
+        }
+    }
+
+    /**
+     * The benchmark subject.
+     */
+    CompositeDisposable composite;
+
+    /**
+     * A reusable disposable instance for {@code add}/{@code remove} benchmarks.
+     */
+    Disposable reusableDisposable;
+
+    /**
+     * An array of disposables used by the {@code addAll} benchmark.
+     */
+    Disposable[] disposableArray;
+
+    /**
+     * Number of disposables to pre‑populate the composite with.
+     */
+    @Param({ "16", "64", "256" })
+    int prepopulateSize;
+
+    /**
+     * Number of disposables to add in the {@code addAll} benchmark.
+     */
+    @Param({ "4", "16", "64" })
+    int addAllSize;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        composite = new CompositeDisposable();
+        reusableDisposable = new NoOpDisposable();
+        // Pre‑populate the composite to simulate a realistic workload.
+        for (int i = 0; i < prepopulateSize; i++) {
+            composite.add(new NoOpDisposable());
+        }
+        // Prepare the array for addAll benchmark.
+        disposableArray = new Disposable[addAllSize];
+        for (int i = 0; i < addAllSize; i++) {
+            disposableArray[i] = new NoOpDisposable();
+        }
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Ensure all resources are released after each trial.
+        composite.dispose();
+    }
+
+    /**
+     * Benchmark the {@code add} operation.
+     */
+    @Benchmark
+    public boolean add() {
+        // The method returns a boolean, but we ignore the result; JMH will not dead‑code eliminate
+        // because the return value is consumed by the benchmark harness.
+        return composite.add(reusableDisposable);
+    }
+
+    /**
+     * Benchmark the {@code remove} operation.
+     */
+    @Benchmark
+    public boolean remove() {
+        // Ensure the disposable is present before removal.
+        composite.add(reusableDisposable);
+        return composite.remove(reusableDisposable);
+    }
+
+    /**
+     * Benchmark the {@code clear} operation.
+     */
+    @Benchmark
+    public void clear() {
+        composite.clear();
+    }
+
+    /**
+     * Benchmark the {@code size} operation.
+     */
+    @Benchmark
+    public int size() {
+        return composite.size();
+    }
+
+    /**
+     * Benchmark the {@code addAll} operation with a variable sized array.
+     */
+    @Benchmark
+    public boolean addAll() {
+        return composite.addAll(disposableArray);
+    }
+}

@@ -1,0 +1,660 @@
+diff --git a/com/coralblocks/coralqueue/broadcaster/AtomicBroadcaster.java b/com/coralblocks/coralqueue/broadcaster/AtomicBroadcaster.java
+index 8774397..c572c3c 100644
+--- a/com/coralblocks/coralqueue/broadcaster/AtomicBroadcaster.java
++++ b/com/coralblocks/coralqueue/broadcaster/AtomicBroadcaster.java
+@@ -99,7 +99,7 @@ public class AtomicBroadcaster<E> implements Broadcaster<E> {
+ 	}
+ 	
+ 	@Override
+-	public final Consumer<E> getConsumer(int index) {
++	public final Consumer<E> getConsumer(int index) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(1);
+ 		if (index >= consumers.length) {
+ 			throw new RuntimeException("Tried to get a consumer with a bad index: " + index);
+ 		}
+@@ -107,7 +107,7 @@ public class AtomicBroadcaster<E> implements Broadcaster<E> {
+ 	}
+ 	
+ 	@Override
+-	public final void clear() {
++	public final void clear() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(12);
+ 		lastOfferedSeq = 0;
+ 		offerSequence.set(lastOfferedSeq);
+ 		for(int i = 0; i < cursors.length; i++) {
+diff --git a/com/coralblocks/coralqueue/broadcaster/BroadcasterDelegateQueue.java b/com/coralblocks/coralqueue/broadcaster/BroadcasterDelegateQueue.java
+index a0fbea4..0992a12 100644
+--- a/com/coralblocks/coralqueue/broadcaster/BroadcasterDelegateQueue.java
++++ b/com/coralblocks/coralqueue/broadcaster/BroadcasterDelegateQueue.java
+@@ -43,7 +43,7 @@ public class BroadcasterDelegateQueue<E> implements Queue<E> {
+ 	 * 
+ 	 * @return the consumer index
+ 	 */
+-	public final int getConsumerIndex() {
++	public final int getConsumerIndex() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(23);
+ 		return consumerIndex;
+ 	}
+ 	
+@@ -52,7 +52,7 @@ public class BroadcasterDelegateQueue<E> implements Queue<E> {
+ 	 * 
+ 	 * @return the broadcaster used as the delegate
+ 	 */
+-	public final Broadcaster<E> getDelegate() {
++	public final Broadcaster<E> getDelegate() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(33);
+ 		return broadcaster;
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/broadcaster/Consumer.java b/com/coralblocks/coralqueue/broadcaster/Consumer.java
+index c701e04..8c08c87 100644
+--- a/com/coralblocks/coralqueue/broadcaster/Consumer.java
++++ b/com/coralblocks/coralqueue/broadcaster/Consumer.java
+@@ -35,7 +35,7 @@ public class Consumer<E> {
+ 	 * 
+ 	 * @return the consumer index 
+ 	 */
+-	public final int getIndex() {
++	public final int getIndex() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(43);
+ 		return consumerIndex;
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/demultiplexer/AtomicDemultiplexer.java b/com/coralblocks/coralqueue/demultiplexer/AtomicDemultiplexer.java
+index 3336597..d76be16 100644
+--- a/com/coralblocks/coralqueue/demultiplexer/AtomicDemultiplexer.java
++++ b/com/coralblocks/coralqueue/demultiplexer/AtomicDemultiplexer.java
+@@ -89,7 +89,7 @@ public class AtomicDemultiplexer<E> implements Demultiplexer<E> {
+ 	}
+ 	
+ 	@Override
+-	public final Consumer<E> getConsumer(int index) {
++	public final Consumer<E> getConsumer(int index) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(2);
+ 		if (index >= numberOfConsumers) {
+ 			throw new RuntimeException("Tried to get a consumer with a bad index: " + index);
+ 		}
+@@ -97,7 +97,7 @@ public class AtomicDemultiplexer<E> implements Demultiplexer<E> {
+ 	}
+ 	
+ 	@Override
+-	public final void clear() {
++	public final void clear() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(13);
+ 		currQueueToDispatch = 0;
+ 		for(int i = 0; i < queues.length; i++) {
+ 			queues[i].clear();
+diff --git a/com/coralblocks/coralqueue/demultiplexer/Consumer.java b/com/coralblocks/coralqueue/demultiplexer/Consumer.java
+index d53fbdf..ddbf639 100644
+--- a/com/coralblocks/coralqueue/demultiplexer/Consumer.java
++++ b/com/coralblocks/coralqueue/demultiplexer/Consumer.java
+@@ -35,7 +35,7 @@ public class Consumer<E> {
+ 	 * 
+ 	 * @return the consumer index
+ 	 */
+-	public final int getIndex() {
++	public final int getIndex() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(24);
+ 		return index;
+ 	}
+ 	
+@@ -44,7 +44,7 @@ public class Consumer<E> {
+ 	 * 
+ 	 * @return the number of available objects to fetch
+ 	 */
+-	public final long availableToFetch() {
++	public final long availableToFetch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(34);
+ 		return demux.availableToFetch(index);
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/diamond/AtomicDiamond.java b/com/coralblocks/coralqueue/diamond/AtomicDiamond.java
+index 7d14778..f82361e 100644
+--- a/com/coralblocks/coralqueue/diamond/AtomicDiamond.java
++++ b/com/coralblocks/coralqueue/diamond/AtomicDiamond.java
+@@ -83,7 +83,7 @@ public class AtomicDiamond<E extends Task> implements Diamond<E> {
+ 			
+ 			threads[index] = new Thread(new Runnable() {
+ 				@Override
+-				public void run() {
++				public void run() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(3);
+ 					
+ 					WaitStrategy waitStrategy = null;
+ 					if (listener != null) waitStrategy = listener.onStarted(index);
+@@ -128,7 +128,7 @@ public class AtomicDiamond<E extends Task> implements Diamond<E> {
+ 	}
+ 	
+ 	@Override
+-	public int getNumberOfWorkerThreads() {
++	public int getNumberOfWorkerThreads() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(14);
+ 		return threads.length;
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/diamond/Input.java b/com/coralblocks/coralqueue/diamond/Input.java
+index 0af1428..0ebc033 100644
+--- a/com/coralblocks/coralqueue/diamond/Input.java
++++ b/com/coralblocks/coralqueue/diamond/Input.java
+@@ -35,7 +35,7 @@ public class Input<E extends Task> {
+ 	 * 
+ 	 * @return a task to be dispatched
+ 	 */
+-	public final E nextToDispatch() {
++	public final E nextToDispatch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(25);
+ 		return demux.nextToDispatch();
+ 	}
+ 	
+@@ -46,7 +46,7 @@ public class Input<E extends Task> {
+ 	 * @param workerThreadIndex the worker thread to send the task
+ 	 * @return the task to be dispatched
+ 	 */
+-	public final E nextToDispatch(int workerThreadIndex) {
++	public final E nextToDispatch(int workerThreadIndex) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(35);
+ 		return demux.nextToDispatch(workerThreadIndex);
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/diamond/Output.java b/com/coralblocks/coralqueue/diamond/Output.java
+index 599ea7d..3177eb3 100644
+--- a/com/coralblocks/coralqueue/diamond/Output.java
++++ b/com/coralblocks/coralqueue/diamond/Output.java
+@@ -37,7 +37,7 @@ public class Output<E extends Task> {
+ 	 * 
+ 	 * @return the number of objects that can be fetched
+ 	 */
+-	public final long availableToFetch() {
++	public final long availableToFetch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(44);
+ 		return mux.availableToFetch();
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/example/broadcaster/Basics.java b/com/coralblocks/coralqueue/example/broadcaster/Basics.java
+index ba5c27b..5ec066a 100644
+--- a/com/coralblocks/coralqueue/example/broadcaster/Basics.java
++++ b/com/coralblocks/coralqueue/example/broadcaster/Basics.java
+@@ -44,12 +44,12 @@ public class Basics {
+ 			this.batchSizeToSend = batchSizeToSend;
+ 		}
+ 		
+-		public long getBusySpinCount() {
++		public long getBusySpinCount() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(4);
+ 			return busySpinCount;
+ 		}
+ 		
+ 		@Override
+-		public final void run() {
++		public final void run() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(15);
+ 			int remaining = messagesToSend;
+ 			while(remaining > 0) {
+ 				int batchToSend = Math.min(batchSizeToSend, remaining);
+diff --git a/com/coralblocks/coralqueue/example/broadcaster/Minimal.java b/com/coralblocks/coralqueue/example/broadcaster/Minimal.java
+index 3de85ff..810de42 100644
+--- a/com/coralblocks/coralqueue/example/broadcaster/Minimal.java
++++ b/com/coralblocks/coralqueue/example/broadcaster/Minimal.java
+@@ -21,7 +21,7 @@ import com.coralblocks.coralqueue.util.MutableLong;
+ 
+ public class Minimal {
+ 	
+-	public static void main(String[] args) throws InterruptedException {
++	public static void main(String[] args) throws InterruptedException { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(26);
+ 		
+ 		final int messagesToSend = 10;
+ 		final int numberOfConsumers = 2;
+@@ -31,7 +31,7 @@ public class Minimal {
+ 		Thread producer = new Thread(new Runnable() {
+ 
+ 			@Override
+-			public void run() {
++			public void run() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(36);
+ 
+ 				for(int i = 0; i < messagesToSend; i += 2) { // note we are looping 2 by 2 (we are sending a batch of 2 messages)
+ 					
+diff --git a/com/coralblocks/coralqueue/example/demultiplexer/Basics.java b/com/coralblocks/coralqueue/example/demultiplexer/Basics.java
+index 1c1d3ac..e9b5dbc 100644
+--- a/com/coralblocks/coralqueue/example/demultiplexer/Basics.java
++++ b/com/coralblocks/coralqueue/example/demultiplexer/Basics.java
+@@ -44,7 +44,7 @@ public class Basics {
+ 			this.batchSizeToSend = batchSizeToSend;
+ 		}
+ 		
+-		public long getBusySpinCount() {
++		public long getBusySpinCount() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(45);
+ 			return busySpinCount;
+ 		}
+ 		
+diff --git a/com/coralblocks/coralqueue/jmhbench/MutationSwitch.java b/com/coralblocks/coralqueue/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..da2e968
+--- /dev/null
++++ b/com/coralblocks/coralqueue/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.coralblocks.coralqueue.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/coralblocks/coralqueue/mpmc/AtomicMpMc.java b/com/coralblocks/coralqueue/mpmc/AtomicMpMc.java
+index bcb6191..e4c1f41 100644
+--- a/com/coralblocks/coralqueue/mpmc/AtomicMpMc.java
++++ b/com/coralblocks/coralqueue/mpmc/AtomicMpMc.java
+@@ -97,14 +97,14 @@ public class AtomicMpMc<E> implements MpMc<E> {
+ 	}
+ 	
+ 	@Override
+-	public final void clear() {
++	public final void clear() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(5);
+ 		for(int i = 0; i < demuxes.length; i++) {
+ 			demuxes[i].clear();
+ 		}
+ 	}
+ 	
+ 	@Override
+-	public final E nextToDispatch(int producerIndex) {
++	public final E nextToDispatch(int producerIndex) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(16);
+ 		Producer<E> producer = getProducer(producerIndex);
+ 		return producer.nextToDispatch();
+ 	}
+diff --git a/com/coralblocks/coralqueue/mpmc/Consumer.java b/com/coralblocks/coralqueue/mpmc/Consumer.java
+index 4b1c112..0d68b4d 100644
+--- a/com/coralblocks/coralqueue/mpmc/Consumer.java
++++ b/com/coralblocks/coralqueue/mpmc/Consumer.java
+@@ -44,7 +44,7 @@ public class Consumer<E> {
+ 	 * 
+ 	 * @return the number of objects that can be fetched
+ 	 */
+-	public final long availableToFetch() {
++	public final long availableToFetch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(27);
+ 		long total = 0;
+ 		for(int i = 0; i < nConsumers; i++) {
+ 			long x = consumers[i].availableToFetch();
+@@ -61,7 +61,7 @@ public class Consumer<E> {
+ 	 * 
+ 	 * @return a data transfer mutable object from the queue
+ 	 */
+-	public final E fetch() {
++	public final E fetch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(37);
+ 		while(true) {
+ 			if (availToFetch[currConsumerIndex] > 0) {
+ 				E e = consumers[currConsumerIndex].fetch();
+diff --git a/com/coralblocks/coralqueue/mpmc/Producer.java b/com/coralblocks/coralqueue/mpmc/Producer.java
+index 9b16961..956adb1 100644
+--- a/com/coralblocks/coralqueue/mpmc/Producer.java
++++ b/com/coralblocks/coralqueue/mpmc/Producer.java
+@@ -37,7 +37,7 @@ public class Producer<E> {
+ 	 * 
+ 	 * @return the next mutable object that can be used by the producer or null if the demultiplexer is full
+ 	 */
+-	public final E nextToDispatch() {
++	public final E nextToDispatch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(46);
+ 		return demux.nextToDispatch();
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/mpmcbroadcaster/AtomicMpMcBroadcaster.java b/com/coralblocks/coralqueue/mpmcbroadcaster/AtomicMpMcBroadcaster.java
+index 797b128..3f0bd6d 100644
+--- a/com/coralblocks/coralqueue/mpmcbroadcaster/AtomicMpMcBroadcaster.java
++++ b/com/coralblocks/coralqueue/mpmcbroadcaster/AtomicMpMcBroadcaster.java
+@@ -97,14 +97,14 @@ public class AtomicMpMcBroadcaster<E> implements MpMcBroadcaster<E> {
+ 	}
+ 	
+ 	@Override
+-	public final void clear() {
++	public final void clear() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(6);
+ 		for(int i = 0; i < broadcasters.length; i++) {
+ 			broadcasters[i].clear();
+ 		}
+ 	}
+ 	
+ 	@Override
+-	public final E nextToDispatch(int producerIndex) {
++	public final E nextToDispatch(int producerIndex) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(17);
+ 		Producer<E> producer = getProducer(producerIndex);
+ 		return producer.nextToDispatch();
+ 	}
+diff --git a/com/coralblocks/coralqueue/mpmcbroadcaster/Consumer.java b/com/coralblocks/coralqueue/mpmcbroadcaster/Consumer.java
+index cd012ee..2a585a8 100644
+--- a/com/coralblocks/coralqueue/mpmcbroadcaster/Consumer.java
++++ b/com/coralblocks/coralqueue/mpmcbroadcaster/Consumer.java
+@@ -44,7 +44,7 @@ public class Consumer<E> {
+ 	 * 
+ 	 * @return the number of objects that can be fetched
+ 	 */
+-	public final long availableToFetch() {
++	public final long availableToFetch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(28);
+ 		long total = 0;
+ 		for(int i = 0; i < nConsumers; i++) {
+ 			long x = consumers[i].availableToFetch();
+@@ -61,7 +61,7 @@ public class Consumer<E> {
+ 	 * 
+ 	 * @return a data transfer mutable object from the queue
+ 	 */
+-	public final E fetch() {
++	public final E fetch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(38);
+ 		while(true) {
+ 			if (availToFetch[currConsumerIndex] > 0) {
+ 				E e = consumers[currConsumerIndex].fetch();
+diff --git a/com/coralblocks/coralqueue/mpmcbroadcaster/Producer.java b/com/coralblocks/coralqueue/mpmcbroadcaster/Producer.java
+index 3f45fc6..32011d6 100644
+--- a/com/coralblocks/coralqueue/mpmcbroadcaster/Producer.java
++++ b/com/coralblocks/coralqueue/mpmcbroadcaster/Producer.java
+@@ -37,7 +37,7 @@ public class Producer<E> {
+ 	 * 
+ 	 * @return the next mutable object that can be used by the producer or null if the broadcaster is full
+ 	 */
+-	public final E nextToDispatch() {
++	public final E nextToDispatch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(47);
+ 		return broadcaster.nextToDispatch();
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/multiplexer/AtomicMultiplexer.java b/com/coralblocks/coralqueue/multiplexer/AtomicMultiplexer.java
+index 799c388..3eaa49b 100644
+--- a/com/coralblocks/coralqueue/multiplexer/AtomicMultiplexer.java
++++ b/com/coralblocks/coralqueue/multiplexer/AtomicMultiplexer.java
+@@ -86,7 +86,7 @@ public class AtomicMultiplexer<E> implements Multiplexer<E> {
+ 	}
+ 	
+ 	@Override
+-	public final void clear() {
++	public final void clear() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(7);
+ 		producerIndex = 0;
+ 		for(int i = 0; i < queues.length; i++) {
+ 			queues[i].clear();
+@@ -97,7 +97,7 @@ public class AtomicMultiplexer<E> implements Multiplexer<E> {
+ 	}
+ 
+ 	@Override
+-    public final E nextToDispatch(int producer) {
++    public final E nextToDispatch(int producer) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(18);
+ 	    return queues[producer].nextToDispatch();
+     }
+ 	
+diff --git a/com/coralblocks/coralqueue/multiplexer/Producer.java b/com/coralblocks/coralqueue/multiplexer/Producer.java
+index 41663a4..115228f 100644
+--- a/com/coralblocks/coralqueue/multiplexer/Producer.java
++++ b/com/coralblocks/coralqueue/multiplexer/Producer.java
+@@ -35,7 +35,7 @@ public class Producer<E> {
+ 	 * 
+ 	 * @return the next object to dispatch
+ 	 */
+-	public final E nextToDispatch() {
++	public final E nextToDispatch() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(29);
+ 		return mux.nextToDispatch(index);
+ 	}
+ 	
+@@ -60,7 +60,7 @@ public class Producer<E> {
+ 	 * 
+ 	 * @return the zero-based index of this producer
+ 	 */
+-	public final int getIndex() {
++	public final int getIndex() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(39);
+ 		return index;
+ 	}
+ }
+diff --git a/com/coralblocks/coralqueue/queue/AtomicQueue.java b/com/coralblocks/coralqueue/queue/AtomicQueue.java
+index 8157420..47eb8d9 100644
+--- a/com/coralblocks/coralqueue/queue/AtomicQueue.java
++++ b/com/coralblocks/coralqueue/queue/AtomicQueue.java
+@@ -88,7 +88,7 @@ public class AtomicQueue<E> implements Queue<E> {
+ 	}
+ 	
+ 	@Override
+-	public final void clear() {
++	public final void clear() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(8);
+ 		lastOfferedSeq = 0;
+ 		lastFetchedSeq = 0;
+ 		fetchCount = 0;
+@@ -101,7 +101,7 @@ public class AtomicQueue<E> implements Queue<E> {
+ 		return fetchSequence.get() + capacity;
+ 	}
+ 	
+-	public final Builder<E> getBuilder() {
++	public final Builder<E> getBuilder() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(19);
+ 		return builder;
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/raw/ByteBufferRawQueue.java b/com/coralblocks/coralqueue/raw/ByteBufferRawQueue.java
+index 5ed27ac..048df86 100644
+--- a/com/coralblocks/coralqueue/raw/ByteBufferRawQueue.java
++++ b/com/coralblocks/coralqueue/raw/ByteBufferRawQueue.java
+@@ -79,7 +79,7 @@ public class ByteBufferRawQueue implements RawQueue {
+ 	}
+ 
+ 	@Override
+-	public final void clear() {
++	public final void clear() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(9);
+ 		rawReader.clear();
+ 		rawWriter.clear();
+ 		nextSequenceToWrite.set(1);
+@@ -87,7 +87,7 @@ public class ByteBufferRawQueue implements RawQueue {
+ 	}
+ 	
+ 	@Override
+-	public final long availableToWrite() {
++	public final long availableToWrite() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(20);
+ 		return rawWriter.availableToWrite(nextSequenceToRead.get());
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/raw/RawReader.java b/com/coralblocks/coralqueue/raw/RawReader.java
+index bfc01a9..302b6ef 100644
+--- a/com/coralblocks/coralqueue/raw/RawReader.java
++++ b/com/coralblocks/coralqueue/raw/RawReader.java
+@@ -28,7 +28,7 @@ class RawReader extends ByteBufferRawBytes {
+     }
+     
+     @Override
+-    public final void clear() {
++    public final void clear() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(30);
+     	super.clear();
+     	this.nextSequenceToRead = 1;
+     }
+@@ -58,7 +58,7 @@ class RawReader extends ByteBufferRawBytes {
+     }
+     
+     @Override
+-    public void putByte(byte b) {
++    public void putByte(byte b) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(40);
+         throw new UnsupportedOperationException("Read only");
+     }
+     
+diff --git a/com/coralblocks/coralqueue/raw/RawWriter.java b/com/coralblocks/coralqueue/raw/RawWriter.java
+index afb2222..a161ca3 100644
+--- a/com/coralblocks/coralqueue/raw/RawWriter.java
++++ b/com/coralblocks/coralqueue/raw/RawWriter.java
+@@ -28,7 +28,7 @@ class RawWriter extends ByteBufferRawBytes {
+     }
+     
+     @Override
+-    public final void clear() {
++    public final void clear() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(48);
+     	super.clear();
+     	this.nextSequenceToWrite = 1;
+     }
+diff --git a/com/coralblocks/coralqueue/util/MathUtils.java b/com/coralblocks/coralqueue/util/MathUtils.java
+index 6cab829..aa72dab 100644
+--- a/com/coralblocks/coralqueue/util/MathUtils.java
++++ b/com/coralblocks/coralqueue/util/MathUtils.java
+@@ -30,7 +30,7 @@ public class MathUtils {
+ 	 * @param i the integer to check
+ 	 * @return true if it is a power of two
+ 	 */
+-	public static boolean isPowerOfTwo(int i) {
++	public static boolean isPowerOfTwo(int i) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(10);
+ 		return isPowerOfTwo((long) i);
+ 	}
+ 
+@@ -40,7 +40,7 @@ public class MathUtils {
+ 	 * @param l the long to check
+ 	 * @return true if it is a power of two
+ 	 */
+-	public static boolean isPowerOfTwo(long l) {
++	public static boolean isPowerOfTwo(long l) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(21);
+ 	    return l > 0 && (l & (l - 1)) == 0;
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/util/MutableLong.java b/com/coralblocks/coralqueue/util/MutableLong.java
+index 8649298..7e4cb28 100644
+--- a/com/coralblocks/coralqueue/util/MutableLong.java
++++ b/com/coralblocks/coralqueue/util/MutableLong.java
+@@ -57,14 +57,14 @@ public class MutableLong {
+ 	 *
+ 	 * @return true, if it is null
+ 	 */
+-	public boolean isNull() {
++	public boolean isNull() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(31);
+ 		return isNull;
+ 	}
+ 	
+ 	/**
+ 	 * Makes it equal to null.
+ 	 */
+-	public void setNull() {
++	public void setNull() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(41);
+ 		isNull = true;
+ 	}
+ 	
+diff --git a/com/coralblocks/coralqueue/util/PaddedAtomicLong.java b/com/coralblocks/coralqueue/util/PaddedAtomicLong.java
+index 62b7463..2cfcd6a 100644
+--- a/com/coralblocks/coralqueue/util/PaddedAtomicLong.java
++++ b/com/coralblocks/coralqueue/util/PaddedAtomicLong.java
+@@ -62,7 +62,7 @@ public class PaddedAtomicLong extends AtomicLong {
+ 	 * 
+ 	 * @return the total of all values inside the object
+ 	 */
+-	public long getTotal() {
++	public long getTotal() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(49);
+ 		// Prevent HotSpot optimization and code removal
+ 		return value1 + value2 - value3 + value4 - value5 + value6 - this.get();
+ 	}
+diff --git a/com/coralblocks/coralqueue/waitstrategy/BusySleepBackOffWaitStrategy.java b/com/coralblocks/coralqueue/waitstrategy/BusySleepBackOffWaitStrategy.java
+index ff5f0eb..798d957 100644
+--- a/com/coralblocks/coralqueue/waitstrategy/BusySleepBackOffWaitStrategy.java
++++ b/com/coralblocks/coralqueue/waitstrategy/BusySleepBackOffWaitStrategy.java
+@@ -54,7 +54,7 @@ public class BusySleepBackOffWaitStrategy extends AbstractWaitStrategy {
+ 	}
+ 	
+ 	@Override
+-	protected final void awaitOperation() {
++	protected final void awaitOperation() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(11);
+ 
+ 		BusySleepWaitStrategy.sleepFor(currSleepTimeInNanos);
+ 		
+@@ -68,7 +68,7 @@ public class BusySleepBackOffWaitStrategy extends AbstractWaitStrategy {
+ 	}
+ 	
+ 	@Override
+-	protected final void resetOperation() {
++	protected final void resetOperation() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(22);
+ 		currSleepTimeInNanos = startSleepTimeInNanos;
+ 	}
+ }
+\ No newline at end of file
+diff --git a/com/coralblocks/coralqueue/waitstrategy/BusySleepWaitStrategy.java b/com/coralblocks/coralqueue/waitstrategy/BusySleepWaitStrategy.java
+index f8fd54e..2947bfb 100644
+--- a/com/coralblocks/coralqueue/waitstrategy/BusySleepWaitStrategy.java
++++ b/com/coralblocks/coralqueue/waitstrategy/BusySleepWaitStrategy.java
+@@ -38,7 +38,7 @@ public class BusySleepWaitStrategy extends AbstractWaitStrategy {
+ 	}
+ 
+ 	@Override
+-	protected final void awaitOperation() {
++	protected final void awaitOperation() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(32);
+ 		sleepFor(sleepTimeInNanos);
+ 	}
+ 	
+@@ -48,7 +48,7 @@ public class BusySleepWaitStrategy extends AbstractWaitStrategy {
+ 	 * @param nanos the number of nanoseconds to wait for
+ 	 * @return the number of times it has to loop to reach the give number of nanoseconds
+ 	 */
+-    public static final long sleepFor(long nanos) {
++    public static final long sleepFor(long nanos) { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(42);
+     	// NOTE: we are returning loops from a public method
+     	// just to avoid code removal (just to be safe)
+     	long loops = 0;
+diff --git a/com/coralblocks/coralqueue/waitstrategy/BusySpinParkBackOffWaitStrategy.java b/com/coralblocks/coralqueue/waitstrategy/BusySpinParkBackOffWaitStrategy.java
+index 785f6e1..78d3931 100644
+--- a/com/coralblocks/coralqueue/waitstrategy/BusySpinParkBackOffWaitStrategy.java
++++ b/com/coralblocks/coralqueue/waitstrategy/BusySpinParkBackOffWaitStrategy.java
+@@ -41,7 +41,7 @@ public class BusySpinParkBackOffWaitStrategy extends AbstractCompositeWaitStrate
+ 	}
+ 	
+ 	@Override
+-	protected final CompositeWaitStrategy getCompositeWaitStrategy() {
++	protected final CompositeWaitStrategy getCompositeWaitStrategy() { com.coralblocks.coralqueue.jmhbench.MutationSwitch.tick(50);
+ 		return compositeWS;
+ 	}
+ }
+\ No newline at end of file

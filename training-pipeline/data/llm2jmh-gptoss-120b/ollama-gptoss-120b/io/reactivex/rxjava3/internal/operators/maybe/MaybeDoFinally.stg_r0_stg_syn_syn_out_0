@@ -1,0 +1,122 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark measuring the throughput impact of the {@code Maybe.doFinally} operator
+ * compared to a plain {@code Maybe.just} source.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@code @State} for immutable per‑thread data.</li>
+ *   <li>Warm‑up and measurement iterations to let the JIT stabilize.</li>
+ *   <li>Multiple forks to reduce noise from JVM start‑up.</li>
+ *   <li>Use of {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Throughput mode (operations per time unit) which is appropriate for reactive stream
+ *       operators where the goal is to maximize the number of processed items.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class MaybeDoFinallyBenchmark {
+
+    /**
+     * Baseline Maybe without any operator.
+     */
+    private Maybe<Integer> baseline;
+
+    /**
+     * Maybe with the {@code doFinally} operator applied.
+     */
+    private Maybe<Integer> withDoFinally;
+
+    /**
+     * No‑op action used for the {@code doFinally} operator.
+     */
+    private static final Action NOOP = () -> {
+        // intentionally empty
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source emitting a single integer.
+        baseline = Maybe.just(1);
+        // Same source wrapped with the doFinally operator.
+        withDoFinally = Maybe.just(1).doFinally(NOOP);
+    }
+
+    /**
+     * Benchmark the plain {@code Maybe.just} source.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void baseline(BenchmarkState state, Blackhole bh) {
+        bh.consume(state.baseline.blockingGet());
+    }
+
+    /**
+     * Benchmark the {@code Maybe.just} source with {@code doFinally} applied.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void doFinally(BenchmarkState state, Blackhole bh) {
+        bh.consume(state.withDoFinally.blockingGet());
+    }
+
+    /**
+     * State holder exposing the prepared Maybe instances to benchmark methods.
+     */
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        Maybe<Integer> baseline;
+
+        Maybe<Integer> withDoFinally;
+
+        @Setup(Level.Trial)
+        public void init() {
+            baseline = Maybe.just(1);
+            withDoFinally = Maybe.just(1).doFinally(NOOP);
+        }
+    }
+}

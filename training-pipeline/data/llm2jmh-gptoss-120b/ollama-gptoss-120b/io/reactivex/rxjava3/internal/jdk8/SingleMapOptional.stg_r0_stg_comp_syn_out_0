@@ -1,0 +1,75 @@
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class SingleMapOptionalBenchmark {
+
+    private Single<Integer> source;
+
+    private Function<Integer, Optional<? extends String>> mapperPresent;
+
+    private Function<Integer, Optional<? extends String>> mapperEmpty;
+
+    private Maybe<String> maybePresent;
+
+    private Maybe<String> maybeEmpty;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Single.just(42);
+        mapperPresent = v -> Optional.of("value:" + v);
+        mapperEmpty = v -> Optional.empty();
+        maybePresent = new SingleMapOptional<Integer, String>(source, mapperPresent);
+        maybeEmpty = new SingleMapOptional<Integer, String>(source, mapperEmpty);
+    }
+
+    @Benchmark
+    public void mapPresent(Blackhole bh) {
+        bh.consume(maybePresent.blockingGet());
+    }
+
+    @Benchmark
+    public void mapEmpty(Blackhole bh) {
+        bh.consume(maybeEmpty.blockingGet());
+    }
+}

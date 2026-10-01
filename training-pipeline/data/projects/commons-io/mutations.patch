@@ -1,0 +1,655 @@
+diff --git a/org/apache/commons/io/Buffers.java b/org/apache/commons/io/Buffers.java
+index cd4e2a2..a167ecc 100644
+--- a/org/apache/commons/io/Buffers.java
++++ b/org/apache/commons/io/Buffers.java
+@@ -46,7 +46,7 @@ public final class Buffers {
+      * @throws UnsupportedOperationException Thrown if the given buffer is not one of {@link CharBuffer}, {@link ByteBuffer}, {@link DoubleBuffer},
+      *                                       {@link FloatBuffer}, {@link IntBuffer}, {@link LongBuffer}, {@link ShortBuffer}, or null.
+      */
+-    public static Buffer clear(final Buffer buffer) {
++    public static Buffer clear(final Buffer buffer) { org.apache.commons.io.jmhbench.MutationSwitch.tick(1);
+         if (buffer instanceof CharBuffer) {
+             return clear((CharBuffer) buffer);
+         }
+@@ -81,7 +81,7 @@ public final class Buffers {
+      * @return The given buffer.
+      * @throws ReadOnlyBufferException If the buffer is read-only.
+      */
+-    public static ByteBuffer clear(final ByteBuffer buffer) {
++    public static ByteBuffer clear(final ByteBuffer buffer) { org.apache.commons.io.jmhbench.MutationSwitch.tick(11);
+         if (buffer == null) {
+             return null;
+         }
+diff --git a/org/apache/commons/io/ByteBuffers.java b/org/apache/commons/io/ByteBuffers.java
+index 4eab647..e9705aa 100644
+--- a/org/apache/commons/io/ByteBuffers.java
++++ b/org/apache/commons/io/ByteBuffers.java
+@@ -39,7 +39,7 @@ public final class ByteBuffers {
+      * @param array The array that will back the new byte buffer.
+      * @return The new byte buffer.
+      */
+-    public static ByteBuffer littleEndian(final byte[] array) {
++    public static ByteBuffer littleEndian(final byte[] array) { org.apache.commons.io.jmhbench.MutationSwitch.tick(21);
+         return littleEndian(ByteBuffer.wrap(array));
+     }
+ 
+@@ -49,7 +49,7 @@ public final class ByteBuffers {
+      * @param allocate The buffer to set to little-endian.
+      * @return The given buffer.
+      */
+-    public static ByteBuffer littleEndian(final ByteBuffer allocate) {
++    public static ByteBuffer littleEndian(final ByteBuffer allocate) { org.apache.commons.io.jmhbench.MutationSwitch.tick(31);
+         return allocate.order(ByteOrder.LITTLE_ENDIAN);
+     }
+ 
+diff --git a/org/apache/commons/io/ByteOrderParser.java b/org/apache/commons/io/ByteOrderParser.java
+index 1676ee8..80279d1 100644
+--- a/org/apache/commons/io/ByteOrderParser.java
++++ b/org/apache/commons/io/ByteOrderParser.java
+@@ -46,7 +46,7 @@ public final class ByteOrderParser {
+      * @throws IllegalArgumentException
+      *             if the {@link String} containing the ByteOrder representation to be parsed is unknown.
+      */
+-    public static ByteOrder parseByteOrder(final String value) {
++    public static ByteOrder parseByteOrder(final String value) { org.apache.commons.io.jmhbench.MutationSwitch.tick(40);
+         if (ByteOrder.BIG_ENDIAN.toString().equals(value)) {
+             return ByteOrder.BIG_ENDIAN;
+         }
+diff --git a/org/apache/commons/io/EndianUtils.java b/org/apache/commons/io/EndianUtils.java
+index 9765c49..2ee300d 100644
+--- a/org/apache/commons/io/EndianUtils.java
++++ b/org/apache/commons/io/EndianUtils.java
+@@ -71,7 +71,7 @@ public class EndianUtils {
+      * @return The value read.
+      * @throws IllegalArgumentException if the part of the byte array starting at offset does not have at least 8 bytes.
+      */
+-    public static double readSwappedDouble(final byte[] data, final int offset) {
++    public static double readSwappedDouble(final byte[] data, final int offset) { org.apache.commons.io.jmhbench.MutationSwitch.tick(48);
+         return Double.longBitsToDouble(readSwappedLong(data, offset));
+     }
+ 
+diff --git a/org/apache/commons/io/channels/ByteArraySeekableByteChannel.java b/org/apache/commons/io/channels/ByteArraySeekableByteChannel.java
+index f98f232..130b2d8 100644
+--- a/org/apache/commons/io/channels/ByteArraySeekableByteChannel.java
++++ b/org/apache/commons/io/channels/ByteArraySeekableByteChannel.java
+@@ -97,7 +97,7 @@ public class ByteArraySeekableByteChannel implements SeekableByteChannel {
+      * @return A new builder for {@link ByteArraySeekableByteChannel}.
+      * @since 2.22.0
+      */
+-    public static Builder builder() {
++    public static Builder builder() { org.apache.commons.io.jmhbench.MutationSwitch.tick(2);
+         return new Builder();
+     }
+ 
+@@ -119,7 +119,7 @@ public class ByteArraySeekableByteChannel implements SeekableByteChannel {
+      * @see #array()
+      * @see ByteArrayInputStream#ByteArrayInputStream(byte[])
+      */
+-    public static ByteArraySeekableByteChannel wrap(final byte[] bytes) {
++    public static ByteArraySeekableByteChannel wrap(final byte[] bytes) { org.apache.commons.io.jmhbench.MutationSwitch.tick(12);
+         Objects.requireNonNull(bytes, "bytes");
+         return new ByteArraySeekableByteChannel(bytes);
+     }
+diff --git a/org/apache/commons/io/channels/CloseShieldChannel.java b/org/apache/commons/io/channels/CloseShieldChannel.java
+index 987e842..aad8fcf 100644
+--- a/org/apache/commons/io/channels/CloseShieldChannel.java
++++ b/org/apache/commons/io/channels/CloseShieldChannel.java
+@@ -88,7 +88,7 @@ public final class CloseShieldChannel {
+      * @throws NullPointerException if {@code channel} is {@code null}.
+      */
+     @SuppressWarnings({ "unchecked", "resource" }) // caller closes
+-    public static <T extends Channel> T wrap(final T channel) {
++    public static <T extends Channel> T wrap(final T channel) { org.apache.commons.io.jmhbench.MutationSwitch.tick(22);
+         Objects.requireNonNull(channel, "channel");
+         // Fast path: already our shield
+         if (Proxy.isProxyClass(channel.getClass()) && Proxy.getInvocationHandler(channel) instanceof CloseShieldChannelHandler) {
+diff --git a/org/apache/commons/io/channels/CloseShieldChannelHandler.java b/org/apache/commons/io/channels/CloseShieldChannelHandler.java
+index 822c6b6..0db9d6f 100644
+--- a/org/apache/commons/io/channels/CloseShieldChannelHandler.java
++++ b/org/apache/commons/io/channels/CloseShieldChannelHandler.java
+@@ -104,7 +104,7 @@ final class CloseShieldChannelHandler implements InvocationHandler {
+     }
+ 
+     @Override
+-    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
++    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable { org.apache.commons.io.jmhbench.MutationSwitch.tick(32);
+         final Class<?> declaringClass = method.getDeclaringClass();
+         final String name = method.getName();
+         final int parameterCount = method.getParameterCount();
+diff --git a/org/apache/commons/io/channels/FileChannels.java b/org/apache/commons/io/channels/FileChannels.java
+index 7ef9e3f..52ea298 100644
+--- a/org/apache/commons/io/channels/FileChannels.java
++++ b/org/apache/commons/io/channels/FileChannels.java
+@@ -45,7 +45,7 @@ public final class FileChannels {
+      * @deprecated Use {@link #contentEquals(SeekableByteChannel, SeekableByteChannel, int)}.
+      */
+     @Deprecated
+-    public static boolean contentEquals(final FileChannel channel1, final FileChannel channel2, final int bufferCapacity) throws IOException {
++    public static boolean contentEquals(final FileChannel channel1, final FileChannel channel2, final int bufferCapacity) throws IOException { org.apache.commons.io.jmhbench.MutationSwitch.tick(41);
+         return contentEquals((SeekableByteChannel) channel1, channel2, bufferCapacity);
+     }
+ 
+@@ -59,7 +59,7 @@ public final class FileChannels {
+      * @throws IOException if an I/O error occurs or the timeout is met.
+      * @since 2.19.0
+      */
+-    public static boolean contentEquals(final ReadableByteChannel channel1, final ReadableByteChannel channel2, final int bufferCapacity) throws IOException {
++    public static boolean contentEquals(final ReadableByteChannel channel1, final ReadableByteChannel channel2, final int bufferCapacity) throws IOException { org.apache.commons.io.jmhbench.MutationSwitch.tick(49);
+         // Before making any changes, please test with org.apache.commons.io.jmh.IOUtilsContentEqualsInputStreamsBenchmark
+         // Short-circuit test
+         if (Objects.equals(channel1, channel2)) {
+diff --git a/org/apache/commons/io/charset/CharsetDecoders.java b/org/apache/commons/io/charset/CharsetDecoders.java
+index 11bd8b2..e739cb3 100644
+--- a/org/apache/commons/io/charset/CharsetDecoders.java
++++ b/org/apache/commons/io/charset/CharsetDecoders.java
+@@ -36,7 +36,7 @@ public final class CharsetDecoders {
+      * @param charsetDecoder The CharsetDecoder to test.
+      * @return The given non-null CharsetDecoder or a new default CharsetDecoder.
+      */
+-    public static CharsetDecoder toCharsetDecoder(final CharsetDecoder charsetDecoder) {
++    public static CharsetDecoder toCharsetDecoder(final CharsetDecoder charsetDecoder) { org.apache.commons.io.jmhbench.MutationSwitch.tick(3);
+         return charsetDecoder != null ? charsetDecoder : Charset.defaultCharset().newDecoder();
+     }
+ 
+diff --git a/org/apache/commons/io/charset/CharsetEncoders.java b/org/apache/commons/io/charset/CharsetEncoders.java
+index d5e1a00..0998ca0 100644
+--- a/org/apache/commons/io/charset/CharsetEncoders.java
++++ b/org/apache/commons/io/charset/CharsetEncoders.java
+@@ -37,7 +37,7 @@ public final class CharsetEncoders {
+      * @param charsetEncoder The CharsetEncoder to test.
+      * @return The given non-null CharsetEncoder or a new default CharsetEncoder.
+      */
+-    public static CharsetEncoder toCharsetEncoder(final CharsetEncoder charsetEncoder) {
++    public static CharsetEncoder toCharsetEncoder(final CharsetEncoder charsetEncoder) { org.apache.commons.io.jmhbench.MutationSwitch.tick(13);
+         return toCharsetEncoder(charsetEncoder, () -> Charset.defaultCharset().newEncoder());
+     }
+ 
+@@ -49,7 +49,7 @@ public final class CharsetEncoders {
+      * @return The given non-null CharsetEncoder or a new default CharsetEncoder.
+      * @since 2.13.0
+      */
+-    public static CharsetEncoder toCharsetEncoder(final CharsetEncoder charsetEncoder, final Supplier<CharsetEncoder> defaultSupplier) {
++    public static CharsetEncoder toCharsetEncoder(final CharsetEncoder charsetEncoder, final Supplier<CharsetEncoder> defaultSupplier) { org.apache.commons.io.jmhbench.MutationSwitch.tick(23);
+         return charsetEncoder != null ? charsetEncoder : defaultSupplier.get();
+     }
+ 
+diff --git a/org/apache/commons/io/file/AccumulatorPathVisitor.java b/org/apache/commons/io/file/AccumulatorPathVisitor.java
+index 0819e2e..57015ba 100644
+--- a/org/apache/commons/io/file/AccumulatorPathVisitor.java
++++ b/org/apache/commons/io/file/AccumulatorPathVisitor.java
+@@ -87,7 +87,7 @@ public class AccumulatorPathVisitor extends CountingPathVisitor {
+      * @return A new builder.
+      * @since 2.19.0
+      */
+-    public static Builder builder() {
++    public static Builder builder() { org.apache.commons.io.jmhbench.MutationSwitch.tick(42);
+         return new Builder();
+     }
+ 
+@@ -98,7 +98,7 @@ public class AccumulatorPathVisitor extends CountingPathVisitor {
+      * @see #builder()
+      * @see Builder
+      */
+-    public static AccumulatorPathVisitor withBigIntegerCounters() {
++    public static AccumulatorPathVisitor withBigIntegerCounters() { org.apache.commons.io.jmhbench.MutationSwitch.tick(50);
+         return builder().setPathCounters(Counters.bigIntegerPathCounters()).get();
+     }
+ 
+diff --git a/org/apache/commons/io/file/DirectoryStreamFilter.java b/org/apache/commons/io/file/DirectoryStreamFilter.java
+index 2bba4ed..d3ca760 100644
+--- a/org/apache/commons/io/file/DirectoryStreamFilter.java
++++ b/org/apache/commons/io/file/DirectoryStreamFilter.java
+@@ -47,7 +47,7 @@ public class DirectoryStreamFilter implements DirectoryStream.Filter<Path> {
+     }
+ 
+     @Override
+-    public boolean accept(final Path path) throws IOException {
++    public boolean accept(final Path path) throws IOException { org.apache.commons.io.jmhbench.MutationSwitch.tick(4);
+         return pathFilter.accept(path, PathUtils.readBasicFileAttributes(path, PathUtils.EMPTY_LINK_OPTION_ARRAY)) == FileVisitResult.CONTINUE;
+     }
+ 
+@@ -56,7 +56,7 @@ public class DirectoryStreamFilter implements DirectoryStream.Filter<Path> {
+      *
+      * @return The path filter.
+      */
+-    public PathFilter getPathFilter() {
++    public PathFilter getPathFilter() { org.apache.commons.io.jmhbench.MutationSwitch.tick(14);
+         return pathFilter;
+     }
+ 
+diff --git a/org/apache/commons/io/file/PathUtils.java b/org/apache/commons/io/file/PathUtils.java
+index f18af5e..b9033cd 100644
+--- a/org/apache/commons/io/file/PathUtils.java
++++ b/org/apache/commons/io/file/PathUtils.java
+@@ -292,7 +292,7 @@ public final class PathUtils {
+      * @return The visitation path counters.
+      * @throws IOException if an I/O error is thrown by a visitor method.
+      */
+-    public static PathCounters cleanDirectory(final Path directory) throws IOException {
++    public static PathCounters cleanDirectory(final Path directory) throws IOException { org.apache.commons.io.jmhbench.MutationSwitch.tick(24);
+         return cleanDirectory(directory, EMPTY_DELETE_OPTION_ARRAY);
+     }
+ 
+@@ -308,7 +308,7 @@ public final class PathUtils {
+      * @throws IOException if an I/O error is thrown by a visitor method.
+      * @since 2.8.0
+      */
+-    public static PathCounters cleanDirectory(final Path directory, final DeleteOption... deleteOptions) throws IOException {
++    public static PathCounters cleanDirectory(final Path directory, final DeleteOption... deleteOptions) throws IOException { org.apache.commons.io.jmhbench.MutationSwitch.tick(33);
+         return visitFileTree(new CleaningPathVisitor(Counters.longPathCounters(), deleteOptions), directory).getPathCounters();
+     }
+ 
+diff --git a/org/apache/commons/io/filefilter/AgeFileFilter.java b/org/apache/commons/io/filefilter/AgeFileFilter.java
+index 91f4034..bd3327f 100644
+--- a/org/apache/commons/io/filefilter/AgeFileFilter.java
++++ b/org/apache/commons/io/filefilter/AgeFileFilter.java
+@@ -183,7 +183,7 @@ public class AgeFileFilter extends AbstractFileFilter implements Serializable {
+      * @return true if the file name matches.
+      */
+     @Override
+-    public boolean accept(final File file) {
++    public boolean accept(final File file) { org.apache.commons.io.jmhbench.MutationSwitch.tick(43);
+         return acceptOlder != FileUtils.isFileNewer(file, cutoffInstant);
+     }
+ 
+diff --git a/org/apache/commons/io/filefilter/FileFilterUtils.java b/org/apache/commons/io/filefilter/FileFilterUtils.java
+index ff80abd..0835069 100644
+--- a/org/apache/commons/io/filefilter/FileFilterUtils.java
++++ b/org/apache/commons/io/filefilter/FileFilterUtils.java
+@@ -60,7 +60,7 @@ public class FileFilterUtils {
+      * @see AgeFileFilter
+      * @since 1.2
+      */
+-    public static IOFileFilter ageFileFilter(final Date cutoffDate) {
++    public static IOFileFilter ageFileFilter(final Date cutoffDate) { org.apache.commons.io.jmhbench.MutationSwitch.tick(5);
+         return new AgeFileFilter(cutoffDate);
+     }
+ 
+@@ -73,7 +73,7 @@ public class FileFilterUtils {
+      * @see AgeFileFilter
+      * @since 1.2
+      */
+-    public static IOFileFilter ageFileFilter(final Date cutoffDate, final boolean acceptOlder) {
++    public static IOFileFilter ageFileFilter(final Date cutoffDate, final boolean acceptOlder) { org.apache.commons.io.jmhbench.MutationSwitch.tick(15);
+         return new AgeFileFilter(cutoffDate, acceptOlder);
+     }
+ 
+diff --git a/org/apache/commons/io/filefilter/MagicNumberFileFilter.java b/org/apache/commons/io/filefilter/MagicNumberFileFilter.java
+index 20e9941..999e8c2 100644
+--- a/org/apache/commons/io/filefilter/MagicNumberFileFilter.java
++++ b/org/apache/commons/io/filefilter/MagicNumberFileFilter.java
+@@ -248,7 +248,7 @@ public class MagicNumberFileFilter extends AbstractFileFilter implements Seriali
+      *         at the specified offset, {@code false} otherwise.
+      */
+     @Override
+-    public boolean accept(final File file) {
++    public boolean accept(final File file) { org.apache.commons.io.jmhbench.MutationSwitch.tick(25);
+         if (isFile(file) && file.canRead()) {
+             try {
+                 return RandomAccessFileMode.READ_ONLY.apply(file.toPath(),
+@@ -278,7 +278,7 @@ public class MagicNumberFileFilter extends AbstractFileFilter implements Seriali
+      * @since 2.9.0
+      */
+     @Override
+-    public FileVisitResult accept(final Path file, final BasicFileAttributes attributes) {
++    public FileVisitResult accept(final Path file, final BasicFileAttributes attributes) { org.apache.commons.io.jmhbench.MutationSwitch.tick(34);
+         if (file != null && Files.isRegularFile(file) && Files.isReadable(file)) {
+             try {
+                 try (FileChannel fileChannel = FileChannel.open(file)) {
+diff --git a/org/apache/commons/io/function/Erase.java b/org/apache/commons/io/function/Erase.java
+index 99869df..1e18882 100644
+--- a/org/apache/commons/io/function/Erase.java
++++ b/org/apache/commons/io/function/Erase.java
+@@ -146,7 +146,7 @@ public final class Erase {
+      * @throws T Always thrown.
+      */
+     @SuppressWarnings("unchecked")
+-    public static <T extends Throwable> RuntimeException rethrow(final Throwable throwable) throws T {
++    public static <T extends Throwable> RuntimeException rethrow(final Throwable throwable) throws T { org.apache.commons.io.jmhbench.MutationSwitch.tick(35);
+         throw (T) throwable;
+     }
+ 
+diff --git a/org/apache/commons/io/function/IOIteratorAdapter.java b/org/apache/commons/io/function/IOIteratorAdapter.java
+index 1473580..bedbecf 100644
+--- a/org/apache/commons/io/function/IOIteratorAdapter.java
++++ b/org/apache/commons/io/function/IOIteratorAdapter.java
+@@ -49,7 +49,7 @@ final class IOIteratorAdapter<E> implements IOIterator<E> {
+     }
+ 
+     @Override
+-    public Iterator<E> unwrap() {
++    public Iterator<E> unwrap() { org.apache.commons.io.jmhbench.MutationSwitch.tick(44);
+         return delegate;
+     }
+ 
+diff --git a/org/apache/commons/io/function/IOStreamAdapter.java b/org/apache/commons/io/function/IOStreamAdapter.java
+index 572ff12..9840ae9 100644
+--- a/org/apache/commons/io/function/IOStreamAdapter.java
++++ b/org/apache/commons/io/function/IOStreamAdapter.java
+@@ -37,7 +37,7 @@ final class IOStreamAdapter<T> extends IOBaseStreamAdapter<T, IOStream<T>, Strea
+     }
+ 
+     @Override
+-    public IOStream<T> wrap(final Stream<T> delegate) {
++    public IOStream<T> wrap(final Stream<T> delegate) { org.apache.commons.io.jmhbench.MutationSwitch.tick(6);
+         return unwrap() == delegate ? this : adapt(delegate);
+     }
+ 
+diff --git a/org/apache/commons/io/function/UncheckedIOBaseStream.java b/org/apache/commons/io/function/UncheckedIOBaseStream.java
+index 84b2c48..f65d8ab 100644
+--- a/org/apache/commons/io/function/UncheckedIOBaseStream.java
++++ b/org/apache/commons/io/function/UncheckedIOBaseStream.java
+@@ -42,12 +42,12 @@ final class UncheckedIOBaseStream<T, S extends IOBaseStream<T, S, B>, B extends
+     }
+ 
+     @Override
+-    public void close() {
++    public void close() { org.apache.commons.io.jmhbench.MutationSwitch.tick(16);
+         delegate.close();
+     }
+ 
+     @Override
+-    public boolean isParallel() {
++    public boolean isParallel() { org.apache.commons.io.jmhbench.MutationSwitch.tick(26);
+         return delegate.isParallel();
+     }
+ 
+diff --git a/org/apache/commons/io/input/AutoCloseInputStream.java b/org/apache/commons/io/input/AutoCloseInputStream.java
+index 7a66e01..a6e5bf0 100644
+--- a/org/apache/commons/io/input/AutoCloseInputStream.java
++++ b/org/apache/commons/io/input/AutoCloseInputStream.java
+@@ -101,7 +101,7 @@ public class AutoCloseInputStream extends ProxyInputStream {
+      * @return A new {@link Builder}.
+      * @since 2.12.0
+      */
+-    public static Builder builder() {
++    public static Builder builder() { org.apache.commons.io.jmhbench.MutationSwitch.tick(7);
+         return new Builder();
+     }
+ 
+@@ -129,7 +129,7 @@ public class AutoCloseInputStream extends ProxyInputStream {
+      * @since 2.0
+      */
+     @Override
+-    protected void afterRead(final int n) throws IOException {
++    protected void afterRead(final int n) throws IOException { org.apache.commons.io.jmhbench.MutationSwitch.tick(17);
+         if (n == EOF) {
+             close();
+         }
+diff --git a/org/apache/commons/io/input/BOMInputStream.java b/org/apache/commons/io/input/BOMInputStream.java
+index 23473e1..a6ae93c 100644
+--- a/org/apache/commons/io/input/BOMInputStream.java
++++ b/org/apache/commons/io/input/BOMInputStream.java
+@@ -183,7 +183,7 @@ public class BOMInputStream extends ProxyInputStream {
+          * @param byteOrderMarks The ByteOrderMarks to detect and optionally exclude.
+          * @return {@code this} instance.
+          */
+-        public Builder setByteOrderMarks(final ByteOrderMark... byteOrderMarks) {
++        public Builder setByteOrderMarks(final ByteOrderMark... byteOrderMarks) { org.apache.commons.io.jmhbench.MutationSwitch.tick(27);
+             this.byteOrderMarks = byteOrderMarks != null ? byteOrderMarks.clone() : DEFAULT;
+             return this;
+         }
+@@ -197,7 +197,7 @@ public class BOMInputStream extends ProxyInputStream {
+          * @param include true to include the UTF-8 BOM or false to exclude it. return this;.
+          * @return {@code this} instance.
+          */
+-        public Builder setInclude(final boolean include) {
++        public Builder setInclude(final boolean include) { org.apache.commons.io.jmhbench.MutationSwitch.tick(36);
+             this.include = include;
+             return this;
+         }
+diff --git a/org/apache/commons/io/input/BoundedInputStream.java b/org/apache/commons/io/input/BoundedInputStream.java
+index bb6f701..69a31f9 100644
+--- a/org/apache/commons/io/input/BoundedInputStream.java
++++ b/org/apache/commons/io/input/BoundedInputStream.java
+@@ -135,7 +135,7 @@ public class BoundedInputStream extends ProxyInputStream {
+          * @param count The current number of bytes counted.
+          * @return {@code this} instance.
+          */
+-        public T setCount(final long count) {
++        public T setCount(final long count) { org.apache.commons.io.jmhbench.MutationSwitch.tick(45);
+             this.count = Math.max(0, count);
+             return asThis();
+         }
+diff --git a/org/apache/commons/io/jmhbench/MutationSwitch.java b/org/apache/commons/io/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..d294d12
+--- /dev/null
++++ b/org/apache/commons/io/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.apache.commons.io.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/apache/commons/io/monitor/FileAlterationListenerAdaptor.java b/org/apache/commons/io/monitor/FileAlterationListenerAdaptor.java
+index c676470..8a76572 100644
+--- a/org/apache/commons/io/monitor/FileAlterationListenerAdaptor.java
++++ b/org/apache/commons/io/monitor/FileAlterationListenerAdaptor.java
+@@ -39,7 +39,7 @@ public class FileAlterationListenerAdaptor implements FileAlterationListener {
+      * @param directory The directory changed (ignored).
+      */
+     @Override
+-    public void onDirectoryChange(final File directory) {
++    public void onDirectoryChange(final File directory) { org.apache.commons.io.jmhbench.MutationSwitch.tick(8);
+         // noop
+     }
+ 
+@@ -49,7 +49,7 @@ public class FileAlterationListenerAdaptor implements FileAlterationListener {
+      * @param directory The directory created (ignored).
+      */
+     @Override
+-    public void onDirectoryCreate(final File directory) {
++    public void onDirectoryCreate(final File directory) { org.apache.commons.io.jmhbench.MutationSwitch.tick(18);
+         // noop
+     }
+ 
+diff --git a/org/apache/commons/io/monitor/FileAlterationMonitor.java b/org/apache/commons/io/monitor/FileAlterationMonitor.java
+index dc444ff..2a9c596 100644
+--- a/org/apache/commons/io/monitor/FileAlterationMonitor.java
++++ b/org/apache/commons/io/monitor/FileAlterationMonitor.java
+@@ -100,7 +100,7 @@ public final class FileAlterationMonitor implements Runnable {
+      *
+      * @param observer The file system observer to add.
+      */
+-    public void addObserver(final FileAlterationObserver observer) {
++    public void addObserver(final FileAlterationObserver observer) { org.apache.commons.io.jmhbench.MutationSwitch.tick(28);
+         if (observer != null) {
+             observers.add(observer);
+         }
+@@ -111,7 +111,7 @@ public final class FileAlterationMonitor implements Runnable {
+      *
+      * @return The interval.
+      */
+-    public long getInterval() {
++    public long getInterval() { org.apache.commons.io.jmhbench.MutationSwitch.tick(37);
+         return intervalMillis;
+     }
+ 
+diff --git a/org/apache/commons/io/monitor/FileAlterationObserver.java b/org/apache/commons/io/monitor/FileAlterationObserver.java
+index 786bd6b..77a9b43 100644
+--- a/org/apache/commons/io/monitor/FileAlterationObserver.java
++++ b/org/apache/commons/io/monitor/FileAlterationObserver.java
+@@ -165,7 +165,7 @@ public class FileAlterationObserver implements Serializable {
+          * @param fileFilter file filter or null if none.
+          * @return This instance.
+          */
+-        public Builder setFileFilter(final FileFilter fileFilter) {
++        public Builder setFileFilter(final FileFilter fileFilter) { org.apache.commons.io.jmhbench.MutationSwitch.tick(46);
+             this.fileFilter = fileFilter;
+             return asThis();
+         }
+diff --git a/org/apache/commons/io/output/AppendableOutputStream.java b/org/apache/commons/io/output/AppendableOutputStream.java
+index 49c7e82..1961a93 100644
+--- a/org/apache/commons/io/output/AppendableOutputStream.java
++++ b/org/apache/commons/io/output/AppendableOutputStream.java
+@@ -50,7 +50,7 @@ public class AppendableOutputStream <T extends Appendable> extends OutputStream
+      *
+      * @return The target appendable.
+      */
+-    public T getAppendable() {
++    public T getAppendable() { org.apache.commons.io.jmhbench.MutationSwitch.tick(9);
+         return appendable;
+     }
+ 
+diff --git a/org/apache/commons/io/output/BrokenOutputStream.java b/org/apache/commons/io/output/BrokenOutputStream.java
+index f5c12b4..c89b2fe 100644
+--- a/org/apache/commons/io/output/BrokenOutputStream.java
++++ b/org/apache/commons/io/output/BrokenOutputStream.java
+@@ -104,7 +104,7 @@ public class BrokenOutputStream extends OutputStream {
+      * @throws IOException always throws the exception configured in a constructor.
+      */
+     @Override
+-    public void close() throws IOException {
++    public void close() throws IOException { org.apache.commons.io.jmhbench.MutationSwitch.tick(19);
+         throw rethrow("close()");
+     }
+ 
+diff --git a/org/apache/commons/io/output/ByteArrayOutputStream.java b/org/apache/commons/io/output/ByteArrayOutputStream.java
+index f6d12e5..c60a8c9 100644
+--- a/org/apache/commons/io/output/ByteArrayOutputStream.java
++++ b/org/apache/commons/io/output/ByteArrayOutputStream.java
+@@ -115,12 +115,12 @@ public class ByteArrayOutputStream extends AbstractByteArrayOutputStream<ByteArr
+      * @see java.io.ByteArrayOutputStream#reset()
+      */
+     @Override
+-    public synchronized void reset() {
++    public synchronized void reset() { org.apache.commons.io.jmhbench.MutationSwitch.tick(29);
+         resetImpl();
+     }
+ 
+     @Override
+-    public synchronized int size() {
++    public synchronized int size() { org.apache.commons.io.jmhbench.MutationSwitch.tick(38);
+         return count;
+     }
+ 
+diff --git a/org/apache/commons/io/output/ChunkedOutputStream.java b/org/apache/commons/io/output/ChunkedOutputStream.java
+index 06ffb50..d14a792 100644
+--- a/org/apache/commons/io/output/ChunkedOutputStream.java
++++ b/org/apache/commons/io/output/ChunkedOutputStream.java
+@@ -104,7 +104,7 @@ public class ChunkedOutputStream extends FilterOutputStream {
+      * @return A new {@link Builder}.
+      * @since 2.13.0
+      */
+-    public static Builder builder() {
++    public static Builder builder() { org.apache.commons.io.jmhbench.MutationSwitch.tick(47);
+         return new Builder();
+     }
+ 
+diff --git a/org/apache/commons/io/serialization/ObjectStreamClassPredicate.java b/org/apache/commons/io/serialization/ObjectStreamClassPredicate.java
+index ba94349..6704298 100644
+--- a/org/apache/commons/io/serialization/ObjectStreamClassPredicate.java
++++ b/org/apache/commons/io/serialization/ObjectStreamClassPredicate.java
+@@ -62,7 +62,7 @@ public class ObjectStreamClassPredicate implements Predicate<ObjectStreamClass>
+      * @param classes Classes to accept.
+      * @return this object.
+      */
+-    public ObjectStreamClassPredicate accept(final Class<?>... classes) {
++    public ObjectStreamClassPredicate accept(final Class<?>... classes) { org.apache.commons.io.jmhbench.MutationSwitch.tick(10);
+         Stream.of(classes).map(c -> new FullClassNameMatcher(c.getName())).forEach(acceptMatchers::add);
+         return this;
+     }
+@@ -76,7 +76,7 @@ public class ObjectStreamClassPredicate implements Predicate<ObjectStreamClass>
+      * @param matcher A class name matcher to <em>accept</em> objects.
+      * @return {@code this} instance.
+      */
+-    public ObjectStreamClassPredicate accept(final ClassNameMatcher matcher) {
++    public ObjectStreamClassPredicate accept(final ClassNameMatcher matcher) { org.apache.commons.io.jmhbench.MutationSwitch.tick(20);
+         acceptMatchers.add(matcher);
+         return this;
+     }
+diff --git a/org/apache/commons/io/serialization/ValidatingObjectInputStream.java b/org/apache/commons/io/serialization/ValidatingObjectInputStream.java
+index b0b49d5..97c87e6 100644
+--- a/org/apache/commons/io/serialization/ValidatingObjectInputStream.java
++++ b/org/apache/commons/io/serialization/ValidatingObjectInputStream.java
+@@ -168,7 +168,7 @@ public class ValidatingObjectInputStream extends ObjectInputStream {
+          * @return this object.
+          * @since 2.18.0
+          */
+-        public Builder accept(final Class<?>... classes) {
++        public Builder accept(final Class<?>... classes) { org.apache.commons.io.jmhbench.MutationSwitch.tick(30);
+             predicate.accept(classes);
+             return this;
+         }
+@@ -183,7 +183,7 @@ public class ValidatingObjectInputStream extends ObjectInputStream {
+          * @return {@code this} instance.
+          * @since 2.18.0
+          */
+-        public Builder accept(final ClassNameMatcher matcher) {
++        public Builder accept(final ClassNameMatcher matcher) { org.apache.commons.io.jmhbench.MutationSwitch.tick(39);
+             predicate.accept(matcher);
+             return this;
+         }

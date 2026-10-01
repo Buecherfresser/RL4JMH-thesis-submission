@@ -1,0 +1,107 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableFromRunnable;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
+
+/**
+ * JMH benchmark for {@link FlowableFromRunnable}.
+ *
+ * Measures the throughput of subscribing to a Flowable that wraps a Runnable
+ * and executing the Runnable. A baseline benchmark that directly runs the
+ * Runnable is also provided for comparison.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableFromRunnableBenchmark {
+
+    /** A no‑op Runnable used for the benchmark. */
+    private Runnable emptyRunnable;
+
+    /** Flowable that wraps the no‑op Runnable. */
+    private Flowable<Object> flowable;
+
+    /** Subscriber that simply requests all items and discards them. */
+    private DisposableSubscriber<Object> subscriber;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        emptyRunnable = () -> {
+            // intentionally empty – represents the minimal work path
+        };
+
+        // FlowableFromRunnable expects a generic type; we use Object and return null.
+        flowable = new FlowableFromRunnable<>(emptyRunnable);
+
+        subscriber = new DisposableSubscriber<Object>() {
+            @Override
+            public void onNext(Object t) {
+                // no-op
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // no-op
+            }
+
+            @Override
+            public void onComplete() {
+                // no-op
+            }
+        };
+    }
+
+    /**
+     * Baseline benchmark that directly executes the Runnable without any RxJava overhead.
+     *
+     * @param bh Blackhole to prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void baselineRun(Blackhole bh) {
+        emptyRunnable.run();
+        // consume a dummy value to keep the JIT from optimizing away the call
+        bh.consume(0);
+    }
+
+    /**
+     * Benchmark that subscribes to the Flowable wrapping the Runnable.
+     *
+     * The subscription is performed on the same thread (no async operators) to isolate
+     * the overhead of the FlowableFromRunnable implementation.
+     *
+     * @param bh Blackhole to consume any emitted items (none in this case).
+     */
+    @Benchmark
+    public void flowableSubscribe(Blackhole bh) {
+        // Subscribe a fresh subscriber for each iteration to avoid state reuse.
+        flowable.subscribe(new DisposableSubscriber<Object>() {
+            @Override
+            public void onNext(Object t) {
+                // no items are emitted; method kept for completeness
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // ignore errors in benchmark
+            }
+
+            @Override
+            public void onComplete() {
+                // no-op
+            }
+        });
+        // Ensure the JIT sees a side‑effect
+        bh.consume(0);
+    }
+}
+```

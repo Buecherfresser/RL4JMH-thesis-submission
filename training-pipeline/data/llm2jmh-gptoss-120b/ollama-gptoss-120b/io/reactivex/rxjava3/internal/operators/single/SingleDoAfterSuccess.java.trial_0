@@ -1,0 +1,69 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.Consumer;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@code SingleDoAfterSuccess} operator.
+ *
+ * Measures the throughput of a {@link Single} that emits a single value
+ * and executes a no‑op {@code doAfterSuccess} consumer.
+ *
+ * The benchmark follows JMH best practices:
+ * - {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - {@code @Setup(Level.Trial)} to create immutable objects once per trial.
+ * - Use of {@link Blackhole} to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are left to the JMH runner defaults
+ *   (or can be configured via command line).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class SingleDoAfterSuccessBenchmark {
+
+    /** Source Single that emits a constant integer. */
+    private Single<Integer> source;
+
+    /** Wrapped Single with a no‑op after‑success consumer. */
+    private Single<Integer> wrapped;
+
+    /** No‑op consumer used for the {@code doAfterSuccess} hook. */
+    private static final Consumer<Integer> NO_OP = v -> {
+        // intentionally empty
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple source Single that emits the value 1.
+        source = Single.just(1);
+
+        // Apply the doAfterSuccess operator with a no‑op consumer.
+        // This internally creates a SingleDoAfterSuccess instance.
+        wrapped = source.doAfterSuccess(NO_OP);
+    }
+
+    /**
+     * Benchmark method that subscribes to the wrapped Single and blocks
+     * until the value is emitted. The result is consumed by the Blackhole
+     * to avoid dead‑code elimination.
+     *
+     * @param bh Blackhole to consume the emitted value.
+     */
+    @Benchmark
+    public void testDoAfterSuccess(Blackhole bh) {
+        // blockingGet() triggers subscription, emission, and the after‑success hook.
+        Integer result = wrapped.blockingGet();
+
+        // Consume the result so the JIT cannot eliminate the call.
+        bh.consume(result);
+    }
+}
+```

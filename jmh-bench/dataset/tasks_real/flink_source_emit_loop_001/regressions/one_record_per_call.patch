@@ -1,0 +1,22 @@
+--- a/bench/Emitter.java
++++ b/bench/Emitter.java
+@@ -4,11 +4,14 @@
+ 
+     private Emitter() {}
+ 
++    // Regressed: dispatch one element per synchronized recursive call.
+     public static int emitAll(int[] src, int[] dst) {
+-        int n = src.length;
+-        for (int i = 0; i < n; i++) {
+-            dst[i] = src[i] * 2 + 1;
+-        }
+-        return n;
++        return emitFrom(src, dst, 0);
++    }
++
++    private static synchronized int emitFrom(int[] src, int[] dst, int i) {
++        if (i >= src.length) return i;
++        dst[i] = src[i] * 2 + 1;
++        return emitFrom(src, dst, i + 1);
+     }
+ }

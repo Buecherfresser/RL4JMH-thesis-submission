@@ -1,0 +1,99 @@
+name: snakeyaml
+display_name: SnakeYAML
+version: 2.4
+
+# Where the pristine, vendored subject-under-test lives (relative to this dir).
+# Sources are the published `org.yaml:snakeyaml:2.4` sources artefact, minus
+# `module-info.java` (the JMH suite is compiled into the same unnamed module as
+# the SUT, so a module descriptor would reject the benchmark's dependencies).
+source_dir: src/main/java
+
+provenance:
+  project: SnakeYAML
+  url: https://bitbucket.org/snakeyaml/snakeyaml/src/snakeyaml-2.4/
+  tag: snakeyaml-2.4
+  released: 2025-02-16
+
+# The single patch that bakes in 50 independent, runtime-armable performance
+# mutants (see mutants.yaml for the hidden ground-truth registry).
+mutations_patch: mutations.patch
+mutants_registry: mutants.yaml
+
+# Harness-facing context: a curated public-API digest. Deliberately does NOT
+# reveal where the mutants are.
+api_surface: api_surface.md
+
+harness_input:
+  mode: per_class
+  # The load/dump pipeline (reader -> scanner -> parser -> composer ->
+  # constructor and representer -> serializer -> emitter) plus the public
+  # entry points. `external` (vendored Base64/BigInteger helpers), `env`
+  # and `internal` are implementation plumbing, not benchmark targets.
+  include_packages:
+    - "(root)"
+    - comments
+    - composer
+    - constructor
+    - emitter
+    - error
+    - events
+    - inspector
+    - introspector
+    - nodes
+    - parser
+    - reader
+    - representer
+    - resolver
+    - scanner
+    - serializer
+    - tokens
+    - util
+  name_filter: "(Yaml|Loader|Dumper|Options|Parser|Scanner|Emitter|Composer|Constructor|Representer|Serializer|Resolver|Reader|Node|Token|Event|Tag|Util|Inspector)"
+
+# SnakeYAML has no runtime dependencies; the SUT compiles against the JDK alone.
+dependencies: []
+
+# How mutants are armed/observed at runtime (see MutationSwitch, added by the patch).
+mutation:
+  switch_class: org.yaml.snakeyaml.jmhbench.MutationSwitch
+  arm_property: jmhbench.mutant          # -Djmhbench.mutant=<id> arms exactly one mutant
+  record_property: jmhbench.record       # -Djmhbench.record=true enables coverage recording
+  record_file_property: jmhbench.record.file  # absolute path the record dump is written to
+  count: 50
+  # Per-character / per-token / per-node methods on top of the generator's
+  # shared hot-name list. A mutant on one of these fires once per input
+  # character, which would turn a ~1ms latency into a multi-second per-op
+  # regression instead of a small, realistically detectable one.
+  skip_methods:
+    - checkToken
+    - getToken
+    - peekToken
+    - needMoreTokens
+    - fetchMoreTokens
+    - scanToNextToken
+    - checkEvent
+    - getEvent
+    - peekEvent
+    - composeNode
+    - constructObject
+    - newInstance
+    - resolve
+    - writeIndicator
+    - writeIndent
+    - expectNode
+    - getColumn
+    - getLine
+    - getIndex
+    - getPointer
+    - getMark
+    - getStartMark
+    - getEndMark
+    - getBuffer
+    - prefix
+    - prefixForward
+    - ensureEnoughData
+    # Constant-returning type-tag dispatch, called once per token/event/node
+    # while a document is scanned. Trivial to mutate, impossible to attribute.
+    - getEventId
+    - getTokenId
+    - getNodeId

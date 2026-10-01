@@ -1,0 +1,71 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Supplier;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableMapNotification}.
+ *
+ * Measures the throughput of the operator when mapping onNext, onError and onComplete signals.
+ * The benchmark runs in a single thread, uses a warm‑up phase, and consumes the emitted items
+ * via {@link Blackhole} to avoid dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableMapNotificationBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    private Flowable<Integer> source;
+    private Function<? super Integer, ? extends Integer> onNextMapper;
+    private Function<? super Throwable, ? extends Integer> onErrorMapper;
+    private Supplier<? extends Integer> onCompleteSupplier;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source that emits a known number of integers.
+        source = Flowable.range(1, size);
+
+        // Identity mapping for onNext – the cheapest possible transformation.
+        onNextMapper = v -> v;
+
+        // Map any error to a constant value; not exercised in the happy‑path benchmark.
+        onErrorMapper = e -> -1;
+
+        // Supply a constant value on completion.
+        onCompleteSupplier = () -> -1;
+    }
+
+    /**
+     * Benchmark the throughput of {@link FlowableMapNotification} in the normal onNext path.
+     *
+     * @param bh Blackhole to consume the downstream values and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void mapNotificationThroughput(Blackhole bh) {
+        // Create the operator instance with the prepared mappers.
+        Flowable<Integer> mapped = new FlowableMapNotification<>(
+                source,
+                onNextMapper,
+                onErrorMapper,
+                onCompleteSupplier);
+
+        // Subscribe and consume all items; the subscription is synchronous for the range source.
+        mapped.subscribe(bh::consume);
+    }
+}
+```

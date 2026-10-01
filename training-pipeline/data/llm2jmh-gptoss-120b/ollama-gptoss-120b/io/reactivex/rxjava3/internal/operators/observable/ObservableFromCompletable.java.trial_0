@@ -1,0 +1,60 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableFromCompletable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark measuring the throughput of {@link ObservableFromCompletable}
+ * when converting a {@link Completable} that completes immediately.
+ *
+ * The benchmark subscribes to the Observable and blocks until completion,
+ * ensuring that the whole subscription lifecycle (onSubscribe → onComplete)
+ * is measured.
+ *
+ * Best practices applied:
+ * - Use @State with Scope.Thread to avoid sharing mutable state across threads.
+ * - Perform all allocations in @Setup to keep the benchmark measurement focused on the operation.
+ * - Use Blackhole to consume any possible emissions or errors (even though this operator never emits items).
+ * - Configure warm‑up, measurement iterations and forks to obtain stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+public class ObservableFromCompletableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        /** Observable that wraps a Completable which completes immediately. */
+        Observable<Object> observable;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            Completable completable = Completable.complete();
+            // The generic type is irrelevant because the Observable never emits items.
+            observable = new ObservableFromCompletable<>(completable);
+        }
+    }
+
+    /**
+     * Subscribes to the Observable and blocks until it terminates.
+     * The Blackhole consumes any possible onNext/onError signals,
+     * even though this operator never emits items.
+     */
+    @Benchmark
+    public void subscribeAndComplete(BenchmarkState state, Blackhole bh) {
+        state.observable.blockingSubscribe(
+                bh::consume,   // onNext (won't be called)
+                bh::consume,   // onError (won't be called)
+                () -> {}       // onComplete
+        );
+    }
+}
+```

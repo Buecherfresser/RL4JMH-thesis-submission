@@ -1,0 +1,614 @@
+diff --git a/org/locationtech/spatial4j/context/SpatialContext.java b/org/locationtech/spatial4j/context/SpatialContext.java
+index 3817361..0ef8862 100644
+--- a/org/locationtech/spatial4j/context/SpatialContext.java
++++ b/org/locationtech/spatial4j/context/SpatialContext.java
+@@ -116,11 +116,11 @@ public class SpatialContext {
+   }
+ 
+   /** A factory for {@link Shape}s. */
+-  public ShapeFactory getShapeFactory() {
++  public ShapeFactory getShapeFactory() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(1);
+     return shapeFactory;
+   }
+ 
+-  public SupportedFormats getFormats() {
++  public SupportedFormats getFormats() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(5);
+     return formats;
+   }
+ 
+diff --git a/org/locationtech/spatial4j/context/SpatialContextFactory.java b/org/locationtech/spatial4j/context/SpatialContextFactory.java
+index 9f93f24..700b080 100644
+--- a/org/locationtech/spatial4j/context/SpatialContextFactory.java
++++ b/org/locationtech/spatial4j/context/SpatialContextFactory.java
+@@ -88,7 +88,7 @@ public class SpatialContextFactory {
+    * @param classLoader Optional, except when a class name is provided to an
+    *                    argument.
+    */
+-  public static SpatialContext makeSpatialContext(Map<String,String> args, ClassLoader classLoader) {
++  public static SpatialContext makeSpatialContext(Map<String,String> args, ClassLoader classLoader) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(9);
+     if (classLoader == null)
+       classLoader = SpatialContextFactory.class.getClassLoader();
+     SpatialContextFactory instance;
+@@ -109,7 +109,7 @@ public class SpatialContextFactory {
+     return instance.newSpatialContext();
+   }
+ 
+-  protected void init(Map<String, String> args, ClassLoader classLoader) {
++  protected void init(Map<String, String> args, ClassLoader classLoader) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(13);
+     this.args = args;
+     this.classLoader = classLoader;
+ 
+diff --git a/org/locationtech/spatial4j/context/jts/JtsSpatialContext.java b/org/locationtech/spatial4j/context/jts/JtsSpatialContext.java
+index a48258b..28acbac 100755
+--- a/org/locationtech/spatial4j/context/jts/JtsSpatialContext.java
++++ b/org/locationtech/spatial4j/context/jts/JtsSpatialContext.java
+@@ -43,7 +43,7 @@ public class JtsSpatialContext extends SpatialContext {
+ 
+   // TODO I expect to delete this eventually once the other deprecated methods in this class disappear
+   @Override
+-  public JtsShapeFactory getShapeFactory() {
++  public JtsShapeFactory getShapeFactory() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(17);
+     return (JtsShapeFactory) super.getShapeFactory();
+   }
+ 
+@@ -55,7 +55,7 @@ public class JtsSpatialContext extends SpatialContext {
+    * {@link org.locationtech.spatial4j.shape.ShapeCollection#relateContainsShortCircuits()}.
+    */
+   @Deprecated
+-  public boolean isAllowMultiOverlap() {
++  public boolean isAllowMultiOverlap() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(20);
+     return getShapeFactory().isAllowMultiOverlap();
+   }
+ 
+diff --git a/org/locationtech/spatial4j/context/jts/JtsSpatialContextFactory.java b/org/locationtech/spatial4j/context/jts/JtsSpatialContextFactory.java
+index 4689d53..54c0b9d 100644
+--- a/org/locationtech/spatial4j/context/jts/JtsSpatialContextFactory.java
++++ b/org/locationtech/spatial4j/context/jts/JtsSpatialContextFactory.java
+@@ -75,7 +75,7 @@ public class JtsSpatialContextFactory extends SpatialContextFactory {
+   }
+ 
+   @Override
+-  protected void checkDefaultFormats() {
++  protected void checkDefaultFormats() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(23);
+     if (readers.isEmpty() ) {
+       addReaderIfNoggitExists(GeoJSONReader.class);
+       readers.add(WKTReader.class);
+@@ -91,7 +91,7 @@ public class JtsSpatialContextFactory extends SpatialContextFactory {
+   }
+   
+   @Override
+-  protected void init(Map<String, String> args, ClassLoader classLoader) {
++  protected void init(Map<String, String> args, ClassLoader classLoader) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(26);
+     super.init(args, classLoader);
+ 
+     initField("datelineRule");
+diff --git a/org/locationtech/spatial4j/distance/CartesianDistCalc.java b/org/locationtech/spatial4j/distance/CartesianDistCalc.java
+index cd2a0a7..5f6ab70 100644
+--- a/org/locationtech/spatial4j/distance/CartesianDistCalc.java
++++ b/org/locationtech/spatial4j/distance/CartesianDistCalc.java
+@@ -39,7 +39,7 @@ public class CartesianDistCalc extends AbstractDistanceCalculator {
+   }
+ 
+   @Override
+-  public double distance(Point from, double toX, double toY) {
++  public double distance(Point from, double toX, double toY) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(10);
+     double xSquaredPlusYSquared = distanceSquared(from.getX(), from.getY(), toX, toY);
+     if (squared)
+       return xSquaredPlusYSquared;
+@@ -58,7 +58,7 @@ public class CartesianDistCalc extends AbstractDistanceCalculator {
+    * It respects the "squared" option.
+    */
+   // TODO add to generic DistanceCalculator and develop geo versions.
+-  public double distanceToLineSegment(Point point, double vX, double vY, double wX, double wY) {
++  public double distanceToLineSegment(Point point, double vX, double vY, double wX, double wY) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(14);
+     // Translated from: http://bl.ocks.org/mbostock/4218871
+     double d = distanceSquared(vX, vY, wX, wY);
+     double toX;
+diff --git a/org/locationtech/spatial4j/distance/DistanceUtils.java b/org/locationtech/spatial4j/distance/DistanceUtils.java
+index 3a6bccf..a2bb345 100644
+--- a/org/locationtech/spatial4j/distance/DistanceUtils.java
++++ b/org/locationtech/spatial4j/distance/DistanceUtils.java
+@@ -85,7 +85,7 @@ public class DistanceUtils {
+    *
+    */
+   @Deprecated
+-  public static double vectorDistance(double[] vec1, double[] vec2, double power) {
++  public static double vectorDistance(double[] vec1, double[] vec2, double power) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(2);
+     //only calc oneOverPower if it's needed
+     double oneOverPower = (power == 0 || power == 1.0 || power == 2.0) ? Double.NaN : 1.0 / power;
+     return vectorDistance(vec1, vec2, power, oneOverPower);
+@@ -102,7 +102,7 @@ public class DistanceUtils {
+    * @return The length.
+    */
+   @Deprecated
+-  public static double vectorDistance(double[] vec1, double[] vec2, double power, double oneOverPower) {
++  public static double vectorDistance(double[] vec1, double[] vec2, double power, double oneOverPower) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(6);
+     double result = 0;
+ 
+     if (power == 0) {
+diff --git a/org/locationtech/spatial4j/io/BinaryCodec.java b/org/locationtech/spatial4j/io/BinaryCodec.java
+index 0a39f47..d64df0a 100644
+--- a/org/locationtech/spatial4j/io/BinaryCodec.java
++++ b/org/locationtech/spatial4j/io/BinaryCodec.java
+@@ -47,7 +47,7 @@ public class BinaryCodec {
+     this.ctx = ctx;
+   }
+ 
+-  public Shape readShape(DataInput dataInput) throws IOException {
++  public Shape readShape(DataInput dataInput) throws IOException { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(29);
+     byte type = dataInput.readByte();
+     Shape s = readShapeByTypeIfSupported(dataInput, type);
+     if (s == null)
+@@ -55,7 +55,7 @@ public class BinaryCodec {
+     return s;
+   }
+ 
+-  public void writeShape(DataOutput dataOutput, Shape s) throws IOException {
++  public void writeShape(DataOutput dataOutput, Shape s) throws IOException { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(31);
+     boolean written = writeShapeByTypeIfSupported(dataOutput, s);
+     if (!written)
+       throw new IllegalArgumentException("Unsupported shape "+s.getClass());
+diff --git a/org/locationtech/spatial4j/io/GeoJSONReader.java b/org/locationtech/spatial4j/io/GeoJSONReader.java
+index ca80298..c990900 100644
+--- a/org/locationtech/spatial4j/io/GeoJSONReader.java
++++ b/org/locationtech/spatial4j/io/GeoJSONReader.java
+@@ -39,7 +39,7 @@ public class GeoJSONReader implements ShapeReader {
+   }
+ 
+   @Override
+-  public String getFormatName() {
++  public String getFormatName() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(33);
+     return ShapeIO.GeoJSON;
+   }
+ 
+@@ -55,7 +55,7 @@ public class GeoJSONReader implements ShapeReader {
+   }
+ 
+   @Override
+-  public Shape readIfSupported(Object value) throws InvalidShapeException {
++  public Shape readIfSupported(Object value) throws InvalidShapeException { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(35);
+     String v = value.toString().trim();
+     if (!(v.startsWith("{") && v.endsWith("}"))) {
+       return null;
+diff --git a/org/locationtech/spatial4j/io/GeoJSONWriter.java b/org/locationtech/spatial4j/io/GeoJSONWriter.java
+index 223ee9d..eb1825f 100644
+--- a/org/locationtech/spatial4j/io/GeoJSONWriter.java
++++ b/org/locationtech/spatial4j/io/GeoJSONWriter.java
+@@ -32,7 +32,7 @@ public class GeoJSONWriter implements ShapeWriter {
+   }
+ 
+   @Override
+-  public String getFormatName() {
++  public String getFormatName() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(37);
+     return ShapeIO.GeoJSON;
+   }
+ 
+diff --git a/org/locationtech/spatial4j/io/GeohashUtils.java b/org/locationtech/spatial4j/io/GeohashUtils.java
+index 90a044b..5589618 100644
+--- a/org/locationtech/spatial4j/io/GeohashUtils.java
++++ b/org/locationtech/spatial4j/io/GeohashUtils.java
+@@ -66,11 +66,11 @@ public class GeohashUtils {
+    * @param longitude Longitude to encode
+    * @return Geohash encoding of the longitude and latitude
+    */
+-  public static String encodeLatLon(double latitude, double longitude) {
++  public static String encodeLatLon(double latitude, double longitude) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(3);
+     return encodeLatLon(latitude, longitude, 12);
+   }
+ 
+-  public static String encodeLatLon(double latitude, double longitude, int precision) {
++  public static String encodeLatLon(double latitude, double longitude, int precision) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(7);
+     double[] latInterval = {-90.0, 90.0};
+     double[] lngInterval = {-180.0, 180.0};
+ 
+diff --git a/org/locationtech/spatial4j/io/LegacyShapeReader.java b/org/locationtech/spatial4j/io/LegacyShapeReader.java
+index c11bde3..a896302 100644
+--- a/org/locationtech/spatial4j/io/LegacyShapeReader.java
++++ b/org/locationtech/spatial4j/io/LegacyShapeReader.java
+@@ -51,7 +51,7 @@ public class LegacyShapeReader implements ShapeReader {
+    * If the first character is not a letter then it's assumed to be a point or rectangle. If that
+    * doesn't work out then an {@link org.locationtech.spatial4j.exception.InvalidShapeException} is thrown.
+    */
+-  public static Shape readShapeOrNull(String str, SpatialContext ctx) throws InvalidShapeException {
++  public static Shape readShapeOrNull(String str, SpatialContext ctx) throws InvalidShapeException { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(39);
+     if (str == null || str.length() == 0) {
+       throw new InvalidShapeException(str);
+     }
+@@ -122,7 +122,7 @@ public class LegacyShapeReader implements ShapeReader {
+   //-------
+ 
+   @Override
+-  public String getFormatName() {
++  public String getFormatName() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(41);
+     return ShapeIO.LEGACY;
+   }
+ 
+diff --git a/org/locationtech/spatial4j/io/LegacyShapeWriter.java b/org/locationtech/spatial4j/io/LegacyShapeWriter.java
+index 8b903d2..73b0000 100644
+--- a/org/locationtech/spatial4j/io/LegacyShapeWriter.java
++++ b/org/locationtech/spatial4j/io/LegacyShapeWriter.java
+@@ -51,12 +51,12 @@ public class LegacyShapeWriter implements ShapeWriter {
+    * @param shape Not null.
+    * @return Not null.
+    */
+-  public static String writeShape(Shape shape) {
++  public static String writeShape(Shape shape) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(43);
+     return writeShape(shape, makeNumberFormat(6));
+   }
+ 
+   /** Overloaded to provide a number format. */
+-  public static String writeShape(Shape shape, NumberFormat nf) {
++  public static String writeShape(Shape shape, NumberFormat nf) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(45);
+     if (shape instanceof Point) {
+       Point point = (Point) shape;
+       return nf.format(point.getX()) + " " + nf.format(point.getY());
+diff --git a/org/locationtech/spatial4j/io/OnePointsBuilder.java b/org/locationtech/spatial4j/io/OnePointsBuilder.java
+index e8e30c5..157b24f 100644
+--- a/org/locationtech/spatial4j/io/OnePointsBuilder.java
++++ b/org/locationtech/spatial4j/io/OnePointsBuilder.java
+@@ -21,14 +21,14 @@ public class OnePointsBuilder implements ShapeFactory.PointsBuilder<OnePointsBui
+   }
+ 
+   @Override
+-  public OnePointsBuilder pointXY(double x, double y) {
++  public OnePointsBuilder pointXY(double x, double y) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(11);
+     assert point == null;
+     point = shapeFactory.pointXY(x, y);
+     return this;
+   }
+ 
+   @Override
+-  public OnePointsBuilder pointXYZ(double x, double y, double z) {
++  public OnePointsBuilder pointXYZ(double x, double y, double z) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(15);
+     assert point == null;
+     point = shapeFactory.pointXYZ(x, y, z);
+     return this;
+diff --git a/org/locationtech/spatial4j/io/ParseUtils.java b/org/locationtech/spatial4j/io/ParseUtils.java
+index 4efaa8a..2707b0e 100644
+--- a/org/locationtech/spatial4j/io/ParseUtils.java
++++ b/org/locationtech/spatial4j/io/ParseUtils.java
+@@ -45,7 +45,7 @@ public class ParseUtils {
+    * @return An array of the values that make up the point (aka vector)
+    * @throws org.locationtech.spatial4j.exception.InvalidShapeException if the dimension specified does not match the number of values in the externalValue.
+    */
+-  public static String[] parsePoint(String[] out, String externalVal, int dimension) throws InvalidShapeException {
++  public static String[] parsePoint(String[] out, String externalVal, int dimension) throws InvalidShapeException { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(18);
+     //TODO: Should we support sparse vectors?
+     if (out == null || out.length != dimension) out = new String[dimension];
+     int idx = externalVal.indexOf(',');
+@@ -89,7 +89,7 @@ public class ParseUtils {
+    * @return An array of the values that make up the point (aka vector)
+    * @throws org.locationtech.spatial4j.exception.InvalidShapeException if the dimension specified does not match the number of values in the externalValue.
+    */
+-  public static double[] parsePointDouble(double[] out, String externalVal, int dimension) throws InvalidShapeException{
++  public static double[] parsePointDouble(double[] out, String externalVal, int dimension) throws InvalidShapeException{ org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(21);
+     if (out == null || out.length != dimension) out = new double[dimension];
+     int idx = externalVal.indexOf(',');
+     int end = idx;
+diff --git a/org/locationtech/spatial4j/io/PolyshapeReader.java b/org/locationtech/spatial4j/io/PolyshapeReader.java
+index d9a1067..a5272a5 100644
+--- a/org/locationtech/spatial4j/io/PolyshapeReader.java
++++ b/org/locationtech/spatial4j/io/PolyshapeReader.java
+@@ -45,7 +45,7 @@ public class PolyshapeReader implements ShapeReader {
+   }
+ 
+   @Override
+-  public String getFormatName() {
++  public String getFormatName() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(47);
+     return ShapeIO.POLY;
+   }
+ 
+@@ -55,7 +55,7 @@ public class PolyshapeReader implements ShapeReader {
+   }
+ 
+   @Override
+-  public Shape readIfSupported(Object value) throws InvalidShapeException {
++  public Shape readIfSupported(Object value) throws InvalidShapeException { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(49);
+     String v = value.toString().trim();
+     char first = v.charAt(0);
+     if(first >= '0' && first <= '9') {
+diff --git a/org/locationtech/spatial4j/io/jts/JtsWKTReaderShapeParser.java b/org/locationtech/spatial4j/io/jts/JtsWKTReaderShapeParser.java
+index 086579b..0fbeddb 100644
+--- a/org/locationtech/spatial4j/io/jts/JtsWKTReaderShapeParser.java
++++ b/org/locationtech/spatial4j/io/jts/JtsWKTReaderShapeParser.java
+@@ -43,7 +43,7 @@ public class JtsWKTReaderShapeParser extends org.locationtech.spatial4j.io.WKTRe
+   }
+ 
+   @Override
+-  public Shape parseIfSupported(String wktString) throws ParseException {
++  public Shape parseIfSupported(String wktString) throws ParseException { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(24);
+     return parseIfSupported(wktString, new WKTReader(getShapeFactory().getGeometryFactory()));
+   }
+ 
+@@ -57,7 +57,7 @@ public class JtsWKTReaderShapeParser extends org.locationtech.spatial4j.io.WKTRe
+    * @param reader <pre>new WKTReader(ctx.getGeometryFactory()))</pre>
+    * @return Non-Null
+    */
+-  protected Shape parseIfSupported(String str, WKTReader reader) throws ParseException {
++  protected Shape parseIfSupported(String str, WKTReader reader) throws ParseException { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(27);
+     try {
+       Geometry geom = reader.read(str);
+ 
+diff --git a/org/locationtech/spatial4j/jmhbench/MutationSwitch.java b/org/locationtech/spatial4j/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..8c1235e
+--- /dev/null
++++ b/org/locationtech/spatial4j/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.locationtech.spatial4j.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/locationtech/spatial4j/shape/ShapeCollection.java b/org/locationtech/spatial4j/shape/ShapeCollection.java
+index 75c9318..11c5686 100644
+--- a/org/locationtech/spatial4j/shape/ShapeCollection.java
++++ b/org/locationtech/spatial4j/shape/ShapeCollection.java
+@@ -53,7 +53,7 @@ public class ShapeCollection<S extends Shape> extends AbstractList<S> implements
+     this.bbox = computeBoundingBox(shapes, ctx);
+   }
+ 
+-  protected Rectangle computeBoundingBox(Collection<? extends Shape> shapes, SpatialContext ctx) {
++  protected Rectangle computeBoundingBox(Collection<? extends Shape> shapes, SpatialContext ctx) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(25);
+     if (shapes.isEmpty())
+       return ctx.makeRectangle(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+     BBoxCalculator bboxCalc = new BBoxCalculator(ctx);
+@@ -63,7 +63,7 @@ public class ShapeCollection<S extends Shape> extends AbstractList<S> implements
+     return bboxCalc.getBoundary();
+   }
+ 
+-  public List<S> getShapes() {
++  public List<S> getShapes() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(28);
+     return shapes;
+   }
+ 
+diff --git a/org/locationtech/spatial4j/shape/SpatialRelation.java b/org/locationtech/spatial4j/shape/SpatialRelation.java
+index 7ae1601..972e037 100644
+--- a/org/locationtech/spatial4j/shape/SpatialRelation.java
++++ b/org/locationtech/spatial4j/shape/SpatialRelation.java
+@@ -58,7 +58,7 @@ public enum SpatialRelation {
+    * or WITHIN; this method can't possible check for that so the caller might
+    * have to.
+    */
+-  public SpatialRelation transpose() {
++  public SpatialRelation transpose() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(30);
+     switch(this) {
+       case CONTAINS: return SpatialRelation.WITHIN;
+       case WITHIN: return SpatialRelation.CONTAINS;
+@@ -72,7 +72,7 @@ public enum SpatialRelation {
+    * combined into {@link ShapeCollection}.  If {@code other} is null then the
+    * result is "this".
+    */
+-  public SpatialRelation combine(SpatialRelation other) {
++  public SpatialRelation combine(SpatialRelation other) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(32);
+     // You can think of this algorithm as a state transition / automata.
+     // 1. The answer must be the same no matter what the order is.
+     // 2. If any INTERSECTS, then the result is INTERSECTS (done).
+diff --git a/org/locationtech/spatial4j/shape/impl/BBoxCalculator.java b/org/locationtech/spatial4j/shape/impl/BBoxCalculator.java
+index 4660418..bab420c 100644
+--- a/org/locationtech/spatial4j/shape/impl/BBoxCalculator.java
++++ b/org/locationtech/spatial4j/shape/impl/BBoxCalculator.java
+@@ -43,11 +43,11 @@ public class BBoxCalculator {
+     this.ctx = ctx;
+   }
+ 
+-  public void expandRange(Rectangle rect) {
++  public void expandRange(Rectangle rect) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(34);
+     expandRange(rect.getMinX(), rect.getMaxX(), rect.getMinY(), rect.getMaxY());
+   }
+ 
+-  public void expandRange(final double minX, final double maxX, double minY, double maxY) {
++  public void expandRange(final double minX, final double maxX, double minY, double maxY) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(36);
+     this.minY = Math.min(this.minY, minY);
+     this.maxY = Math.max(this.maxY, maxY);
+ 
+diff --git a/org/locationtech/spatial4j/shape/impl/BufferedLine.java b/org/locationtech/spatial4j/shape/impl/BufferedLine.java
+index 09b93a8..32743fe 100644
+--- a/org/locationtech/spatial4j/shape/impl/BufferedLine.java
++++ b/org/locationtech/spatial4j/shape/impl/BufferedLine.java
+@@ -136,12 +136,12 @@ public class BufferedLine extends BaseShape<SpatialContext> {
+   }
+ 
+   @Override
+-  public boolean isEmpty() {
++  public boolean isEmpty() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(4);
+     return pA.isEmpty();
+   }
+ 
+   @Override
+-  public Shape getBuffered(double distance, SpatialContext ctx) {
++  public Shape getBuffered(double distance, SpatialContext ctx) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(8);
+     return new BufferedLine(pA, pB, buf + distance, ctx);
+   }
+ 
+diff --git a/org/locationtech/spatial4j/shape/impl/BufferedLineString.java b/org/locationtech/spatial4j/shape/impl/BufferedLineString.java
+index 57730ee..d763fe6 100644
+--- a/org/locationtech/spatial4j/shape/impl/BufferedLineString.java
++++ b/org/locationtech/spatial4j/shape/impl/BufferedLineString.java
+@@ -81,12 +81,12 @@ public class BufferedLineString extends BaseShape<SpatialContext> {
+   }
+ 
+   @Override
+-  public boolean isEmpty() {
++  public boolean isEmpty() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(12);
+     return segments.isEmpty();
+   }
+ 
+   @Override
+-  public Shape getBuffered(double distance, SpatialContext ctx) {
++  public Shape getBuffered(double distance, SpatialContext ctx) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(16);
+     return ctx.makeBufferedLineString(getPoints(), buf + distance);
+   }
+ 
+diff --git a/org/locationtech/spatial4j/shape/impl/CircleImpl.java b/org/locationtech/spatial4j/shape/impl/CircleImpl.java
+index 47e78cc..f7ce4bf 100644
+--- a/org/locationtech/spatial4j/shape/impl/CircleImpl.java
++++ b/org/locationtech/spatial4j/shape/impl/CircleImpl.java
+@@ -40,7 +40,7 @@ public class CircleImpl extends BaseShape<SpatialContext> implements Circle {
+   }
+ 
+   @Override
+-  public void reset(double x, double y, double radiusDEG) {
++  public void reset(double x, double y, double radiusDEG) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(38);
+     assert ! isEmpty();
+     point.reset(x, y);
+     this.radiusDEG = radiusDEG;
+@@ -48,7 +48,7 @@ public class CircleImpl extends BaseShape<SpatialContext> implements Circle {
+   }
+ 
+   @Override
+-  public boolean isEmpty() {
++  public boolean isEmpty() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(40);
+     return point.isEmpty();
+   }
+ 
+diff --git a/org/locationtech/spatial4j/shape/impl/GeoCircle.java b/org/locationtech/spatial4j/shape/impl/GeoCircle.java
+index e6eea30..91c2726 100644
+--- a/org/locationtech/spatial4j/shape/impl/GeoCircle.java
++++ b/org/locationtech/spatial4j/shape/impl/GeoCircle.java
+@@ -31,7 +31,7 @@ public class GeoCircle extends CircleImpl {
+   }
+ 
+   @Override
+-  public void reset(double x, double y, double radiusDEG) {
++  public void reset(double x, double y, double radiusDEG) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(42);
+     super.reset(x, y, radiusDEG);
+     init();
+   }
+@@ -74,7 +74,7 @@ public class GeoCircle extends CircleImpl {
+   }
+ 
+   @Override
+-  protected double getYAxis() {
++  protected double getYAxis() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(44);
+     return horizAxisY;
+   }
+ 
+diff --git a/org/locationtech/spatial4j/shape/impl/InfBufLine.java b/org/locationtech/spatial4j/shape/impl/InfBufLine.java
+index 87d4768..c3ef2f1 100644
+--- a/org/locationtech/spatial4j/shape/impl/InfBufLine.java
++++ b/org/locationtech/spatial4j/shape/impl/InfBufLine.java
+@@ -79,7 +79,7 @@ public class InfBufLine {
+   }
+ 
+   /** INTERNAL AKA lineToPointDistance */
+-  public double distanceUnbuffered(Point c) {
++  public double distanceUnbuffered(Point c) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(46);
+     if (Double.isInfinite(slope))
+       return Math.abs(c.getX() - intercept);
+     // http://math.ucsd.edu/~wgarner/math4c/derivations/distance/distptline.htm
+@@ -101,7 +101,7 @@ public class InfBufLine {
+ //  }
+ 
+   /** INTERNAL: AKA lineToPointQuadrant */
+-  public int quadrant(Point c) {
++  public int quadrant(Point c) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(48);
+     //check vertical line case 1st
+     if (Double.isInfinite(slope)) {
+       //when slope is infinite, intercept is x intercept instead of y
+diff --git a/org/locationtech/spatial4j/shape/impl/PointImpl.java b/org/locationtech/spatial4j/shape/impl/PointImpl.java
+index 66ecfc7..e443f7e 100644
+--- a/org/locationtech/spatial4j/shape/impl/PointImpl.java
++++ b/org/locationtech/spatial4j/shape/impl/PointImpl.java
+@@ -29,7 +29,7 @@ public class PointImpl extends BaseShape<SpatialContext> implements Point {
+   }
+ 
+   @Override
+-  public boolean isEmpty() {
++  public boolean isEmpty() { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(50);
+     return Double.isNaN(x);
+   }
+ 
+diff --git a/org/locationtech/spatial4j/shape/impl/Range.java b/org/locationtech/spatial4j/shape/impl/Range.java
+index 94b58c4..bb6e5d2 100644
+--- a/org/locationtech/spatial4j/shape/impl/Range.java
++++ b/org/locationtech/spatial4j/shape/impl/Range.java
+@@ -20,14 +20,14 @@ import org.locationtech.spatial4j.shape.Rectangle;
+ public class Range {
+   protected final double min, max;
+ 
+-  public static Range xRange(Rectangle rect, SpatialContext ctx) {
++  public static Range xRange(Rectangle rect, SpatialContext ctx) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(19);
+     if (ctx.isGeo())
+       return new LongitudeRange(rect.getMinX(), rect.getMaxX());
+     else
+       return new Range(rect.getMinX(), rect.getMaxX());
+   }
+ 
+-  public static Range yRange(Rectangle rect, SpatialContext ctx) {
++  public static Range yRange(Rectangle rect, SpatialContext ctx) { org.locationtech.spatial4j.jmhbench.MutationSwitch.tick(22);
+     return new Range(rect.getMinY(), rect.getMaxY());
+   }
+ 

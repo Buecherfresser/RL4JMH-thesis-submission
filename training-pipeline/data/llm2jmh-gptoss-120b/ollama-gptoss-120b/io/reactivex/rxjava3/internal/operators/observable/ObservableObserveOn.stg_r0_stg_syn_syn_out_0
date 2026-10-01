@@ -1,0 +1,137 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableObserveOn}
+ * measuring throughput (items per second) under different configurations.
+ *
+ * The benchmark creates a hot Observable emitting a fixed number of integers,
+ * applies {@code observeOn} with configurable scheduler, delayError flag and buffer size,
+ * then consumes the items using a custom {@link Observer} that forwards each item to a {@link Blackhole}
+ * to avoid dead-code elimination.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between benchmark threads.
+ * - Use @Param to explore a matrix of configurations.
+ * - Use @Setup(Level.Iteration) to recreate the Observable for each iteration, ensuring a fresh state.
+ * - Use CountDownLatch to synchronously wait for the asynchronous flow to complete.
+ * - Keep the benchmark method short and side‑effect free (only Blackhole consumption).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class ObservableObserveOnBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable per subscription.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * Buffer size passed to observeOn.
+     */
+    @Param({ "128", "1024", "8192" })
+    public int bufferSize;
+
+    /**
+     * Whether observeOn should delay errors.
+     */
+    @Param({ "true", "false" })
+    public boolean delayError;
+
+    /**
+     * Scheduler type used by observeOn.
+     */
+    @Param({ "computation", "single", "io" })
+    public String schedulerName;
+
+    private Observable<Integer> observable;
+
+    @Setup(Level.Iteration)
+    public void setUp() {
+        // Create a simple cold Observable that emits a range of integers.
+        Observable<Integer> source = Observable.range(1, itemCount);
+        // Choose the scheduler based on the parameter.
+        switch(schedulerName) {
+            case "computation":
+                observable = source.observeOn(Schedulers.computation(), delayError, bufferSize);
+                break;
+            case "single":
+                observable = source.observeOn(Schedulers.single(), delayError, bufferSize);
+                break;
+            case "io":
+                observable = source.observeOn(Schedulers.io(), delayError, bufferSize);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported scheduler: " + schedulerName);
+        }
+    }
+
+    @Benchmark
+    public void observeOnThroughput(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        observable.subscribe(new Observer<Integer>() {
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                /* no-op */
+            }
+
+            @Override
+            public void onNext(Integer value) {
+                // Feed each emitted value to Blackhole to prevent dead‑code elimination.
+                bh.consume(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // In case of error, still count down to avoid hanging the benchmark.
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        // Wait for the asynchronous flow to finish before returning.
+        latch.await();
+    }
+}

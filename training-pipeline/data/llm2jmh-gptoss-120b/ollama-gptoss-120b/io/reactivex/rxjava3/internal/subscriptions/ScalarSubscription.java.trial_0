@@ -1,0 +1,106 @@
+```
+package io.reactivex.rxjava3.internal.subscriptions.benchmark;
+
+import io.reactivex.rxjava3.internal.subscriptions.ScalarSubscription;
+import io.reactivex.rxjava3.operators.QueueSubscription;
+import org.openjdk.jmh.annotations.*;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/**
+ * JMH benchmark for {@link ScalarSubscription}.
+ *
+ * The benchmark measures the throughput of the most frequently used
+ * operations: {@code request}, {@code cancel}, {@code poll},
+ * {@code isCancelled} and {@code isEmpty}.  The {@link DummySubscriber}
+ * is a no‑op implementation that avoids side‑effects while still
+ * exercising the subscription logic.
+ *
+ * Best practices applied:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to give each benchmark thread its own instance.</li>
+ *   <li>Initialize the subscription in {@code @Setup(Level.Trial)} to exclude construction cost.</li>
+ *   <li>Consume returned values with {@link org.openjdk.jmh.infra.Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Run in {@code Mode.Throughput} with a fixed time unit for clear, comparable results.</li>
+ *   <li>Provide a {@code @TearDown} method to reset the subscription between iterations.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ScalarSubscriptionBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        // Dummy subscriber that does nothing on onNext/onComplete/onError.
+        static final class DummySubscriber<T> implements Subscriber<T> {
+            @Override public void onSubscribe(Subscription s) { /* no‑op */ }
+            @Override public void onNext(T t) { /* no‑op */ }
+            @Override public void onError(Throwable t) { /* no‑op */ }
+            @Override public void onComplete() { /* no‑op */ }
+        }
+
+        // The subscription under test.
+        ScalarSubscription<Integer> subscription;
+
+        // A reusable Blackhole‑compatible flag for resetting state.
+        AtomicBoolean resetFlag = new AtomicBoolean();
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            subscription = new ScalarSubscription<>(new DummySubscriber<>(), 42);
+        }
+
+        /**
+         * Reset the internal state of the subscription between iterations.
+         * The {@code ScalarSubscription} does not expose a reset method,
+         * so we recreate it. This ensures each benchmark method works from a
+         * clean state without measuring allocation overhead.
+         */
+        @TearDown(Level.Iteration)
+        public void tearDown() {
+            // Re‑create the subscription to clear any state (requested/cancelled).
+            subscription = new ScalarSubscription<>(new DummySubscriber<>(), 42);
+            resetFlag.set(false);
+        }
+    }
+
+    @Benchmark
+    public void request(BenchmarkState state, Blackhole bh) {
+        // Request exactly one element; the subscription will emit the value and complete.
+        state.subscription.request(1);
+        // The subscription does not return a value, but we can check its internal state.
+        bh.consume(state.subscription.isCancelled());
+    }
+
+    @Benchmark
+    public void cancel(BenchmarkState state, Blackhole bh) {
+        state.subscription.cancel();
+        bh.consume(state.subscription.isCancelled());
+    }
+
+    @Benchmark
+    public void poll(BenchmarkState state, Blackhole bh) {
+        // Ensure the subscription is in the initial state.
+        // If a previous benchmark called request, we reset in tearDown.
+        Integer v = state.subscription.poll();
+        bh.consume(v);
+    }
+
+    @Benchmark
+    public void isCancelled(BenchmarkState state, Blackhole bh) {
+        bh.consume(state.subscription.isCancelled());
+    }
+
+    @Benchmark
+    public void isEmpty(BenchmarkState state, Blackhole bh) {
+        bh.consume(state.subscription.isEmpty());
+    }
+}
+```

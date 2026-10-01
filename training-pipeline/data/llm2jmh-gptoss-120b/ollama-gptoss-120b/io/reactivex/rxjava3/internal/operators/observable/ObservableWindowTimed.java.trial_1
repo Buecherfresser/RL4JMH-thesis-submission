@@ -1,0 +1,84 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Scheduler;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableWindowTimed}.
+ *
+ * Measures throughput of the window operator under various configurations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@Threads(1)
+public class ObservableWindowTimedBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        @Param({ "1000", "10000", "100000" })
+        public int itemCount;
+
+        @Param({ "10", "50", "100" })
+        public long timespanMs;
+
+        @Param({ "0", "20", "100" })
+        public long timeskipMs;
+
+        @Param({ "9223372036854775807", "1000" })
+        public long maxSize;
+
+        @Param({ "128", "1024" })
+        public int bufferSize;
+
+        @Param({ "false", "true" })
+        public boolean restartTimerOnMaxSize;
+
+        public Scheduler scheduler;
+        public Observable<Integer> source;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            scheduler = Schedulers.computation();
+            source = Observable.range(0, itemCount);
+        }
+    }
+
+    @Benchmark
+    public void windowTimedThroughput(BenchmarkState state, Blackhole bh) {
+        Observable<Observable<Integer>> windows;
+
+        // Exact mode (timeskip == 0) uses the overload with maxSize, bufferSize and restart flag.
+        if (state.timeskipMs == 0) {
+            windows = state.source.window(
+                    state.timespanMs,
+                    TimeUnit.MILLISECONDS,
+                    state.scheduler,
+                    state.maxSize,
+                    state.bufferSize,
+                    state.restartTimerOnMaxSize);
+        } else {
+            // Skip mode uses the timespan/timeskip overload.
+            windows = state.source.window(
+                    state.timespanMs,
+                    state.timeskipMs,
+                    TimeUnit.MILLISECONDS,
+                    state.scheduler);
+        }
+
+        // Consume each window fully; lastOrError() returns a Single, suitable for flatMapSingle.
+        windows
+                .flatMapSingle(w -> w.lastOrError())
+                .blockingSubscribe(bh::consume);
+    }
+}
+```

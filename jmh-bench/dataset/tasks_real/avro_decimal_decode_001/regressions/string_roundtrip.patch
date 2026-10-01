@@ -1,0 +1,14 @@
+--- a/bench/DecimalCodec.java
++++ b/bench/DecimalCodec.java
+@@ -7,7 +7,10 @@
+ 
+     private DecimalCodec() {}
+ 
++    // Regressed: detour through a decimal string round-trip.
+     public static BigDecimal decode(byte[] b, int scale) {
+-        return new BigDecimal(new BigInteger(b), scale);
++        String digits = new BigInteger(b).toString();
++        BigDecimal unscaled = new BigDecimal(digits);
++        return unscaled.scaleByPowerOfTen(-scale).setScale(scale);
+     }
+ }

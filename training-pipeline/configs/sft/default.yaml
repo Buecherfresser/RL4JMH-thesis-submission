@@ -1,0 +1,35 @@
+# Supervised fine-tuning stage for Gemma 4 E2B. See jmhgen.config.SFTConfig.
+base_model: google/gemma-4-E2B-it
+output_dir: outputs/sft
+dataset_path: data/sft/sft.jsonl
+seed: 42
+
+# Numerical recipe (kept identical across SFT/RFT/GRPO). LoRA on a bf16 base is the default:
+# no base-quantization confound, fits a 24GB GPU for E2B and a single 80GB GPU for the 31B
+# target. Switch finetune_mode to "full" (E2B gold-standard, ~80GB) or "qlora" (4-bit budget
+# fallback, ~12-16GB) without touching code; lower the learning_rate to ~1e-5 for "full".
+finetune_mode: lora        # full | lora | qlora
+precision: bf16            # bf16 | fp16 | fp32
+gradient_checkpointing: true
+attn_implementation: eager
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  # Loader expands short names to language_model.* paths (PEFT 0.19 skips exclude_modules).
+  exclude_modules: [vision_tower, audio_tower, multi_modal_projector]
+  bias: none
+
+# ~99% of samples are < ~8k tokens; p90 ~4.6k. At 6144 only ~3% of samples are
+# truncated (vs ~15% at 4096). Lower if VRAM is still tight on backward pass.
+max_seq_len: 6144
+learning_rate: 2.0e-4      # typical LoRA LR; use ~1e-5 for full fine-tuning
+per_device_batch_size: 1
+gradient_accumulation_steps: 8
+num_epochs: 3.0
+packing: false            # off so the Java prompt is cleanly masked (completion-only loss)
+completion_only_loss: true
+warmup_ratio: 0.03
+logging_steps: 5
+report_to: none           # set to "wandb"/"tensorboard" to log curves

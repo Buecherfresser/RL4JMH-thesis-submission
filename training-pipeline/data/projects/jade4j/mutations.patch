@@ -1,0 +1,624 @@
+diff --git a/de/neuland/jade4j/Jade4J.java b/de/neuland/jade4j/Jade4J.java
+index 64865ea..6e0a59d 100644
+--- a/de/neuland/jade4j/Jade4J.java
++++ b/de/neuland/jade4j/Jade4J.java
+@@ -26,11 +26,11 @@ public class Jade4J {
+ 		HTML, XML, XHTML
+ 	}
+ 
+-	public static String render(String filename, Map<String, Object> model) throws IOException, JadeCompilerException {
++	public static String render(String filename, Map<String, Object> model) throws IOException, JadeCompilerException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(1);
+ 		return render(filename, model, false);
+ 	}
+ 
+-	public static String render(String filename, Map<String, Object> model, boolean pretty) throws IOException, JadeCompilerException {
++	public static String render(String filename, Map<String, Object> model, boolean pretty) throws IOException, JadeCompilerException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(10);
+ 		JadeTemplate template = getTemplate(filename);
+ 		template.setPrettyPrint(pretty);
+ 		return templateToString(template, model);
+diff --git a/de/neuland/jade4j/JadeConfiguration.java b/de/neuland/jade4j/JadeConfiguration.java
+index a35e97e..49cb6db 100644
+--- a/de/neuland/jade4j/JadeConfiguration.java
++++ b/de/neuland/jade4j/JadeConfiguration.java
+@@ -50,7 +50,7 @@ public class JadeConfiguration {
+     private Map<String, String> lockCache = new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(
+             MAX_ENTRIES + 1).build();
+ 
+-    public JadeTemplate getTemplate(String name) throws IOException, JadeException {
++    public JadeTemplate getTemplate(String name) throws IOException, JadeException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(19);
+         if (caching) {
+             long lastModified = templateLoader.getLastModified(name);
+             JadeTemplate template = cache.get(getKeyValue(name, lastModified));
+@@ -85,7 +85,7 @@ public class JadeConfiguration {
+         return name + "-" + lastModified;
+     }
+ 
+-    public void renderTemplate(JadeTemplate template, Map<String, Object> model, Writer writer) throws JadeCompilerException {
++    public void renderTemplate(JadeTemplate template, Map<String, Object> model, Writer writer) throws JadeCompilerException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(27);
+         JadeModel jadeModel = new JadeModel(sharedVariables);
+         for (String filterName : filters.keySet()) {
+             jadeModel.addFilter(filterName, filters.get(filterName));
+diff --git a/de/neuland/jade4j/compiler/Compiler.java b/de/neuland/jade4j/compiler/Compiler.java
+index bb4a777..2a9c002 100644
+--- a/de/neuland/jade4j/compiler/Compiler.java
++++ b/de/neuland/jade4j/compiler/Compiler.java
+@@ -20,13 +20,13 @@ public class Compiler {
+ 		this.rootNode = rootNode;
+ 	}
+ 
+-	public String compileToString(JadeModel model) throws JadeCompilerException {
++	public String compileToString(JadeModel model) throws JadeCompilerException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(20);
+ 		StringWriter writer = new StringWriter();
+ 		compile(model, writer);
+ 		return writer.toString();
+ 	}
+ 
+-	public void compile(JadeModel model, Writer w) throws JadeCompilerException {
++	public void compile(JadeModel model, Writer w) throws JadeCompilerException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(28);
+ 		IndentWriter writer = new IndentWriter(w);
+ 		writer.setUseIndent(prettyPrint);
+ 		rootNode.execute(writer, model, template);
+diff --git a/de/neuland/jade4j/compiler/IndentWriter.java b/de/neuland/jade4j/compiler/IndentWriter.java
+index 79936cd..3b63f83 100644
+--- a/de/neuland/jade4j/compiler/IndentWriter.java
++++ b/de/neuland/jade4j/compiler/IndentWriter.java
+@@ -24,12 +24,12 @@ public class IndentWriter {
+     	return append(string);
+     }
+     
+-    public IndentWriter append(String string) {
++    public IndentWriter append(String string) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(35);
+         write(string);
+         return this;
+     }
+     
+-    public void increment() {
++    public void increment() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(42);
+         indent++;
+     }
+     
+diff --git a/de/neuland/jade4j/compiler/Utils.java b/de/neuland/jade4j/compiler/Utils.java
+index 0f664a0..60e8039 100644
+--- a/de/neuland/jade4j/compiler/Utils.java
++++ b/de/neuland/jade4j/compiler/Utils.java
+@@ -17,7 +17,7 @@ import de.neuland.jade4j.parser.node.ExpressionString;
+ public class Utils {
+ 	public static Pattern interpolationPattern = Pattern.compile("(\\\\)?([#!])\\{");
+ 	public static CharacterParser characterParser = new CharacterParser();
+-	public static List<Object> prepareInterpolate(String string, boolean xmlEscape) {
++	public static List<Object> prepareInterpolate(String string, boolean xmlEscape) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(2);
+ 		List<Object> result = new LinkedList<Object>();
+ 
+ 		Matcher matcher = interpolationPattern.matcher(string);
+@@ -97,7 +97,7 @@ public class Utils {
+ //  		str = str.substr(1, str.length - 2);
+ //
+ //	}
+-	public static String interpolate(List<Object> prepared, JadeModel model, ExpressionHandler expressionHandler) throws ExpressionException {
++	public static String interpolate(List<Object> prepared, JadeModel model, ExpressionHandler expressionHandler) throws ExpressionException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(11);
+ 
+ 		StringBuffer result = new StringBuffer();
+ 
+diff --git a/de/neuland/jade4j/expression/BooleanUtil.java b/de/neuland/jade4j/expression/BooleanUtil.java
+index 2dfc5fb..3835df9 100644
+--- a/de/neuland/jade4j/expression/BooleanUtil.java
++++ b/de/neuland/jade4j/expression/BooleanUtil.java
+@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
+ 
+ public class BooleanUtil {
+ 
+-	public static Boolean convert(Object in) {
++	public static Boolean convert(Object in) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(3);
+ 		if (in == null) {
+ 			return Boolean.FALSE;
+ 		} else if (in instanceof List) {
+diff --git a/de/neuland/jade4j/expression/JexlExpressionHandler.java b/de/neuland/jade4j/expression/JexlExpressionHandler.java
+index d8c512b..f11ddd6 100644
+--- a/de/neuland/jade4j/expression/JexlExpressionHandler.java
++++ b/de/neuland/jade4j/expression/JexlExpressionHandler.java
+@@ -29,11 +29,11 @@ public class JexlExpressionHandler implements ExpressionHandler {
+ 
+ 	}
+ 
+-	public Boolean evaluateBooleanExpression(String expression, JadeModel model) throws ExpressionException {
++	public Boolean evaluateBooleanExpression(String expression, JadeModel model) throws ExpressionException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(12);
+ 		return BooleanUtil.convert(evaluateExpression(expression, model));
+ 	}
+ 
+-	public Object evaluateExpression(String expression, JadeModel model) throws ExpressionException {
++	public Object evaluateExpression(String expression, JadeModel model) throws ExpressionException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(21);
+ 		try {
+ 			saveNonLocalVarAssignmentInModel(expression, model);
+ 			expression = removeVar(expression);
+diff --git a/de/neuland/jade4j/expression/JsExpressionHandler.java b/de/neuland/jade4j/expression/JsExpressionHandler.java
+index bfde48e..d00dd0c 100644
+--- a/de/neuland/jade4j/expression/JsExpressionHandler.java
++++ b/de/neuland/jade4j/expression/JsExpressionHandler.java
+@@ -21,12 +21,12 @@ public class JsExpressionHandler implements ExpressionHandler {
+     }
+ 
+     @Override
+-    public Boolean evaluateBooleanExpression(String expression, JadeModel model) throws ExpressionException {
++    public Boolean evaluateBooleanExpression(String expression, JadeModel model) throws ExpressionException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(29);
+         return BooleanUtil.convert(evaluateExpression(expression, model));
+     }
+ 
+     @Override
+-    public Object evaluateExpression(String expression, JadeModel model) throws ExpressionException {
++    public Object evaluateExpression(String expression, JadeModel model) throws ExpressionException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(36);
+         try{
+             Bindings bindings = jsEngine.createBindings();
+             bindings.putAll(model);
+diff --git a/de/neuland/jade4j/filter/CDATAFilter.java b/de/neuland/jade4j/filter/CDATAFilter.java
+index cc19424..8e974c1 100644
+--- a/de/neuland/jade4j/filter/CDATAFilter.java
++++ b/de/neuland/jade4j/filter/CDATAFilter.java
+@@ -8,7 +8,7 @@ import java.util.Map;
+ public class CDATAFilter implements Filter {
+ 
+ 	@Override
+-	public String convert(String source, List<Attr> attributes, Map<String, Object> model) {
++	public String convert(String source, List<Attr> attributes, Map<String, Object> model) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(4);
+ 		return "<![CDATA[" + source + "]]>";
+ 	}
+ 
+diff --git a/de/neuland/jade4j/filter/CssFilter.java b/de/neuland/jade4j/filter/CssFilter.java
+index 6ad17fa..dbd9d5b 100644
+--- a/de/neuland/jade4j/filter/CssFilter.java
++++ b/de/neuland/jade4j/filter/CssFilter.java
+@@ -7,7 +7,7 @@ import java.util.List;
+ public class CssFilter extends CachingFilter {
+ 
+     @Override
+-    protected String convert(String source, List<Attr> attributes) {
++    protected String convert(String source, List<Attr> attributes) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(13);
+         return "<style type=\"text/css\">" + source + "</style>";
+     }
+ 
+diff --git a/de/neuland/jade4j/filter/JsFilter.java b/de/neuland/jade4j/filter/JsFilter.java
+index f4b8787..b34523c 100644
+--- a/de/neuland/jade4j/filter/JsFilter.java
++++ b/de/neuland/jade4j/filter/JsFilter.java
+@@ -8,7 +8,7 @@ import java.util.List;
+ public class JsFilter extends CachingFilter {
+ 
+     @Override
+-    protected String convert(String source, List<Attr> attributes) {
++    protected String convert(String source, List<Attr> attributes) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(22);
+         return "<script type=\"text/javascript\">" + source + "</script>";
+     }
+ 
+diff --git a/de/neuland/jade4j/filter/MarkdownFilter.java b/de/neuland/jade4j/filter/MarkdownFilter.java
+index f276635..a9df472 100644
+--- a/de/neuland/jade4j/filter/MarkdownFilter.java
++++ b/de/neuland/jade4j/filter/MarkdownFilter.java
+@@ -12,7 +12,7 @@ public class MarkdownFilter extends CachingFilter {
+     HtmlRenderer renderer = HtmlRenderer.builder().build();
+ 
+ 	@Override
+-	protected String convert(String source, List<Attr> attributes) {
++	protected String convert(String source, List<Attr> attributes) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(30);
+ 		return renderer.render(parser.parse(source));
+ 	}
+ 
+diff --git a/de/neuland/jade4j/filter/PlainFilter.java b/de/neuland/jade4j/filter/PlainFilter.java
+index 37044a3..00b4431 100644
+--- a/de/neuland/jade4j/filter/PlainFilter.java
++++ b/de/neuland/jade4j/filter/PlainFilter.java
+@@ -8,7 +8,7 @@ import java.util.Map;
+ public class PlainFilter implements Filter {
+ 
+ 	@Override
+-	public String convert(String source, List<Attr> attributes, Map<String, Object> model) {
++	public String convert(String source, List<Attr> attributes, Map<String, Object> model) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(37);
+ 		return source;
+ 	}
+ 
+diff --git a/de/neuland/jade4j/filter/VerbatimFilter.java b/de/neuland/jade4j/filter/VerbatimFilter.java
+index 065040e..1df12d1 100644
+--- a/de/neuland/jade4j/filter/VerbatimFilter.java
++++ b/de/neuland/jade4j/filter/VerbatimFilter.java
+@@ -7,7 +7,7 @@ import java.util.Map;
+ 
+ public class VerbatimFilter implements Filter {
+     @Override
+-    public String convert(String source, List<Attr> attributes, Map<String, Object> model) {
++    public String convert(String source, List<Attr> attributes, Map<String, Object> model) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(43);
+         return "\n" + source + "\n";
+     }
+ }
+diff --git a/de/neuland/jade4j/jmhbench/MutationSwitch.java b/de/neuland/jade4j/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..45e0556
+--- /dev/null
++++ b/de/neuland/jade4j/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package de.neuland.jade4j.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/de/neuland/jade4j/lexer/AttributeLexer.java b/de/neuland/jade4j/lexer/AttributeLexer.java
+index 0c44ec8..c8cc153 100644
+--- a/de/neuland/jade4j/lexer/AttributeLexer.java
++++ b/de/neuland/jade4j/lexer/AttributeLexer.java
+@@ -26,7 +26,7 @@ public class AttributeLexer {
+         states.add(State.KEY);
+     }
+ 
+-    public AttributeList getToken(String input, int lineno) {
++    public AttributeList getToken(String input, int lineno) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(23);
+         token = new AttributeList(lineno);
+         for (int i = 0; i < input.length(); i++) {
+             parse(input.charAt(i));
+diff --git a/de/neuland/jade4j/lexer/Each.java b/de/neuland/jade4j/lexer/Each.java
+index 0a22f30..e7026cc 100644
+--- a/de/neuland/jade4j/lexer/Each.java
++++ b/de/neuland/jade4j/lexer/Each.java
+@@ -11,11 +11,11 @@ public class Each extends Token {
+ 		super(value, lineNumber);
+ 	}
+ 
+-	public void setCode(String code) {
++	public void setCode(String code) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(31);
+ 		this.code = code;		
+ 	}
+ 	
+-	public String getCode() {
++	public String getCode() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(38);
+ 		return code;
+ 	}
+ 
+diff --git a/de/neuland/jade4j/lexer/Lexer.java b/de/neuland/jade4j/lexer/Lexer.java
+index 370c804..0600599 100644
+--- a/de/neuland/jade4j/lexer/Lexer.java
++++ b/de/neuland/jade4j/lexer/Lexer.java
+@@ -226,11 +226,11 @@ public class Lexer {
+     
+ 
+ 
+-    public void consume(int len) {
++    public void consume(int len) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(44);
+         scanner.consume(len);
+     }
+ 
+-    public void defer(Token tok) {
++    public void defer(Token tok) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(48);
+         deferredTokens.add(tok);
+     }
+ 
+diff --git a/de/neuland/jade4j/lexer/token/AttributeList.java b/de/neuland/jade4j/lexer/token/AttributeList.java
+index f7dff6f..89d7f0e 100644
+--- a/de/neuland/jade4j/lexer/token/AttributeList.java
++++ b/de/neuland/jade4j/lexer/token/AttributeList.java
+@@ -16,11 +16,11 @@ public class AttributeList extends Token {
+ 		super(null, lineNumber);
+ 	}
+ 
+-	public List<Attribute> getAttributes() {
++	public List<Attribute> getAttributes() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(5);
+ 		return attributes;
+ 	}
+ 
+-	public void addAttribute(String name, String value, boolean escapedAttr) {
++	public void addAttribute(String name, String value, boolean escapedAttr) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(14);
+ 		attributes.add(new Attribute(name,value,escapedAttr));
+ 	}
+ 
+diff --git a/de/neuland/jade4j/model/JadeModel.java b/de/neuland/jade4j/model/JadeModel.java
+index 11f1b4c..88140cf 100644
+--- a/de/neuland/jade4j/model/JadeModel.java
++++ b/de/neuland/jade4j/model/JadeModel.java
+@@ -34,12 +34,12 @@ public class JadeModel implements Map<String, Object> {
+ 		put(LOCALS, this);
+ 	}
+ 
+-	public void pushScope() {
++	public void pushScope() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(6);
+ 		HashMap<String, Object> scope = new HashMap<String, Object>();
+ 		scopes.add(scope);
+ 	}
+ 
+-	public void popScope() {
++	public void popScope() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(15);
+ 		// first copy non local vars in first matching scope
+ 		Map<String, Object> lastScope = scopes.getLast();
+ 		if (lastScope.containsKey(NON_LOCAL_VARS)) {
+diff --git a/de/neuland/jade4j/parser/FileNameBuilder.java b/de/neuland/jade4j/parser/FileNameBuilder.java
+index e8cf61f..364ae79 100644
+--- a/de/neuland/jade4j/parser/FileNameBuilder.java
++++ b/de/neuland/jade4j/parser/FileNameBuilder.java
+@@ -8,7 +8,7 @@ public class FileNameBuilder {
+         this.path = path;
+     }
+ 
+-    public String build() {
++    public String build() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(7);
+         return path.endsWith(".jade") ? path : path + ".jade";
+     }
+ 
+diff --git a/de/neuland/jade4j/parser/Parser.java b/de/neuland/jade4j/parser/Parser.java
+index 5abb7c5..9b47497 100644
+--- a/de/neuland/jade4j/parser/Parser.java
++++ b/de/neuland/jade4j/parser/Parser.java
+@@ -56,7 +56,7 @@ public class Parser {
+         getContexts().push(this);
+     }
+ 
+-    public Node parse() {
++    public Node parse() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(16);
+         BlockNode block = new BlockNode();
+         block.setLineNumber(lexer.getLineno());
+         block.setFileName(filename);
+@@ -1029,7 +1029,7 @@ public class Parser {
+         }
+     }
+ 
+-    public Map<String, BlockNode> getBlocks() {
++    public Map<String, BlockNode> getBlocks() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(24);
+         return blocks;
+     }
+ 
+diff --git a/de/neuland/jade4j/parser/node/ExpressionString.java b/de/neuland/jade4j/parser/node/ExpressionString.java
+index 06b97b5..af53d53 100644
+--- a/de/neuland/jade4j/parser/node/ExpressionString.java
++++ b/de/neuland/jade4j/parser/node/ExpressionString.java
+@@ -4,7 +4,7 @@ public class ExpressionString {
+ 	private String value = null;
+ 	private boolean escape = false;
+ 
+-	public boolean isEscape() {
++	public boolean isEscape() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(32);
+ 		return escape;
+ 	}
+ 
+@@ -12,7 +12,7 @@ public class ExpressionString {
+ 		this.value = value;
+ 	}
+ 
+-	public String getValue() {
++	public String getValue() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(39);
+ 		return value;
+ 	}
+ 
+diff --git a/de/neuland/jade4j/parser/node/ValueString.java b/de/neuland/jade4j/parser/node/ValueString.java
+index f06fb3f..706b24b 100644
+--- a/de/neuland/jade4j/parser/node/ValueString.java
++++ b/de/neuland/jade4j/parser/node/ValueString.java
+@@ -11,11 +11,11 @@ public class ValueString {
+         this.value = value;
+     }
+ 
+-    public void setEscape(boolean escape) {
++    public void setEscape(boolean escape) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(45);
+         this.escape = escape;
+     }
+ 
+-    public boolean isEscape() {
++    public boolean isEscape() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(49);
+         return escape;
+     }
+ 
+diff --git a/de/neuland/jade4j/template/ClasspathTemplateLoader.java b/de/neuland/jade4j/template/ClasspathTemplateLoader.java
+index cdde013..78dc078 100644
+--- a/de/neuland/jade4j/template/ClasspathTemplateLoader.java
++++ b/de/neuland/jade4j/template/ClasspathTemplateLoader.java
+@@ -28,12 +28,12 @@ public class ClasspathTemplateLoader implements TemplateLoader {
+         this.extension = extension;
+     }
+ 
+-    public long getLastModified(String name) {
++    public long getLastModified(String name) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(8);
+         return -1;
+     }
+ 
+     @Override
+-    public Reader getReader(String name) throws IOException {
++    public Reader getReader(String name) throws IOException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(17);
+         return new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(name), getEncoding());
+     }
+ 
+diff --git a/de/neuland/jade4j/template/FileTemplateLoader.java b/de/neuland/jade4j/template/FileTemplateLoader.java
+index 0bda624..6a56ad5 100644
+--- a/de/neuland/jade4j/template/FileTemplateLoader.java
++++ b/de/neuland/jade4j/template/FileTemplateLoader.java
+@@ -37,13 +37,13 @@ public class FileTemplateLoader implements TemplateLoader {
+         }
+ 	}
+ 
+-	public long getLastModified(String name) {
++	public long getLastModified(String name) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(25);
+ 		File templateSource = getFile(name);
+ 		return templateSource.lastModified();
+ 	}
+ 
+ 	@Override
+-	public Reader getReader(String name) throws IOException {
++	public Reader getReader(String name) throws IOException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(33);
+ 		File templateSource = getFile(name);
+ 		return new InputStreamReader(new FileInputStream(templateSource), encoding);
+ 	}
+diff --git a/de/neuland/jade4j/template/JadeTemplate.java b/de/neuland/jade4j/template/JadeTemplate.java
+index e3ed142..b952faa 100644
+--- a/de/neuland/jade4j/template/JadeTemplate.java
++++ b/de/neuland/jade4j/template/JadeTemplate.java
+@@ -21,7 +21,7 @@ public class JadeTemplate {
+ 	private ExpressionHandler expressionHandler;
+ 	private String doctypeLine;
+ 
+-	public void process(JadeModel model, Writer writer) throws JadeCompilerException {
++	public void process(JadeModel model, Writer writer) throws JadeCompilerException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(40);
+ 		Compiler compiler = new Compiler(rootNode);
+ 		compiler.setPrettyPrint(prettyPrint);
+ 		compiler.setTemplate(this);
+@@ -29,7 +29,7 @@ public class JadeTemplate {
+ 		compiler.compile(model, writer);
+ 	}
+ 
+-	public boolean isPrettyPrint() {
++	public boolean isPrettyPrint() { de.neuland.jade4j.jmhbench.MutationSwitch.tick(46);
+ 		return prettyPrint;
+ 	}
+ 
+diff --git a/de/neuland/jade4j/template/ReaderTemplateLoader.java b/de/neuland/jade4j/template/ReaderTemplateLoader.java
+index 5b6039e..b1736b1 100644
+--- a/de/neuland/jade4j/template/ReaderTemplateLoader.java
++++ b/de/neuland/jade4j/template/ReaderTemplateLoader.java
+@@ -22,7 +22,7 @@ public class ReaderTemplateLoader implements TemplateLoader {
+ 	}
+ 
+ 	@Override
+-	public long getLastModified(String name) throws IOException {
++	public long getLastModified(String name) throws IOException { de.neuland.jade4j.jmhbench.MutationSwitch.tick(50);
+ 		checkName(name);
+ 		return -1;
+ 	}
+diff --git a/de/neuland/jade4j/util/ArgumentSplitter.java b/de/neuland/jade4j/util/ArgumentSplitter.java
+index 05779b2..fd274cc 100644
+--- a/de/neuland/jade4j/util/ArgumentSplitter.java
++++ b/de/neuland/jade4j/util/ArgumentSplitter.java
+@@ -23,7 +23,7 @@ public class ArgumentSplitter {
+      * @param arguments
+      * @return Parsed arguments
+      */
+-    public static List<String> split(String arguments) {
++    public static List<String> split(String arguments) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(34);
+         if(arguments == null) {
+             return Collections.emptyList();
+         }
+diff --git a/de/neuland/jade4j/util/CharacterParser.java b/de/neuland/jade4j/util/CharacterParser.java
+index 8f384f5..ced237a 100644
+--- a/de/neuland/jade4j/util/CharacterParser.java
++++ b/de/neuland/jade4j/util/CharacterParser.java
+@@ -34,12 +34,12 @@ public class CharacterParser {
+             super(message);
+         }
+     }
+-    public State parse(String src) throws SyntaxError {
++    public State parse(String src) throws SyntaxError { de.neuland.jade4j.jmhbench.MutationSwitch.tick(9);
+         Options options = new Options();
+         options.setEnd(src.length());
+         return this.parse(src,this.defaultState(),options);
+     }
+-    public State parse(String src,State state) throws SyntaxError {
++    public State parse(String src,State state) throws SyntaxError { de.neuland.jade4j.jmhbench.MutationSwitch.tick(18);
+         Options options = new Options();
+         options.setEnd(src.length());
+         return this.parse(src,state,options);
+diff --git a/de/neuland/jade4j/util/JadeEscape.java b/de/neuland/jade4j/util/JadeEscape.java
+index 6b6064a..c3390f3 100644
+--- a/de/neuland/jade4j/util/JadeEscape.java
++++ b/de/neuland/jade4j/util/JadeEscape.java
+@@ -28,10 +28,10 @@ public class JadeEscape {
+         return s;
+     }
+ 
+-    public static String escape(String html){
++    public static String escape(String html){ de.neuland.jade4j.jmhbench.MutationSwitch.tick(41);
+         String result = StringReplacer.replace(html, jade_match_html, new StringReplacerCallback() {
+             @Override
+-            public String replace(Matcher m) {
++            public String replace(Matcher m) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(47);
+                 return jade_encode_char(m.group(0));
+             }
+         });
+diff --git a/de/neuland/jade4j/util/StringReplacer.java b/de/neuland/jade4j/util/StringReplacer.java
+index d033e9b..59c78f4 100644
+--- a/de/neuland/jade4j/util/StringReplacer.java
++++ b/de/neuland/jade4j/util/StringReplacer.java
+@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+ 
+ public class StringReplacer {
+-	public static String replace(String input, Pattern regex, StringReplacerCallback callback) {
++	public static String replace(String input, Pattern regex, StringReplacerCallback callback) { de.neuland.jade4j.jmhbench.MutationSwitch.tick(26);
+ 		StringBuffer resultString = new StringBuffer();
+ 		Matcher regexMatcher = regex.matcher(input);
+ 		while (regexMatcher.find()) {

@@ -1,0 +1,110 @@
+```java
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.ParallelFlowable;
+import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.parallel.ParallelFailureHandling;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link ParallelDoOnNextTry}.
+ *
+ * Measures the throughput of the operator when the consumer never throws
+ * and the error handler always returns {@link ParallelFailureHandling#STOP}
+ * (which is never used in this scenario). The benchmark runs with a configurable
+ * parallelism level and element count.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class ParallelDoOnNextTryBenchmark {
+
+    /** Number of items emitted by the source per benchmark iteration. */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /** Parallelism degree of the source. */
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    /** The parallel flowable that will be wrapped by {@link ParallelDoOnNextTry}. */
+    private ParallelFlowable<Integer> source;
+
+    /** Consumer used by the operator – does nothing but blackhole the value. */
+    private Consumer<Integer> onNextConsumer;
+
+    /** Error handler – always STOP (won't be invoked because consumer never fails). */
+    private BiFunction<Long, Throwable, ParallelFailureHandling> errorHandler;
+
+    /** Subscriber that forwards received items to the JMH Blackhole. */
+    private static final class BlackholeSubscriber<T> extends DisposableSubscriber<T> {
+
+        private final Blackhole bh;
+        private final CountDownLatch latch;
+
+        BlackholeSubscriber(Blackhole bh, CountDownLatch latch) {
+            this.bh = bh;
+            this.latch = latch;
+        }
+
+        @Override
+        public void onNext(T t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            t.printStackTrace();
+            latch.countDown();
+        }
+
+        @Override
+        public void onComplete() {
+            latch.countDown();
+        }
+    }
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple range source and parallelize it
+        source = Flowable.range(1, itemCount).parallel(parallelism);
+
+        // Consumer that does nothing; actual consumption happens in the subscriber
+        onNextConsumer = v -> {
+            // no-op
+        };
+
+        // Error handler that never retries – returns STOP for any error (won't be used)
+        errorHandler = (retryCount, throwable) -> ParallelFailureHandling.STOP;
+    }
+
+    @Benchmark
+    public void parallelDoOnNextTry(Blackhole bh) throws InterruptedException {
+        // Wrap the source with the operator under test
+        ParallelDoOnNextTry<Integer> operator = new ParallelDoOnNextTry<>(source, onNextConsumer, errorHandler);
+
+        // Latch to wait for all parallel rails to complete
+        CountDownLatch latch = new CountDownLatch(parallelism);
+
+        // Prepare subscriber array
+        @SuppressWarnings("unchecked")
+        DisposableSubscriber<Integer>[] subscribers = new DisposableSubscriber[parallelism];
+        for (int i = 0; i < parallelism; i++) {
+            subscribers[i] = new BlackholeSubscriber<>(bh, latch);
+        }
+
+        // Subscribe all rails at once
+        operator.subscribe(subscribers);
+
+        // Wait for completion
+        latch.await();
+    }
+}
+```

@@ -1,0 +1,26 @@
+instance_id: hadoop_text_utf8_decode_001
+target_class: bench.Decoder
+expected_input_shapes: []
+tags:
+- string
+- hadoop
+- real-world
+provenance:
+  project: apache/hadoop
+  url: https://github.com/apache/hadoop
+  description: 'Inspired by the general Hadoop Text-decode pattern (no single
+
+    PR cited): callers frequently materialise a String from a
+
+    Text/byte[] using StandardCharsets.UTF_8 to avoid charset
+
+    name lookup. The simplified SUT here decodes a byte[] via
+
+    StandardCharsets.UTF_8; the full real class is not extracted.
+
+    '
+junit_test_path: tests/DecoderTest.java
+regressions:
+- id: charset_name_lookup
+  patch: regressions/charset_name_lookup.patch
+  description: Look up the charset by name on every decode call.

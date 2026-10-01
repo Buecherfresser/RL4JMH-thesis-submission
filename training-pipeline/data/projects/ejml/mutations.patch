@@ -1,0 +1,621 @@
+diff --git a/org/ejml/MapPrintFormat.java b/org/ejml/MapPrintFormat.java
+index 4dbea6b..4e4e8b9 100644
+--- a/org/ejml/MapPrintFormat.java
++++ b/org/ejml/MapPrintFormat.java
+@@ -121,7 +121,7 @@ public class MapPrintFormat extends PrintFormat {
+     /// Shorthand for adding a pair using [StringBuilder]
+     ///
+     /// @param isMore Are there more pairs that need to be added. If true it will add a separator
+-    public void pair( StringBuilder builder, String name, double value, boolean isMore ) {
++    public void pair( StringBuilder builder, String name, double value, boolean isMore ) { org.ejml.jmhbench.MutationSwitch.tick(1);
+         builder.append(formatKey.apply(name));
+         builder.append(valueSeparator);
+         builder.append(f(value));
+@@ -132,7 +132,7 @@ public class MapPrintFormat extends PrintFormat {
+     /// Shorthand for adding a pair as [String].
+     ///
+     /// @param isMore Are there more pairs that need to be added. If true it will add a separator
+-    public String pair( String name, double value, boolean isMore ) {
++    public String pair( String name, double value, boolean isMore ) { org.ejml.jmhbench.MutationSwitch.tick(11);
+         String txt = formatKey.apply(name) + valueSeparator + f(value);
+         return txt + (isMore ? pairSeparator : "");
+     }
+diff --git a/org/ejml/MapPrintReflect.java b/org/ejml/MapPrintReflect.java
+index 4cc5194..c09cff7 100644
+--- a/org/ejml/MapPrintReflect.java
++++ b/org/ejml/MapPrintReflect.java
+@@ -38,13 +38,13 @@ public final class MapPrintReflect {
+     private MapPrintReflect() {}
+ 
+     /// Reflection-based formatMap using [MapPrintFormat#DEFAULT].
+-    public static String formatMap( Object object ) {
++    public static String formatMap( Object object ) { org.ejml.jmhbench.MutationSwitch.tick(21);
+         return formatMap(object, MapPrintFormat.DEFAULT);
+     }
+ 
+     /// Reflection-based [MapFormattable#formatMap(MapPrintFormat)]. Walks every
+     /// non-static, non-synthetic field of the object's class and its superclasses.
+-    public static String formatMap( Object object, MapPrintFormat format ) {
++    public static String formatMap( Object object, MapPrintFormat format ) { org.ejml.jmhbench.MutationSwitch.tick(29);
+         Field[] fields = getFields(object.getClass());
+ 
+         // Resolve values first, dropping anything unreadable, so the trailing-separator
+diff --git a/org/ejml/TestDMaskUtil.java b/org/ejml/TestDMaskUtil.java
+index 192843b..0a3409a 100644
+--- a/org/ejml/TestDMaskUtil.java
++++ b/org/ejml/TestDMaskUtil.java
+@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertFalse;
+ 
+ public class TestDMaskUtil extends EjmlStandardJUnit {
+-    public static void assertMaskedResult( DMatrixSparseCSC unmaskedResult, DMatrixSparseCSC maskedResult, Mask mask ) {
++    public static void assertMaskedResult( DMatrixSparseCSC unmaskedResult, DMatrixSparseCSC maskedResult, Mask mask ) { org.ejml.jmhbench.MutationSwitch.tick(37);
+         for (int col = 0; col < unmaskedResult.numCols; col++) {
+             for (int row = 0; row < unmaskedResult.numRows; row++) {
+                 if (mask == null || mask.isSet(row, col)) {
+@@ -40,7 +40,7 @@ public class TestDMaskUtil extends EjmlStandardJUnit {
+         }
+     }
+ 
+-    public static void assertMaskedResult( double[] unmaskedResult, double[] maskedResult, Mask mask ) {
++    public static void assertMaskedResult( double[] unmaskedResult, double[] maskedResult, Mask mask ) { org.ejml.jmhbench.MutationSwitch.tick(45);
+         assertEquals(unmaskedResult.length, maskedResult.length);
+ 
+         for (int idx = 0; idx < unmaskedResult.length; idx++) {
+diff --git a/org/ejml/concurrency/EjmlConcurrency.java b/org/ejml/concurrency/EjmlConcurrency.java
+index e24f6f1..f412a2b 100644
+--- a/org/ejml/concurrency/EjmlConcurrency.java
++++ b/org/ejml/concurrency/EjmlConcurrency.java
+@@ -41,12 +41,12 @@ public class EjmlConcurrency extends ConcurrencyOps {
+ 	 *
+ 	 * @param maxThreads Maximum number of threads. &le 1 means it will not be threaded.
+ 	 */
+-	public static void setMaxThreads( int maxThreads ) {
++	public static void setMaxThreads( int maxThreads ) { org.ejml.jmhbench.MutationSwitch.tick(2);
+ 		ConcurrencyOps.setMaxThreads(maxThreads);
+ 		USE_CONCURRENT = maxThreads > 1;
+ 	}
+ 
+-	public static boolean isUseConcurrent() {
++	public static boolean isUseConcurrent() { org.ejml.jmhbench.MutationSwitch.tick(12);
+ 		return USE_CONCURRENT;
+ 	}
+ 
+diff --git a/org/ejml/data/DGrowArray.java b/org/ejml/data/DGrowArray.java
+index 870bdd6..8cbc130 100644
+--- a/org/ejml/data/DGrowArray.java
++++ b/org/ejml/data/DGrowArray.java
+@@ -35,11 +35,11 @@ public class DGrowArray {
+         this(0);
+     }
+ 
+-    public int length() {
++    public int length() { org.ejml.jmhbench.MutationSwitch.tick(3);
+         return length;
+     }
+ 
+-    public void reset() {reshape(0);}
++    public void reset() { org.ejml.jmhbench.MutationSwitch.tick(13);reshape(0);}
+ 
+     /**
+      * Changes the array's length and doesn't attempt to preserve previous values if a new array is required
+diff --git a/org/ejml/data/IGrowArray.java b/org/ejml/data/IGrowArray.java
+index d55470c..41d3545 100644
+--- a/org/ejml/data/IGrowArray.java
++++ b/org/ejml/data/IGrowArray.java
+@@ -36,11 +36,11 @@ public class IGrowArray {
+         this(0);
+     }
+ 
+-    public int length() {
++    public int length() { org.ejml.jmhbench.MutationSwitch.tick(22);
+         return length;
+     }
+ 
+-    public void reshape( int length ) {
++    public void reshape( int length ) { org.ejml.jmhbench.MutationSwitch.tick(30);
+         if (data.length < length) {
+             data = new int[length];
+         }
+diff --git a/org/ejml/data/UtilTestMatrix.java b/org/ejml/data/UtilTestMatrix.java
+index bcc8fda..bd8e5e0 100644
+--- a/org/ejml/data/UtilTestMatrix.java
++++ b/org/ejml/data/UtilTestMatrix.java
+@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.fail;
+ public class UtilTestMatrix extends EjmlStandardJUnit {
+ 
+     public static void checkMat(DMatrixRMaj mat , double ...d )
+-    {
++    { org.ejml.jmhbench.MutationSwitch.tick(38);
+         double[] data = mat.getData();
+ 
+         for( int i = 0; i < mat.getNumElements(); i++ ) {
+@@ -44,7 +44,7 @@ public class UtilTestMatrix extends EjmlStandardJUnit {
+     }
+ 
+     public static void checkMat(FMatrixRMaj mat , float ...d )
+-    {
++    { org.ejml.jmhbench.MutationSwitch.tick(46);
+         float[] data = mat.getData();
+ 
+         for( int i = 0; i < mat.getNumElements(); i++ ) {
+diff --git a/org/ejml/dense/row/decompose/UtilDecompositons_ZDRM.java b/org/ejml/dense/row/decompose/UtilDecompositons_ZDRM.java
+index afc2fd9..6633636 100644
+--- a/org/ejml/dense/row/decompose/UtilDecompositons_ZDRM.java
++++ b/org/ejml/dense/row/decompose/UtilDecompositons_ZDRM.java
+@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
+  */
+ public class UtilDecompositons_ZDRM {
+ 
+-    public static ZMatrixRMaj checkIdentity( @Nullable ZMatrixRMaj A, int numRows, int numCols ) {
++    public static ZMatrixRMaj checkIdentity( @Nullable ZMatrixRMaj A, int numRows, int numCols ) { org.ejml.jmhbench.MutationSwitch.tick(4);
+         if (A == null) {
+             return CommonOps_ZDRM.identity(numRows, numCols);
+         } else if (numRows != A.numRows || numCols != A.numCols)
+@@ -39,7 +39,7 @@ public class UtilDecompositons_ZDRM {
+         return A;
+     }
+ 
+-    public static ZMatrixRMaj checkZeros( @Nullable ZMatrixRMaj A, int numRows, int numCols ) {
++    public static ZMatrixRMaj checkZeros( @Nullable ZMatrixRMaj A, int numRows, int numCols ) { org.ejml.jmhbench.MutationSwitch.tick(14);
+         if (A == null) {
+             return new ZMatrixRMaj(numRows, numCols);
+         } else if (numRows != A.numRows || numCols != A.numCols)
+diff --git a/org/ejml/dense/row/decompose/qr/QrHelperFunctions_ZDRM.java b/org/ejml/dense/row/decompose/qr/QrHelperFunctions_ZDRM.java
+index cbaec00..c7014db 100644
+--- a/org/ejml/dense/row/decompose/qr/QrHelperFunctions_ZDRM.java
++++ b/org/ejml/dense/row/decompose/qr/QrHelperFunctions_ZDRM.java
+@@ -52,7 +52,7 @@ public class QrHelperFunctions_ZDRM {
+      * @param length Number of complex numebrs to consider
+      * @return magnitude
+      */
+-    public static double findMax( double[] u, int startU, int length ) {
++    public static double findMax( double[] u, int startU, int length ) { org.ejml.jmhbench.MutationSwitch.tick(23);
+         double max = -1;
+ 
+         int index = startU*2;
+@@ -78,7 +78,7 @@ public class QrHelperFunctions_ZDRM {
+      */
+     public static void divideElements( final int j, final int numRows, final double[] u,
+                                        final int startU,
+-                                       final double realA, final double imagA ) {
++                                       final double realA, final double imagA ) { org.ejml.jmhbench.MutationSwitch.tick(31);
+ 
+         double mag2 = realA*realA + imagA*imagA;
+ 
+diff --git a/org/ejml/dense/row/decomposition/UtilDecompositons_DDRM.java b/org/ejml/dense/row/decomposition/UtilDecompositons_DDRM.java
+index e4b864f..ce4f128 100644
+--- a/org/ejml/dense/row/decomposition/UtilDecompositons_DDRM.java
++++ b/org/ejml/dense/row/decomposition/UtilDecompositons_DDRM.java
+@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
+  */
+ public class UtilDecompositons_DDRM {
+ 
+-    public static DMatrixRMaj ensureIdentity( @Nullable DMatrixRMaj A, int numRows, int numCols ) {
++    public static DMatrixRMaj ensureIdentity( @Nullable DMatrixRMaj A, int numRows, int numCols ) { org.ejml.jmhbench.MutationSwitch.tick(39);
+         if (A == null) {
+             return CommonOps_DDRM.identity(numRows, numCols);
+         }
+@@ -38,7 +38,7 @@ public class UtilDecompositons_DDRM {
+         return A;
+     }
+ 
+-    public static DMatrixRMaj ensureZeros( @Nullable DMatrixRMaj A, int numRows, int numCols ) {
++    public static DMatrixRMaj ensureZeros( @Nullable DMatrixRMaj A, int numRows, int numCols ) { org.ejml.jmhbench.MutationSwitch.tick(47);
+         if (A == null) {
+             return new DMatrixRMaj(numRows, numCols);
+         }
+diff --git a/org/ejml/equation/Equation.java b/org/ejml/equation/Equation.java
+index e2ebf32..47514c6 100644
+--- a/org/ejml/equation/Equation.java
++++ b/org/ejml/equation/Equation.java
+@@ -283,7 +283,7 @@ public class Equation {
+     /// Specifies the seed used in random number generators
+     ///
+     /// @param seed New seed for random number generator
+-    public void setSeed( long seed ) {
++    public void setSeed( long seed ) { org.ejml.jmhbench.MutationSwitch.tick(48);
+         functions.managerTemp.getRandom().setSeed(seed);
+     }
+ 
+diff --git a/org/ejml/equation/Function.java b/org/ejml/equation/Function.java
+index c7e611c..9fc0b7f 100644
+--- a/org/ejml/equation/Function.java
++++ b/org/ejml/equation/Function.java
+@@ -33,7 +33,7 @@ public class Function {
+         this.name = name;
+     }
+ 
+-    public String getName() {
++    public String getName() { org.ejml.jmhbench.MutationSwitch.tick(5);
+         return name;
+     }
+ 
+diff --git a/org/ejml/equation/ManagerFunctions.java b/org/ejml/equation/ManagerFunctions.java
+index f72345f..de3111b 100644
+--- a/org/ejml/equation/ManagerFunctions.java
++++ b/org/ejml/equation/ManagerFunctions.java
+@@ -40,7 +40,7 @@ public class ManagerFunctions {
+     }
+ 
+     /// Returns true if the string matches the name of a function
+-    public boolean isFunctionName( String s ) {
++    public boolean isFunctionName( String s ) { org.ejml.jmhbench.MutationSwitch.tick(15);
+         if (input1.containsKey(s))
+             return true;
+         return inputN.containsKey(s);
+@@ -51,7 +51,7 @@ public class ManagerFunctions {
+     /// @param name function name
+     /// @param var0 Input variable
+     /// @return Resulting operation
+-    public @Nullable Operation.Info create( String name, Variable var0 ) {
++    public @Nullable Operation.Info create( String name, Variable var0 ) { org.ejml.jmhbench.MutationSwitch.tick(24);
+         Input1 func = input1.get(name);
+         if (func == null)
+             return null;
+diff --git a/org/ejml/equation/TokenList.java b/org/ejml/equation/TokenList.java
+index 5026c6f..fcd4d22 100644
+--- a/org/ejml/equation/TokenList.java
++++ b/org/ejml/equation/TokenList.java
+@@ -104,7 +104,7 @@ class TokenList {
+     /**
+      * Adds a new Token to the end of the linked list
+      */
+-    public void push( Token token ) {
++    public void push( Token token ) { org.ejml.jmhbench.MutationSwitch.tick(32);
+         size++;
+         if (first == null) {
+             first = token;
+@@ -125,7 +125,7 @@ class TokenList {
+      * @param where Where 'token' should be inserted after. if null the put at it at the beginning
+      * @param token The token that is to be inserted
+      */
+-    public void insert( @Nullable Token where, Token token ) {
++    public void insert( @Nullable Token where, Token token ) { org.ejml.jmhbench.MutationSwitch.tick(40);
+         if (where == null) {
+             // put at the front of the list
+             if (size == 0)
+diff --git a/org/ejml/generic/GenericMatrixOps_F64.java b/org/ejml/generic/GenericMatrixOps_F64.java
+index 959fb68..232cde8 100644
+--- a/org/ejml/generic/GenericMatrixOps_F64.java
++++ b/org/ejml/generic/GenericMatrixOps_F64.java
+@@ -35,7 +35,7 @@ public class GenericMatrixOps_F64 {
+ //        return ret;
+ //    }
+ 
+-    public static boolean isEquivalent( DMatrix a, DMatrix b, double tol ) {
++    public static boolean isEquivalent( DMatrix a, DMatrix b, double tol ) { org.ejml.jmhbench.MutationSwitch.tick(6);
+         if (a.getNumRows() != b.getNumRows() || a.getNumCols() != b.getNumCols())
+             return false;
+ 
+@@ -59,7 +59,7 @@ public class GenericMatrixOps_F64 {
+      * @param tol How close to zero or one each element needs to be.
+      * @return If it is within tolerance to an identity matrix.
+      */
+-    public static boolean isIdentity( DMatrix a, double tol ) {
++    public static boolean isIdentity( DMatrix a, double tol ) { org.ejml.jmhbench.MutationSwitch.tick(16);
+         for (int i = 0; i < a.getNumRows(); i++) {
+             for (int j = 0; j < a.getNumCols(); j++) {
+                 if (i == j) {
+diff --git a/org/ejml/jmhbench/MutationSwitch.java b/org/ejml/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..6264d29
+--- /dev/null
++++ b/org/ejml/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.ejml.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/ejml/masks/DMaskFactory.java b/org/ejml/masks/DMaskFactory.java
+index ca258e3..63b187b 100644
+--- a/org/ejml/masks/DMaskFactory.java
++++ b/org/ejml/masks/DMaskFactory.java
+@@ -24,11 +24,11 @@ import org.ejml.data.DMatrixSparseCSC;
+  * Utility class to get the corresponding mask builder based on a matrix or primitive array
+  */
+ public class DMaskFactory {
+-    public static DMaskPrimitive.Builder builder( double[] values ) {
++    public static DMaskPrimitive.Builder builder( double[] values ) { org.ejml.jmhbench.MutationSwitch.tick(7);
+         return new DMaskPrimitive.Builder(values);
+     }
+ 
+-    public static DMaskPrimitive.Builder builder( DMatrixD1 matrix ) {
++    public static DMaskPrimitive.Builder builder( DMatrixD1 matrix ) { org.ejml.jmhbench.MutationSwitch.tick(17);
+         return new DMaskPrimitive.Builder(matrix.data).withNumCols(matrix.numCols);
+     }
+ 
+diff --git a/org/ejml/masks/DMaskPrimitive.java b/org/ejml/masks/DMaskPrimitive.java
+index 6c59c48..bc1e787 100644
+--- a/org/ejml/masks/DMaskPrimitive.java
++++ b/org/ejml/masks/DMaskPrimitive.java
+@@ -41,13 +41,13 @@ public class DMaskPrimitive extends Mask {
+     }
+ 
+     @Override
+-    public boolean isSet( int row, int col ) {
++    public boolean isSet( int row, int col ) { org.ejml.jmhbench.MutationSwitch.tick(25);
+         // XOR as negated flips the mask flag
+         return negated ^ (values[row*numCols + col] != zeroElement);
+     }
+ 
+     @Override
+-    public int getNumCols() {
++    public int getNumCols() { org.ejml.jmhbench.MutationSwitch.tick(33);
+         return numCols;
+     }
+ 
+diff --git a/org/ejml/masks/DMaskSparse.java b/org/ejml/masks/DMaskSparse.java
+index d5be21e..4acef27 100644
+--- a/org/ejml/masks/DMaskSparse.java
++++ b/org/ejml/masks/DMaskSparse.java
+@@ -52,7 +52,7 @@ public class DMaskSparse extends Mask {
+     }
+ 
+     @Override
+-    public boolean isSet( int row, int col ) {
++    public boolean isSet( int row, int col ) { org.ejml.jmhbench.MutationSwitch.tick(41);
+         if (col != indexedColumn) {
+             return negated ^ (matrix.unsafe_get(row, col) != zeroElement);
+         } else {
+@@ -61,7 +61,7 @@ public class DMaskSparse extends Mask {
+     }
+ 
+     @Override
+-    public boolean isSet( int idx ) {
++    public boolean isSet( int idx ) { org.ejml.jmhbench.MutationSwitch.tick(49);
+         // assuming a column vector
+         return isSet(idx, 0);
+     }
+diff --git a/org/ejml/ops/ComplexMath_F64.java b/org/ejml/ops/ComplexMath_F64.java
+index cc0ee3d..472a9bd 100644
+--- a/org/ejml/ops/ComplexMath_F64.java
++++ b/org/ejml/ops/ComplexMath_F64.java
+@@ -35,7 +35,7 @@ public class ComplexMath_F64 {
+      * @param input Input complex number
+      * @param conj Complex conjugate of the input number
+      */
+-    public static void conj( Complex_F64 input, Complex_F64 conj ) {
++    public static void conj( Complex_F64 input, Complex_F64 conj ) { org.ejml.jmhbench.MutationSwitch.tick(8);
+         conj.real = input.real;
+         conj.imaginary = -input.imaginary;
+     }
+@@ -49,7 +49,7 @@ public class ComplexMath_F64 {
+      * @param b Complex number. Not modified.
+      * @param result Storage for output
+      */
+-    public static void plus( Complex_F64 a, Complex_F64 b, Complex_F64 result ) {
++    public static void plus( Complex_F64 a, Complex_F64 b, Complex_F64 result ) { org.ejml.jmhbench.MutationSwitch.tick(18);
+         result.real = a.real + b.real;
+         result.imaginary = a.imaginary + b.imaginary;
+     }
+diff --git a/org/ejml/ops/DConvertArrays.java b/org/ejml/ops/DConvertArrays.java
+index 34f579c..522c276 100644
+--- a/org/ejml/ops/DConvertArrays.java
++++ b/org/ejml/ops/DConvertArrays.java
+@@ -28,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
+  * @author Peter Abeles
+  */
+ public class DConvertArrays {
+-    public static DMatrixRMaj convert( double[][] src, @Nullable DMatrixRMaj dst ) {
++    public static DMatrixRMaj convert( double[][] src, @Nullable DMatrixRMaj dst ) { org.ejml.jmhbench.MutationSwitch.tick(26);
+         int rows = src.length;
+         if (rows == 0)
+             throw new IllegalArgumentException("Rows of src can't be zero");
+@@ -64,7 +64,7 @@ public class DConvertArrays {
+      * @param src is an input DMatrixRMaj
+      * @return a 2D array contains the same elements as the input matrix
+      */
+-    public static double[][] convert( DMatrixRMaj src ) {
++    public static double[][] convert( DMatrixRMaj src ) { org.ejml.jmhbench.MutationSwitch.tick(34);
+         double[][] array = new double[src.numRows][src.numCols];
+         for (int row = 0; row < src.numRows; row++) {
+             for (int column = 0; column < src.numCols; column++) {
+diff --git a/org/ejml/ops/SortCoupledArray_F64.java b/org/ejml/ops/SortCoupledArray_F64.java
+index 0114a4c..a3f4961 100644
+--- a/org/ejml/ops/SortCoupledArray_F64.java
++++ b/org/ejml/ops/SortCoupledArray_F64.java
+@@ -30,7 +30,7 @@ public class SortCoupledArray_F64 {
+ 
+     QuickSort_S32 quicksort = new QuickSort_S32();
+ 
+-    public void quick( int[] segments, int length, int[] valuesA, double[] valuesB ) {
++    public void quick( int[] segments, int length, int[] valuesA, double[] valuesB ) { org.ejml.jmhbench.MutationSwitch.tick(42);
+         for (int i = 1; i < length; i++) {
+             int x0 = segments[i - 1];
+             int x1 = segments[i];
+@@ -65,7 +65,7 @@ public class SortCoupledArray_F64 {
+         }
+     }
+ 
+-    public static void shellSort( int[] data, int offset, int length, int[] indexes ) {
++    public static void shellSort( int[] data, int offset, int length, int[] indexes ) { org.ejml.jmhbench.MutationSwitch.tick(50);
+         for (int i = 0; i < length; i++) {
+             indexes[i] = offset + i;
+         }
+diff --git a/org/ejml/simple/AutomaticSimpleMatrixConvert.java b/org/ejml/simple/AutomaticSimpleMatrixConvert.java
+index 5cc16a3..1ebed17 100644
+--- a/org/ejml/simple/AutomaticSimpleMatrixConvert.java
++++ b/org/ejml/simple/AutomaticSimpleMatrixConvert.java
+@@ -30,14 +30,14 @@ import org.ejml.ops.ConvertMatrixType;
+ public class AutomaticSimpleMatrixConvert {
+     MatrixType commonType;
+ 
+-    public void specify0( ConstMatrix<?> a, ConstMatrix<?>... inputs ) {
++    public void specify0( ConstMatrix<?> a, ConstMatrix<?>... inputs ) { org.ejml.jmhbench.MutationSwitch.tick(9);
+         var array = new ConstMatrix[inputs.length + 1];
+         System.arraycopy(inputs, 0, array, 0, inputs.length);
+         array[inputs.length] = a;
+         specify(array);
+     }
+ 
+-    public void specify( ConstMatrix<?>... inputs ) {
++    public void specify( ConstMatrix<?>... inputs ) { org.ejml.jmhbench.MutationSwitch.tick(19);
+         boolean dense = false;
+         boolean real = true;
+         int bits = 32;
+diff --git a/org/ejml/simple/SimpleEVD.java b/org/ejml/simple/SimpleEVD.java
+index 3831744..655b90a 100644
+--- a/org/ejml/simple/SimpleEVD.java
++++ b/org/ejml/simple/SimpleEVD.java
+@@ -52,7 +52,7 @@ public class SimpleEVD<T extends SimpleBase> {
+             throw new RuntimeException("Eigenvalue Decomposition failed");
+     }
+ 
+-    protected EigenDecomposition createEigen( MatrixType type ) {
++    protected EigenDecomposition createEigen( MatrixType type ) { org.ejml.jmhbench.MutationSwitch.tick(27);
+         return switch (type) {
+             case DDRM -> DecompositionFactory_DDRM.eig(mat.getNumCols(), true);
+             case FDRM -> DecompositionFactory_FDRM.eig(mat.getNumCols(), true);
+@@ -63,7 +63,7 @@ public class SimpleEVD<T extends SimpleBase> {
+     /**
+      * Returns a list of all the eigenvalues
+      */
+-    public List<Complex_F64> getEigenvalues() {
++    public List<Complex_F64> getEigenvalues() { org.ejml.jmhbench.MutationSwitch.tick(35);
+         List<Complex_F64> ret = new ArrayList<>();
+ 
+         if (mat.getType().getBits() == 64) {
+diff --git a/org/ejml/simple/SimpleMatrix.java b/org/ejml/simple/SimpleMatrix.java
+index ae559d4..8e8aea0 100644
+--- a/org/ejml/simple/SimpleMatrix.java
++++ b/org/ejml/simple/SimpleMatrix.java
+@@ -623,7 +623,7 @@ public class SimpleMatrix extends SimpleBase<SimpleMatrix> {
+      *
+      * @param internalMat The internal Matrix of the returned SimpleMatrix. Will be modified.
+      */
+-    public static SimpleMatrix wrap( Matrix internalMat ) {
++    public static SimpleMatrix wrap( Matrix internalMat ) { org.ejml.jmhbench.MutationSwitch.tick(43);
+         var ret = new SimpleMatrix();
+         ret.setMatrix(internalMat);
+         return ret;
+diff --git a/org/ejml/sparse/csc/CommonOpsWithSemiRing_DSCC.java b/org/ejml/sparse/csc/CommonOpsWithSemiRing_DSCC.java
+index fb7f972..887098f 100644
+--- a/org/ejml/sparse/csc/CommonOpsWithSemiRing_DSCC.java
++++ b/org/ejml/sparse/csc/CommonOpsWithSemiRing_DSCC.java
+@@ -35,7 +35,7 @@ import static org.ejml.UtilEjml.stringShapes;
+ public class CommonOpsWithSemiRing_DSCC {
+     private CommonOpsWithSemiRing_DSCC(){}
+ 
+-    public static DMatrixSparseCSC mult(DMatrixSparseCSC A, DMatrixSparseCSC B, @Nullable DMatrixSparseCSC output, DSemiRing semiRing) {
++    public static DMatrixSparseCSC mult(DMatrixSparseCSC A, DMatrixSparseCSC B, @Nullable DMatrixSparseCSC output, DSemiRing semiRing) { org.ejml.jmhbench.MutationSwitch.tick(28);
+         return mult(A, B, output, semiRing, null, null, null);
+     }
+ 
+@@ -51,7 +51,7 @@ public class CommonOpsWithSemiRing_DSCC {
+      * @param gx       (Optional) Storage for internal workspace. Can be null.
+      */
+     public static DMatrixSparseCSC mult(DMatrixSparseCSC A, DMatrixSparseCSC B, @Nullable DMatrixSparseCSC output, DSemiRing semiRing,
+-                                        @Nullable Mask mask, @Nullable IGrowArray gw, @Nullable DGrowArray gx) {
++                                        @Nullable Mask mask, @Nullable IGrowArray gw, @Nullable DGrowArray gx) { org.ejml.jmhbench.MutationSwitch.tick(36);
+         if (A.numCols != B.numRows)
+             throw new MatrixDimensionException("Inconsistent matrix shapes. " + stringShapes(A, B));
+         output = reshapeOrDeclare(output, A, A.numRows, B.numCols);
+diff --git a/org/ejml/sparse/csc/CommonOps_DSCC.java b/org/ejml/sparse/csc/CommonOps_DSCC.java
+index 519f0df..3ae04f0 100644
+--- a/org/ejml/sparse/csc/CommonOps_DSCC.java
++++ b/org/ejml/sparse/csc/CommonOps_DSCC.java
+@@ -54,7 +54,7 @@ public class CommonOps_DSCC {
+      *
+      * @return true if sorted and false if not
+      */
+-    public static boolean checkIndicesSorted( DMatrixSparseCSC A ) {
++    public static boolean checkIndicesSorted( DMatrixSparseCSC A ) { org.ejml.jmhbench.MutationSwitch.tick(44);
+         for (int j = 0; j < A.numCols; j++) {
+             int idx0 = A.col_idx[j];
+             int idx1 = A.col_idx[j + 1];
+diff --git a/org/ejml/sparse/csc/decomposition/qr/QrHelperFunctions_DSCC.java b/org/ejml/sparse/csc/decomposition/qr/QrHelperFunctions_DSCC.java
+index 6abc70a..9951270 100644
+--- a/org/ejml/sparse/csc/decomposition/qr/QrHelperFunctions_DSCC.java
++++ b/org/ejml/sparse/csc/decomposition/qr/QrHelperFunctions_DSCC.java
+@@ -46,7 +46,7 @@ public class QrHelperFunctions_DSCC {
+      * @param x (Input and Output) vector that the Householder is applied to. Modified.
+      */
+     public static void applyHouseholder( DMatrixSparseCSC V, int colV, double beta,
+-                                         double[] x ) {
++                                         double[] x ) { org.ejml.jmhbench.MutationSwitch.tick(10);
+         int idx0 = V.col_idx[colV];
+         int idx1 = V.col_idx[colV + 1];
+ 
+@@ -81,7 +81,7 @@ public class QrHelperFunctions_DSCC {
+      */
+     public static void rank1UpdateMultR( DMatrixSparseCSC V, int colV, double gamma,
+                                          DMatrixSparseCSC A, DMatrixSparseCSC C,
+-                                         @Nullable IGrowArray gw, @Nullable DGrowArray gx ) {
++                                         @Nullable IGrowArray gw, @Nullable DGrowArray gx ) { org.ejml.jmhbench.MutationSwitch.tick(20);
+         if (V.numRows != A.numRows)
+             throw new IllegalArgumentException("Number of rows in V and A must match");
+ 

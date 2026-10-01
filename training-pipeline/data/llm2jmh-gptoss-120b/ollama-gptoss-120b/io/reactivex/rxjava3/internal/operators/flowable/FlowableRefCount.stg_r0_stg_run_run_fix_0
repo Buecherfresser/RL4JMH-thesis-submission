@@ -1,0 +1,112 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.flowables.ConnectableFlowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.schedulers.Scheduler;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+/**
+ * JMH benchmark for {@link FlowableRefCount}.
+ *
+ * Two scenarios are measured:
+ * <ul>
+ *   <li>Subscribe and immediately cancel.</li>
+ *   <li>Subscribe, request a small number of items and consume them.</li>
+ * </ul>
+ *
+ * Each benchmark creates a fresh {@code FlowableRefCount} instance to avoid cross‑thread
+ * interference and to keep the measurement deterministic.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@Threads(Threads.MAX)
+@State(Scope.Benchmark)
+public class FlowableRefCountBenchmark {
+
+    /** Scheduler used for timeout handling (not used in the current benchmarks). */
+    private Scheduler scheduler;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Scheduler is kept only to illustrate that it can be injected if needed.
+        scheduler = Schedulers.single();
+    }
+
+    /**
+     * Benchmark that subscribes to a fresh {@code FlowableRefCount} and cancels immediately.
+     *
+     * @param bh Blackhole to prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void subscribeAndCancel(Blackhole bh) {
+        // Create a fresh source for each invocation.
+        Flowable<Integer> source = Flowable.range(1, 1000);
+        ConnectableFlowable<Integer> connectable = source.publish();
+        Flowable<Integer> refCounted = new FlowableRefCount<>(connectable);
+
+        refCounted.subscribe(new Subscriber<Integer>() {
+            private Subscription upstream;
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                // Immediate cancellation.
+                s.cancel();
+            }
+
+            @Override public void onNext(Integer t) { /* never called */ }
+            @Override public void onError(Throwable t) { /* ignore */ }
+            @Override public void onComplete() { /* ignore */ }
+        });
+
+        // Consume the reference so the JIT cannot eliminate the whole call.
+        bh.consume(refCounted);
+    }
+
+    /**
+     * Benchmark that subscribes to a fresh {@code FlowableRefCount}, requests a few items,
+     * and consumes them.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        // Fresh source per invocation.
+        Flowable<Integer> source = Flowable.range(1, 1000);
+        ConnectableFlowable<Integer> connectable = source.publish();
+        Flowable<Integer> refCounted = new FlowableRefCount<>(connectable);
+
+        refCounted.subscribe(new Subscriber<Integer>() {
+            private Subscription upstream;
+            private int remaining = 10; // number of items to consume
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                s.request(remaining);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+                if (--remaining == 0) {
+                    upstream.cancel();
+                }
+            }
+
+            @Override public void onError(Throwable t) { /* ignore */ }
+            @Override public void onComplete() { /* ignore */ }
+        });
+    }
+}
+```

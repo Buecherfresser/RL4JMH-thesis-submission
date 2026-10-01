@@ -1,0 +1,118 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmark for {@link io.reactivex.rxjava3.internal.operators.maybe.MaybeOnErrorComplete}.
+ *
+ * The benchmark measures the throughput of subscribing to a {@code Maybe} that terminates with an error
+ * and is transformed by {@code onErrorComplete} with a predicate that either swallows the error
+ * (completes) or propagates it.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the {@code Maybe} instances in @Setup to exclude allocation overhead from the measurement.
+ * - Use Blackhole to consume values and prevent dead‑code elimination.
+ * - Configure warm‑up, measurement, and fork parameters to obtain stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeOnErrorCompleteBenchmark {
+
+    /**
+     * Source that always fails with a RuntimeException.
+     */
+    private Maybe<Object> errorSource;
+
+    /**
+     * {@code Maybe} that completes when the predicate returns {@code true}.
+     */
+    private Maybe<Object> completeOnError;
+
+    /**
+     * {@code Maybe} that propagates the original error when the predicate returns {@code false}.
+     */
+    private Maybe<Object> propagateOnError;
+
+    /**
+     * Predicate that always returns {@code true}.
+     */
+    private static final Predicate<Throwable> ALWAYS_TRUE = e -> true;
+
+    /**
+     * Predicate that always returns {@code false}.
+     */
+    private static final Predicate<Throwable> ALWAYS_FALSE = e -> false;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a source that emits an error immediately.
+        errorSource = Maybe.error(new RuntimeException("benchmark error"));
+        // Apply the operator under test with both predicate variants.
+        completeOnError = errorSource.onErrorComplete(ALWAYS_TRUE);
+        propagateOnError = errorSource.onErrorComplete(ALWAYS_FALSE);
+    }
+
+    /**
+     * Benchmark the path where the predicate swallows the error and the downstream receives {@code onComplete}.
+     */
+    @Benchmark
+    public void onErrorComplete_swallowError(Blackhole bh) {
+        // blockingSubscribe blocks until termination, ensuring the whole chain is executed.
+        completeOnError.blockingSubscribe(// onSuccess (won't be called)
+        bh::consume, // onError (won't be called)
+        bh::consume, // onComplete
+        () -> {
+        });
+    }
+
+    /**
+     * Benchmark the path where the predicate does not swallow the error and the downstream receives {@code onError}.
+     */
+    @Benchmark
+    public void onErrorComplete_propagateError(Blackhole bh) {
+        propagateOnError.blockingSubscribe(// onSuccess (won't be called)
+        bh::consume, // onError (expected)
+        bh::consume, // onComplete (won't be called)
+        () -> {
+        });
+    }
+}

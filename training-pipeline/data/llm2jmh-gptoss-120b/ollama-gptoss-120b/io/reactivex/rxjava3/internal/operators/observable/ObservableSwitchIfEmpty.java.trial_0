@@ -1,0 +1,74 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for the {@code Observable.switchIfEmpty} operator.
+ *
+ * <p>Two scenarios are measured:
+ * <ul>
+ *   <li>Non‑empty upstream: the fallback {@code other} Observable is never subscribed.</li>
+ *   <li>Empty upstream: the fallback {@code other} Observable is subscribed after the upstream completes.</li>
+ * </ul>
+ *
+ * <p>The benchmarks run in {@link Mode#Throughput} to report operations per second.
+ * Blackhole is used to consume the emitted items and prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableSwitchIfEmptyBenchmark {
+
+    /** Number of items emitted by the non‑empty source and the fallback source. */
+    @Param({"1000"})
+    public int itemCount;
+
+    private Observable<Integer> nonEmptySource;
+    private Observable<Integer> emptySource;
+    private Observable<Integer> fallback;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Upstream that emits {@code itemCount} items.
+        nonEmptySource = Observable.range(1, itemCount);
+
+        // Upstream that completes without emitting any items.
+        emptySource = Observable.empty();
+
+        // Fallback Observable used when the upstream is empty.
+        fallback = Observable.range(itemCount + 1, itemCount);
+    }
+
+    /**
+     * Benchmark the {@code switchIfEmpty} operator when the upstream Observable is non‑empty.
+     *
+     * <p>The fallback Observable should never be subscribed.
+     */
+    @Benchmark
+    public void switchIfEmpty_NonEmpty(Blackhole bh) {
+        nonEmptySource
+                .switchIfEmpty(fallback)
+                .subscribe(bh::consume);
+    }
+
+    /**
+     * Benchmark the {@code switchIfEmpty} operator when the upstream Observable is empty.
+     *
+     * <p>The fallback Observable is subscribed after the upstream completes.
+     */
+    @Benchmark
+    public void switchIfEmpty_Empty(Blackhole bh) {
+        emptySource
+                .switchIfEmpty(fallback)
+                .subscribe(bh::consume);
+    }
+}
+```

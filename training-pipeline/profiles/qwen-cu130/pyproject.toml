@@ -1,0 +1,51 @@
+[project]
+# Qwen3.5 on RELEASED vLLM 0.23.0 (CUDA 13), replacing the hand-built cu128 wheel.
+#
+# Why this profile exists. The qwen-cu128 profile installs a vLLM built from git
+# (0.23.1rc1.dev1187+gdc9f845dd) so that Qwen3.5 could run on CUDA 12.8, which is what most
+# aisc-batch H100s ship. The cost of that choice is that TRL 1.7.1 declares support only for
+# vLLM 0.14.0-0.23.0, so the whole GRPO server path runs on an unsupported combination -- and
+# `trl vllm-serve` has never once started on it (8 attempts; it stalls right after
+# "Initializing a V1 LLM engine" while OpenAI mode serves the same model in 104 s).
+#
+# Released vLLM 0.23.0 already has everything Qwen3.5 needs:
+#   * models/qwen3_5.py + registry "Qwen3_5ForConditionalGeneration"
+#   * the GDN linear-attention path (layers/mamba/gdn/qwen_gdn_linear_attn)
+#   * --language-model-only as a first-class CLI flag
+#   * the same torch==2.11.0 pin
+# and it is inside TRL 1.7.1's supported range.
+#
+# The catch, and the reason cu128 is not an option here: the PyPI wheel is CUDA 13 only --
+# it declares nvidia-cutlass-dsl[cu13] and its _C.abi3.so links libcudart.so.13. So this
+# profile is cu130 and only runs on nodes whose driver is >= 13.0.
+name = "jmhgen-qwen-cu130"
+version = "0.1.0"
+description = "Qwen3.5 GRPO environment on released vLLM 0.23.0 (CUDA 13) + TRL 1.7.1."
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "jmhgen",
+    "torch==2.11.0",
+    "torchvision==0.26.0",
+    "torchaudio==2.11.0",
+    # Matches the gemma-cu130 stack, which is the only combination on this cluster known to
+    # start vLLM and train successfully.
+    "transformers>=5.5.1",
+    "trl>=1.7,<1.8",
+    "vllm==0.23.0",
+    "datasets>=4.0",
+    "accelerate>=1.0",
+    "peft>=0.15",
+    "bitsandbytes>=0.46",
+    "ray>=2.40",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+jmhgen = { path = "../..", editable = true }
+torch = { index = "pytorch-cu130" }
+torchvision = { index = "pytorch-cu130" }
+torchaudio = { index = "pytorch-cu130" }

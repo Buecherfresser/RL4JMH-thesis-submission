@@ -1,0 +1,3778 @@
+diff --git a/org/outerj/daisy/diff/DaisyDiff.java b/org/outerj/daisy/diff/DaisyDiff.java
+index 09f9e61..13d741f 100644
+--- a/org/outerj/daisy/diff/DaisyDiff.java
++++ b/org/outerj/daisy/diff/DaisyDiff.java
+@@ -39,7 +39,7 @@ public class DaisyDiff {
+      */
+     public static void diffHTML(InputSource oldSource, InputSource newSource,
+             ContentHandler consumer, String prefix, Locale locale)
+-            throws SAXException, IOException {
++            throws SAXException, IOException { org.outerj.daisy.jmhbench.MutationSwitch.tick(28);
+ 
+         DomTreeBuilder oldHandler = new DomTreeBuilder();
+         XMLReader xr1 = XMLReaderFactory.createXMLReader();
+@@ -66,7 +66,7 @@ public class DaisyDiff {
+      * the specified consumer.
+      */
+     public static void diffTag(String oldText, String newText,
+-            ContentHandler consumer) throws Exception {
++            ContentHandler consumer) throws Exception { org.outerj.daisy.jmhbench.MutationSwitch.tick(29);
+         consumer.startDocument();
+         TagComparator oldComp = new TagComparator(oldText);
+         TagComparator newComp = new TagComparator(newText);
+diff --git a/org/outerj/daisy/diff/HtmlCleaner.java b/org/outerj/daisy/diff/HtmlCleaner.java
+index 62994ca..eafebc2 100644
+--- a/org/outerj/daisy/diff/HtmlCleaner.java
++++ b/org/outerj/daisy/diff/HtmlCleaner.java
+@@ -35,7 +35,7 @@ public class HtmlCleaner {
+     }
+ 
+     public void cleanAndParse(InputSource source, ContentHandler consumer)
+-            throws IOException, SAXException {
++            throws IOException, SAXException { org.outerj.daisy.jmhbench.MutationSwitch.tick(30);
+         ContentHandler cleanupFilter = filter.xsl(consumer,
+                 "xslfilter/cleanup.xsl");
+         parser.parse(source, cleanupFilter);
+diff --git a/org/outerj/daisy/diff/Main.java b/org/outerj/daisy/diff/Main.java
+index 2ef82fc..7a8b330 100644
+--- a/org/outerj/daisy/diff/Main.java
++++ b/org/outerj/daisy/diff/Main.java
+@@ -1,271 +1,271 @@
+-package org.outerj.daisy.diff;
+-
+-import java.io.BufferedReader;
+-import java.io.File;
+-import java.io.FileInputStream;
+-import java.io.IOException;
+-import java.io.InputStream;
+-import java.io.InputStreamReader;
+-import java.net.URI;
+-import java.net.URISyntaxException;
+-import java.util.Locale;
+-
+-import javax.xml.transform.TransformerFactory;
+-import javax.xml.transform.sax.SAXTransformerFactory;
+-import javax.xml.transform.sax.TransformerHandler;
+-import javax.xml.transform.stream.StreamResult;
+-
+-import org.outerj.daisy.diff.html.HTMLDiffer;
+-import org.outerj.daisy.diff.html.HtmlSaxDiffOutput;
+-import org.outerj.daisy.diff.html.TextNodeComparator;
+-import org.outerj.daisy.diff.html.dom.DomTreeBuilder;
+-import org.xml.sax.ContentHandler;
+-import org.xml.sax.InputSource;
+-import org.xml.sax.SAXException;
+-import org.xml.sax.helpers.AttributesImpl;
+-
+-public class Main {
+-  static boolean quietMode = false;
+-
+-    public static void main(String[] args) throws URISyntaxException {
+-
+-        if (args.length < 2)
+-            help();
+-
+-        boolean htmlDiff = true;
+-        boolean htmlOut = true;
+-        String outputFileName = "daisydiff.htm";
+-        String[] css = new String[]{};
+-
+-        InputStream oldStream = null;
+-        InputStream newStream = null;
+-
+-        try {
+-            for (int i = 2; i < args.length; i++) {
+-                String[] split = args[i].split("=");
+-                if (split[0].equalsIgnoreCase("--file")) {
+-                    outputFileName = split[1];
+-                } else if (split[0].equalsIgnoreCase("--type")) {
+-                    if (split[1].equalsIgnoreCase("tag")) {
+-                        htmlDiff = false;
+-                    }
+-                } else if (split[0].equalsIgnoreCase("--css")) {
+-                    css = split[1].split(";");
+-                } else if (split[0].equalsIgnoreCase("--output")) {
+-                    if (split[1].equalsIgnoreCase("xml")) {
+-                        htmlOut = false;
+-                    }
+-                } else if (split[0].equals("--q")){
+-                  quietMode = true;
+-                } else{
+-                    help();
+-                }
+-
+-            }
+-            File outputFile= new File(outputFileName);
+-            try {
+-                outputFile.createNewFile(); // Fail if outputFileName is malformed. Otherwise result.setResult() below would silently supress an exception (at least with jdk1.8.0_65). Then calling postProcess.endDocument() below would fail with confusing "javax.xml.transform.TransformerException: org.xml.sax.SAXException: setResult() must be called prior to startDocument()."
+-            }
+-            catch( IOException e ) {
+-                System.err.println( "Filepath " +outputFileName+ " is malformed, or some of its folders don't exist, or you don't have write access." );
+-                return;
+-            }
+-            if (!quietMode){
+-              System.out.println("Daisy Diff https://github.com/DaisyDiff/DaisyDiff");
+-              System.out.println("Comparing documents: " +args[0]+ " and " +args[1] );
+-              System.out.println( "Diff type: " +(
+-                htmlDiff
+-                ? "html"
+-                : "tag"
+-              ) );
+-              System.out.println("Writing "+(htmlOut?"html":"xml")+" output to " + outputFileName);
+-            }
+-
+-            if(css.length>0){
+-                if (!quietMode)
+-                  System.out.println("Adding external css files:");
+-                for(String cssLink:css){
+-                    System.out.println("  "+cssLink);
+-                }
+-            }
+-            if (!quietMode){
+-              System.out.println("");
+-              System.out.print(".");
+-            }
+-            SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
+-                    .newInstance();
+-
+-            TransformerHandler result = tf.newTransformerHandler();
+-            // If the file path were malformed, then the following
+-            result.setResult(new StreamResult(outputFile));
+-
+-
+-            if (args[0].startsWith("http://")) {
+-                oldStream = new URI(args[0]).toURL().openStream();
+-            }
+-            else {
+-                oldStream = new FileInputStream(args[0]);
+-            }
+-            if (args[1].startsWith("http://")) {
+-                newStream = new URI(args[1]).toURL().openStream();
+-            }
+-            else {
+-                newStream = new FileInputStream(args[1]);
+-            }
+-
+-            XslFilter filter = new XslFilter();
+-
+-            if (htmlDiff) {
+-
+-                ContentHandler postProcess = htmlOut? filter.xsl(result,
+-                        "xslfilter/htmlheader.xsl"):result;
+-
+-                Locale locale = Locale.getDefault();
+-                String prefix = "diff";
+-
+-                HtmlCleaner cleaner = new HtmlCleaner();
+-
+-                InputSource oldSource = new InputSource(oldStream);
+-                InputSource newSource = new InputSource(newStream);
+-
+-                DomTreeBuilder oldHandler = new DomTreeBuilder();
+-                cleaner.cleanAndParse(oldSource, oldHandler);
+-                System.out.print(".");
+-                TextNodeComparator leftComparator = new TextNodeComparator(
+-                        oldHandler, locale);
+-
+-                DomTreeBuilder newHandler = new DomTreeBuilder();
+-                cleaner.cleanAndParse(newSource, newHandler);
+-                System.out.print(".");
+-                TextNodeComparator rightComparator = new TextNodeComparator(
+-                        newHandler, locale);
+-
+-                postProcess.startDocument();
+-                postProcess.startElement("", "diffreport", "diffreport",
+-                        new AttributesImpl());
+-                doCSS(css, postProcess);
+-                postProcess.startElement("", "diff", "diff",
+-                        new AttributesImpl());
+-                HtmlSaxDiffOutput output = new HtmlSaxDiffOutput(postProcess,
+-                        prefix);
+-
+-                HTMLDiffer differ = new HTMLDiffer(output);
+-                differ.diff(leftComparator, rightComparator);
+-                System.out.print(".");
+-                postProcess.endElement("", "diff", "diff");
+-                postProcess.endElement("", "diffreport", "diffreport");
+-                postProcess.endDocument();
+-
+-            } else {
+-
+-                ContentHandler postProcess = htmlOut? filter.xsl(result,
+-                        "xslfilter/tagheader.xsl"):result;
+-                postProcess.startDocument();
+-                postProcess.startElement("", "diffreport", "diffreport",
+-                        new AttributesImpl());
+-                postProcess.startElement("", "diff", "diff",
+-                        new AttributesImpl());
+-                System.out.print(".");
+-
+-
+-                InputStreamReader oldReader = null;
+-                BufferedReader oldBuffer = null;
+-
+-                InputStreamReader newISReader = null;
+-                BufferedReader newBuffer = null;
+-                try {
+-                    oldReader = new InputStreamReader(oldStream);
+-                    oldBuffer = new BufferedReader(oldReader);
+-
+-                    newISReader = new InputStreamReader(newStream);
+-                    newBuffer = new BufferedReader(newISReader);
+-                    DaisyDiff.diffTag(oldBuffer, newBuffer, postProcess);
+-
+-                } catch (Exception e) {
+-                    e.printStackTrace();
+-                } finally {
+-                    oldBuffer.close();
+-                    newBuffer.close();
+-                    oldReader.close();
+-                    newISReader.close();
+-                }
+-
+-
+-                System.out.print(".");
+-                postProcess.endElement("", "diff", "diff");
+-                postProcess.endElement("", "diffreport", "diffreport");
+-                postProcess.endDocument();
+-            }
+-
+-        } catch (Throwable e) {
+-          if (quietMode){
+-            System.out.println(e);
+-          } else {
+-            e.printStackTrace();
+-            if (e.getCause() != null) {
+-                e.getCause().printStackTrace();
+-            }
+-            if (e instanceof SAXException) {
+-                ((SAXException) e).getException().printStackTrace();
+-            }
+-            help();
+-          }
+-        } finally {
+-            try {
+-                if(oldStream != null) oldStream.close();
+-            } catch (IOException e) {
+-                //ignore this exception
+-            }
+-            try {
+-                if(newStream != null) newStream.close();
+-            } catch (IOException e) {
+-                //ignore this exception
+-            }
+-        }
+-        if (quietMode)
+-          System.out.println();
+-        else
+-          System.out.println("done");
+-
+-    }
+-
+-    private static void doCSS(String[] css, ContentHandler handler) throws SAXException {
+-        handler.startElement("", "css", "css",
+-                new AttributesImpl());
+-        for(String cssLink : css){
+-            AttributesImpl attr = new AttributesImpl();
+-            attr.addAttribute("", "href", "href", "CDATA", cssLink);
+-            attr.addAttribute("", "type", "type", "CDATA", "text/css");
+-            attr.addAttribute("", "rel", "rel", "CDATA", "stylesheet");
+-            handler.startElement("", "link", "link",
+-                    attr);
+-            handler.endElement("", "link", "link");
+-        }
+-
+-        handler.endElement("", "css", "css");
+-
+-    }
+-
+-    private static void help() {
+-        System.out.println("==========================");
+-        System.out.println("DAISY DIFF HELP:");
+-        System.out.println("java -jar daisydiff.jar [oldHTML] [newHTML]");
+-        System.out
+-                .println("--file=[filename] - Write output to the specified file.");
+-        System.out
+-                .println("--type=[html/tag] - Use the html (default) diff algorithm or the tag diff.");
+-        System.out.println("--css=[cssfile1;cssfile2;cssfile3] - Add external CSS files.");
+-        System.out.println("--output=[html/xml] - Write html (default) or xml output.");
+-        System.out.println("--q  - Generate less console output.");
+-        System.out.println("");
+-        System.out.println("EXAMPLES: ");
+-        System.out.println("(1)");
+-        System.out
+-                .println("java -jar daisydiff.jar http://web.archive.org/web/20070107145418/http://news.bbc.co.uk/ http://web.archive.org/web/20070107182640/http://news.bbc.co.uk/ --css=http://web.archive.org/web/20070107145418/http://news.bbc.co.uk/nol/shared/css/news_r5.css");
+-        System.out.println("(2)");
+-        System.out.println("java -jar daisydiff.jar http://cocoondev.org/wiki/291-cd/version/15/part/SimpleDocumentContent/data http://cocoondev.org/wiki/291-cd/version/17/part/SimpleDocumentContent/data --css=http://cocoondev.org/resources/skins/daisysite/css/daisy.css --output=xml --file=daisysite.htm");
+-        System.out.println("==========================");
+-        System.exit(0);
+-    }
+-
+-}
++package org.outerj.daisy.diff;
++
++import java.io.BufferedReader;
++import java.io.File;
++import java.io.FileInputStream;
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.InputStreamReader;
++import java.net.URI;
++import java.net.URISyntaxException;
++import java.util.Locale;
++
++import javax.xml.transform.TransformerFactory;
++import javax.xml.transform.sax.SAXTransformerFactory;
++import javax.xml.transform.sax.TransformerHandler;
++import javax.xml.transform.stream.StreamResult;
++
++import org.outerj.daisy.diff.html.HTMLDiffer;
++import org.outerj.daisy.diff.html.HtmlSaxDiffOutput;
++import org.outerj.daisy.diff.html.TextNodeComparator;
++import org.outerj.daisy.diff.html.dom.DomTreeBuilder;
++import org.xml.sax.ContentHandler;
++import org.xml.sax.InputSource;
++import org.xml.sax.SAXException;
++import org.xml.sax.helpers.AttributesImpl;
++
++public class Main {
++  static boolean quietMode = false;
++
++    public static void main(String[] args) throws URISyntaxException { org.outerj.daisy.jmhbench.MutationSwitch.tick(31);
++
++        if (args.length < 2)
++            help();
++
++        boolean htmlDiff = true;
++        boolean htmlOut = true;
++        String outputFileName = "daisydiff.htm";
++        String[] css = new String[]{};
++
++        InputStream oldStream = null;
++        InputStream newStream = null;
++
++        try {
++            for (int i = 2; i < args.length; i++) {
++                String[] split = args[i].split("=");
++                if (split[0].equalsIgnoreCase("--file")) {
++                    outputFileName = split[1];
++                } else if (split[0].equalsIgnoreCase("--type")) {
++                    if (split[1].equalsIgnoreCase("tag")) {
++                        htmlDiff = false;
++                    }
++                } else if (split[0].equalsIgnoreCase("--css")) {
++                    css = split[1].split(";");
++                } else if (split[0].equalsIgnoreCase("--output")) {
++                    if (split[1].equalsIgnoreCase("xml")) {
++                        htmlOut = false;
++                    }
++                } else if (split[0].equals("--q")){
++                  quietMode = true;
++                } else{
++                    help();
++                }
++
++            }
++            File outputFile= new File(outputFileName);
++            try {
++                outputFile.createNewFile(); // Fail if outputFileName is malformed. Otherwise result.setResult() below would silently supress an exception (at least with jdk1.8.0_65). Then calling postProcess.endDocument() below would fail with confusing "javax.xml.transform.TransformerException: org.xml.sax.SAXException: setResult() must be called prior to startDocument()."
++            }
++            catch( IOException e ) {
++                System.err.println( "Filepath " +outputFileName+ " is malformed, or some of its folders don't exist, or you don't have write access." );
++                return;
++            }
++            if (!quietMode){
++              System.out.println("Daisy Diff https://github.com/DaisyDiff/DaisyDiff");
++              System.out.println("Comparing documents: " +args[0]+ " and " +args[1] );
++              System.out.println( "Diff type: " +(
++                htmlDiff
++                ? "html"
++                : "tag"
++              ) );
++              System.out.println("Writing "+(htmlOut?"html":"xml")+" output to " + outputFileName);
++            }
++
++            if(css.length>0){
++                if (!quietMode)
++                  System.out.println("Adding external css files:");
++                for(String cssLink:css){
++                    System.out.println("  "+cssLink);
++                }
++            }
++            if (!quietMode){
++              System.out.println("");
++              System.out.print(".");
++            }
++            SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
++                    .newInstance();
++
++            TransformerHandler result = tf.newTransformerHandler();
++            // If the file path were malformed, then the following
++            result.setResult(new StreamResult(outputFile));
++
++
++            if (args[0].startsWith("http://")) {
++                oldStream = new URI(args[0]).toURL().openStream();
++            }
++            else {
++                oldStream = new FileInputStream(args[0]);
++            }
++            if (args[1].startsWith("http://")) {
++                newStream = new URI(args[1]).toURL().openStream();
++            }
++            else {
++                newStream = new FileInputStream(args[1]);
++            }
++
++            XslFilter filter = new XslFilter();
++
++            if (htmlDiff) {
++
++                ContentHandler postProcess = htmlOut? filter.xsl(result,
++                        "xslfilter/htmlheader.xsl"):result;
++
++                Locale locale = Locale.getDefault();
++                String prefix = "diff";
++
++                HtmlCleaner cleaner = new HtmlCleaner();
++
++                InputSource oldSource = new InputSource(oldStream);
++                InputSource newSource = new InputSource(newStream);
++
++                DomTreeBuilder oldHandler = new DomTreeBuilder();
++                cleaner.cleanAndParse(oldSource, oldHandler);
++                System.out.print(".");
++                TextNodeComparator leftComparator = new TextNodeComparator(
++                        oldHandler, locale);
++
++                DomTreeBuilder newHandler = new DomTreeBuilder();
++                cleaner.cleanAndParse(newSource, newHandler);
++                System.out.print(".");
++                TextNodeComparator rightComparator = new TextNodeComparator(
++                        newHandler, locale);
++
++                postProcess.startDocument();
++                postProcess.startElement("", "diffreport", "diffreport",
++                        new AttributesImpl());
++                doCSS(css, postProcess);
++                postProcess.startElement("", "diff", "diff",
++                        new AttributesImpl());
++                HtmlSaxDiffOutput output = new HtmlSaxDiffOutput(postProcess,
++                        prefix);
++
++                HTMLDiffer differ = new HTMLDiffer(output);
++                differ.diff(leftComparator, rightComparator);
++                System.out.print(".");
++                postProcess.endElement("", "diff", "diff");
++                postProcess.endElement("", "diffreport", "diffreport");
++                postProcess.endDocument();
++
++            } else {
++
++                ContentHandler postProcess = htmlOut? filter.xsl(result,
++                        "xslfilter/tagheader.xsl"):result;
++                postProcess.startDocument();
++                postProcess.startElement("", "diffreport", "diffreport",
++                        new AttributesImpl());
++                postProcess.startElement("", "diff", "diff",
++                        new AttributesImpl());
++                System.out.print(".");
++
++
++                InputStreamReader oldReader = null;
++                BufferedReader oldBuffer = null;
++
++                InputStreamReader newISReader = null;
++                BufferedReader newBuffer = null;
++                try {
++                    oldReader = new InputStreamReader(oldStream);
++                    oldBuffer = new BufferedReader(oldReader);
++
++                    newISReader = new InputStreamReader(newStream);
++                    newBuffer = new BufferedReader(newISReader);
++                    DaisyDiff.diffTag(oldBuffer, newBuffer, postProcess);
++
++                } catch (Exception e) {
++                    e.printStackTrace();
++                } finally {
++                    oldBuffer.close();
++                    newBuffer.close();
++                    oldReader.close();
++                    newISReader.close();
++                }
++
++
++                System.out.print(".");
++                postProcess.endElement("", "diff", "diff");
++                postProcess.endElement("", "diffreport", "diffreport");
++                postProcess.endDocument();
++            }
++
++        } catch (Throwable e) {
++          if (quietMode){
++            System.out.println(e);
++          } else {
++            e.printStackTrace();
++            if (e.getCause() != null) {
++                e.getCause().printStackTrace();
++            }
++            if (e instanceof SAXException) {
++                ((SAXException) e).getException().printStackTrace();
++            }
++            help();
++          }
++        } finally {
++            try {
++                if(oldStream != null) oldStream.close();
++            } catch (IOException e) {
++                //ignore this exception
++            }
++            try {
++                if(newStream != null) newStream.close();
++            } catch (IOException e) {
++                //ignore this exception
++            }
++        }
++        if (quietMode)
++          System.out.println();
++        else
++          System.out.println("done");
++
++    }
++
++    private static void doCSS(String[] css, ContentHandler handler) throws SAXException {
++        handler.startElement("", "css", "css",
++                new AttributesImpl());
++        for(String cssLink : css){
++            AttributesImpl attr = new AttributesImpl();
++            attr.addAttribute("", "href", "href", "CDATA", cssLink);
++            attr.addAttribute("", "type", "type", "CDATA", "text/css");
++            attr.addAttribute("", "rel", "rel", "CDATA", "stylesheet");
++            handler.startElement("", "link", "link",
++                    attr);
++            handler.endElement("", "link", "link");
++        }
++
++        handler.endElement("", "css", "css");
++
++    }
++
++    private static void help() {
++        System.out.println("==========================");
++        System.out.println("DAISY DIFF HELP:");
++        System.out.println("java -jar daisydiff.jar [oldHTML] [newHTML]");
++        System.out
++                .println("--file=[filename] - Write output to the specified file.");
++        System.out
++                .println("--type=[html/tag] - Use the html (default) diff algorithm or the tag diff.");
++        System.out.println("--css=[cssfile1;cssfile2;cssfile3] - Add external CSS files.");
++        System.out.println("--output=[html/xml] - Write html (default) or xml output.");
++        System.out.println("--q  - Generate less console output.");
++        System.out.println("");
++        System.out.println("EXAMPLES: ");
++        System.out.println("(1)");
++        System.out
++                .println("java -jar daisydiff.jar http://web.archive.org/web/20070107145418/http://news.bbc.co.uk/ http://web.archive.org/web/20070107182640/http://news.bbc.co.uk/ --css=http://web.archive.org/web/20070107145418/http://news.bbc.co.uk/nol/shared/css/news_r5.css");
++        System.out.println("(2)");
++        System.out.println("java -jar daisydiff.jar http://cocoondev.org/wiki/291-cd/version/15/part/SimpleDocumentContent/data http://cocoondev.org/wiki/291-cd/version/17/part/SimpleDocumentContent/data --css=http://cocoondev.org/resources/skins/daisysite/css/daisy.css --output=xml --file=daisysite.htm");
++        System.out.println("==========================");
++        System.exit(0);
++    }
++
++}
+diff --git a/org/outerj/daisy/diff/XslFilter.java b/org/outerj/daisy/diff/XslFilter.java
+index 79dd014..f3400e2 100644
+--- a/org/outerj/daisy/diff/XslFilter.java
++++ b/org/outerj/daisy/diff/XslFilter.java
+@@ -31,7 +31,7 @@ import org.xml.sax.ContentHandler;
+ public class XslFilter {
+ 
+     public ContentHandler xsl(ContentHandler consumer, String xslPath)
+-            throws IOException {
++            throws IOException { org.outerj.daisy.jmhbench.MutationSwitch.tick(32);
+ 
+         try {
+             // Create transformer factory
+diff --git a/org/outerj/daisy/diff/helper/MergeCharacterEventsHandler.java b/org/outerj/daisy/diff/helper/MergeCharacterEventsHandler.java
+index a7e2dc7..54a765d 100644
+--- a/org/outerj/daisy/diff/helper/MergeCharacterEventsHandler.java
++++ b/org/outerj/daisy/diff/helper/MergeCharacterEventsHandler.java
+@@ -34,7 +34,7 @@ class MergeCharacterEventsHandler implements ContentHandler {
+     }
+ 
+     public void characters(char ch[], int start, int length)
+-            throws SAXException {
++            throws SAXException { org.outerj.daisy.jmhbench.MutationSwitch.tick(33);
+         char[] newCh = new char[this.length + length];
+         if (this.ch != null)
+             System.arraycopy(this.ch, this.start, newCh, 0, this.length);
+@@ -53,7 +53,7 @@ class MergeCharacterEventsHandler implements ContentHandler {
+         }
+     }
+ 
+-    public void endDocument() throws SAXException {
++    public void endDocument() throws SAXException { org.outerj.daisy.jmhbench.MutationSwitch.tick(34);
+         flushCharacters();
+         consumer.endDocument();
+     }
+diff --git a/org/outerj/daisy/diff/helper/NekoHtmlParser.java b/org/outerj/daisy/diff/helper/NekoHtmlParser.java
+index 99de34a..1ae9feb 100644
+--- a/org/outerj/daisy/diff/helper/NekoHtmlParser.java
++++ b/org/outerj/daisy/diff/helper/NekoHtmlParser.java
+@@ -31,7 +31,7 @@ import org.xml.sax.helpers.AttributesImpl;
+  */
+ public class NekoHtmlParser {
+ 
+-    public SaxBuffer parse(InputSource is) throws IOException, SAXException {
++    public SaxBuffer parse(InputSource is) throws IOException, SAXException { org.outerj.daisy.jmhbench.MutationSwitch.tick(1);
+         SaxBuffer buffer = new SaxBuffer();
+         parse(is, buffer);
+ 
+@@ -39,7 +39,7 @@ public class NekoHtmlParser {
+     }
+ 
+     public void parse(InputSource is, ContentHandler consumer)
+-            throws IOException, SAXException {
++            throws IOException, SAXException { org.outerj.daisy.jmhbench.MutationSwitch.tick(2);
+         if (is == null)
+             throw new NullPointerException("is argument is required.");
+ 
+diff --git a/org/outerj/daisy/diff/helper/SaxBuffer.java b/org/outerj/daisy/diff/helper/SaxBuffer.java
+index 4aa6389..9052c29 100644
+--- a/org/outerj/daisy/diff/helper/SaxBuffer.java
++++ b/org/outerj/daisy/diff/helper/SaxBuffer.java
+@@ -55,11 +55,11 @@ public class SaxBuffer implements ContentHandler, LexicalHandler, Serializable {
+         this.saxbits.addAll(saxBuffer.saxbits);
+     }
+ 
+-    public void skippedEntity(String name) throws SAXException {
++    public void skippedEntity(String name) throws SAXException { org.outerj.daisy.jmhbench.MutationSwitch.tick(3);
+         saxbits.add(new SkippedEntity(name));
+     }
+ 
+-    public void setDocumentLocator(Locator locator) {
++    public void setDocumentLocator(Locator locator) { org.outerj.daisy.jmhbench.MutationSwitch.tick(4);
+         // don't record this event
+     }
+ 
+diff --git a/org/outerj/daisy/diff/html/HTMLDiffer.java b/org/outerj/daisy/diff/html/HTMLDiffer.java
+index ae26735..b4af1f4 100644
+--- a/org/outerj/daisy/diff/html/HTMLDiffer.java
++++ b/org/outerj/daisy/diff/html/HTMLDiffer.java
+@@ -1,46 +1,46 @@
+-/*
+- * Copyright 2007 Guy Van den Broeck
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.outerj.daisy.diff.html;
+-
+-import java.util.LinkedList;
+-import java.util.List;
+-
+-import org.eclipse.compare.internal.LCSSettings;
+-import org.eclipse.compare.rangedifferencer.RangeDifference;
+-import org.eclipse.compare.rangedifferencer.RangeDifferencer;
++/*
++ * Copyright 2007 Guy Van den Broeck
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.outerj.daisy.diff.html;
++
++import java.util.LinkedList;
++import java.util.List;
++
++import org.eclipse.compare.internal.LCSSettings;
++import org.eclipse.compare.rangedifferencer.RangeDifference;
++import org.eclipse.compare.rangedifferencer.RangeDifferencer;
+ import org.outerj.daisy.diff.html.modification.ModificationType;
+-import org.outerj.daisy.diff.output.DiffOutput;
+-import org.outerj.daisy.diff.output.Differ;
+-import org.xml.sax.SAXException;
+-
+-/**
++import org.outerj.daisy.diff.output.DiffOutput;
++import org.outerj.daisy.diff.output.Differ;
++import org.xml.sax.SAXException;
++
++/**
+  * Takes two or three {@link TextNodeComparator} instances, computes the difference
+- * between them, marks the changes, and outputs a merged tree to a
+- * {@link HtmlSaxDiffOutput} instance.
+- */
+-public class HTMLDiffer implements Differ{
+-
+-    private DiffOutput output;
+-
+-    public HTMLDiffer(DiffOutput dm) {
+-        output = dm;
+-    }
+-
++ * between them, marks the changes, and outputs a merged tree to a
++ * {@link HtmlSaxDiffOutput} instance.
++ */
++public class HTMLDiffer implements Differ{
++
++    private DiffOutput output;
++
++    public HTMLDiffer(DiffOutput dm) {
++        output = dm;
++    }
++
+     public void diff(TextNodeComparator ancestorComparator, TextNodeComparator leftComparator,
+-    		TextNodeComparator rightComparator) throws SAXException {
++    		TextNodeComparator rightComparator) throws SAXException { org.outerj.daisy.jmhbench.MutationSwitch.tick(35);
+     	
+         LCSSettings settings = new LCSSettings();
+         settings.setUseGreedyMethod(false);
+@@ -108,101 +108,101 @@ public class HTMLDiffer implements Differ{
+     	output.generateOutput(ancestorComparator.getBodyNode());
+     }
+     
+-    /**
+-     * {@inheritDoc}
+-     */
+-    public void diff(TextNodeComparator leftComparator,
+-            TextNodeComparator rightComparator) throws SAXException {
+-        LCSSettings settings = new LCSSettings();
+-        settings.setUseGreedyMethod(false);
+-        // settings.setPowLimit(1.5);
+-        // settings.setTooLong(100000*100000);
+-
+-        RangeDifference[] differences = RangeDifferencer.findDifferences(
+-                settings, leftComparator, rightComparator);
+-
+-        List<RangeDifference> pdifferences = preProcess(differences);
+-        int currentIndexLeft = 0;
+-        int currentIndexRight = 0;
+-        for (RangeDifference d : pdifferences) {
+-
+-            if (d.leftStart() > currentIndexLeft) {
+-                rightComparator.handlePossibleChangedPart(currentIndexLeft, d
+-                        .leftStart(), currentIndexRight, d.rightStart(),
+-                        leftComparator);
+-            }
+-            if (d.leftLength() > 0) {
+-                rightComparator.markAsDeleted(d.leftStart(), d.leftEnd(),
+-                        leftComparator, d.rightStart(), d.rightEnd());
+-            }
+-            rightComparator.markAsNew(d.rightStart(), d.rightEnd());
+-
+-            currentIndexLeft = d.leftEnd();
+-            currentIndexRight = d.rightEnd();
+-        }
+-        if (currentIndexLeft < leftComparator.getRangeCount()) {
+-            rightComparator.handlePossibleChangedPart(currentIndexLeft,
+-                    leftComparator.getRangeCount(), currentIndexRight,
+-                    rightComparator.getRangeCount(), leftComparator);
+-        }
+-
+-        rightComparator.expandWhiteSpace();
+-        output.generateOutput(rightComparator.getBodyNode());
+-    }
+-
+-    private List<RangeDifference> preProcess(RangeDifference[] differences) {
+-
+-        List<RangeDifference> newRanges = new LinkedList<RangeDifference>();
+-
+-        for (int i = 0; i < differences.length; i++) {
+-
++    /**
++     * {@inheritDoc}
++     */
++    public void diff(TextNodeComparator leftComparator,
++            TextNodeComparator rightComparator) throws SAXException { org.outerj.daisy.jmhbench.MutationSwitch.tick(36);
++        LCSSettings settings = new LCSSettings();
++        settings.setUseGreedyMethod(false);
++        // settings.setPowLimit(1.5);
++        // settings.setTooLong(100000*100000);
++
++        RangeDifference[] differences = RangeDifferencer.findDifferences(
++                settings, leftComparator, rightComparator);
++
++        List<RangeDifference> pdifferences = preProcess(differences);
++        int currentIndexLeft = 0;
++        int currentIndexRight = 0;
++        for (RangeDifference d : pdifferences) {
++
++            if (d.leftStart() > currentIndexLeft) {
++                rightComparator.handlePossibleChangedPart(currentIndexLeft, d
++                        .leftStart(), currentIndexRight, d.rightStart(),
++                        leftComparator);
++            }
++            if (d.leftLength() > 0) {
++                rightComparator.markAsDeleted(d.leftStart(), d.leftEnd(),
++                        leftComparator, d.rightStart(), d.rightEnd());
++            }
++            rightComparator.markAsNew(d.rightStart(), d.rightEnd());
++
++            currentIndexLeft = d.leftEnd();
++            currentIndexRight = d.rightEnd();
++        }
++        if (currentIndexLeft < leftComparator.getRangeCount()) {
++            rightComparator.handlePossibleChangedPart(currentIndexLeft,
++                    leftComparator.getRangeCount(), currentIndexRight,
++                    rightComparator.getRangeCount(), leftComparator);
++        }
++
++        rightComparator.expandWhiteSpace();
++        output.generateOutput(rightComparator.getBodyNode());
++    }
++
++    private List<RangeDifference> preProcess(RangeDifference[] differences) {
++
++        List<RangeDifference> newRanges = new LinkedList<RangeDifference>();
++
++        for (int i = 0; i < differences.length; i++) {
++
+         	int ancestorStart = differences[i].ancestorStart();
+         	int ancestorEnd = differences[i].ancestorEnd();
+-            int leftStart = differences[i].leftStart();
+-            int leftEnd = differences[i].leftEnd();
+-            int rightStart = differences[i].rightStart();
+-            int rightEnd = differences[i].rightEnd();
+-            int kind = differences[i].kind();
+-
++            int leftStart = differences[i].leftStart();
++            int leftEnd = differences[i].leftEnd();
++            int rightStart = differences[i].rightStart();
++            int rightEnd = differences[i].rightEnd();
++            int kind = differences[i].kind();
++
+             int ancestorLength = ancestorEnd - ancestorStart;
+-            int leftLength = leftEnd - leftStart;
+-            int rightLength = rightEnd - rightStart;
+-
+-            while (i + 1 < differences.length
+-                    && differences[i + 1].kind() == kind
+-                    && score(leftLength, differences[i + 1].leftLength(),
+-                            rightLength, differences[i + 1].rightLength()) > (differences[i + 1]
+-                            .leftStart() - leftEnd)) {
+-                leftEnd = differences[i + 1].leftEnd();
+-                rightEnd = differences[i + 1].rightEnd();
++            int leftLength = leftEnd - leftStart;
++            int rightLength = rightEnd - rightStart;
++
++            while (i + 1 < differences.length
++                    && differences[i + 1].kind() == kind
++                    && score(leftLength, differences[i + 1].leftLength(),
++                            rightLength, differences[i + 1].rightLength()) > (differences[i + 1]
++                            .leftStart() - leftEnd)) {
++                leftEnd = differences[i + 1].leftEnd();
++                rightEnd = differences[i + 1].rightEnd();
+                 ancestorEnd = differences[i + 1].ancestorEnd();
+-                leftLength = leftEnd - leftStart;
+-                rightLength = rightEnd - rightStart;
++                leftLength = leftEnd - leftStart;
++                rightLength = rightEnd - rightStart;
+                 ancestorLength = ancestorEnd - ancestorStart;
+-                i++;
+-            }
+-
++                i++;
++            }
++
+             newRanges.add(new RangeDifference(kind, rightStart, rightLength, leftStart, leftLength, ancestorStart, ancestorLength));
+-        }
+-
+-        return newRanges;
+-    }
+-
+-    public static double score(int... numbers) {
+-        if ((numbers[0] == 0 && numbers[1] == 0)
+-                || (numbers[2] == 0 && numbers[3] == 0))
+-            return 0;
+-
+-        double d = 0;
+-        for (double number : numbers) {
+-            while (number > 3) {
+-                d += 3;
+-                number -= 3;
+-                number *= 0.5;
+-            }
+-            d += number;
+-
+-        }
+-        return d / (1.5 * numbers.length);
+-    }
+-}
++        }
++
++        return newRanges;
++    }
++
++    public static double score(int... numbers) {
++        if ((numbers[0] == 0 && numbers[1] == 0)
++                || (numbers[2] == 0 && numbers[3] == 0))
++            return 0;
++
++        double d = 0;
++        for (double number : numbers) {
++            while (number > 3) {
++                d += 3;
++                number -= 3;
++                number *= 0.5;
++            }
++            d += number;
++
++        }
++        return d / (1.5 * numbers.length);
++    }
++}
+diff --git a/org/outerj/daisy/diff/html/HtmlSaxDiffOutput.java b/org/outerj/daisy/diff/html/HtmlSaxDiffOutput.java
+index 7289c7a..5d30fdb 100644
+--- a/org/outerj/daisy/diff/html/HtmlSaxDiffOutput.java
++++ b/org/outerj/daisy/diff/html/HtmlSaxDiffOutput.java
+@@ -1,138 +1,138 @@
+-/*
+- * Copyright 2007 Guy Van den Broeck
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.outerj.daisy.diff.html;
+-
+-import org.outerj.daisy.diff.html.dom.ImageNode;
+-import org.outerj.daisy.diff.html.dom.Node;
+-import org.outerj.daisy.diff.html.dom.TagNode;
+-import org.outerj.daisy.diff.html.dom.TextNode;
+-import org.outerj.daisy.diff.html.modification.Modification;
+-import org.outerj.daisy.diff.html.modification.ModificationType;
+-import org.outerj.daisy.diff.output.DiffOutput;
+-import org.xml.sax.ContentHandler;
+-import org.xml.sax.SAXException;
+-import org.xml.sax.helpers.AttributesImpl;
+-
+-/**
+- * Takes a branch root and creates an HTML file for it.
+- */
++/*
++ * Copyright 2007 Guy Van den Broeck
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.outerj.daisy.diff.html;
++
++import org.outerj.daisy.diff.html.dom.ImageNode;
++import org.outerj.daisy.diff.html.dom.Node;
++import org.outerj.daisy.diff.html.dom.TagNode;
++import org.outerj.daisy.diff.html.dom.TextNode;
++import org.outerj.daisy.diff.html.modification.Modification;
++import org.outerj.daisy.diff.html.modification.ModificationType;
++import org.outerj.daisy.diff.output.DiffOutput;
++import org.xml.sax.ContentHandler;
++import org.xml.sax.SAXException;
++import org.xml.sax.helpers.AttributesImpl;
++
++/**
++ * Takes a branch root and creates an HTML file for it.
++ */
+ public class HtmlSaxDiffOutput implements DiffOutput {
+-
+-    private ContentHandler handler;
+-
+-    private String prefix;
+-
+-    public HtmlSaxDiffOutput(ContentHandler handler, String name) {
+-        this.handler = handler;
+-        this.prefix = name;
+-    }
+-
+-    /**
+-     * {@inheritDoc}
+-     */
+-    public void generateOutput(TagNode node) throws SAXException {
+-
+-        if (!node.getQName().equalsIgnoreCase("img")
+-                && !node.getQName().equalsIgnoreCase("body")) {
+-            handler.startElement("", node.getQName(), node.getQName(), node
+-                    .getAttributes());
+-        }
+-
+-        boolean newStarted = false;
+-        boolean remStarted = false;
+-        boolean changeStarted = false;
++
++    private ContentHandler handler;
++
++    private String prefix;
++
++    public HtmlSaxDiffOutput(ContentHandler handler, String name) {
++        this.handler = handler;
++        this.prefix = name;
++    }
++
++    /**
++     * {@inheritDoc}
++     */
++    public void generateOutput(TagNode node) throws SAXException { org.outerj.daisy.jmhbench.MutationSwitch.tick(37);
++
++        if (!node.getQName().equalsIgnoreCase("img")
++                && !node.getQName().equalsIgnoreCase("body")) {
++            handler.startElement("", node.getQName(), node.getQName(), node
++                    .getAttributes());
++        }
++
++        boolean newStarted = false;
++        boolean remStarted = false;
++        boolean changeStarted = false;
+         boolean conflictStarted = false;
+-        String changeTXT = "";
+-
+-        for (Node child : node) {
+-            if (child instanceof TagNode) {
+-                if (newStarted) {
+-                    handler.endElement("", "span", "span");
+-                    newStarted = false;
+-                } else if (changeStarted) {
+-                    handler.endElement("", "span", "span");
+-                    changeStarted = false;
+-                } else if (remStarted) {
+-                    handler.endElement("", "span", "span");
+-                    remStarted = false;
++        String changeTXT = "";
++
++        for (Node child : node) {
++            if (child instanceof TagNode) {
++                if (newStarted) {
++                    handler.endElement("", "span", "span");
++                    newStarted = false;
++                } else if (changeStarted) {
++                    handler.endElement("", "span", "span");
++                    changeStarted = false;
++                } else if (remStarted) {
++                    handler.endElement("", "span", "span");
++                    remStarted = false;
+                 } else if (conflictStarted) {
+                 	handler.endElement("", "span", "span");
+                 	conflictStarted = false;
+-                }
+-                generateOutput(((TagNode) child));
+-            } else if (child instanceof TextNode) {
+-                TextNode textChild = (TextNode) child;
+-                Modification mod = textChild.getModification();
+-
+-                if (newStarted
++                }
++                generateOutput(((TagNode) child));
++            } else if (child instanceof TextNode) {
++                TextNode textChild = (TextNode) child;
++                Modification mod = textChild.getModification();
++
++                if (newStarted
+                         && (mod.getOutputType() != ModificationType.ADDED || mod
+-                                .isFirstOfID())) {
+-                    handler.endElement("", "span", "span");
+-                    newStarted = false;
+-                } else if (changeStarted
++                                .isFirstOfID())) {
++                    handler.endElement("", "span", "span");
++                    newStarted = false;
++                } else if (changeStarted
+                         && (mod.getOutputType() != ModificationType.CHANGED
+-                                || !mod.getChanges().equals(changeTXT) || mod
+-                                .isFirstOfID())) {
+-                    handler.endElement("", "span", "span");
+-                    changeStarted = false;
+-                } else if (remStarted
++                                || !mod.getChanges().equals(changeTXT) || mod
++                                .isFirstOfID())) {
++                    handler.endElement("", "span", "span");
++                    changeStarted = false;
++                } else if (remStarted
+                         && (mod.getOutputType() != ModificationType.REMOVED || mod
+-                                .isFirstOfID())) {
+-                    handler.endElement("", "span", "span");
+-                    remStarted = false;
++                                .isFirstOfID())) {
++                    handler.endElement("", "span", "span");
++                    remStarted = false;
+                 } else if (conflictStarted
+                         && (mod.getOutputType() != ModificationType.CONFLICT || mod
+                                 .isFirstOfID())) {
+                     handler.endElement("", "span", "span");
+                     conflictStarted = false;
+                 }                		
+-
+-                // no else because a removed part can just be closed and a new
+-                // part can start
++
++                // no else because a removed part can just be closed and a new
++                // part can start
+                 if (!newStarted && mod.getOutputType() == ModificationType.ADDED) {
+-                    AttributesImpl attrs = new AttributesImpl();
+-                    attrs.addAttribute("", "class", "class", "CDATA",
+-                            "diff-html-added");
+-                    if (mod.isFirstOfID()) {
+-                        attrs.addAttribute("", "id", "id", "CDATA", mod
++                    AttributesImpl attrs = new AttributesImpl();
++                    attrs.addAttribute("", "class", "class", "CDATA",
++                            "diff-html-added");
++                    if (mod.isFirstOfID()) {
++                        attrs.addAttribute("", "id", "id", "CDATA", mod
+                                 .getOutputType()
+-                                + "-" + prefix + "-" + mod.getID());
+-                    }
+-
+-                    addAttributes(mod, attrs);
+-
+-                    handler.startElement("", "span", "span", attrs);
+-                    newStarted = true;
+-                } else if (!changeStarted
++                                + "-" + prefix + "-" + mod.getID());
++                    }
++
++                    addAttributes(mod, attrs);
++
++                    handler.startElement("", "span", "span", attrs);
++                    newStarted = true;
++                } else if (!changeStarted
+                         && mod.getOutputType() == ModificationType.CHANGED) {
+-                    AttributesImpl attrs = new AttributesImpl();
+-                    attrs.addAttribute("", "class", "class", "CDATA",
+-                            "diff-html-changed");
+-                    if (mod.isFirstOfID()) {
+-                        attrs.addAttribute("", "id", "id", "CDATA", mod
++                    AttributesImpl attrs = new AttributesImpl();
++                    attrs.addAttribute("", "class", "class", "CDATA",
++                            "diff-html-changed");
++                    if (mod.isFirstOfID()) {
++                        attrs.addAttribute("", "id", "id", "CDATA", mod
+                                 .getOutputType()
+-                                + "-" + prefix + "-" + mod.getID());
+-                    }
+-
+-                    addAttributes(mod, attrs);
+-                    handler.startElement("", "span", "span", attrs);
+-
+-                    changeStarted = true;
+-                    changeTXT = mod.getChanges();
+-                } else if (!remStarted
++                                + "-" + prefix + "-" + mod.getID());
++                    }
++
++                    addAttributes(mod, attrs);
++                    handler.startElement("", "span", "span", attrs);
++
++                    changeStarted = true;
++                    changeTXT = mod.getChanges();
++                } else if (!remStarted
+                 		&& mod.getOutputType() == ModificationType.REMOVED) {
+                 	AttributesImpl attrs = new AttributesImpl();
+                 	attrs.addAttribute("", "class", "class", "CDATA",
+@@ -148,95 +148,95 @@ public class HtmlSaxDiffOutput implements DiffOutput {
+                 	remStarted = true;
+                 } else if (!conflictStarted
+                         && mod.getOutputType() == ModificationType.CONFLICT) {
+-                    AttributesImpl attrs = new AttributesImpl();
+-                    attrs.addAttribute("", "class", "class", "CDATA",
++                    AttributesImpl attrs = new AttributesImpl();
++                    attrs.addAttribute("", "class", "class", "CDATA",
+                             "diff-html-conflict");
+-                    if (mod.isFirstOfID()) {
+-                        attrs.addAttribute("", "id", "id", "CDATA", mod
++                    if (mod.isFirstOfID()) {
++                        attrs.addAttribute("", "id", "id", "CDATA", mod
+                                 .getOutputType()
+-                                + "-" + prefix + "-" + mod.getID());
+-                    }
+-                    addAttributes(mod, attrs);
+-
+-                    handler.startElement("", "span", "span", attrs);
++                                + "-" + prefix + "-" + mod.getID());
++                    }
++                    addAttributes(mod, attrs);
++
++                    handler.startElement("", "span", "span", attrs);
+                     conflictStarted = true;
+-                }
+-
+-                char[] chars = textChild.getText().toCharArray();
+-
+-                if (textChild instanceof ImageNode) {
+-                    writeImage((ImageNode)textChild);
+-                } else {
+-                    handler.characters(chars, 0, chars.length);
+-                }
+-
+-            }
+-        }
+-
+-        if (newStarted) {
+-            handler.endElement("", "span", "span");
+-            newStarted = false;
+-        } else if (changeStarted) {
+-            handler.endElement("", "span", "span");
+-            changeStarted = false;
+-        } else if (remStarted) {
+-            handler.endElement("", "span", "span");
+-            remStarted = false;
++                }
++
++                char[] chars = textChild.getText().toCharArray();
++
++                if (textChild instanceof ImageNode) {
++                    writeImage((ImageNode)textChild);
++                } else {
++                    handler.characters(chars, 0, chars.length);
++                }
++
++            }
++        }
++
++        if (newStarted) {
++            handler.endElement("", "span", "span");
++            newStarted = false;
++        } else if (changeStarted) {
++            handler.endElement("", "span", "span");
++            changeStarted = false;
++        } else if (remStarted) {
++            handler.endElement("", "span", "span");
++            remStarted = false;
+         } else if (conflictStarted) {
+         	handler.endElement("", "span", "span");
+         	conflictStarted = false;
+-        }
+-
+-        if (!node.getQName().equalsIgnoreCase("img")
+-                && !node.getQName().equalsIgnoreCase("body"))
+-            handler.endElement("", node.getQName(), node.getQName());
+-
+-    }
+-
+-    private void writeImage(ImageNode imgNode) throws SAXException {
+-        AttributesImpl attrs = imgNode.getAttributes();
++        }
++
++        if (!node.getQName().equalsIgnoreCase("img")
++                && !node.getQName().equalsIgnoreCase("body"))
++            handler.endElement("", node.getQName(), node.getQName());
++
++    }
++
++    private void writeImage(ImageNode imgNode) throws SAXException {
++        AttributesImpl attrs = imgNode.getAttributes();
+         if (imgNode.getModification().getOutputType() == ModificationType.REMOVED) {
+-            attrs.addAttribute("", "changeType", "changeType", "CDATA",
+-                    "diff-removed-image");
++            attrs.addAttribute("", "changeType", "changeType", "CDATA",
++                    "diff-removed-image");
+         } else if (imgNode.getModification().getOutputType() == ModificationType.ADDED) {
+-            attrs.addAttribute("", "changeType", "changeType", "CDATA",
+-                    "diff-added-image");
++            attrs.addAttribute("", "changeType", "changeType", "CDATA",
++                    "diff-added-image");
+         } else if (imgNode.getModification().getOutputType() == ModificationType.CONFLICT) {
+         	attrs.addAttribute("", "changeType", "changeType", "CDATA",
+         	"diff-conflict-image");
+         }
+-        handler.startElement("", "img", "img", attrs);
+-        handler.endElement("", "img", "img");
+-    }
+-
+-    private void addAttributes(Modification mod, AttributesImpl attrs) {
+-
++        handler.startElement("", "img", "img", attrs);
++        handler.endElement("", "img", "img");
++    }
++
++    private void addAttributes(Modification mod, AttributesImpl attrs) {
++
+         if (mod.getOutputType() == ModificationType.CHANGED) {
+-            String changes = mod.getChanges();
+-            attrs.addAttribute("", "changes", "changes", "CDATA", changes);
+-        }
+-
+-        String previous;
+-        if (mod.getPrevious() == null) {
+-            previous = "first-" + prefix;
+-        } else {
++            String changes = mod.getChanges();
++            attrs.addAttribute("", "changes", "changes", "CDATA", changes);
++        }
++
++        String previous;
++        if (mod.getPrevious() == null) {
++            previous = "first-" + prefix;
++        } else {
+             previous = mod.getPrevious().getOutputType() + "-" + prefix + "-"
+-                    + mod.getPrevious().getID();
+-        }
+-        attrs.addAttribute("", "previous", "previous", "CDATA", previous);
+-
++                    + mod.getPrevious().getID();
++        }
++        attrs.addAttribute("", "previous", "previous", "CDATA", previous);
++
+         String changeId = mod.getOutputType() + "-" + prefix + "-" + mod.getID();
+-        attrs.addAttribute("", "changeId", "changeId", "CDATA", changeId);
+-
+-        String next;
+-        if (mod.getNext() == null) {
+-            next = "last-" + prefix;
+-        } else {
++        attrs.addAttribute("", "changeId", "changeId", "CDATA", changeId);
++
++        String next;
++        if (mod.getNext() == null) {
++            next = "last-" + prefix;
++        } else {
+             next = mod.getNext().getOutputType() + "-" + prefix + "-"
+-                    + mod.getNext().getID();
+-        }
+-        attrs.addAttribute("", "next", "next", "CDATA", next);
+-
+-    }
+-
++                    + mod.getNext().getID();
++        }
++        attrs.addAttribute("", "next", "next", "CDATA", next);
++
++    }
++
+ }
+\ No newline at end of file
+diff --git a/org/outerj/daisy/diff/html/TextNodeComparator.java b/org/outerj/daisy/diff/html/TextNodeComparator.java
+index 080d6a6..b4fd71a 100644
+--- a/org/outerj/daisy/diff/html/TextNodeComparator.java
++++ b/org/outerj/daisy/diff/html/TextNodeComparator.java
+@@ -1,74 +1,74 @@
+-/*
+- * Copyright 2007 Guy Van den Broeck
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.outerj.daisy.diff.html;
+-
+-import java.util.ArrayList;
+-import java.util.Collections;
+-import java.util.Iterator;
+-import java.util.List;
+-import java.util.Locale;
+-
+-import org.eclipse.compare.rangedifferencer.IRangeComparator;
+-import org.outerj.daisy.diff.html.ancestor.AncestorComparator;
+-import org.outerj.daisy.diff.html.ancestor.AncestorComparatorResult;
+-import org.outerj.daisy.diff.html.dom.BodyNode;
+-import org.outerj.daisy.diff.html.dom.DomTree;
+-import org.outerj.daisy.diff.html.dom.Node;
+-import org.outerj.daisy.diff.html.dom.TagNode;
+-import org.outerj.daisy.diff.html.dom.TextNode;
+-import org.outerj.daisy.diff.html.dom.helper.LastCommonParentResult;
+-import org.outerj.daisy.diff.html.modification.Modification;
+-import org.outerj.daisy.diff.html.modification.ModificationType;
+-
+-/**
+- * A comparator that generates a DOM tree of sorts from handling SAX events.
+- * Then it can be used to compute the difference between DOM trees and mark
+- * elements accordingly.
+- */
+-public class TextNodeComparator implements IRangeComparator, Iterable<TextNode> {
+-
+-    private List<TextNode> textNodes = new ArrayList<TextNode>(50);
+-
+-    private List<Modification> lastModified = new ArrayList<Modification>();
+-
+-    private BodyNode bodyNode;
+-
+-    private Locale locale;
+-
+-    public TextNodeComparator(DomTree tree, Locale locale) {
+-        super();
+-        this.locale = locale;
+-        textNodes = tree.getTextNodes();
+-        bodyNode = tree.getBodyNode();
+-    }
+-
+-    public BodyNode getBodyNode() {
+-        return bodyNode;
+-    }
+-
+-    public int getRangeCount() {
+-        return textNodes.size();
+-    }
+-
+-    public TextNode getTextNode(int i) {
+-        return textNodes.get(i);
+-    }
+-
+-    private long newID = 0;
+-
++/*
++ * Copyright 2007 Guy Van den Broeck
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.outerj.daisy.diff.html;
++
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.Iterator;
++import java.util.List;
++import java.util.Locale;
++
++import org.eclipse.compare.rangedifferencer.IRangeComparator;
++import org.outerj.daisy.diff.html.ancestor.AncestorComparator;
++import org.outerj.daisy.diff.html.ancestor.AncestorComparatorResult;
++import org.outerj.daisy.diff.html.dom.BodyNode;
++import org.outerj.daisy.diff.html.dom.DomTree;
++import org.outerj.daisy.diff.html.dom.Node;
++import org.outerj.daisy.diff.html.dom.TagNode;
++import org.outerj.daisy.diff.html.dom.TextNode;
++import org.outerj.daisy.diff.html.dom.helper.LastCommonParentResult;
++import org.outerj.daisy.diff.html.modification.Modification;
++import org.outerj.daisy.diff.html.modification.ModificationType;
++
++/**
++ * A comparator that generates a DOM tree of sorts from handling SAX events.
++ * Then it can be used to compute the difference between DOM trees and mark
++ * elements accordingly.
++ */
++public class TextNodeComparator implements IRangeComparator, Iterable<TextNode> {
++
++    private List<TextNode> textNodes = new ArrayList<TextNode>(50);
++
++    private List<Modification> lastModified = new ArrayList<Modification>();
++
++    private BodyNode bodyNode;
++
++    private Locale locale;
++
++    public TextNodeComparator(DomTree tree, Locale locale) {
++        super();
++        this.locale = locale;
++        textNodes = tree.getTextNodes();
++        bodyNode = tree.getBodyNode();
++    }
++
++    public BodyNode getBodyNode() { org.outerj.daisy.jmhbench.MutationSwitch.tick(5);
++        return bodyNode;
++    }
++
++    public int getRangeCount() { org.outerj.daisy.jmhbench.MutationSwitch.tick(6);
++        return textNodes.size();
++    }
++
++    public TextNode getTextNode(int i) {
++        return textNodes.get(i);
++    }
++
++    private long newID = 0;
++
+     /**
+      * Marks the given range as new. In the output, the range will be formatted as
+      * specified by the anOutputFormat parameter.
+@@ -77,33 +77,33 @@ public class TextNodeComparator implements IRangeComparator, Iterable<TextNode>
+      * @param outputFormat specifies how this range shall be formatted in the output
+      */
+     public void markAsNew(int start, int end, ModificationType outputFormat) {
+-        if (end <= start)
+-            return;
+-
+-        if (whiteAfterLastChangedPart)
+-            getTextNode(start).setWhiteBefore(false);
+-
+-        List<Modification> nextLastModified = new ArrayList<Modification>();
+-
+-        for (int i = start; i < end; i++) {
++        if (end <= start)
++            return;
++
++        if (whiteAfterLastChangedPart)
++            getTextNode(start).setWhiteBefore(false);
++
++        List<Modification> nextLastModified = new ArrayList<Modification>();
++
++        for (int i = start; i < end; i++) {
+             Modification mod = new Modification(ModificationType.ADDED, outputFormat);
+-            mod.setID(newID);
+-            if (lastModified.size() > 0) {
+-                mod.setPrevious(lastModified.get(0));
+-                if (lastModified.get(0).getNext() == null) {
+-                    for (Modification lastMod : lastModified) {
+-                        lastMod.setNext(mod);
+-                    }
+-                }
+-            }
+-            nextLastModified.add(mod);
+-            getTextNode(i).setModification(mod);
+-        }
+-        getTextNode(start).getModification().setFirstOfID(true);
+-        newID++;
+-        lastModified = nextLastModified;
+-    }
+-
++            mod.setID(newID);
++            if (lastModified.size() > 0) {
++                mod.setPrevious(lastModified.get(0));
++                if (lastModified.get(0).getNext() == null) {
++                    for (Modification lastMod : lastModified) {
++                        lastMod.setNext(mod);
++                    }
++                }
++            }
++            nextLastModified.add(mod);
++            getTextNode(i).setModification(mod);
++        }
++        getTextNode(start).getModification().setFirstOfID(true);
++        newID++;
++        lastModified = nextLastModified;
++    }
++
+     /**
+      * Marks the given range as new. In the output, the range will be formatted
+      * as "added".
+@@ -114,102 +114,102 @@ public class TextNodeComparator implements IRangeComparator, Iterable<TextNode>
+     	markAsNew(start, end, ModificationType.ADDED);
+     }
+ 
+-    public boolean rangesEqual(int i1, IRangeComparator rangeComp, int i2) {
+-        TextNodeComparator comp;
+-        try {
+-            comp = (TextNodeComparator) rangeComp;
+-        } catch (RuntimeException e) {
+-            return false;
+-        }
+-
+-        return getTextNode(i1).isSameText(comp.getTextNode(i2));
+-    }
+-
+-    public boolean skipRangeComparison(int arg0, int arg1, IRangeComparator arg2) {
+-        return false;
+-    }
+-
+-    private long changedID = 0;
+-
+-    private boolean changedIDUsed = false;
+-
+-    public void handlePossibleChangedPart(int leftstart, int leftend,
+-            int rightstart, int rightend, TextNodeComparator leftComparator) {
+-        int i = rightstart;
+-        int j = leftstart;
+-
+-        if (changedIDUsed) {
+-            changedID++;
+-            changedIDUsed = false;
+-        }
+-
+-        List<Modification> nextLastModified = new ArrayList<Modification>();
+-
+-        String changes = null;
+-        while (i < rightend) {
+-            AncestorComparator acthis = new AncestorComparator(getTextNode(i)
+-                    .getParentTree());
+-            AncestorComparator acother = new AncestorComparator(leftComparator
+-                    .getTextNode(j).getParentTree());
+-
+-            AncestorComparatorResult result = acthis.getResult(acother, locale);
+-
+-            if (result.isChanged()) {
+-
++    public boolean rangesEqual(int i1, IRangeComparator rangeComp, int i2) {
++        TextNodeComparator comp;
++        try {
++            comp = (TextNodeComparator) rangeComp;
++        } catch (RuntimeException e) {
++            return false;
++        }
++
++        return getTextNode(i1).isSameText(comp.getTextNode(i2));
++    }
++
++    public boolean skipRangeComparison(int arg0, int arg1, IRangeComparator arg2) {
++        return false;
++    }
++
++    private long changedID = 0;
++
++    private boolean changedIDUsed = false;
++
++    public void handlePossibleChangedPart(int leftstart, int leftend,
++            int rightstart, int rightend, TextNodeComparator leftComparator) {
++        int i = rightstart;
++        int j = leftstart;
++
++        if (changedIDUsed) {
++            changedID++;
++            changedIDUsed = false;
++        }
++
++        List<Modification> nextLastModified = new ArrayList<Modification>();
++
++        String changes = null;
++        while (i < rightend) {
++            AncestorComparator acthis = new AncestorComparator(getTextNode(i)
++                    .getParentTree());
++            AncestorComparator acother = new AncestorComparator(leftComparator
++                    .getTextNode(j).getParentTree());
++
++            AncestorComparatorResult result = acthis.getResult(acother, locale);
++
++            if (result.isChanged()) {
++
+                 Modification mod = new Modification(ModificationType.CHANGED, ModificationType.CHANGED);
+-
+-                if (!changedIDUsed) {
+-                    mod.setFirstOfID(true);
+-                    if (nextLastModified.size() > 0) {
+-                        lastModified = nextLastModified;
+-                        nextLastModified = new ArrayList<Modification>();
+-                    }
+-                } else if (result.getChanges() != null
+-                        && !result.getChanges().equals(changes)) {
+-                    changedID++;
+-                    mod.setFirstOfID(true);
+-                    if (nextLastModified.size() > 0) {
+-                        lastModified = nextLastModified;
+-                        nextLastModified = new ArrayList<Modification>();
+-                    }
+-                }
+-
+-                if (lastModified.size() > 0) {
+-                    mod.setPrevious(lastModified.get(0));
+-                    if (lastModified.get(0).getNext() == null) {
+-                        for (Modification lastMod : lastModified) {
+-                            lastMod.setNext(mod);
+-                        }
+-                    }
+-                }
+-                nextLastModified.add(mod);
+-
+-                mod.setChanges(result.getChanges());
+-                mod.setHtmlLayoutChanges(result.getHtmlLayoutChanges());
+-                mod.setID(changedID);
+-
+-                getTextNode(i).setModification(mod);
+-                changes = result.getChanges();
+-                changedIDUsed = true;
+-            } else if (changedIDUsed) {
+-                changedID++;
+-                changedIDUsed = false;
+-            }
+-
+-            i++;
+-            j++;
+-        }
+-
+-        if (nextLastModified.size() > 0)
+-            lastModified = nextLastModified;
+-
+-    }
+-
+-    // used to remove the whitespace between a red and green block
+-    private boolean whiteAfterLastChangedPart = false;
+-
+-    private long deletedID = 0;
+-
++
++                if (!changedIDUsed) {
++                    mod.setFirstOfID(true);
++                    if (nextLastModified.size() > 0) {
++                        lastModified = nextLastModified;
++                        nextLastModified = new ArrayList<Modification>();
++                    }
++                } else if (result.getChanges() != null
++                        && !result.getChanges().equals(changes)) {
++                    changedID++;
++                    mod.setFirstOfID(true);
++                    if (nextLastModified.size() > 0) {
++                        lastModified = nextLastModified;
++                        nextLastModified = new ArrayList<Modification>();
++                    }
++                }
++
++                if (lastModified.size() > 0) {
++                    mod.setPrevious(lastModified.get(0));
++                    if (lastModified.get(0).getNext() == null) {
++                        for (Modification lastMod : lastModified) {
++                            lastMod.setNext(mod);
++                        }
++                    }
++                }
++                nextLastModified.add(mod);
++
++                mod.setChanges(result.getChanges());
++                mod.setHtmlLayoutChanges(result.getHtmlLayoutChanges());
++                mod.setID(changedID);
++
++                getTextNode(i).setModification(mod);
++                changes = result.getChanges();
++                changedIDUsed = true;
++            } else if (changedIDUsed) {
++                changedID++;
++                changedIDUsed = false;
++            }
++
++            i++;
++            j++;
++        }
++
++        if (nextLastModified.size() > 0)
++            lastModified = nextLastModified;
++
++    }
++
++    // used to remove the whitespace between a red and green block
++    private boolean whiteAfterLastChangedPart = false;
++
++    private long deletedID = 0;
++
+     /**
+      * Marks the given range as deleted. In the output, the range will be
+      * formatted as specified by the parameter anOutputFormat. 
+@@ -219,185 +219,185 @@ public class TextNodeComparator implements IRangeComparator, Iterable<TextNode>
+      * @param before
+      * @param anOutputFormat specifies how this range shall be formatted in the output
+      */
+-    public void markAsDeleted(int start, int end, TextNodeComparator oldComp,
++    public void markAsDeleted(int start, int end, TextNodeComparator oldComp,
+             int before, int after, ModificationType outputFormat) {
+-
+-        if (end <= start)
+-            return;
+-
+-        if (before > 0 && getTextNode(before - 1).isWhiteAfter()) {
+-            whiteAfterLastChangedPart = true;
+-        } else {
+-            whiteAfterLastChangedPart = false;
+-        }
+-
+-        List<Modification> nextLastModified = new ArrayList<Modification>();
+-
+-        for (int i = start; i < end; i++) {
++
++        if (end <= start)
++            return;
++
++        if (before > 0 && getTextNode(before - 1).isWhiteAfter()) {
++            whiteAfterLastChangedPart = true;
++        } else {
++            whiteAfterLastChangedPart = false;
++        }
++
++        List<Modification> nextLastModified = new ArrayList<Modification>();
++
++        for (int i = start; i < end; i++) {
+             Modification mod = new Modification(ModificationType.REMOVED, outputFormat);
+-            mod.setID(deletedID);
+-            if (lastModified.size() > 0) {
+-                mod.setPrevious(lastModified.get(0));
+-                if (lastModified.get(0).getNext() == null) {
+-                    for (Modification lastMod : lastModified) {
+-                        lastMod.setNext(mod);
+-                    }
+-                }
+-            }
+-            nextLastModified.add(mod);
+-
+-            // oldComp is used here because we're going to move its deleted
+-            // elements
+-            // to this tree!
+-            oldComp.getTextNode(i).setModification(mod);
+-        }
+-        oldComp.getTextNode(start).getModification().setFirstOfID(true);
+-
+-        List<Node> deletedNodes = oldComp.getBodyNode().getMinimalDeletedSet(
+-                deletedID);
+-
+-        // Set prevLeaf to the leaf after which the old HTML needs to be
+-        // inserted
+-        Node prevLeaf = null;
+-        if (before > 0)
+-            prevLeaf = getTextNode(before - 1);
+-
+-        // Set nextLeaf to the leaf before which the old HTML needs to be
+-        // inserted
+-        Node nextLeaf = null;
+-boolean useAfter = false;
+-        
+-        if (after < getRangeCount()) {
+-            
+-            LastCommonParentResult orderResult = getTextNode(before).getLastCommonParent(getTextNode(after));
+-            List<TagNode> check = getTextNode(before).getParentTree();
+-            Collections.reverse(check);
+-            for(TagNode curr : check) {
+-                if(curr == orderResult.getLastCommonParent()) {
+-                    break;
+-                } else if (curr.isBlockLevel()) {
+-                    useAfter = true;
+-                    break;
+-                }
+-            }
+-            if(!useAfter) {
+-                check = getTextNode(after).getParentTree();
+-                Collections.reverse(check);
+-                for(TagNode curr : check) {
+-                    if(curr == orderResult.getLastCommonParent()) {
+-                        break;
+-                    } else if (curr.isBlockLevel()) {
+-                        useAfter = true;
+-                        break;
+-                    }
+-                }
+-            }
+-        } else {
+-            useAfter = false;
+-        }
+-        if(useAfter)
+-            nextLeaf = getTextNode(after);
+-        else if (before < getRangeCount())
+-            nextLeaf = getTextNode(before);
+-
+-        while (deletedNodes.size() > 0) {
+-            LastCommonParentResult prevResult, nextResult;
+-            if (prevLeaf != null) {
+-                prevResult = prevLeaf.getLastCommonParent(deletedNodes
+-                        .get(0));
+-            } else {
+-                prevResult = new LastCommonParentResult();
+-                prevResult.setLastCommonParent(getBodyNode());
+-                prevResult.setIndexInLastCommonParent(-1);
+-            }
+-            if (nextLeaf != null) {
+-                nextResult = nextLeaf.getLastCommonParent(deletedNodes
+-                        .get(deletedNodes.size() - 1));
+-            } else {
+-                nextResult = new LastCommonParentResult();
+-                nextResult.setLastCommonParent(getBodyNode());
+-                nextResult.setIndexInLastCommonParent(getBodyNode()
+-                        .getNbChildren());
+-            }
+-
+-            if (prevResult.getLastCommonParentDepth() == nextResult
+-                    .getLastCommonParentDepth()) {
+-                // We need some metric to choose which way to add...
+-                if (deletedNodes.get(0).getParent() == deletedNodes.get(
+-                        deletedNodes.size() - 1).getParent()
+-                        && prevResult.getLastCommonParent() == nextResult
+-                        .getLastCommonParent()) {
+-                    // The difference is not in the parent
+-                    prevResult.setLastCommonParentDepth(prevResult
+-                            .getLastCommonParentDepth() + 1);
+-
+-                } else {
+-                    // The difference is in the parent, so compare them
+-                    // now THIS is tricky
+-                    double distancePrev = deletedNodes
+-                    .get(0)
+-                    .getParent()
+-                    .getMatchRatio(prevResult.getLastCommonParent());
+-                    double distanceNext = deletedNodes
+-                    .get(deletedNodes.size() - 1)
+-                    .getParent()
+-                    .getMatchRatio(nextResult.getLastCommonParent());
+-
+-                    if (distancePrev <= distanceNext) {
++            mod.setID(deletedID);
++            if (lastModified.size() > 0) {
++                mod.setPrevious(lastModified.get(0));
++                if (lastModified.get(0).getNext() == null) {
++                    for (Modification lastMod : lastModified) {
++                        lastMod.setNext(mod);
++                    }
++                }
++            }
++            nextLastModified.add(mod);
++
++            // oldComp is used here because we're going to move its deleted
++            // elements
++            // to this tree!
++            oldComp.getTextNode(i).setModification(mod);
++        }
++        oldComp.getTextNode(start).getModification().setFirstOfID(true);
++
++        List<Node> deletedNodes = oldComp.getBodyNode().getMinimalDeletedSet(
++                deletedID);
++
++        // Set prevLeaf to the leaf after which the old HTML needs to be
++        // inserted
++        Node prevLeaf = null;
++        if (before > 0)
++            prevLeaf = getTextNode(before - 1);
++
++        // Set nextLeaf to the leaf before which the old HTML needs to be
++        // inserted
++        Node nextLeaf = null;
++boolean useAfter = false;
++        
++        if (after < getRangeCount()) {
++            
++            LastCommonParentResult orderResult = getTextNode(before).getLastCommonParent(getTextNode(after));
++            List<TagNode> check = getTextNode(before).getParentTree();
++            Collections.reverse(check);
++            for(TagNode curr : check) {
++                if(curr == orderResult.getLastCommonParent()) {
++                    break;
++                } else if (curr.isBlockLevel()) {
++                    useAfter = true;
++                    break;
++                }
++            }
++            if(!useAfter) {
++                check = getTextNode(after).getParentTree();
++                Collections.reverse(check);
++                for(TagNode curr : check) {
++                    if(curr == orderResult.getLastCommonParent()) {
++                        break;
++                    } else if (curr.isBlockLevel()) {
++                        useAfter = true;
++                        break;
++                    }
++                }
++            }
++        } else {
++            useAfter = false;
++        }
++        if(useAfter)
++            nextLeaf = getTextNode(after);
++        else if (before < getRangeCount())
++            nextLeaf = getTextNode(before);
++
++        while (deletedNodes.size() > 0) {
++            LastCommonParentResult prevResult, nextResult;
++            if (prevLeaf != null) {
++                prevResult = prevLeaf.getLastCommonParent(deletedNodes
++                        .get(0));
++            } else {
++                prevResult = new LastCommonParentResult();
++                prevResult.setLastCommonParent(getBodyNode());
++                prevResult.setIndexInLastCommonParent(-1);
++            }
++            if (nextLeaf != null) {
++                nextResult = nextLeaf.getLastCommonParent(deletedNodes
++                        .get(deletedNodes.size() - 1));
++            } else {
++                nextResult = new LastCommonParentResult();
++                nextResult.setLastCommonParent(getBodyNode());
++                nextResult.setIndexInLastCommonParent(getBodyNode()
++                        .getNbChildren());
++            }
++
++            if (prevResult.getLastCommonParentDepth() == nextResult
++                    .getLastCommonParentDepth()) {
++                // We need some metric to choose which way to add...
++                if (deletedNodes.get(0).getParent() == deletedNodes.get(
++                        deletedNodes.size() - 1).getParent()
++                        && prevResult.getLastCommonParent() == nextResult
++                        .getLastCommonParent()) {
++                    // The difference is not in the parent
++                    prevResult.setLastCommonParentDepth(prevResult
++                            .getLastCommonParentDepth() + 1);
++
++                } else {
++                    // The difference is in the parent, so compare them
++                    // now THIS is tricky
++                    double distancePrev = deletedNodes
++                    .get(0)
++                    .getParent()
++                    .getMatchRatio(prevResult.getLastCommonParent());
++                    double distanceNext = deletedNodes
++                    .get(deletedNodes.size() - 1)
++                    .getParent()
++                    .getMatchRatio(nextResult.getLastCommonParent());
++
++                    if (distancePrev <= distanceNext) {
+                     	// insert after the previous node
+-                        prevResult.setLastCommonParentDepth(prevResult
+-                                .getLastCommonParentDepth() + 1);
+-                    } else {
++                        prevResult.setLastCommonParentDepth(prevResult
++                                .getLastCommonParentDepth() + 1);
++                    } else {
+                     	// insert before the next node
+-                        nextResult.setLastCommonParentDepth(nextResult
+-                                .getLastCommonParentDepth() + 1);
+-                    }
+-                }
+-
+-            }
+-
+-            if (prevResult.getLastCommonParentDepth() > nextResult
+-                    .getLastCommonParentDepth()) {
+-
+-                // Inserting at the front
+-                if (prevResult.isSplittingNeeded()) {
+-                    prevLeaf.getParent().splitUntill(
+-                            prevResult.getLastCommonParent(), prevLeaf,
+-                            true);
+-                }
+-                prevLeaf = deletedNodes.remove(0).copyTree();
+-                prevLeaf.setParent(prevResult.getLastCommonParent());
+-                prevResult.getLastCommonParent().addChild(
+-                        prevResult.getIndexInLastCommonParent() + 1,
+-                        prevLeaf);
+-
+-            } else if (prevResult.getLastCommonParentDepth() < nextResult
+-                    .getLastCommonParentDepth()) {
+-                // Inserting at the back
+-                if (nextResult.isSplittingNeeded()) {
+-                    boolean splitOccured = nextLeaf.getParent()
+-                    .splitUntill(nextResult.getLastCommonParent(),
+-                            nextLeaf, false);
+-
+-                    if (splitOccured) {
+-                        // The place where to insert is shifted one place to the
+-                        // right
+-                        nextResult.setIndexInLastCommonParent(nextResult
+-                                .getIndexInLastCommonParent() + 1);
+-                    }
+-                }
+-                nextLeaf = deletedNodes.remove(deletedNodes.size() - 1)
+-                .copyTree();
+-                nextLeaf.setParent(nextResult.getLastCommonParent());
+-                nextResult.getLastCommonParent().addChild(
+-                        nextResult.getIndexInLastCommonParent(), nextLeaf);
+-            } else
+-                throw new IllegalStateException();
+-
+-        }
+-        lastModified = nextLastModified;
+-        deletedID++;
+-    }
++                        nextResult.setLastCommonParentDepth(nextResult
++                                .getLastCommonParentDepth() + 1);
++                    }
++                }
++
++            }
++
++            if (prevResult.getLastCommonParentDepth() > nextResult
++                    .getLastCommonParentDepth()) {
++
++                // Inserting at the front
++                if (prevResult.isSplittingNeeded()) {
++                    prevLeaf.getParent().splitUntill(
++                            prevResult.getLastCommonParent(), prevLeaf,
++                            true);
++                }
++                prevLeaf = deletedNodes.remove(0).copyTree();
++                prevLeaf.setParent(prevResult.getLastCommonParent());
++                prevResult.getLastCommonParent().addChild(
++                        prevResult.getIndexInLastCommonParent() + 1,
++                        prevLeaf);
++
++            } else if (prevResult.getLastCommonParentDepth() < nextResult
++                    .getLastCommonParentDepth()) {
++                // Inserting at the back
++                if (nextResult.isSplittingNeeded()) {
++                    boolean splitOccured = nextLeaf.getParent()
++                    .splitUntill(nextResult.getLastCommonParent(),
++                            nextLeaf, false);
++
++                    if (splitOccured) {
++                        // The place where to insert is shifted one place to the
++                        // right
++                        nextResult.setIndexInLastCommonParent(nextResult
++                                .getIndexInLastCommonParent() + 1);
++                    }
++                }
++                nextLeaf = deletedNodes.remove(deletedNodes.size() - 1)
++                .copyTree();
++                nextLeaf.setParent(nextResult.getLastCommonParent());
++                nextResult.getLastCommonParent().addChild(
++                        nextResult.getIndexInLastCommonParent(), nextLeaf);
++            } else
++                throw new IllegalStateException();
++
++        }
++        lastModified = nextLastModified;
++        deletedID++;
++    }
+     
+ 	/**
+      * Marks the given range as deleted. In the output, the range will be
+@@ -411,14 +411,14 @@ boolean useAfter = false;
+             int before, int after) {
+     	markAsDeleted(start, end, oldComp, before, after, ModificationType.REMOVED);
+     }
+-
+-    public void expandWhiteSpace() {
+-        getBodyNode().expandWhiteSpace();
+-    }
+-
+-    public Iterator<TextNode> iterator() {
+-        return textNodes.iterator();
+-    }
++
++    public void expandWhiteSpace() {
++        getBodyNode().expandWhiteSpace();
++    }
++
++    public Iterator<TextNode> iterator() {
++        return textNodes.iterator();
++    }
+     
+     /**
+      * Used for combining multiple comparators in order to create a single
+diff --git a/org/outerj/daisy/diff/html/ancestor/AncestorComparator.java b/org/outerj/daisy/diff/html/ancestor/AncestorComparator.java
+index fb299e2..8795232 100644
+--- a/org/outerj/daisy/diff/html/ancestor/AncestorComparator.java
++++ b/org/outerj/daisy/diff/html/ancestor/AncestorComparator.java
+@@ -1,88 +1,88 @@
+-/*
+- * Copyright 2007 Guy Van den Broeck
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.outerj.daisy.diff.html.ancestor;
+-
+-import java.util.List;
+-import java.util.Locale;
+-
+-import org.eclipse.compare.rangedifferencer.IRangeComparator;
+-import org.eclipse.compare.rangedifferencer.RangeDifference;
+-import org.eclipse.compare.rangedifferencer.RangeDifferencer;
+-import org.outerj.daisy.diff.html.dom.TagNode;
+-
+-/**
+- * A comparator used when calculating the difference in ancestry of two Nodes.
+- */
+-public class AncestorComparator implements IRangeComparator {
+-
+-    private List<TagNode> ancestors;
+-
+-    public AncestorComparator(List<TagNode> ancestors) {
+-        this.ancestors = ancestors;
+-    }
+-
+-    public int getRangeCount() {
+-        return ancestors.size();
+-    }
+-
+-    public boolean rangesEqual(int owni, IRangeComparator otherComp, int otheri) {
+-        AncestorComparator other;
+-        try {
+-            other = (AncestorComparator) otherComp;
+-        } catch (ClassCastException e) {
+-            return false;
+-        }
+-
+-        return other.getAncestor(otheri).isSameTag(getAncestor(owni));
+-    }
+-
+-    public boolean skipRangeComparison(int arg0, int arg1, IRangeComparator arg2) {
+-        return false;
+-    }
+-
+-    public TagNode getAncestor(int i) {
+-        return ancestors.get(i);
+-    }
+-
+-    private String compareTxt = "";
+-
+-    public String getCompareTxt() {
+-        return compareTxt;
+-    }
+-
+-    public AncestorComparatorResult getResult(AncestorComparator other,
+-            Locale locale) {
+-
+-        AncestorComparatorResult result = new AncestorComparatorResult();
+-
+-        RangeDifference[] differences = RangeDifferencer.findDifferences(other,
+-                this);
+-
+-        if (differences.length == 0)
+-            return result;
+-
+-        ChangeTextGenerator changeTxt = new ChangeTextGenerator(this, other,
+-                locale);
+-
+-        result.setChanged(true);
+-        result.setChanges(changeTxt.getChanged(differences).toString());
+-        result.setHtmlLayoutChanges(changeTxt.getHtmlLayoutChanges());
+-
+-        return result;
+-
+-    }
+-
+-}
++/*
++ * Copyright 2007 Guy Van den Broeck
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.outerj.daisy.diff.html.ancestor;
++
++import java.util.List;
++import java.util.Locale;
++
++import org.eclipse.compare.rangedifferencer.IRangeComparator;
++import org.eclipse.compare.rangedifferencer.RangeDifference;
++import org.eclipse.compare.rangedifferencer.RangeDifferencer;
++import org.outerj.daisy.diff.html.dom.TagNode;
++
++/**
++ * A comparator used when calculating the difference in ancestry of two Nodes.
++ */
++public class AncestorComparator implements IRangeComparator {
++
++    private List<TagNode> ancestors;
++
++    public AncestorComparator(List<TagNode> ancestors) {
++        this.ancestors = ancestors;
++    }
++
++    public int getRangeCount() { org.outerj.daisy.jmhbench.MutationSwitch.tick(7);
++        return ancestors.size();
++    }
++
++    public boolean rangesEqual(int owni, IRangeComparator otherComp, int otheri) { org.outerj.daisy.jmhbench.MutationSwitch.tick(8);
++        AncestorComparator other;
++        try {
++            other = (AncestorComparator) otherComp;
++        } catch (ClassCastException e) {
++            return false;
++        }
++
++        return other.getAncestor(otheri).isSameTag(getAncestor(owni));
++    }
++
++    public boolean skipRangeComparison(int arg0, int arg1, IRangeComparator arg2) {
++        return false;
++    }
++
++    public TagNode getAncestor(int i) {
++        return ancestors.get(i);
++    }
++
++    private String compareTxt = "";
++
++    public String getCompareTxt() {
++        return compareTxt;
++    }
++
++    public AncestorComparatorResult getResult(AncestorComparator other,
++            Locale locale) {
++
++        AncestorComparatorResult result = new AncestorComparatorResult();
++
++        RangeDifference[] differences = RangeDifferencer.findDifferences(other,
++                this);
++
++        if (differences.length == 0)
++            return result;
++
++        ChangeTextGenerator changeTxt = new ChangeTextGenerator(this, other,
++                locale);
++
++        result.setChanged(true);
++        result.setChanges(changeTxt.getChanged(differences).toString());
++        result.setHtmlLayoutChanges(changeTxt.getHtmlLayoutChanges());
++
++        return result;
++
++    }
++
++}
+diff --git a/org/outerj/daisy/diff/html/ancestor/AncestorComparatorResult.java b/org/outerj/daisy/diff/html/ancestor/AncestorComparatorResult.java
+index 506933a..99c2fb9 100644
+--- a/org/outerj/daisy/diff/html/ancestor/AncestorComparatorResult.java
++++ b/org/outerj/daisy/diff/html/ancestor/AncestorComparatorResult.java
+@@ -1,72 +1,72 @@
+-/*
+- * Copyright 2007 Guy Van den Broeck
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.outerj.daisy.diff.html.ancestor;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-
+-import org.outerj.daisy.diff.html.modification.HtmlLayoutChange;
+-
+-public class AncestorComparatorResult {
+-	
+-	
+-
+-    private boolean changed = false;
+-
+-    private String changes = null;
+-    
+-    private List<HtmlLayoutChange> htmlLayoutChanges= null;
+-    
+-    public AncestorComparatorResult()
+-	{
+-    	htmlLayoutChanges = new ArrayList<HtmlLayoutChange>();
+-	}
+-
+-    public boolean isChanged() {
+-        return changed;
+-    }
+-
+-    public void setChanged(boolean changed) {
+-        this.changed = changed;
+-    }
+-
+-    public String getChanges() {
+-        return changes;
+-    }
+-
+-    public void setChanges(String changes) {
+-        this.changes = changes;
+-    }
+-
+-	/**
+-	 * @return the htmlChanges
+-	 */
+-	public List<HtmlLayoutChange> getHtmlLayoutChanges() {
+-		return htmlLayoutChanges;
+-	}
+-
+-	/**
+-	 * @param htmlLayoutChanges the htmlChanges to set
+-	 */
+-	public void setHtmlLayoutChanges(List<HtmlLayoutChange> htmlLayoutChanges) {
+-		this.htmlLayoutChanges = htmlLayoutChanges;
+-	}
+-    
+-    
+-    
+-    
+-
+-}
++/*
++ * Copyright 2007 Guy Van den Broeck
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.outerj.daisy.diff.html.ancestor;
++
++import java.util.ArrayList;
++import java.util.List;
++
++import org.outerj.daisy.diff.html.modification.HtmlLayoutChange;
++
++public class AncestorComparatorResult {
++	
++	
++
++    private boolean changed = false;
++
++    private String changes = null;
++    
++    private List<HtmlLayoutChange> htmlLayoutChanges= null;
++    
++    public AncestorComparatorResult()
++	{
++    	htmlLayoutChanges = new ArrayList<HtmlLayoutChange>();
++	}
++
++    public boolean isChanged() { org.outerj.daisy.jmhbench.MutationSwitch.tick(9);
++        return changed;
++    }
++
++    public void setChanged(boolean changed) { org.outerj.daisy.jmhbench.MutationSwitch.tick(10);
++        this.changed = changed;
++    }
++
++    public String getChanges() {
++        return changes;
++    }
++
++    public void setChanges(String changes) {
++        this.changes = changes;
++    }
++
++	/**
++	 * @return the htmlChanges
++	 */
++	public List<HtmlLayoutChange> getHtmlLayoutChanges() {
++		return htmlLayoutChanges;
++	}
++
++	/**
++	 * @param htmlLayoutChanges the htmlChanges to set
++	 */
++	public void setHtmlLayoutChanges(List<HtmlLayoutChange> htmlLayoutChanges) {
++		this.htmlLayoutChanges = htmlLayoutChanges;
++	}
++    
++    
++    
++    
++
++}
+diff --git a/org/outerj/daisy/diff/html/ancestor/ChangeText.java b/org/outerj/daisy/diff/html/ancestor/ChangeText.java
+index b4ccdcf..45fb7b9 100644
+--- a/org/outerj/daisy/diff/html/ancestor/ChangeText.java
++++ b/org/outerj/daisy/diff/html/ancestor/ChangeText.java
+@@ -1,111 +1,111 @@
+-/*
+- * Copyright 2007 Guy Van den Broeck
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.outerj.daisy.diff.html.ancestor;
+-
+-public class ChangeText {
+-
+-    private int maxNbCharsPerLine;
+-
+-    private StringBuilder txt = new StringBuilder();
+-
+-    public final static String newLine = "<br/>";
+-
+-    private int charsThisLine = 0;
+-
+-    public ChangeText(int maxNbCharsPerLine) {
+-        this.maxNbCharsPerLine = maxNbCharsPerLine;
+-    }
+-
+-    public synchronized void addText(String s) {
+-        s = clean(s);
+-
+-        if (s.length() + charsThisLine > maxNbCharsPerLine) {
+-            addTextCarefully(s);
+-        } else {
+-            addToLine(s);
+-        }
+-    }
+-
+-    private void addToLine(String s) {
+-      txt.append(s);
+-      charsThisLine += s.length();
+-    }
+-
+-    public synchronized void addHtml(String s) {
+-        txt.append(s);
+-        if (s.contains("</li>") || s.contains("</ol>") || s.contains("</ul>")) {
+-            charsThisLine = 0;
+-        }
+-    }
+-
+-    private synchronized void addTextCarefully(String s) {
+-
+-        int firstSpace = s.indexOf(" ");
+-        if (firstSpace < 0) { //  Next word is the whole string.
+-            if (s.length() < maxNbCharsPerLine) {
+-              //  If the word will fit on a standard output line, by itself, get a new line and put it out.
+-              if (charsThisLine > 0)
+-                addNewLine();
+-              addText(s);
+-            } else {
+-              addNewLine();
+-              addTextBrokenAcrossLines(s);
+-            }
+-        } else if (firstSpace + 1 >= maxNbCharsPerLine){
+-          //  The first word in s won't fit on a line, break it across several lines
+-          if (charsThisLine > 0)
+-            addNewLine();
+-          addTextBrokenAcrossLines(s.substring(0, firstSpace + 1));
+-          if (firstSpace + 1 < s.length())
+-            addText(s.substring(firstSpace + 1, s.length()));
+-        } else if (firstSpace + 1 + charsThisLine > maxNbCharsPerLine) {
+-          //  The new word won't fit on the current line.
+-          addNewLine();
+-          addText(s);
+-        } else {
+-            addText(s.substring(0, firstSpace + 1));
+-            if (firstSpace + 1 < s.length())
+-                addTextCarefully(s.substring(firstSpace + 1, s.length()));
+-        }
+-    }
+-
+-    private void addTextBrokenAcrossLines(String s) {
+-      assert (s.indexOf(' ') >= 0 && s.length() > maxNbCharsPerLine);
+-      int firstPart = Math.min(s.length(), maxNbCharsPerLine
+-              - charsThisLine);
+-
+-      addText(s.substring(0, firstPart));
+-
+-      addNewLine();
+-      addText(s.substring(firstPart, s.length()));
+-    }
+-
+-    public synchronized void addNewLine() {
+-        addHtml(newLine);
+-        charsThisLine = 0;
+-    }
+-
+-    @Override
+-    public String toString() {
+-        return txt.toString();
+-    }
+-
+-    private String clean(String s) {
+-        return s.replaceAll("\n", "").replaceAll("\r", "").replaceAll("<",
+-                "&lt;").replaceAll(">", "&gt;").replaceAll("'", "&#39;")
+-                .replaceAll("\"", "&#34;");
+-    }
+-}
++/*
++ * Copyright 2007 Guy Van den Broeck
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.outerj.daisy.diff.html.ancestor;
++
++public class ChangeText {
++
++    private int maxNbCharsPerLine;
++
++    private StringBuilder txt = new StringBuilder();
++
++    public final static String newLine = "<br/>";
++
++    private int charsThisLine = 0;
++
++    public ChangeText(int maxNbCharsPerLine) {
++        this.maxNbCharsPerLine = maxNbCharsPerLine;
++    }
++
++    public synchronized void addText(String s) { org.outerj.daisy.jmhbench.MutationSwitch.tick(38);
++        s = clean(s);
++
++        if (s.length() + charsThisLine > maxNbCharsPerLine) {
++            addTextCarefully(s);
++        } else {
++            addToLine(s);
++        }
++    }
++
++    private void addToLine(String s) {
++      txt.append(s);
++      charsThisLine += s.length();
++    }
++
++    public synchronized void addHtml(String s) { org.outerj.daisy.jmhbench.MutationSwitch.tick(39);
++        txt.append(s);
++        if (s.contains("</li>") || s.contains("</ol>") || s.contains("</ul>")) {
++            charsThisLine = 0;
++        }
++    }
++
++    private synchronized void addTextCarefully(String s) {
++
++        int firstSpace = s.indexOf(" ");
++        if (firstSpace < 0) { //  Next word is the whole string.
++            if (s.length() < maxNbCharsPerLine) {
++              //  If the word will fit on a standard output line, by itself, get a new line and put it out.
++              if (charsThisLine > 0)
++                addNewLine();
++              addText(s);
++            } else {
++              addNewLine();
++              addTextBrokenAcrossLines(s);
++            }
++        } else if (firstSpace + 1 >= maxNbCharsPerLine){
++          //  The first word in s won't fit on a line, break it across several lines
++          if (charsThisLine > 0)
++            addNewLine();
++          addTextBrokenAcrossLines(s.substring(0, firstSpace + 1));
++          if (firstSpace + 1 < s.length())
++            addText(s.substring(firstSpace + 1, s.length()));
++        } else if (firstSpace + 1 + charsThisLine > maxNbCharsPerLine) {
++          //  The new word won't fit on the current line.
++          addNewLine();
++          addText(s);
++        } else {
++            addText(s.substring(0, firstSpace + 1));
++            if (firstSpace + 1 < s.length())
++                addTextCarefully(s.substring(firstSpace + 1, s.length()));
++        }
++    }
++
++    private void addTextBrokenAcrossLines(String s) {
++      assert (s.indexOf(' ') >= 0 && s.length() > maxNbCharsPerLine);
++      int firstPart = Math.min(s.length(), maxNbCharsPerLine
++              - charsThisLine);
++
++      addText(s.substring(0, firstPart));
++
++      addNewLine();
++      addText(s.substring(firstPart, s.length()));
++    }
++
++    public synchronized void addNewLine() {
++        addHtml(newLine);
++        charsThisLine = 0;
++    }
++
++    @Override
++    public String toString() {
++        return txt.toString();
++    }
++
++    private String clean(String s) {
++        return s.replaceAll("\n", "").replaceAll("\r", "").replaceAll("<",
++                "&lt;").replaceAll(">", "&gt;").replaceAll("'", "&#39;")
++                .replaceAll("\"", "&#34;");
++    }
++}
+diff --git a/org/outerj/daisy/diff/html/ancestor/ChangeTextGenerator.java b/org/outerj/daisy/diff/html/ancestor/ChangeTextGenerator.java
+index f1d7371..6d145c2 100644
+--- a/org/outerj/daisy/diff/html/ancestor/ChangeTextGenerator.java
++++ b/org/outerj/daisy/diff/html/ancestor/ChangeTextGenerator.java
+@@ -1,145 +1,145 @@
+-/*
+- * Copyright 2007 Guy Van den Broeck
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.outerj.daisy.diff.html.ancestor;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-import java.util.Locale;
+-
+-import org.eclipse.compare.rangedifferencer.RangeDifference;
+-import org.outerj.daisy.diff.html.ancestor.tagtostring.TagToString;
+-import org.outerj.daisy.diff.html.ancestor.tagtostring.TagToStringFactory;
+-import org.outerj.daisy.diff.html.dom.TagNode;
+-import org.outerj.daisy.diff.html.modification.HtmlLayoutChange;
+-
+-public class ChangeTextGenerator {
+-
+-	private List<HtmlLayoutChange> htmlLayoutChanges = null;
+-	
+-    private AncestorComparator ancestorComparator;
+-
+-    private AncestorComparator other;
+-
+-    private TagToStringFactory factory;
+-
+-    private Locale locale;
+-    
+-    private static final int MAX_OUTPUT_LINE_LENGTH = 55;   //   Lines won't go longer than this unless a single word it longer than this.
+-
+-    public ChangeTextGenerator(AncestorComparator ancestorComparator,
+-            AncestorComparator other, Locale locale) {
+-        this.ancestorComparator = ancestorComparator;
+-        this.other = other;
+-        this.factory = new TagToStringFactory();
+-        this.locale = locale;
+-        
+-        htmlLayoutChanges = new ArrayList<HtmlLayoutChange>();
+-    }
+-
+-    public ChangeText getChanged(RangeDifference... differences) {
+-        ChangeText txt = new ChangeText(ChangeTextGenerator.MAX_OUTPUT_LINE_LENGTH);
+-
+-        boolean rootlistopened = false;
+-
+-        if (differences.length > 1) {
+-            txt.addHtml("<ul class='changelist'>");
+-            rootlistopened = true;
+-        }
+-
+-        for (int j = 0; j < differences.length; j++) {
+-
+-            RangeDifference d = differences[j];
+-
+-            boolean lvl1listopened = false;
+-
+-            if (rootlistopened) {
+-                txt.addHtml("<li>");
+-            }
+-
+-            if (d.leftLength() + d.rightLength() > 1) {
+-                txt.addHtml("<ul class='changelist'>");
+-                lvl1listopened = true;
+-            }
+-
+-            // left are the old ones
+-            for (int i = d.leftStart(); i < d.leftEnd(); i++) {
+-                if (lvl1listopened)
+-                    txt.addHtml("<li>");
+-
+-                // add a bullet for a old tag
+-                addTagOld(txt, other.getAncestor(i));
+-
+-                if (lvl1listopened)
+-                    txt.addHtml("</li>");
+-
+-            }
+-
+-            // right are the new ones
+-            for (int i = d.rightStart(); i < d.rightEnd(); i++) {
+-                if (lvl1listopened)
+-                    txt.addHtml("<li>");
+-
+-                // add a bullet for a new tag
+-                addTagNew(txt, this.getAncestor(i));
+-
+-                if (lvl1listopened)
+-                    txt.addHtml("</li>");
+-
+-            }
+-
+-            if (lvl1listopened) {
+-                txt.addHtml("</ul>");
+-            }
+-
+-            if (rootlistopened) {
+-                txt.addHtml("</li>");
+-            }
+-        }
+-
+-        if (rootlistopened) {
+-            txt.addHtml("</ul>");
+-        }
+-
+-        return txt;
+-
+-    }
+-
+-    private void addTagOld(ChangeText txt, TagNode ancestor) {
+-    	TagToString tagToString = factory.create(ancestor, locale);
+-    	tagToString.getRemovedDescription(txt);
+-    	htmlLayoutChanges.add(tagToString.getHtmlLayoutChange());
+-    }
+-
+-    private void addTagNew(ChangeText txt, TagNode ancestor) {
+-    	TagToString tagToString = factory.create(ancestor, locale);
+-    	tagToString.getAddedDescription(txt);
+-    	htmlLayoutChanges.add(tagToString.getHtmlLayoutChange());
+-    }
+-
+-    private TagNode getAncestor(int i) {
+-        return ancestorComparator.getAncestor(i);
+-    }
+-
+-	/**
+-	 * @return the htmlChange
+-	 */
+-	public List<HtmlLayoutChange> getHtmlLayoutChanges() {
+-		return htmlLayoutChanges;
+-	}
+-    
+-    
+-
+-}
++/*
++ * Copyright 2007 Guy Van den Broeck
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.outerj.daisy.diff.html.ancestor;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Locale;
++
++import org.eclipse.compare.rangedifferencer.RangeDifference;
++import org.outerj.daisy.diff.html.ancestor.tagtostring.TagToString;
++import org.outerj.daisy.diff.html.ancestor.tagtostring.TagToStringFactory;
++import org.outerj.daisy.diff.html.dom.TagNode;
++import org.outerj.daisy.diff.html.modification.HtmlLayoutChange;
++
++public class ChangeTextGenerator {
++
++	private List<HtmlLayoutChange> htmlLayoutChanges = null;
++	
++    private AncestorComparator ancestorComparator;
++
++    private AncestorComparator other;
++
++    private TagToStringFactory factory;
++
++    private Locale locale;
++    
++    private static final int MAX_OUTPUT_LINE_LENGTH = 55;   //   Lines won't go longer than this unless a single word it longer than this.
++
++    public ChangeTextGenerator(AncestorComparator ancestorComparator,
++            AncestorComparator other, Locale locale) {
++        this.ancestorComparator = ancestorComparator;
++        this.other = other;
++        this.factory = new TagToStringFactory();
++        this.locale = locale;
++        
++        htmlLayoutChanges = new ArrayList<HtmlLayoutChange>();
++    }
++
++    public ChangeText getChanged(RangeDifference... differences) { org.outerj.daisy.jmhbench.MutationSwitch.tick(40);
++        ChangeText txt = new ChangeText(ChangeTextGenerator.MAX_OUTPUT_LINE_LENGTH);
++
++        boolean rootlistopened = false;
++
++        if (differences.length > 1) {
++            txt.addHtml("<ul class='changelist'>");
++            rootlistopened = true;
++        }
++
++        for (int j = 0; j < differences.length; j++) {
++
++            RangeDifference d = differences[j];
++
++            boolean lvl1listopened = false;
++
++            if (rootlistopened) {
++                txt.addHtml("<li>");
++            }
++
++            if (d.leftLength() + d.rightLength() > 1) {
++                txt.addHtml("<ul class='changelist'>");
++                lvl1listopened = true;
++            }
++
++            // left are the old ones
++            for (int i = d.leftStart(); i < d.leftEnd(); i++) {
++                if (lvl1listopened)
++                    txt.addHtml("<li>");
++
++                // add a bullet for a old tag
++                addTagOld(txt, other.getAncestor(i));
++
++                if (lvl1listopened)
++                    txt.addHtml("</li>");
++
++            }
++
++            // right are the new ones
++            for (int i = d.rightStart(); i < d.rightEnd(); i++) {
++                if (lvl1listopened)
++                    txt.addHtml("<li>");
++
++                // add a bullet for a new tag
++                addTagNew(txt, this.getAncestor(i));
++
++                if (lvl1listopened)
++                    txt.addHtml("</li>");
++
++            }
++
++            if (lvl1listopened) {
++                txt.addHtml("</ul>");
++            }
++
++            if (rootlistopened) {
++                txt.addHtml("</li>");
++            }
++        }
++
++        if (rootlistopened) {
++            txt.addHtml("</ul>");
++        }
++
++        return txt;
++
++    }
++
++    private void addTagOld(ChangeText txt, TagNode ancestor) {
++    	TagToString tagToString = factory.create(ancestor, locale);
++    	tagToString.getRemovedDescription(txt);
++    	htmlLayoutChanges.add(tagToString.getHtmlLayoutChange());
++    }
++
++    private void addTagNew(ChangeText txt, TagNode ancestor) {
++    	TagToString tagToString = factory.create(ancestor, locale);
++    	tagToString.getAddedDescription(txt);
++    	htmlLayoutChanges.add(tagToString.getHtmlLayoutChange());
++    }
++
++    private TagNode getAncestor(int i) {
++        return ancestorComparator.getAncestor(i);
++    }
++
++	/**
++	 * @return the htmlChange
++	 */
++	public List<HtmlLayoutChange> getHtmlLayoutChanges() { org.outerj.daisy.jmhbench.MutationSwitch.tick(41);
++		return htmlLayoutChanges;
++	}
++    
++    
++
++}
+diff --git a/org/outerj/daisy/diff/html/ancestor/TextOnlyComparator.java b/org/outerj/daisy/diff/html/ancestor/TextOnlyComparator.java
+index 42aa57a..00ffecc 100644
+--- a/org/outerj/daisy/diff/html/ancestor/TextOnlyComparator.java
++++ b/org/outerj/daisy/diff/html/ancestor/TextOnlyComparator.java
+@@ -49,11 +49,11 @@ public class TextOnlyComparator implements IRangeComparator {
+         }
+     }
+ 
+-    public int getRangeCount() {
++    public int getRangeCount() { org.outerj.daisy.jmhbench.MutationSwitch.tick(11);
+         return leafs.size();
+     }
+ 
+-    public boolean rangesEqual(int owni, IRangeComparator otherComp, int otheri) {
++    public boolean rangesEqual(int owni, IRangeComparator otherComp, int otheri) { org.outerj.daisy.jmhbench.MutationSwitch.tick(12);
+         TextOnlyComparator other;
+         try {
+             other = (TextOnlyComparator) otherComp;
+diff --git a/org/outerj/daisy/diff/html/ancestor/tagtostring/AnchorToString.java b/org/outerj/daisy/diff/html/ancestor/tagtostring/AnchorToString.java
+index 633013d..032c825 100644
+--- a/org/outerj/daisy/diff/html/ancestor/tagtostring/AnchorToString.java
++++ b/org/outerj/daisy/diff/html/ancestor/tagtostring/AnchorToString.java
+@@ -31,7 +31,7 @@ public class AnchorToString extends TagToString {
+     }
+ 
+     @Override
+-    protected void addAttributes(ChangeText txt, Attributes attributes) {
++    protected void addAttributes(ChangeText txt, Attributes attributes) { org.outerj.daisy.jmhbench.MutationSwitch.tick(13);
+         AttributesImpl newAttrs = new AttributesImpl(attributes);
+         String href = newAttrs.getValue("href");
+ 
+diff --git a/org/outerj/daisy/diff/html/ancestor/tagtostring/NoContentTagToString.java b/org/outerj/daisy/diff/html/ancestor/tagtostring/NoContentTagToString.java
+index 5ed2639..1146c1d 100644
+--- a/org/outerj/daisy/diff/html/ancestor/tagtostring/NoContentTagToString.java
++++ b/org/outerj/daisy/diff/html/ancestor/tagtostring/NoContentTagToString.java
+@@ -29,7 +29,7 @@ public class NoContentTagToString extends TagToString {
+     }
+ 
+     @Override
+-    public void getAddedDescription(ChangeText txt) {
++    public void getAddedDescription(ChangeText txt) { org.outerj.daisy.jmhbench.MutationSwitch.tick(14);
+         txt.addText(getChangedTo() + " " + getArticle().toLowerCase() + " ");
+         txt.addHtml("<b>");
+         txt.addText(getDescription().toLowerCase());
+@@ -44,7 +44,7 @@ public class NoContentTagToString extends TagToString {
+     }
+ 
+     @Override
+-    public void getRemovedDescription(ChangeText txt) {
++    public void getRemovedDescription(ChangeText txt) { org.outerj.daisy.jmhbench.MutationSwitch.tick(15);
+         txt.addText(getChangedFrom() + " " + getArticle().toLowerCase() + " ");
+         txt.addHtml("<b>");
+         txt.addText(getDescription().toLowerCase());
+diff --git a/org/outerj/daisy/diff/html/ancestor/tagtostring/TagToString.java b/org/outerj/daisy/diff/html/ancestor/tagtostring/TagToString.java
+index d08f85f..4d648c8 100644
+--- a/org/outerj/daisy/diff/html/ancestor/tagtostring/TagToString.java
++++ b/org/outerj/daisy/diff/html/ancestor/tagtostring/TagToString.java
+@@ -1,199 +1,199 @@
+-/*
+- * Copyright 2007 Guy Van den Broeck
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.outerj.daisy.diff.html.ancestor.tagtostring;
+-
+-import java.util.MissingResourceException;
+-import java.util.ResourceBundle;
+-
+-import org.outerj.daisy.diff.html.ancestor.ChangeText;
+-import org.outerj.daisy.diff.html.ancestor.TagChangeSematic;
+-import org.outerj.daisy.diff.html.dom.TagNode;
+-import org.outerj.daisy.diff.html.modification.HtmlLayoutChange;
+-import org.outerj.daisy.diff.html.modification.HtmlLayoutChange.Type;
+-import org.xml.sax.Attributes;
+-
+-public class TagToString {
+-
+-    protected TagNode node;
+-
+-    protected TagChangeSematic sem;
+-
+-    private ResourceBundle bundle;
+-    
+-    private HtmlLayoutChange htmlLayoutChange = null;
+-
+-    protected TagToString(TagNode node, TagChangeSematic sem,
+-            ResourceBundle bundle) {
+-        this.node = node;
+-        this.sem = sem;
+-        this.bundle = bundle;
+-        
+-    }
+-
+-    public String getDescription() {
+-    	
+-        return getString("diff-" + node.getQName());
+-        
+-    }
+-
+-    public void getRemovedDescription(ChangeText txt) {
+-    	htmlLayoutChange = new HtmlLayoutChange();
+-    	htmlLayoutChange.setEndingTag(node.getEndTag());
+-    	htmlLayoutChange.setOpeningTag(node.getOpeningTag());
+-    	htmlLayoutChange.setType(Type.TAG_REMOVED);
+-        if (sem == TagChangeSematic.MOVED) {
+-            txt.addText(getMovedOutOf() + " " + getArticle().toLowerCase()
+-                    + " ");
+-            txt.addHtml("<b>");
+-            txt.addText(getDescription().toLowerCase());
+-            txt.addHtml("</b>");
+-        } else if (sem == TagChangeSematic.STYLE) {
+-            txt.addHtml("<b>");
+-            txt.addText(getDescription());
+-            txt.addHtml("</b>");
+-            txt.addText(" " + getStyleRemoved().toLowerCase());
+-        } else {
+-            txt.addHtml("<b>");
+-            txt.addText(getDescription());
+-            txt.addHtml("</b>");
+-            txt.addText(" " + getRemoved().toLowerCase());
+-        }
+-        addAttributes(txt, node.getAttributes());
+-        txt.addText(".");
+-    }
+-
+-    public void getAddedDescription(ChangeText txt) {
+-    	htmlLayoutChange = new HtmlLayoutChange();
+-    	htmlLayoutChange.setEndingTag(node.getEndTag());
+-    	htmlLayoutChange.setOpeningTag(node.getOpeningTag());
+-    	htmlLayoutChange.setType(Type.TAG_ADDED);
+-        if (sem == TagChangeSematic.MOVED) {
+-            txt.addText(getMovedTo() + " " + getArticle().toLowerCase() + " ");
+-            txt.addHtml("<b>");
+-            txt.addText(getDescription().toLowerCase());
+-            txt.addHtml("</b>");
+-        } else if (sem == TagChangeSematic.STYLE) {
+-            txt.addHtml("<b>");
+-            txt.addText(getDescription());
+-            txt.addHtml("</b>");
+-            txt.addText(" " + getStyleAdded().toLowerCase());
+-        } else {
+-            txt.addHtml("<b>");
+-            txt.addText(getDescription());
+-            txt.addHtml("</b>");
+-            txt.addText(" " + getAdded().toLowerCase());
+-        }
+-        addAttributes(txt, node.getAttributes());
+-        txt.addText(".");
+-    }
+-
+-    protected String getMovedTo() {
+-        return getString("diff-movedto");
+-    }
+-
+-    protected String getStyleAdded() {
+-        return getString("diff-styleadded");
+-    }
+-
+-    protected String getAdded() {
+-        return getString("diff-added");
+-    }
+-
+-    protected String getMovedOutOf() {
+-        return getString("diff-movedoutof");
+-    }
+-
+-    protected String getStyleRemoved() {
+-        return getString("diff-styleremoved");
+-    }
+-
+-    protected String getRemoved() {
+-        return getString("diff-removed");
+-    }
+-
+-    protected void addAttributes(ChangeText txt, Attributes attributes) {
+-        if (attributes.getLength() < 1)
+-            return;
+-
+-        txt.addText(" " + getWith().toLowerCase() + " "
+-                + translateArgument(attributes.getQName(0)) + " "
+-                + attributes.getValue(0));
+-        for (int i = 1; i < attributes.getLength() - 1; i++) {
+-            txt.addText(", " + translateArgument(attributes.getQName(i)) + " "
+-                    + attributes.getValue(i));
+-        }
+-        if (attributes.getLength() > 1) {
+-            txt.addText(" "
+-                    + getAnd().toLowerCase()
+-                    + " "
+-                    + translateArgument(attributes.getQName(attributes
+-                            .getLength() - 1)) + " "
+-                    + attributes.getValue(attributes.getLength() - 1));
+-        }
+-    }
+-
+-    private String getAnd() {
+-        return getString("diff-and");
+-    }
+-
+-    private String getWith() {
+-        return getString("diff-with");
+-    }
+-
+-    protected String translateArgument(String name) {
+-        if (name.equalsIgnoreCase("src"))
+-            return getSource().toLowerCase();
+-        if (name.equalsIgnoreCase("width"))
+-            return getWidth().toLowerCase();
+-        if (name.equalsIgnoreCase("height"))
+-            return getHeight().toLowerCase();
+-        return name;
+-    }
+-
+-    private String getHeight() {
+-        return getString("diff-height");
+-    }
+-
+-    private String getWidth() {
+-        return getString("diff-width");
+-    }
+-
+-    protected String getSource() {
+-        return getString("diff-source");
+-    }
+-
+-    protected String getArticle() {
+-        return getString("diff-" + node.getQName() + "-article");
+-    }
+-
+-    public String getString(String key) {
+-        try {
+-            return bundle.getString(key);
+-        } catch (MissingResourceException e) {
+-            return '!' + key + '!';
+-        }
+-    }
+-
+-	/**
+-	 * @return the htmlChange
+-	 */
+-	public HtmlLayoutChange getHtmlLayoutChange() {
+-		return htmlLayoutChange;
+-	}
+-    
+-    
+-
+-}
++/*
++ * Copyright 2007 Guy Van den Broeck
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.outerj.daisy.diff.html.ancestor.tagtostring;
++
++import java.util.MissingResourceException;
++import java.util.ResourceBundle;
++
++import org.outerj.daisy.diff.html.ancestor.ChangeText;
++import org.outerj.daisy.diff.html.ancestor.TagChangeSematic;
++import org.outerj.daisy.diff.html.dom.TagNode;
++import org.outerj.daisy.diff.html.modification.HtmlLayoutChange;
++import org.outerj.daisy.diff.html.modification.HtmlLayoutChange.Type;
++import org.xml.sax.Attributes;
++
++public class TagToString {
++
++    protected TagNode node;
++
++    protected TagChangeSematic sem;
++
++    private ResourceBundle bundle;
++    
++    private HtmlLayoutChange htmlLayoutChange = null;
++
++    protected TagToString(TagNode node, TagChangeSematic sem,
++            ResourceBundle bundle) {
++        this.node = node;
++        this.sem = sem;
++        this.bundle = bundle;
++        
++    }
++
++    public String getDescription() { org.outerj.daisy.jmhbench.MutationSwitch.tick(16);
++    	
++        return getString("diff-" + node.getQName());
++        
++    }
++
++    public void getRemovedDescription(ChangeText txt) { org.outerj.daisy.jmhbench.MutationSwitch.tick(17);
++    	htmlLayoutChange = new HtmlLayoutChange();
++    	htmlLayoutChange.setEndingTag(node.getEndTag());
++    	htmlLayoutChange.setOpeningTag(node.getOpeningTag());
++    	htmlLayoutChange.setType(Type.TAG_REMOVED);
++        if (sem == TagChangeSematic.MOVED) {
++            txt.addText(getMovedOutOf() + " " + getArticle().toLowerCase()
++                    + " ");
++            txt.addHtml("<b>");
++            txt.addText(getDescription().toLowerCase());
++            txt.addHtml("</b>");
++        } else if (sem == TagChangeSematic.STYLE) {
++            txt.addHtml("<b>");
++            txt.addText(getDescription());
++            txt.addHtml("</b>");
++            txt.addText(" " + getStyleRemoved().toLowerCase());
++        } else {
++            txt.addHtml("<b>");
++            txt.addText(getDescription());
++            txt.addHtml("</b>");
++            txt.addText(" " + getRemoved().toLowerCase());
++        }
++        addAttributes(txt, node.getAttributes());
++        txt.addText(".");
++    }
++
++    public void getAddedDescription(ChangeText txt) {
++    	htmlLayoutChange = new HtmlLayoutChange();
++    	htmlLayoutChange.setEndingTag(node.getEndTag());
++    	htmlLayoutChange.setOpeningTag(node.getOpeningTag());
++    	htmlLayoutChange.setType(Type.TAG_ADDED);
++        if (sem == TagChangeSematic.MOVED) {
++            txt.addText(getMovedTo() + " " + getArticle().toLowerCase() + " ");
++            txt.addHtml("<b>");
++            txt.addText(getDescription().toLowerCase());
++            txt.addHtml("</b>");
++        } else if (sem == TagChangeSematic.STYLE) {
++            txt.addHtml("<b>");
++            txt.addText(getDescription());
++            txt.addHtml("</b>");
++            txt.addText(" " + getStyleAdded().toLowerCase());
++        } else {
++            txt.addHtml("<b>");
++            txt.addText(getDescription());
++            txt.addHtml("</b>");
++            txt.addText(" " + getAdded().toLowerCase());
++        }
++        addAttributes(txt, node.getAttributes());
++        txt.addText(".");
++    }
++
++    protected String getMovedTo() {
++        return getString("diff-movedto");
++    }
++
++    protected String getStyleAdded() {
++        return getString("diff-styleadded");
++    }
++
++    protected String getAdded() {
++        return getString("diff-added");
++    }
++
++    protected String getMovedOutOf() {
++        return getString("diff-movedoutof");
++    }
++
++    protected String getStyleRemoved() {
++        return getString("diff-styleremoved");
++    }
++
++    protected String getRemoved() {
++        return getString("diff-removed");
++    }
++
++    protected void addAttributes(ChangeText txt, Attributes attributes) {
++        if (attributes.getLength() < 1)
++            return;
++
++        txt.addText(" " + getWith().toLowerCase() + " "
++                + translateArgument(attributes.getQName(0)) + " "
++                + attributes.getValue(0));
++        for (int i = 1; i < attributes.getLength() - 1; i++) {
++            txt.addText(", " + translateArgument(attributes.getQName(i)) + " "
++                    + attributes.getValue(i));
++        }
++        if (attributes.getLength() > 1) {
++            txt.addText(" "
++                    + getAnd().toLowerCase()
++                    + " "
++                    + translateArgument(attributes.getQName(attributes
++                            .getLength() - 1)) + " "
++                    + attributes.getValue(attributes.getLength() - 1));
++        }
++    }
++
++    private String getAnd() {
++        return getString("diff-and");
++    }
++
++    private String getWith() {
++        return getString("diff-with");
++    }
++
++    protected String translateArgument(String name) {
++        if (name.equalsIgnoreCase("src"))
++            return getSource().toLowerCase();
++        if (name.equalsIgnoreCase("width"))
++            return getWidth().toLowerCase();
++        if (name.equalsIgnoreCase("height"))
++            return getHeight().toLowerCase();
++        return name;
++    }
++
++    private String getHeight() {
++        return getString("diff-height");
++    }
++
++    private String getWidth() {
++        return getString("diff-width");
++    }
++
++    protected String getSource() {
++        return getString("diff-source");
++    }
++
++    protected String getArticle() {
++        return getString("diff-" + node.getQName() + "-article");
++    }
++
++    public String getString(String key) {
++        try {
++            return bundle.getString(key);
++        } catch (MissingResourceException e) {
++            return '!' + key + '!';
++        }
++    }
++
++	/**
++	 * @return the htmlChange
++	 */
++	public HtmlLayoutChange getHtmlLayoutChange() {
++		return htmlLayoutChange;
++	}
++    
++    
++
++}
+diff --git a/org/outerj/daisy/diff/html/ancestor/tagtostring/TagToStringFactory.java b/org/outerj/daisy/diff/html/ancestor/tagtostring/TagToStringFactory.java
+index 92be461..66f9ea2 100644
+--- a/org/outerj/daisy/diff/html/ancestor/tagtostring/TagToStringFactory.java
++++ b/org/outerj/daisy/diff/html/ancestor/tagtostring/TagToStringFactory.java
+@@ -76,7 +76,7 @@ public class TagToStringFactory {
+         styleTags.add("strike");
+     }
+ 
+-    public TagToString create(TagNode node, Locale locale) {
++    public TagToString create(TagNode node, Locale locale) { org.outerj.daisy.jmhbench.MutationSwitch.tick(18);
+         TagChangeSematic sem = getChangeSemantic(node.getQName());
+         ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+         if (node.getQName().equalsIgnoreCase("a")) //$NON-NLS-1$
+@@ -86,7 +86,7 @@ public class TagToStringFactory {
+         return new TagToString(node, sem, bundle);
+     }
+ 
+-    protected TagChangeSematic getChangeSemantic(String string) {
++    protected TagChangeSematic getChangeSemantic(String string) { org.outerj.daisy.jmhbench.MutationSwitch.tick(19);
+         if (containerTags.contains(string.toLowerCase()))
+             return TagChangeSematic.MOVED;
+         if (styleTags.contains(string.toLowerCase()))
+diff --git a/org/outerj/daisy/diff/html/dom/BodyNode.java b/org/outerj/daisy/diff/html/dom/BodyNode.java
+index ba52f82..fe843f0 100644
+--- a/org/outerj/daisy/diff/html/dom/BodyNode.java
++++ b/org/outerj/daisy/diff/html/dom/BodyNode.java
+@@ -30,7 +30,7 @@ public class BodyNode extends TagNode {
+     }
+ 
+     @Override
+-    public Node copyTree() {
++    public Node copyTree() { org.outerj.daisy.jmhbench.MutationSwitch.tick(42);
+         BodyNode newThis = new BodyNode();
+         for (Node child : this) {
+             Node newChild = child.copyTree();
+@@ -41,7 +41,7 @@ public class BodyNode extends TagNode {
+     }
+     
+     @Override
+-    public List<Node> getMinimalDeletedSet(long id) {
++    public List<Node> getMinimalDeletedSet(long id) { org.outerj.daisy.jmhbench.MutationSwitch.tick(43);
+         List<Node> nodes = new ArrayList<Node>();
+         for (Node child : this) {
+             List<Node> childrenChildren = child.getMinimalDeletedSet(id);
+diff --git a/org/outerj/daisy/diff/html/dom/DomTreeBuilder.java b/org/outerj/daisy/diff/html/dom/DomTreeBuilder.java
+index 0ab5471..001bfd1 100644
+--- a/org/outerj/daisy/diff/html/dom/DomTreeBuilder.java
++++ b/org/outerj/daisy/diff/html/dom/DomTreeBuilder.java
+@@ -46,11 +46,11 @@ public class DomTreeBuilder extends DefaultHandler implements DomTree {
+ 
+     private Node lastSibling = null;
+ 
+-    public BodyNode getBodyNode() {
++    public BodyNode getBodyNode() { org.outerj.daisy.jmhbench.MutationSwitch.tick(20);
+         return bodyNode;
+     }
+ 
+-    public List<TextNode> getTextNodes() {
++    public List<TextNode> getTextNodes() { org.outerj.daisy.jmhbench.MutationSwitch.tick(21);
+         return textNodes;
+     }
+ 
+diff --git a/org/outerj/daisy/diff/html/dom/ImageNode.java b/org/outerj/daisy/diff/html/dom/ImageNode.java
+index 5d2b907..c9dede3 100644
+--- a/org/outerj/daisy/diff/html/dom/ImageNode.java
++++ b/org/outerj/daisy/diff/html/dom/ImageNode.java
+@@ -32,7 +32,7 @@ public class ImageNode extends TextNode {
+     }
+ 
+     @Override
+-    public boolean isSameText(Object other) {
++    public boolean isSameText(Object other) { org.outerj.daisy.jmhbench.MutationSwitch.tick(44);
+         if (other == null)
+             return false;
+ 
+@@ -45,7 +45,7 @@ public class ImageNode extends TextNode {
+         return getText().equalsIgnoreCase(otherImageNode.getText());
+     }
+ 
+-    public AttributesImpl getAttributes() {
++    public AttributesImpl getAttributes() { org.outerj.daisy.jmhbench.MutationSwitch.tick(45);
+         return attributes;
+     }
+ 
+diff --git a/org/outerj/daisy/diff/html/dom/TagNode.java b/org/outerj/daisy/diff/html/dom/TagNode.java
+index 9ab2a16..e7f1a29 100644
+--- a/org/outerj/daisy/diff/html/dom/TagNode.java
++++ b/org/outerj/daisy/diff/html/dom/TagNode.java
+@@ -55,7 +55,7 @@ public class TagNode extends Node implements Iterable<Node> {
+      * @throws java.lang.IllegalStateException - if the parameter
+      * has different parent than <code>this</code> node.
+      */
+-    public void addChild(Node node) {
++    public void addChild(Node node) { org.outerj.daisy.jmhbench.MutationSwitch.tick(46);
+         if (node.getParent() != this) {
+ 			throw new IllegalStateException(
+                     "The new child must have this node as a parent.");
+@@ -65,7 +65,7 @@ public class TagNode extends Node implements Iterable<Node> {
+ 
+     @Override
+     protected void setRoot(TagNode root)
+-    {
++    { org.outerj.daisy.jmhbench.MutationSwitch.tick(47);
+         super.setRoot(root);
+         for (Node child : children)
+         {
+diff --git a/org/outerj/daisy/diff/html/dom/TextNode.java b/org/outerj/daisy/diff/html/dom/TextNode.java
+index 41483b6..da40cb8 100644
+--- a/org/outerj/daisy/diff/html/dom/TextNode.java
++++ b/org/outerj/daisy/diff/html/dom/TextNode.java
+@@ -37,7 +37,7 @@ public class TextNode extends Node implements Cloneable {
+     }
+ 
+     @Override
+-    public Node copyTree() {
++    public Node copyTree() { org.outerj.daisy.jmhbench.MutationSwitch.tick(48);
+         try {
+             Node node = (Node) clone();
+             node.setParent(null);
+@@ -48,7 +48,7 @@ public class TextNode extends Node implements Cloneable {
+     }
+ 
+     @Override
+-    public Node getLeftMostChild() {
++    public Node getLeftMostChild() { org.outerj.daisy.jmhbench.MutationSwitch.tick(49);
+         return this;
+     }
+ 
+diff --git a/org/outerj/daisy/diff/html/dom/WhiteSpaceNode.java b/org/outerj/daisy/diff/html/dom/WhiteSpaceNode.java
+index 896a7a8..1d1610e 100644
+--- a/org/outerj/daisy/diff/html/dom/WhiteSpaceNode.java
++++ b/org/outerj/daisy/diff/html/dom/WhiteSpaceNode.java
+@@ -38,7 +38,7 @@ public class WhiteSpaceNode extends TextNode {
+         }
+     }
+ 
+-    public static boolean isWhiteSpace(char c) {
++    public static boolean isWhiteSpace(char c) { org.outerj.daisy.jmhbench.MutationSwitch.tick(50);
+         switch (c) {
+         case ' ':
+         case '\t':
+diff --git a/org/outerj/daisy/diff/html/dom/helper/AttributesMap.java b/org/outerj/daisy/diff/html/dom/helper/AttributesMap.java
+index 6e46bd6..314b6e4 100644
+--- a/org/outerj/daisy/diff/html/dom/helper/AttributesMap.java
++++ b/org/outerj/daisy/diff/html/dom/helper/AttributesMap.java
+@@ -65,7 +65,7 @@ public class AttributesMap extends HashMap<String, String> {
+      * as specified in {@link AttributesMap#equals(Object)}.
+      */
+     public boolean hasSameAttributes(Attributes attributes)
+-    {
++    { org.outerj.daisy.jmhbench.MutationSwitch.tick(22);
+         if (attributes.getLength() != size())
+             return false;
+         for (int i = 0; i < attributes.getLength(); i++) {
+@@ -155,7 +155,7 @@ public class AttributesMap extends HashMap<String, String> {
+ 	 * @param style2
+ 	 * @return
+ 	 */
+-	public static boolean equivalentStyles(String style1, String style2){
++	public static boolean equivalentStyles(String style1, String style2){ org.outerj.daisy.jmhbench.MutationSwitch.tick(23);
+ 		if (style1 == null){
+ 			if (style2 == null){
+ 				return true; //both are nulls
+diff --git a/org/outerj/daisy/diff/tag/ArgumentComparator.java b/org/outerj/daisy/diff/tag/ArgumentComparator.java
+index e42a2c9..f3e8fff 100644
+--- a/org/outerj/daisy/diff/tag/ArgumentComparator.java
++++ b/org/outerj/daisy/diff/tag/ArgumentComparator.java
+@@ -65,14 +65,14 @@ public class ArgumentComparator implements IAtomSplitter {
+         }
+     }
+ 
+-    public Atom getAtom(int i) {
++    public Atom getAtom(int i) { org.outerj.daisy.jmhbench.MutationSwitch.tick(24);
+         if (i < 0 || i >= atoms.size())
+             throw new IndexOutOfBoundsException("There is no Atom with index "
+                     + i);
+         return atoms.get(i);
+     }
+ 
+-    public int getRangeCount() {
++    public int getRangeCount() { org.outerj.daisy.jmhbench.MutationSwitch.tick(25);
+         return atoms.size();
+     }
+ 
+diff --git a/org/outerj/daisy/diff/tag/TagComparator.java b/org/outerj/daisy/diff/tag/TagComparator.java
+index 886a09d..f40c047 100644
+--- a/org/outerj/daisy/diff/tag/TagComparator.java
++++ b/org/outerj/daisy/diff/tag/TagComparator.java
+@@ -53,7 +53,7 @@ public class TagComparator implements IAtomSplitter {
+         }
+     }
+ 
+-    public List<Atom> getAtoms() {
++    public List<Atom> getAtoms() { org.outerj.daisy.jmhbench.MutationSwitch.tick(26);
+         return new ArrayList<Atom>(atoms);
+     }
+ 
+@@ -97,7 +97,7 @@ public class TagComparator implements IAtomSplitter {
+         }
+     }
+ 
+-    public String substring(int startAtom, int endAtom) {
++    public String substring(int startAtom, int endAtom) { org.outerj.daisy.jmhbench.MutationSwitch.tick(27);
+         if (startAtom == endAtom)
+             return "";
+         else {
+diff --git a/org/outerj/daisy/jmhbench/MutationSwitch.java b/org/outerj/daisy/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..bb11dcd
+--- /dev/null
++++ b/org/outerj/daisy/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.outerj.daisy.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

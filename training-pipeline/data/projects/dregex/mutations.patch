@@ -1,0 +1,610 @@
+diff --git a/dregex/impl/CaseExpansion.java b/dregex/impl/CaseExpansion.java
+index 2203927..449c51d 100644
+--- a/dregex/impl/CaseExpansion.java
++++ b/dregex/impl/CaseExpansion.java
+@@ -3,14 +3,14 @@ package dregex.impl;
+ public enum CaseExpansion {
+     NoExpansion {
+         @Override
+-        public int[] expand(int codePoint) {
++        public int[] expand(int codePoint) { dregex.impl.jmhbench.MutationSwitch.tick(15);
+             return new int[]{codePoint};
+         }
+     },
+ 
+     Ascii {
+         @Override
+-        public int[] expand(int codePoint) {
++        public int[] expand(int codePoint) { dregex.impl.jmhbench.MutationSwitch.tick(17);
+             if (codePoint >= 'A' && codePoint <= 'Z') {
+                 return new int[]{codePoint, codePoint + 0x20};
+             } else if (codePoint >= 'a' && codePoint <= 'z') {
+diff --git a/dregex/impl/CharInterval.java b/dregex/impl/CharInterval.java
+index 6349c6f..f869987 100644
+--- a/dregex/impl/CharInterval.java
++++ b/dregex/impl/CharInterval.java
+@@ -30,7 +30,7 @@ public final class CharInterval implements AtomPart, Comparable<CharInterval> {
+     }
+ 
+     @Override
+-    public int compareTo(CharInterval that) {
++    public int compareTo(CharInterval that) { dregex.impl.jmhbench.MutationSwitch.tick(19);
+         return Integer.compare(from, that.from);
+     }
+ 
+@@ -42,7 +42,7 @@ public final class CharInterval implements AtomPart, Comparable<CharInterval> {
+         }
+     }
+ 
+-    public static Map<AbstractRange, List<CharInterval>> calculateNonOverlapping(List<AbstractRange> ranges) {
++    public static Map<AbstractRange, List<CharInterval>> calculateNonOverlapping(List<AbstractRange> ranges) { dregex.impl.jmhbench.MutationSwitch.tick(21);
+         Set<Integer> startSet = new HashSet<>();
+         Set<Integer> endSet = new HashSet<>();
+         for (var range : ranges) {
+diff --git a/dregex/impl/CompiledRegex.java b/dregex/impl/CompiledRegex.java
+index 410c370..6021698 100644
+--- a/dregex/impl/CompiledRegex.java
++++ b/dregex/impl/CompiledRegex.java
+@@ -16,11 +16,11 @@ public final class CompiledRegex extends RegexImpl {
+         this.parsedTree = parsedTree;
+     }
+ 
+-    public String originalString() {
++    public String originalString() { dregex.impl.jmhbench.MutationSwitch.tick(23);
+         return originalString;
+     }
+ 
+-    public Node parsedTree() {
++    public Node parsedTree() { dregex.impl.jmhbench.MutationSwitch.tick(25);
+         return parsedTree;
+     }
+ 
+diff --git a/dregex/impl/Compiler.java b/dregex/impl/Compiler.java
+index 1d00cf6..3ffbfa1 100644
+--- a/dregex/impl/Compiler.java
++++ b/dregex/impl/Compiler.java
+@@ -26,7 +26,7 @@ public class Compiler {
+     /**
+      * Transform a regular expression abstract syntax tree into a corresponding DFA
+      */
+-    public Dfa fromTree(Node ast) {
++    public Dfa fromTree(Node ast) { dregex.impl.jmhbench.MutationSwitch.tick(27);
+         var start = System.nanoTime();
+         var initial = new SimpleState();
+         var accepting = new SimpleState();
+@@ -156,7 +156,7 @@ public class Compiler {
+     }
+ 
+     public void addTransitionsFromJuxtNoLookaround(
+-            List<Nfa.Transition> transitions, Juxt juxt, SimpleState from, SimpleState to) {
++            List<Nfa.Transition> transitions, Juxt juxt, SimpleState from, SimpleState to) { dregex.impl.jmhbench.MutationSwitch.tick(29);
+         if (juxt.values.isEmpty()) {
+             transitions.add(new Nfa.Transition(from, to, Epsilon.instance));
+         } else if (juxt.values.size() == 1) {
+diff --git a/dregex/impl/CompilerHelper.java b/dregex/impl/CompilerHelper.java
+index ae090ad..1b19e0a 100644
+--- a/dregex/impl/CompilerHelper.java
++++ b/dregex/impl/CompilerHelper.java
+@@ -10,7 +10,7 @@ public class CompilerHelper {
+      * Optimization: combination of consecutive negative lookahead constructions
+      * (?!a)(?!b)(?!c) gets combined to (?!a|b|c), which is faster to process.
+      */
+-    public static Juxt combineNegLookaheads(Juxt juxt) {
++    public static Juxt combineNegLookaheads(Juxt juxt) { dregex.impl.jmhbench.MutationSwitch.tick(31);
+         List<Node> newValues = new ArrayList<>();
+         for (int i = 0; i < juxt.values.size(); i++) {
+             if (!newValues.isEmpty() && juxt.values.get(i) instanceof Lookaround && newValues.get(newValues.size() - 1) instanceof Lookaround) {
+@@ -30,7 +30,7 @@ public class CompilerHelper {
+         return new Juxt(newValues);
+     }
+ 
+-    public static int findLookaround(List<? extends Node> nodes) {
++    public static int findLookaround(List<? extends Node> nodes) { dregex.impl.jmhbench.MutationSwitch.tick(33);
+         for (int i = 0; i < nodes.size(); i++) {
+             if (nodes.get(i) instanceof Lookaround) {
+                 return i;
+diff --git a/dregex/impl/Dfa.java b/dregex/impl/Dfa.java
+index 018d14f..d058696 100644
+--- a/dregex/impl/Dfa.java
++++ b/dregex/impl/Dfa.java
+@@ -27,7 +27,7 @@ public final class Dfa {
+         return String.format("initial: %s; transitions: %s; accepting: %s", initial, defTransitions, accepting);
+     }
+ 
+-    public Set<State> allStates() {
++    public Set<State> allStates() { dregex.impl.jmhbench.MutationSwitch.tick(35);
+         Set<State> ret = new HashSet<>();
+         ret.add(initial);
+         ret.addAll(defTransitions.keySet());
+@@ -38,7 +38,7 @@ public final class Dfa {
+         return ret;
+     }
+ 
+-    public Set<State> allButAccepting() {
++    public Set<State> allButAccepting() { dregex.impl.jmhbench.MutationSwitch.tick(37);
+         var ret = new HashSet<>(allStates());
+         ret.removeAll(accepting);
+         return ret;
+diff --git a/dregex/impl/DfaAlgorithms.java b/dregex/impl/DfaAlgorithms.java
+index a28df5f..f1f7282 100644
+--- a/dregex/impl/DfaAlgorithms.java
++++ b/dregex/impl/DfaAlgorithms.java
+@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
+ 
+ public class DfaAlgorithms {
+ 
+-    public static Dfa doIntersect(Dfa left, Dfa right) {
++    public static Dfa doIntersect(Dfa left, Dfa right) { dregex.impl.jmhbench.MutationSwitch.tick(39);
+         return removeUnreachableStates(doIntersection(left, right));
+     }
+ 
+-    public static Dfa union(Dfa left, Dfa right) {
++    public static Dfa union(Dfa left, Dfa right) { dregex.impl.jmhbench.MutationSwitch.tick(41);
+         return removeUnreachableStates(doUnion(left, right));
+     }
+ 
+diff --git a/dregex/impl/Nfa.java b/dregex/impl/Nfa.java
+index b0c2a51..f0fc640 100644
+--- a/dregex/impl/Nfa.java
++++ b/dregex/impl/Nfa.java
+@@ -39,7 +39,7 @@ public final class Nfa {
+         return String.format("initial: %s; transitions: %s; accepting: %s", initial, transStr, acceptStr);
+     }
+ 
+-    public Set<State> collectAllStates() {
++    public Set<State> collectAllStates() { dregex.impl.jmhbench.MutationSwitch.tick(43);
+         Set<State> ret = new HashSet<>();
+         ret.add(initial);
+         ret.addAll(transitions.stream().map(x -> x.from).collect(Collectors.toList()));
+diff --git a/dregex/impl/ParsedRegex.java b/dregex/impl/ParsedRegex.java
+index 896d585..2c8dfff 100644
+--- a/dregex/impl/ParsedRegex.java
++++ b/dregex/impl/ParsedRegex.java
+@@ -12,11 +12,11 @@ public class ParsedRegex {
+         this.tree = tree;
+     }
+ 
+-    public String getLiteral() {
++    public String getLiteral() { dregex.impl.jmhbench.MutationSwitch.tick(45);
+         return literal;
+     }
+ 
+-    public Node getTree() {
++    public Node getTree() { dregex.impl.jmhbench.MutationSwitch.tick(47);
+         return tree;
+     }
+ }
+diff --git a/dregex/impl/RangeOps.java b/dregex/impl/RangeOps.java
+index 925aeda..0042205 100644
+--- a/dregex/impl/RangeOps.java
++++ b/dregex/impl/RangeOps.java
+@@ -8,11 +8,11 @@ import java.util.stream.Stream;
+ 
+ public class RangeOps {
+ 
+-    public static List<AbstractRange> diff(List<AbstractRange> left, List<? extends AbstractRange> right) {
++    public static List<AbstractRange> diff(List<AbstractRange> left, List<? extends AbstractRange> right) { dregex.impl.jmhbench.MutationSwitch.tick(1);
+         return left.stream().flatMap(l -> diff(l, right).stream()).collect(Collectors.toList());
+     }
+ 
+-    public static List<AbstractRange> diff(AbstractRange left, List<? extends AbstractRange> right) {
++    public static List<AbstractRange> diff(AbstractRange left, List<? extends AbstractRange> right) { dregex.impl.jmhbench.MutationSwitch.tick(4);
+         return right.stream()
+                 .reduce(List.of(left), (a, b) -> diff(a, b), (a, b) -> Stream.concat(a.stream(), b.stream())
+                         .collect(Collectors.toList()));
+diff --git a/dregex/impl/RegexImpl.java b/dregex/impl/RegexImpl.java
+index 0187f07..cbeebd8 100644
+--- a/dregex/impl/RegexImpl.java
++++ b/dregex/impl/RegexImpl.java
+@@ -24,11 +24,11 @@ public class RegexImpl {
+         this.universe = universe;
+     }
+ 
+-    public Dfa getDfa() {
++    public Dfa getDfa() { dregex.impl.jmhbench.MutationSwitch.tick(49);
+         return dfa;
+     }
+ 
+-    public Universe getUniverse() {
++    public Universe getUniverse() { dregex.impl.jmhbench.MutationSwitch.tick(50);
+         return universe;
+     }
+ 
+diff --git a/dregex/impl/RegexParser.java b/dregex/impl/RegexParser.java
+index 1e5d2c2..ede76a9 100644
+--- a/dregex/impl/RegexParser.java
++++ b/dregex/impl/RegexParser.java
+@@ -32,7 +32,7 @@ public class RegexParser {
+ 
+     public final CharPredicate IS_OCTAL_DIGIT = new CharPredicate() {
+         @Override
+-        public boolean isChar(char c) {
++        public boolean isChar(char c) { dregex.impl.jmhbench.MutationSwitch.tick(7);
+             return c >= '0' && c <= '7';
+         }
+ 
+@@ -629,7 +629,7 @@ public class RegexParser {
+         }
+     }
+ 
+-    public static ParsedRegex parse(String regex, Flags flags) {
++    public static ParsedRegex parse(String regex, Flags flags) { dregex.impl.jmhbench.MutationSwitch.tick(9);
+         flags = flags.clone(); // clone before mutations
+         if (flags.literal) {
+             return parseLiteralRegex(regex, flags);
+diff --git a/dregex/impl/Util.java b/dregex/impl/Util.java
+index f4819d4..a4a1716 100644
+--- a/dregex/impl/Util.java
++++ b/dregex/impl/Util.java
+@@ -5,11 +5,11 @@ import java.util.Set;
+ 
+ public class Util {
+ 
+-    public static <A> boolean doIntersect(Set<A> left, Set<A> right) {
++    public static <A> boolean doIntersect(Set<A> left, Set<A> right) { dregex.impl.jmhbench.MutationSwitch.tick(11);
+         return right.stream().anyMatch(r -> left.contains(r));
+     }
+ 
+-    public static <A> Set<A> union(Set<A> left, Set<A> right) {
++    public static <A> Set<A> union(Set<A> left, Set<A> right) { dregex.impl.jmhbench.MutationSwitch.tick(13);
+         Set<A> ret = new HashSet<>(left);
+         ret.addAll(right);
+         return ret;
+diff --git a/dregex/impl/database/UnicodeDatabaseReader.java b/dregex/impl/database/UnicodeDatabaseReader.java
+index 6f78f8c..76e914d 100644
+--- a/dregex/impl/database/UnicodeDatabaseReader.java
++++ b/dregex/impl/database/UnicodeDatabaseReader.java
+@@ -23,7 +23,7 @@ public class UnicodeDatabaseReader {
+         }
+ 
+         @Override
+-        public int compareTo(Range other) {
++        public int compareTo(Range other) { dregex.impl.jmhbench.MutationSwitch.tick(2);
+             return Integer.compare(from, other.from);
+         }
+ 
+@@ -84,7 +84,7 @@ public class UnicodeDatabaseReader {
+         return ret;
+     }
+ 
+-    public static SortedMap<String, Range> getBlocks(Reader reader) throws IOException {
++    public static SortedMap<String, Range> getBlocks(Reader reader) throws IOException { dregex.impl.jmhbench.MutationSwitch.tick(5);
+         SortedMap<Range, String> data = parseDatabase(reader);
+         SortedMap<String, Range> ret = new TreeMap<>();
+         for (var entry : data.entrySet()) {
+diff --git a/dregex/impl/jmhbench/MutationSwitch.java b/dregex/impl/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c6a4748
+--- /dev/null
++++ b/dregex/impl/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package dregex.impl.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/dregex/impl/tree/CharRange.java b/dregex/impl/tree/CharRange.java
+index 15eabae..3084182 100644
+--- a/dregex/impl/tree/CharRange.java
++++ b/dregex/impl/tree/CharRange.java
+@@ -12,12 +12,12 @@ public final class CharRange extends AbstractRange {
+     }
+ 
+     @Override
+-    public String toRegex() {
++    public String toRegex() { dregex.impl.jmhbench.MutationSwitch.tick(3);
+         throw new UnsupportedOperationException("Cannot express a range outside a char class");
+     }
+ 
+     @Override
+-    public int from() {
++    public int from() { dregex.impl.jmhbench.MutationSwitch.tick(6);
+         return from;
+     }
+ 
+diff --git a/dregex/impl/tree/CharSet.java b/dregex/impl/tree/CharSet.java
+index 646b05c..09668e9 100644
+--- a/dregex/impl/tree/CharSet.java
++++ b/dregex/impl/tree/CharSet.java
+@@ -32,12 +32,12 @@ public class CharSet implements Node {
+         this.ranges = Arrays.asList(ranges);
+     }
+ 
+-    public CharSet complement() {
++    public CharSet complement() { dregex.impl.jmhbench.MutationSwitch.tick(8);
+         return new CharSet(RangeOps.diff(Wildcard.instance, this.ranges));
+     }
+ 
+     @Override
+-    public String toRegex() {
++    public String toRegex() { dregex.impl.jmhbench.MutationSwitch.tick(10);
+         return String.format(
+                 "[%s]", ranges.stream().map(r -> r.toCharClassLit()).collect(Collectors.joining()));
+     }
+diff --git a/dregex/impl/tree/Difference.java b/dregex/impl/tree/Difference.java
+index 57ed15e..74228ba 100644
+--- a/dregex/impl/tree/Difference.java
++++ b/dregex/impl/tree/Difference.java
+@@ -7,7 +7,7 @@ public class Difference extends Operation {
+     }
+ 
+     @Override
+-    public Difference canonical() {
++    public Difference canonical() { dregex.impl.jmhbench.MutationSwitch.tick(12);
+         return new Difference(left.canonical(), right.canonical());
+     }
+ }
+diff --git a/dregex/impl/tree/Disj.java b/dregex/impl/tree/Disj.java
+index bde0b69..e303d72 100644
+--- a/dregex/impl/tree/Disj.java
++++ b/dregex/impl/tree/Disj.java
+@@ -37,12 +37,12 @@ public class Disj implements Node {
+                 values.stream().map(v -> v.toString()).collect(Collectors.joining(", ")));
+     }
+ 
+-    public String toRegex() {
++    public String toRegex() { dregex.impl.jmhbench.MutationSwitch.tick(14);
+         return values.stream().map(v -> v.toRegex()).collect(Collectors.joining("|"));
+     }
+ 
+     @Override
+-    public Node canonical() {
++    public Node canonical() { dregex.impl.jmhbench.MutationSwitch.tick(16);
+         if (values.size() == 1) {
+             return values.get(0).canonical();
+         } else {
+diff --git a/dregex/impl/tree/Intersection.java b/dregex/impl/tree/Intersection.java
+index 5388e12..e942c39 100644
+--- a/dregex/impl/tree/Intersection.java
++++ b/dregex/impl/tree/Intersection.java
+@@ -7,7 +7,7 @@ public class Intersection extends Operation {
+     }
+ 
+     @Override
+-    public Intersection canonical() {
++    public Intersection canonical() { dregex.impl.jmhbench.MutationSwitch.tick(18);
+         return new Intersection(left.canonical(), right.canonical());
+     }
+ }
+diff --git a/dregex/impl/tree/Juxt.java b/dregex/impl/tree/Juxt.java
+index aae6a92..02112fd 100644
+--- a/dregex/impl/tree/Juxt.java
++++ b/dregex/impl/tree/Juxt.java
+@@ -21,7 +21,7 @@ public class Juxt implements Node {
+     }
+ 
+     @Override
+-    public Node canonical() {
++    public Node canonical() { dregex.impl.jmhbench.MutationSwitch.tick(20);
+         if (values.size() == 1) {
+             return values.get(0).canonical();
+         } else {
+@@ -40,7 +40,7 @@ public class Juxt implements Node {
+     }
+ 
+     @Override
+-    public String toRegex() {
++    public String toRegex() { dregex.impl.jmhbench.MutationSwitch.tick(22);
+         StringBuilder ret = new StringBuilder();
+         for (var value : values) {
+             if (value.precedence() > this.precedence()) {
+diff --git a/dregex/impl/tree/Lit.java b/dregex/impl/tree/Lit.java
+index 9dcac93..5248117 100644
+--- a/dregex/impl/tree/Lit.java
++++ b/dregex/impl/tree/Lit.java
+@@ -9,12 +9,12 @@ public final class Lit extends AbstractRange {
+     }
+ 
+     @Override
+-    public int from() {
++    public int from() { dregex.impl.jmhbench.MutationSwitch.tick(24);
+         return codePoint;
+     }
+ 
+     @Override
+-    public int to() {
++    public int to() { dregex.impl.jmhbench.MutationSwitch.tick(26);
+         return codePoint;
+     }
+ 
+diff --git a/dregex/impl/tree/Lookaround.java b/dregex/impl/tree/Lookaround.java
+index 66213d1..ba9ee6c 100644
+--- a/dregex/impl/tree/Lookaround.java
++++ b/dregex/impl/tree/Lookaround.java
+@@ -29,7 +29,7 @@ public class Lookaround implements Node {
+     }
+ 
+     @Override
+-    public String toRegex() {
++    public String toRegex() { dregex.impl.jmhbench.MutationSwitch.tick(28);
+         String dirStr;
+         switch (dir) {
+             case Ahead:
+@@ -56,7 +56,7 @@ public class Lookaround implements Node {
+     }
+ 
+     @Override
+-    public Lookaround canonical() {
++    public Lookaround canonical() { dregex.impl.jmhbench.MutationSwitch.tick(30);
+         return new Lookaround(dir, cond, value.canonical());
+     }
+ 
+diff --git a/dregex/impl/tree/NamedCaptureGroup.java b/dregex/impl/tree/NamedCaptureGroup.java
+index 22673a9..05b6bb3 100644
+--- a/dregex/impl/tree/NamedCaptureGroup.java
++++ b/dregex/impl/tree/NamedCaptureGroup.java
+@@ -12,12 +12,12 @@ public class NamedCaptureGroup extends CaptureGroup {
+     }
+ 
+     @Override
+-    public String toRegex() {
++    public String toRegex() { dregex.impl.jmhbench.MutationSwitch.tick(32);
+         return String.format("(?<%s>%s)", name, value.toRegex());
+     }
+ 
+     @Override
+-    public Node caseExpansion(CaseExpansion caseExpansion) {
++    public Node caseExpansion(CaseExpansion caseExpansion) { dregex.impl.jmhbench.MutationSwitch.tick(34);
+         return new NamedCaptureGroup(name, value.caseExpansion(caseExpansion));
+     }
+ 
+diff --git a/dregex/impl/tree/PositionalCaptureGroup.java b/dregex/impl/tree/PositionalCaptureGroup.java
+index e20694a..9aeeb55 100644
+--- a/dregex/impl/tree/PositionalCaptureGroup.java
++++ b/dregex/impl/tree/PositionalCaptureGroup.java
+@@ -9,12 +9,12 @@ public class PositionalCaptureGroup extends CaptureGroup {
+     }
+ 
+     @Override
+-    public String toRegex() {
++    public String toRegex() { dregex.impl.jmhbench.MutationSwitch.tick(36);
+         return String.format("(%s)", value.toRegex());
+     }
+ 
+     @Override
+-    public Node caseExpansion(CaseExpansion caseExpansion) {
++    public Node caseExpansion(CaseExpansion caseExpansion) { dregex.impl.jmhbench.MutationSwitch.tick(38);
+         return new PositionalCaptureGroup(value.caseExpansion(caseExpansion));
+     }
+ 
+diff --git a/dregex/impl/tree/Rep.java b/dregex/impl/tree/Rep.java
+index 8e3db46..4a32af5 100644
+--- a/dregex/impl/tree/Rep.java
++++ b/dregex/impl/tree/Rep.java
+@@ -24,7 +24,7 @@ public class Rep implements Node {
+     }
+ 
+     @Override
+-    public String toRegex() {
++    public String toRegex() { dregex.impl.jmhbench.MutationSwitch.tick(40);
+         String suffix;
+         if (min == 0 && max.isEmpty()) {
+             suffix = "*";
+@@ -55,7 +55,7 @@ public class Rep implements Node {
+     }
+ 
+     @Override
+-    public Node canonical() {
++    public Node canonical() { dregex.impl.jmhbench.MutationSwitch.tick(42);
+         if (min == 1 && max.isPresent() && max.get() == 1) {
+             return value.canonical();
+         } else {
+diff --git a/dregex/impl/tree/Union.java b/dregex/impl/tree/Union.java
+index f70da96..3cb5b79 100644
+--- a/dregex/impl/tree/Union.java
++++ b/dregex/impl/tree/Union.java
+@@ -7,7 +7,7 @@ public class Union extends Operation {
+     }
+ 
+     @Override
+-    public Union canonical() {
++    public Union canonical() { dregex.impl.jmhbench.MutationSwitch.tick(44);
+         return new Union(left.canonical(), right.canonical());
+     }
+ }
+diff --git a/dregex/impl/tree/Wildcard.java b/dregex/impl/tree/Wildcard.java
+index c88eb13..2c8156c 100644
+--- a/dregex/impl/tree/Wildcard.java
++++ b/dregex/impl/tree/Wildcard.java
+@@ -7,12 +7,12 @@ public final class Wildcard extends AbstractRange {
+     private Wildcard() {}
+ 
+     @Override
+-    public int from() {
++    public int from() { dregex.impl.jmhbench.MutationSwitch.tick(46);
+         return Character.MIN_CODE_POINT;
+     }
+ 
+     @Override
+-    public int to() {
++    public int to() { dregex.impl.jmhbench.MutationSwitch.tick(48);
+         return Character.MAX_CODE_POINT;
+     }
+ 

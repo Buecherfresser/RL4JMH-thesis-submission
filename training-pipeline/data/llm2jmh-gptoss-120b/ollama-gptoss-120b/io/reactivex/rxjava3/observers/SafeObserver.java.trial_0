@@ -1,0 +1,111 @@
+```java
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.observers.SafeObserver;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Microbenchmark for {@link SafeObserver}.
+ *
+ * <p>Measures the throughput of the most common Observer callbacks:
+ * {@code onNext}, {@code onError} and {@code onComplete}.
+ *
+ * <p>All benchmarks use a no‑op downstream observer that simply forwards
+ * the received items to a {@link Blackhole} to avoid dead‑code elimination.
+ *
+ * <p>Typical JMH command line:
+ * <pre>
+ *   java -jar benchmarks.jar -prof gc -wi 5 -i 10 -f 2 -t 4
+ * </pre>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@Threads(4)
+@State(Scope.Thread)
+public class SafeObserverBenchmark {
+
+    /** Simple downstream observer that forwards everything to a Blackhole. */
+    static final class BlackholeObserver<T> implements Observer<T> {
+        private final Blackhole bh;
+
+        BlackholeObserver(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            // No-op; we do not need to dispose in the benchmark.
+        }
+
+        @Override
+        public void onNext(T t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            bh.consume(e);
+        }
+
+        @Override
+        public void onComplete() {
+            // No-op
+        }
+    }
+
+    /** The SafeObserver under test. */
+    private SafeObserver<Integer> safeObserver;
+
+    /** A dummy upstream disposable used to satisfy the contract. */
+    private static final Disposable DUMMY_UPSTREAM = new Disposable() {
+        @Override public void dispose() {}
+        @Override public boolean isDisposed() { return false; }
+    };
+
+    /** Value emitted in onNext benchmarks. */
+    private static final Integer VALUE = 42;
+
+    /** Exception emitted in onError benchmarks. */
+    private static final RuntimeException EXCEPTION = new RuntimeException("test");
+
+    @Setup(Level.Invocation)
+    public void setUp(Blackhole bh) {
+        // Reset RxJavaPlugins to avoid side‑effects from previous runs.
+        RxJavaPlugins.reset();
+
+        // Create a new SafeObserver for each invocation to avoid state leakage.
+        safeObserver = new SafeObserver<>(new BlackholeObserver<>(bh));
+
+        // Simulate a proper subscription before invoking callbacks.
+        safeObserver.onSubscribe(DUMMY_UPSTREAM);
+    }
+
+    @Benchmark
+    public void onNext(Blackhole bh) {
+        safeObserver.onNext(VALUE);
+    }
+
+    @Benchmark
+    public void onError(Blackhole bh) {
+        // Re‑subscribe to reset internal state after previous onError.
+        safeObserver.onSubscribe(DUMMY_UPSTREAM);
+        safeObserver.onError(EXCEPTION);
+    }
+
+    @Benchmark
+    public void onComplete(Blackhole bh) {
+        // Re‑subscribe to reset internal state after previous onComplete.
+        safeObserver.onSubscribe(DUMMY_UPSTREAM);
+        safeObserver.onComplete();
+    }
+}
+```

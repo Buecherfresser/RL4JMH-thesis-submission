@@ -1,0 +1,96 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link ObservableToList} operator in throughput mode.
+ *
+ * The benchmark measures how many times per second the operator can collect
+ * a stream of {@code Integer}s into a {@code List}. It uses a simple
+ * {@code Observable.range} as upstream source and an {@code ArrayList}
+ * supplier, which reflects the most common usage pattern in RxJava.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create the source once per benchmark iteration.
+ * - Blackhole consumption to prevent dead-code elimination.
+ * - Warm‑up and measurement iterations with reasonable defaults.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableToListBenchmark {
+
+    /**
+     * Number of items emitted by the upstream Observable.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * Upstream Observable that emits a range of integers.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * Supplier that creates a fresh collection for each subscription.
+     */
+    private Supplier<List<Integer>> collectionSupplier;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits the configured number of items.
+        source = Observable.range(1, itemCount);
+        // Use ArrayList as the default collection implementation.
+        collectionSupplier = ArrayList::new;
+    }
+
+    @Benchmark
+    public void collectToList(Blackhole bh) {
+        // Instantiate the operator directly.
+        ObservableToList<Integer, List<Integer>> toListOperator = new ObservableToList<>(source, collectionSupplier);
+        // Blocking call to trigger the whole flow and obtain the resulting list.
+        List<Integer> result = toListOperator.blockingFirst();
+        // Consume the result to avoid dead‑code elimination.
+        bh.consume(result);
+    }
+}

@@ -1,0 +1,623 @@
+diff --git a/org/chocosolver/solver/Cause.java b/org/chocosolver/solver/Cause.java
+index 699819f..7a34dd6 100644
+--- a/org/chocosolver/solver/Cause.java
++++ b/org/chocosolver/solver/Cause.java
+@@ -19,14 +19,14 @@ import java.util.function.Consumer;
+ public enum Cause implements ICause {
+     Null {
+         @Override
+-        public void forEachIntVar(Consumer<IntVar> action) {
++        public void forEachIntVar(Consumer<IntVar> action) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(35);
+ 
+         }
+     },
+ 
+     Sat {
+         @Override
+-        public void forEachIntVar(Consumer<IntVar> action) {
++        public void forEachIntVar(Consumer<IntVar> action) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(43);
+ 
+         }
+     }
+diff --git a/org/chocosolver/solver/Settings.java b/org/chocosolver/solver/Settings.java
+index c3fff08..0d1bec5 100644
+--- a/org/chocosolver/solver/Settings.java
++++ b/org/chocosolver/solver/Settings.java
+@@ -136,14 +136,14 @@ public class Settings {
+      * @param solver the solver
+      * @return <tt>true</tt> if the model is OK wrt the checker, <tt>false</tt> otherwise
+      */
+-    public boolean checkModel(Solver solver) {
++    public boolean checkModel(Solver solver) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(1);
+         return modelChecker.test(solver);
+     }
+ 
+     /**
+      * @return the environment builder
+      */
+-    public Supplier<IEnvironment> getEnvironmentSupplier() {
++    public Supplier<IEnvironment> getEnvironmentSupplier() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(10);
+         return environmentSupplier;
+     }
+ 
+diff --git a/org/chocosolver/solver/SettingsBuilder.java b/org/chocosolver/solver/SettingsBuilder.java
+index 1106ae0..6ef5098 100644
+--- a/org/chocosolver/solver/SettingsBuilder.java
++++ b/org/chocosolver/solver/SettingsBuilder.java
+@@ -275,7 +275,7 @@ public class SettingsBuilder {
+      * @see #fromProperties(Properties)
+      * @see #fromArgs(String[])
+      */
+-    public static SettingsBuilder init() {
++    public static SettingsBuilder init() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(19);
+         return new SettingsBuilder();
+     }
+ 
+@@ -292,7 +292,7 @@ public class SettingsBuilder {
+      *
+      * @return a settings adapted to production environment.
+      */
+-    public static SettingsBuilder prod() {
++    public static SettingsBuilder prod() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(27);
+         return SettingsBuilder.init()
+                 .setModelChecker(s -> true)
+                 .setWarnUser(false)
+diff --git a/org/chocosolver/solver/constraints/extension/binary/CouplesBitSetTable.java b/org/chocosolver/solver/constraints/extension/binary/CouplesBitSetTable.java
+index b613d5b..43896e5 100644
+--- a/org/chocosolver/solver/constraints/extension/binary/CouplesBitSetTable.java
++++ b/org/chocosolver/solver/constraints/extension/binary/CouplesBitSetTable.java
+@@ -68,11 +68,11 @@ class CouplesBitSetTable extends BinRelation {
+         }
+     }
+ 
+-    public boolean isConsistent(int x, int y) {
++    public boolean isConsistent(int x, int y) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(2);
+         return table[0][x - offsets[0]].get(y - offsets[1]);
+     }
+ 
+-    public boolean checkCouple(int x, int y) {
++    public boolean checkCouple(int x, int y) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(11);
+         return table[0][x - offsets[0]].get(y - offsets[1]);
+     }
+ 
+diff --git a/org/chocosolver/solver/constraints/extension/nary/TuplesList.java b/org/chocosolver/solver/constraints/extension/nary/TuplesList.java
+index 8cd0e86..a2d3810 100644
+--- a/org/chocosolver/solver/constraints/extension/nary/TuplesList.java
++++ b/org/chocosolver/solver/constraints/extension/nary/TuplesList.java
+@@ -56,11 +56,11 @@ public class TuplesList extends LargeRelation {
+ 
+     }
+ 
+-    public int[] getTuple(int support) {
++    public int[] getTuple(int support) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(20);
+         return tuplesIndexes[support];
+     }
+ 
+-    public int[][] getTupleTable() {
++    public int[][] getTupleTable() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(28);
+         return tuplesIndexes;
+     }
+ 
+diff --git a/org/chocosolver/solver/constraints/graph/basic/PropLoopSet.java b/org/chocosolver/solver/constraints/graph/basic/PropLoopSet.java
+index 9fdcd65..c7e4d0a 100644
+--- a/org/chocosolver/solver/constraints/graph/basic/PropLoopSet.java
++++ b/org/chocosolver/solver/constraints/graph/basic/PropLoopSet.java
+@@ -44,7 +44,7 @@ public class PropLoopSet extends Propagator<Variable> {
+     //***********************************************************************************
+ 
+     @Override
+-    public void propagate(int evtmask) throws ContradictionException {
++    public void propagate(int evtmask) throws ContradictionException { org.chocosolver.solver.jmhbench.MutationSwitch.tick(36);
+         ISet nodes = g.getPotentialNodes();
+         for (int i : nodes) {
+             if (g.getMandatorySuccessorsOf(i).contains(i)) { // mandatory loop detected
+@@ -69,7 +69,7 @@ public class PropLoopSet extends Propagator<Variable> {
+     //***********************************************************************************
+ 
+     @Override
+-    public ESat isEntailed() {
++    public ESat isEntailed() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(44);
+         for (int i : loops.getLB()) {
+             if (!g.getPotentialSuccessorsOf(i).contains(i)) {
+                 return ESat.FALSE;
+diff --git a/org/chocosolver/solver/exception/ContradictionException.java b/org/chocosolver/solver/exception/ContradictionException.java
+index a5d7337..5623b0a 100644
+--- a/org/chocosolver/solver/exception/ContradictionException.java
++++ b/org/chocosolver/solver/exception/ContradictionException.java
+@@ -66,7 +66,7 @@ public final class ContradictionException extends Exception {
+      * {@inheritDoc}
+      */
+     @Override
+-    public synchronized Throwable fillInStackTrace() {
++    public synchronized Throwable fillInStackTrace() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(3);
+         return this;
+     }
+ }
+diff --git a/org/chocosolver/solver/exception/InvalidSolutionException.java b/org/chocosolver/solver/exception/InvalidSolutionException.java
+index 97feb0b..9aeced8 100644
+--- a/org/chocosolver/solver/exception/InvalidSolutionException.java
++++ b/org/chocosolver/solver/exception/InvalidSolutionException.java
+@@ -30,7 +30,7 @@ public class InvalidSolutionException extends SolverException {
+         this.model = model;
+     }
+ 
+-    public final Model getModel() {
++    public final Model getModel() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(12);
+         return model;
+     }
+ 
+diff --git a/org/chocosolver/solver/expression/continuous/arithmetic/BiCArExpression.java b/org/chocosolver/solver/expression/continuous/arithmetic/BiCArExpression.java
+index 52736ab..36b4511 100644
+--- a/org/chocosolver/solver/expression/continuous/arithmetic/BiCArExpression.java
++++ b/org/chocosolver/solver/expression/continuous/arithmetic/BiCArExpression.java
+@@ -70,12 +70,12 @@ public class BiCArExpression implements CArExpression {
+     }
+ 
+     @Override
+-    public Model getModel() {
++    public Model getModel() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(4);
+         return model;
+     }
+ 
+     @Override
+-    public RealVar realVar(double p) {
++    public RealVar realVar(double p) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(13);
+         if (me == null) {
+             RealVar v1 = e1.realVar(p);
+             RealVar v2 = e2.realVar(p);
+diff --git a/org/chocosolver/solver/expression/continuous/arithmetic/RealIntervalConstant.java b/org/chocosolver/solver/expression/continuous/arithmetic/RealIntervalConstant.java
+index 1a3c317..ecb7538 100644
+--- a/org/chocosolver/solver/expression/continuous/arithmetic/RealIntervalConstant.java
++++ b/org/chocosolver/solver/expression/continuous/arithmetic/RealIntervalConstant.java
+@@ -41,12 +41,12 @@ public class RealIntervalConstant implements CArExpression {
+     }
+ 
+     @Override
+-    public double getLB() {
++    public double getLB() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(21);
+         return lb;
+     }
+ 
+     @Override
+-    public double getUB() {
++    public double getUB() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(29);
+         return ub;
+     }
+ 
+diff --git a/org/chocosolver/solver/expression/continuous/arithmetic/UnCArExpression.java b/org/chocosolver/solver/expression/continuous/arithmetic/UnCArExpression.java
+index 2ff5981..ae13b88 100644
+--- a/org/chocosolver/solver/expression/continuous/arithmetic/UnCArExpression.java
++++ b/org/chocosolver/solver/expression/continuous/arithmetic/UnCArExpression.java
+@@ -63,12 +63,12 @@ public class UnCArExpression implements CArExpression {
+     }
+ 
+     @Override
+-    public Model getModel() {
++    public Model getModel() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(37);
+         return model;
+     }
+ 
+     @Override
+-    public RealVar realVar(double p) {
++    public RealVar realVar(double p) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(45);
+         if (me == null) {
+             RealVar v = e.realVar(p);
+             switch (op) {
+diff --git a/org/chocosolver/solver/jmhbench/MutationSwitch.java b/org/chocosolver/solver/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..360bc4b
+--- /dev/null
++++ b/org/chocosolver/solver/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.chocosolver.solver.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/chocosolver/solver/objective/ObjectiveFactory.java b/org/chocosolver/solver/objective/ObjectiveFactory.java
+index 54fdd19..f70032b 100644
+--- a/org/chocosolver/solver/objective/ObjectiveFactory.java
++++ b/org/chocosolver/solver/objective/ObjectiveFactory.java
+@@ -32,7 +32,7 @@ public final class ObjectiveFactory {
+      *
+      * @return a singleton object
+      */
+-    public static IObjectiveManager<Variable> SAT() {
++    public static IObjectiveManager<Variable> SAT() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(5);
+         return SATManager.getInstance();
+     }
+ 
+@@ -45,7 +45,7 @@ public final class ObjectiveFactory {
+      * @return the objective manager
+      * @throws IllegalArgumentException if the policy is {@link ResolutionPolicy#SATISFACTION}.
+      */
+-    public static IObjectiveManager<IntVar> makeObjectiveManager(IntVar objective, ResolutionPolicy policy) {
++    public static IObjectiveManager<IntVar> makeObjectiveManager(IntVar objective, ResolutionPolicy policy) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(14);
+         IObjectiveManager<IntVar> objman;
+         switch (policy) {
+             case MINIMIZE:
+diff --git a/org/chocosolver/solver/objective/ObjectiveStrategy.java b/org/chocosolver/solver/objective/ObjectiveStrategy.java
+index 5ceb49c..81ebc2b 100644
+--- a/org/chocosolver/solver/objective/ObjectiveStrategy.java
++++ b/org/chocosolver/solver/objective/ObjectiveStrategy.java
+@@ -128,7 +128,7 @@ public class ObjectiveStrategy extends AbstractStrategy<IntVar> {
+     // METHODS
+     //***********************************************************************************
+ 
+-    public boolean init() {
++    public boolean init() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(22);
+         decOperator = getOperator(optPolicy, model.getSolver().getObjectiveManager().getPolicy());
+         return true;
+     }
+@@ -139,7 +139,7 @@ public class ObjectiveStrategy extends AbstractStrategy<IntVar> {
+     }
+ 
+     @Override
+-    public Decision<IntVar> getDecision() {
++    public Decision<IntVar> getDecision() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(30);
+         if (model.getSolver().getSolutionCount() == 0
+                 || (nbSols == model.getSolver().getSolutionCount() && optPolicy == DICHOTOMIC)) {
+             return null;
+diff --git a/org/chocosolver/solver/objective/ParetoMaximizer.java b/org/chocosolver/solver/objective/ParetoMaximizer.java
+index 2e3b5b2..8cebef4 100644
+--- a/org/chocosolver/solver/objective/ParetoMaximizer.java
++++ b/org/chocosolver/solver/objective/ParetoMaximizer.java
+@@ -83,12 +83,12 @@ public class ParetoMaximizer extends Propagator<IntVar> implements IMonitorSolut
+     /**
+      * @return the set of Pareto-best (possibly optimal) solutions found so far
+      */
+-    public List<Solution> getParetoFront() {
++    public List<Solution> getParetoFront() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(38);
+         return paretoSolutions;
+     }
+ 
+     @Override
+-    public void onSolution() {
++    public void onSolution() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(46);
+         // get objective values
+         int[] vals = new int[objectives.length];
+         for (int i = 0; i < objectives.length; i++) {
+diff --git a/org/chocosolver/solver/propagation/PropagationEngine.java b/org/chocosolver/solver/propagation/PropagationEngine.java
+index 89f5a1a..25db685 100644
+--- a/org/chocosolver/solver/propagation/PropagationEngine.java
++++ b/org/chocosolver/solver/propagation/PropagationEngine.java
+@@ -98,7 +98,7 @@ public class PropagationEngine {
+     @SuppressWarnings("Convert2Diamond")
+     private final Consumer<Propagator<?>> consumer = new Consumer<Propagator<?>>() {
+         @Override
+-        public void accept(Propagator propagator) {
++        public void accept(Propagator propagator) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(6);
+             awake_queue.addLast(propagator);
+         }
+     };
+@@ -149,7 +149,7 @@ public class PropagationEngine {
+      *
+      * @throws SolverException if a constraint is declared more than once in this propagation engine
+      */
+-    public void initialize() throws SolverException {
++    public void initialize() throws SolverException { org.chocosolver.solver.jmhbench.MutationSwitch.tick(15);
+         if (!init) {
+             notEmpty = 0;
+             init = true;
+diff --git a/org/chocosolver/solver/propagation/PropagationEngineObserver.java b/org/chocosolver/solver/propagation/PropagationEngineObserver.java
+index b908771..8e79c6c 100644
+--- a/org/chocosolver/solver/propagation/PropagationEngineObserver.java
++++ b/org/chocosolver/solver/propagation/PropagationEngineObserver.java
+@@ -44,7 +44,7 @@ public class PropagationEngineObserver extends PropagationEngine {
+      * @apiNote This is the main reason this class exists, to notify a propagation observer
+      */
+     @Override
+-    public void execute(Propagator<?> propagator, boolean activatedByReification) throws ContradictionException {
++    public void execute(Propagator<?> propagator, boolean activatedByReification) throws ContradictionException { org.chocosolver.solver.jmhbench.MutationSwitch.tick(23);
+         if (propagator.isStateLess() || propagator.isActive()) {
+             observer.onCoarseEvent(propagator);
+         }
+@@ -55,7 +55,7 @@ public class PropagationEngineObserver extends PropagationEngine {
+      * @apiNote This is the main reason this class exists, to notify a propagation observer
+      */
+     @Override
+-    protected void propagateEvents() throws ContradictionException {
++    protected void propagateEvents() throws ContradictionException { org.chocosolver.solver.jmhbench.MutationSwitch.tick(31);
+         try {
+             //lastProp
+             if (lastProp.reactToFineEvent()) {
+diff --git a/org/chocosolver/solver/propagation/PropagationProfiler.java b/org/chocosolver/solver/propagation/PropagationProfiler.java
+index b6a6b16..370f1b4 100644
+--- a/org/chocosolver/solver/propagation/PropagationProfiler.java
++++ b/org/chocosolver/solver/propagation/PropagationProfiler.java
+@@ -56,13 +56,13 @@ public class PropagationProfiler implements PropagationObserver {
+     }
+ 
+     @Override
+-    public void onCoarseEvent(Propagator<?> propagator) {
++    public void onCoarseEvent(Propagator<?> propagator) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(39);
+         coarses.compute(propagator, (k, c) -> c == null ? 1 : c + 1);
+         propCounters[0]++;
+     }
+ 
+     @Override
+-    public void onFineEvent(Propagator<?> propagator) {
++    public void onFineEvent(Propagator<?> propagator) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(47);
+         fines.compute(propagator, (k, c) -> c == null ? 1 : c + 1);
+         propCounters[1]++;
+     }
+diff --git a/org/chocosolver/solver/search/loop/lns/neighbors/SetRandomNeighbor.java b/org/chocosolver/solver/search/loop/lns/neighbors/SetRandomNeighbor.java
+index a3c1045..b2af812 100644
+--- a/org/chocosolver/solver/search/loop/lns/neighbors/SetRandomNeighbor.java
++++ b/org/chocosolver/solver/search/loop/lns/neighbors/SetRandomNeighbor.java
+@@ -33,7 +33,7 @@ public class SetRandomNeighbor implements INeighbor {
+     }
+ 
+     @Override
+-    public void recordSolution() {
++    public void recordSolution() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(7);
+         value.resetQuick();
+         for (int i:var.getLB()) {
+             value.add(i);
+@@ -41,7 +41,7 @@ public class SetRandomNeighbor implements INeighbor {
+     }
+ 
+     @Override
+-    public void fixSomeVariables() throws ContradictionException {
++    public void fixSomeVariables() throws ContradictionException { org.chocosolver.solver.jmhbench.MutationSwitch.tick(16);
+         for(int k=0; k<value.size(); k++){
+             if(rd.nextBoolean())var.force(value.get(k), this);
+         }
+diff --git a/org/chocosolver/solver/search/loop/monitors/SearchMonitorList.java b/org/chocosolver/solver/search/loop/monitors/SearchMonitorList.java
+index 98180eb..3f804bf 100644
+--- a/org/chocosolver/solver/search/loop/monitors/SearchMonitorList.java
++++ b/org/chocosolver/solver/search/loop/monitors/SearchMonitorList.java
+@@ -63,14 +63,14 @@ public final class SearchMonitorList implements IMonitorClose, IMonitorContradic
+ 
+ 
+     @Override
+-    public void beforeInitialize() {
++    public void beforeInitialize() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(24);
+         for (int i = 0; i < minit.size(); i++) {
+             minit.get(i).beforeInitialize();
+         }
+     }
+ 
+     @Override
+-    public void afterInitialize(boolean correct) {
++    public void afterInitialize(boolean correct) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(32);
+         for (int i = 0; i < minit.size(); i++) {
+             minit.get(i).afterInitialize(correct);
+         }
+diff --git a/org/chocosolver/solver/search/strategy/decision/SetDecision.java b/org/chocosolver/solver/search/strategy/decision/SetDecision.java
+index f9b3cce..2dab4a8 100644
+--- a/org/chocosolver/solver/search/strategy/decision/SetDecision.java
++++ b/org/chocosolver/solver/search/strategy/decision/SetDecision.java
+@@ -44,12 +44,12 @@ public class SetDecision extends Decision<SetVar> {
+     }
+ 
+     @Override
+-    public Integer getDecisionValue() {
++    public Integer getDecisionValue() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(40);
+         return value;
+     }
+ 
+     @Override
+-    public void apply() throws ContradictionException {
++    public void apply() throws ContradictionException { org.chocosolver.solver.jmhbench.MutationSwitch.tick(48);
+         if (branch == 1) {
+             operator.apply(var, value, this);
+         } else if (branch == 2) {
+diff --git a/org/chocosolver/solver/trace/CPProfiler.java b/org/chocosolver/solver/trace/CPProfiler.java
+index 3db9d90..37a9604 100644
+--- a/org/chocosolver/solver/trace/CPProfiler.java
++++ b/org/chocosolver/solver/trace/CPProfiler.java
+@@ -67,7 +67,7 @@ public class CPProfiler extends SearchViz {
+                 , executionId, port);
+     }
+ 
+-    protected boolean connect(String label, int executionId, int port) {
++    protected boolean connect(String label, int executionId, int port) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(8);
+         if (connector == null) {
+             connector = new Connector(port); // 6565 is the port used by cpprofiler by default
+         }
+@@ -82,7 +82,7 @@ public class CPProfiler extends SearchViz {
+     }
+ 
+     @Override
+-    protected void disconnect() {
++    protected void disconnect() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(17);
+         if (connected) {
+             try {
+                 connector.done();
+diff --git a/org/chocosolver/solver/trace/GephiGenerator.java b/org/chocosolver/solver/trace/GephiGenerator.java
+index a24d8da..03df413 100644
+--- a/org/chocosolver/solver/trace/GephiGenerator.java
++++ b/org/chocosolver/solver/trace/GephiGenerator.java
+@@ -39,7 +39,7 @@ public class GephiGenerator extends SearchViz {
+     }
+ 
+     @Override
+-    protected void disconnect() {
++    protected void disconnect() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(25);
+         Path file = Paths.get(instance);
+         if (Files.exists(file)) {
+             try {
+@@ -66,7 +66,7 @@ public class GephiGenerator extends SearchViz {
+     }
+ 
+     @Override
+-    protected void sendNode(int nc, int pid, int alt, int kid, int rid, String label, String info) {
++    protected void sendNode(int nc, int pid, int alt, int kid, int rid, String label, String info) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(33);
+         nodeCount++;
+         if(pid == -1){
+             nodes.append(String.format(ROOTTAG, nc, label, ORANGE, DISC));
+diff --git a/org/chocosolver/solver/trace/GraphvizGenerator.java b/org/chocosolver/solver/trace/GraphvizGenerator.java
+index 17fed7b..1b7d446 100644
+--- a/org/chocosolver/solver/trace/GraphvizGenerator.java
++++ b/org/chocosolver/solver/trace/GraphvizGenerator.java
+@@ -65,7 +65,7 @@ public class GraphvizGenerator extends SearchViz {
+     }
+ 
+     @Override
+-    protected void disconnect() {
++    protected void disconnect() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(41);
+         try {
+             Files.write(instance, END.getBytes(), APPEND);
+         } catch (IOException e) {
+@@ -74,7 +74,7 @@ public class GraphvizGenerator extends SearchViz {
+     }
+ 
+     @Override
+-    protected void sendNode(int nc, int pid, int alt, int kid, int rid, String label, String info) {
++    protected void sendNode(int nc, int pid, int alt, int kid, int rid, String label, String info) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(49);
+         if(pid == -1){
+             try {
+                 Files.write(instance, ROOT.getBytes(), APPEND);
+diff --git a/org/chocosolver/solver/variables/delta/SetDelta.java b/org/chocosolver/solver/variables/delta/SetDelta.java
+index 4bb6051..26d8ea8 100644
+--- a/org/chocosolver/solver/variables/delta/SetDelta.java
++++ b/org/chocosolver/solver/variables/delta/SetDelta.java
+@@ -38,7 +38,7 @@ public class SetDelta extends TimeStampedObject implements ISetDelta {
+     //***********************************************************************************
+ 
+ 	@Override
+-    public int getSize(int kerOrEnv) {
++    public int getSize(int kerOrEnv) { org.chocosolver.solver.jmhbench.MutationSwitch.tick(9);
+         return delta[kerOrEnv].size();
+     }
+ 
+@@ -49,7 +49,7 @@ public class SetDelta extends TimeStampedObject implements ISetDelta {
+     }
+ 
+ 	@Override
+-    public void lazyClear() {
++    public void lazyClear() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(18);
+         if (needReset()) {
+ 			delta[0].lazyClear();
+ 			delta[1].lazyClear();
+diff --git a/org/chocosolver/solver/variables/delta/monitor/SetDeltaMonitor.java b/org/chocosolver/solver/variables/delta/monitor/SetDeltaMonitor.java
+index 165ceac..70bf857 100644
+--- a/org/chocosolver/solver/variables/delta/monitor/SetDeltaMonitor.java
++++ b/org/chocosolver/solver/variables/delta/monitor/SetDeltaMonitor.java
+@@ -35,7 +35,7 @@ public class SetDeltaMonitor extends TimeStampedObject implements ISetDeltaMonit
+     }
+ 
+     @Override
+-    public void startMonitoring() {
++    public void startMonitoring() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(26);
+         delta.lazyClear();    // fix 27/07/12
+         resetStamp();
+         for (int i = 0; i < 2; i++) {
+@@ -67,7 +67,7 @@ public class SetDeltaMonitor extends TimeStampedObject implements ISetDeltaMonit
+     }
+ 
+     @Override
+-    public void forEach(IntProcedure proc, SetEventType evt) throws ContradictionException {
++    public void forEach(IntProcedure proc, SetEventType evt) throws ContradictionException { org.chocosolver.solver.jmhbench.MutationSwitch.tick(34);
+         freeze();
+         int x;
+         if (evt == SetEventType.ADD_TO_KER) {
+diff --git a/org/chocosolver/solver/variables/events/SetEventType.java b/org/chocosolver/solver/variables/events/SetEventType.java
+index b4c72ef..bddfe0b 100644
+--- a/org/chocosolver/solver/variables/events/SetEventType.java
++++ b/org/chocosolver/solver/variables/events/SetEventType.java
+@@ -29,14 +29,14 @@ public enum SetEventType implements IEventType {
+ 	}
+ 
+ 	@Override
+-	public int getMask() {
++	public int getMask() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(42);
+ 		return mask;
+ 	}
+ 
+ 	//******************************************************************************************************************
+ 	//******************************************************************************************************************
+ 
+-	public static int all() {
++	public static int all() { org.chocosolver.solver.jmhbench.MutationSwitch.tick(50);
+ 		return ADD_TO_KER.mask+REMOVE_FROM_ENVELOPE.mask;
+ 	}
+ 

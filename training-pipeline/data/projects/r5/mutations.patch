@@ -1,0 +1,672 @@
+diff --git a/com/conveyal/r5/analyst/ByteArrayOutputInputStream.java b/com/conveyal/r5/analyst/ByteArrayOutputInputStream.java
+index 4cb2c02..57b32bb 100644
+--- a/com/conveyal/r5/analyst/ByteArrayOutputInputStream.java
++++ b/com/conveyal/r5/analyst/ByteArrayOutputInputStream.java
+@@ -14,7 +14,7 @@ public class ByteArrayOutputInputStream extends ByteArrayOutputStream {
+     /**
+      * @return an input stream wrapping the internal byte buffer. Further writes are not possible.
+      */
+-    public InputStream getInputStream () {
++    public InputStream getInputStream () { com.conveyal.r5.jmhbench.MutationSwitch.tick(1);
+         try {
+             this.close();
+             InputStream inputStream = new ByteArrayInputStream(buf);
+diff --git a/com/conveyal/r5/analyst/FreeFormPointSet.java b/com/conveyal/r5/analyst/FreeFormPointSet.java
+index 9d0a27a..fa3270d 100644
+--- a/com/conveyal/r5/analyst/FreeFormPointSet.java
++++ b/com/conveyal/r5/analyst/FreeFormPointSet.java
+@@ -55,7 +55,7 @@ public class FreeFormPointSet extends PointSet {
+             String lonField,
+             String idField,
+             String countField
+-    ) throws IOException {
++    ) throws IOException { com.conveyal.r5.jmhbench.MutationSwitch.tick(15);
+         /* First, scan through the file to count lines and check for rows with the wrong number of columns. */
+         int nRecs;
+         int latCol = -1;
+@@ -141,7 +141,7 @@ public class FreeFormPointSet extends PointSet {
+     }
+ 
+     @Override
+-    public int featureCount() {
++    public int featureCount() { com.conveyal.r5.jmhbench.MutationSwitch.tick(28);
+         return ids.length;
+     }
+ 
+diff --git a/com/conveyal/r5/analyst/LittleEndianIntOutputStream.java b/com/conveyal/r5/analyst/LittleEndianIntOutputStream.java
+index 0b0a527..5f693cd 100644
+--- a/com/conveyal/r5/analyst/LittleEndianIntOutputStream.java
++++ b/com/conveyal/r5/analyst/LittleEndianIntOutputStream.java
+@@ -13,7 +13,7 @@ public class LittleEndianIntOutputStream extends FilterOutputStream {
+         super(out);
+     }
+ 
+-    public void writeInt (int value) throws IOException {
++    public void writeInt (int value) throws IOException { com.conveyal.r5.jmhbench.MutationSwitch.tick(41);
+         byte[] bytes = new byte[]{
+                 (byte) (value & 0xff),
+                 (byte) (value >> 8 & 0xff),
+diff --git a/com/conveyal/r5/api/ProfileResponse.java b/com/conveyal/r5/api/ProfileResponse.java
+index 853fda7..93ad440 100644
+--- a/com/conveyal/r5/api/ProfileResponse.java
++++ b/com/conveyal/r5/api/ProfileResponse.java
+@@ -47,11 +47,11 @@ public class ProfileResponse {
+     //This connect which transits are in which profileOption
+     private Map<HashPath, ProfileOption> transitToOption = new HashMap<>();
+ 
+-    public List<ProfileOption> getOptions() {
++    public List<ProfileOption> getOptions() { com.conveyal.r5.jmhbench.MutationSwitch.tick(2);
+         return options;
+     }
+ 
+-    public List<TripPattern> getPatterns() {
++    public List<TripPattern> getPatterns() { com.conveyal.r5.jmhbench.MutationSwitch.tick(16);
+         //TODO: return as a map since I think it will be more usefull but GraphQL doesn't support map
+         return new ArrayList<>(patterns.values());
+     }
+diff --git a/com/conveyal/r5/api/util/Fare.java b/com/conveyal/r5/api/util/Fare.java
+index 317dd09..56a7c27 100644
+--- a/com/conveyal/r5/api/util/Fare.java
++++ b/com/conveyal/r5/api/util/Fare.java
+@@ -31,7 +31,7 @@ public class Fare {
+         this.senior = senior;
+     }
+ 
+-    public void accumulate (Fare other) {
++    public void accumulate (Fare other) { com.conveyal.r5.jmhbench.MutationSwitch.tick(29);
+         if (other != null) {
+             low    += other.low;
+             peak   += other.peak;
+@@ -39,7 +39,7 @@ public class Fare {
+         }
+     }
+ 
+-    public void discount(double amount) {
++    public void discount(double amount) { com.conveyal.r5.jmhbench.MutationSwitch.tick(42);
+         low    -= amount;
+         peak   -= amount;
+         senior -= amount;
+diff --git a/com/conveyal/r5/common/DirectionUtils.java b/com/conveyal/r5/common/DirectionUtils.java
+index d8eb524..10abc51 100644
+--- a/com/conveyal/r5/common/DirectionUtils.java
++++ b/com/conveyal/r5/common/DirectionUtils.java
+@@ -18,7 +18,7 @@ public class DirectionUtils {
+      * Returns the approximate azimuth from coordinate A to B in decimal degrees clockwise from North,
+      * in the range (-PI to PI). The computation is exact for small delta between A and B.
+      */
+-    public static double getAzimuth(Coordinate a, Coordinate b) {
++    public static double getAzimuth(Coordinate a, Coordinate b) { com.conveyal.r5.jmhbench.MutationSwitch.tick(3);
+         //From Midgard Valhalla library
+ 
+         final double a_lat = a.y;
+@@ -43,7 +43,7 @@ public class DirectionUtils {
+      * in the range (-180, 180).
+      * @param geometry a LineString
+      */
+-    public static double getLastAngle(LineString geometry) {
++    public static double getLastAngle(LineString geometry) { com.conveyal.r5.jmhbench.MutationSwitch.tick(17);
+         //Based on Midgard in Valhalla from Mapzen
+         //https://github.com/valhalla/midgard/blob/cdcde8af95e669e1c1331ab6008afb8af14f135e/src/midgard/pointll.cc
+ 
+diff --git a/com/conveyal/r5/common/GeometryUtils.java b/com/conveyal/r5/common/GeometryUtils.java
+index f618d9f..b2f6b91 100644
+--- a/com/conveyal/r5/common/GeometryUtils.java
++++ b/com/conveyal/r5/common/GeometryUtils.java
+@@ -36,14 +36,14 @@ public class GeometryUtils {
+     /// formula). In the past, we had a fastDistance function that would estimate this quickly, but
+     /// that optimization was deemed unnecessary.
+     /// @return distance in meters between the given lat/lon points
+-    public static double distance (double lat0, double lon0, double lat1, double lon1) {
++    public static double distance (double lat0, double lon0, double lat1, double lon1) { com.conveyal.r5.jmhbench.MutationSwitch.tick(30);
+         return haversineMeters(lat0, lon0, lat1, lon1, RADIUS_OF_EARTH_M);
+     }
+ 
+     /// Estimate distance between points on Earth with the same spherical approximation used by the
+     /// Turf JS library. Used to exactly replicate distances computed by frontend code.
+     /// The Turf formulation is slightly different but results are within a few ULPs.
+-    public static double turfDistance (double lat0, double lon0, double lat1, double lon1) {
++    public static double turfDistance (double lat0, double lon0, double lat1, double lon1) { com.conveyal.r5.jmhbench.MutationSwitch.tick(43);
+         return haversineMeters(lat0, lon0, lat1, lon1, TURF_RADIUS_OF_EARTH_M);
+     }
+ 
+diff --git a/com/conveyal/r5/jmhbench/MutationSwitch.java b/com/conveyal/r5/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..e998840
+--- /dev/null
++++ b/com/conveyal/r5/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.conveyal.r5.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/conveyal/r5/labeling/LevelOfTrafficStressLabeler.java b/com/conveyal/r5/labeling/LevelOfTrafficStressLabeler.java
+index 405ee42..7f914be 100644
+--- a/com/conveyal/r5/labeling/LevelOfTrafficStressLabeler.java
++++ b/com/conveyal/r5/labeling/LevelOfTrafficStressLabeler.java
+@@ -54,7 +54,7 @@ public class LevelOfTrafficStressLabeler {
+      * if an LTS 2 flag is present. This should really be changed, but it would be a backward-incompatible change to
+      * the network storage format.
+      */
+-    public void label (Way way, EnumSet<EdgeStore.EdgeFlag> forwardFlags, EnumSet<EdgeStore.EdgeFlag> backFlags) {
++    public void label (Way way, EnumSet<EdgeStore.EdgeFlag> forwardFlags, EnumSet<EdgeStore.EdgeFlag> backFlags) { com.conveyal.r5.jmhbench.MutationSwitch.tick(4);
+ 
+         // First, if the input OSM data contains LTS tags,
+         // use those rather than estimating LTS from road characteristics and return immediately.
+@@ -195,7 +195,7 @@ public class LevelOfTrafficStressLabeler {
+      * The way the LTS of intersections is incorporated into the model is to give approaches to intersections
+      * the highest LTS of any of the streets entering the intersection, unless there is a traffic signal at the intersection.
+      */
+-    public void applyIntersectionCosts(StreetLayer streetLayer) {
++    public void applyIntersectionCosts(StreetLayer streetLayer) { com.conveyal.r5.jmhbench.MutationSwitch.tick(18);
+ 
+         VertexStore.Vertex v = streetLayer.vertexStore.getCursor(0);
+         EdgeStore.Edge e = streetLayer.edgeStore.getCursor();
+diff --git a/com/conveyal/r5/labeling/NoSidewalkCyclingTraversalPermissionLabeler.java b/com/conveyal/r5/labeling/NoSidewalkCyclingTraversalPermissionLabeler.java
+index 1bda7f5..5087018 100644
+--- a/com/conveyal/r5/labeling/NoSidewalkCyclingTraversalPermissionLabeler.java
++++ b/com/conveyal/r5/labeling/NoSidewalkCyclingTraversalPermissionLabeler.java
+@@ -13,7 +13,7 @@ public class NoSidewalkCyclingTraversalPermissionLabeler extends USTraversalPerm
+     }
+ 
+     @Override
+-    public RoadPermission getPermissions(Way way) {
++    public RoadPermission getPermissions(Way way) { com.conveyal.r5.jmhbench.MutationSwitch.tick(31);
+         RoadPermission rp = super.getPermissions(way);
+         if (way.hasTag("footway", "sidewalk")) {
+             rp.forward.remove(EdgeStore.EdgeFlag.ALLOWS_BIKE);
+diff --git a/com/conveyal/r5/labeling/NoSteepInclinesTraversalPermissionLabeler.java b/com/conveyal/r5/labeling/NoSteepInclinesTraversalPermissionLabeler.java
+index 55665f3..78a22a1 100644
+--- a/com/conveyal/r5/labeling/NoSteepInclinesTraversalPermissionLabeler.java
++++ b/com/conveyal/r5/labeling/NoSteepInclinesTraversalPermissionLabeler.java
+@@ -18,7 +18,7 @@ public class NoSteepInclinesTraversalPermissionLabeler extends SidewalkTraversal
+         }
+     }
+     @Override
+-    public RoadPermission getPermissions(Way way) {
++    public RoadPermission getPermissions(Way way) { com.conveyal.r5.jmhbench.MutationSwitch.tick(44);
+         // Base class (SidewalkTraversalPermissionLabeler) disallows walking on ways that allow cars
+         RoadPermission rp = super.getPermissions(way);
+ 
+diff --git a/com/conveyal/r5/model/json_serialization/BitSetSerializer.java b/com/conveyal/r5/model/json_serialization/BitSetSerializer.java
+index e4ff55e..d7bc0f9 100644
+--- a/com/conveyal/r5/model/json_serialization/BitSetSerializer.java
++++ b/com/conveyal/r5/model/json_serialization/BitSetSerializer.java
+@@ -27,7 +27,7 @@ public class BitSetSerializer extends JsonSerializer<BitSet> {
+         jsonGenerator.writeEndArray();
+     }
+ 
+-    public static SimpleModule makeModule () {
++    public static SimpleModule makeModule () { com.conveyal.r5.jmhbench.MutationSwitch.tick(5);
+         Version moduleVersion = new Version(1, 0, 0, null, null, null);
+         SimpleModule module = new SimpleModule("BitSet", moduleVersion);
+         module.addSerializer(BitSet.class, new BitSetSerializer());
+diff --git a/com/conveyal/r5/model/json_serialization/LegModeSetDeserializer.java b/com/conveyal/r5/model/json_serialization/LegModeSetDeserializer.java
+index 6175d83..caeea37 100644
+--- a/com/conveyal/r5/model/json_serialization/LegModeSetDeserializer.java
++++ b/com/conveyal/r5/model/json_serialization/LegModeSetDeserializer.java
+@@ -19,7 +19,7 @@ public class LegModeSetDeserializer extends JsonDeserializer<EnumSet<LegMode>> {
+     private static final Logger LOG = LoggerFactory.getLogger(LegModeSetDeserializer.class);
+ 
+     @Override
+-    public EnumSet<LegMode> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
++    public EnumSet<LegMode> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException { com.conveyal.r5.jmhbench.MutationSwitch.tick(19);
+         String str = jsonParser.getValueAsString();
+         EnumSet<LegMode> modes = EnumSet.noneOf(LegMode.class);
+         Stream.of(str.split(",")).forEach(m -> {
+diff --git a/com/conveyal/r5/model/json_serialization/LegModeSetSerializer.java b/com/conveyal/r5/model/json_serialization/LegModeSetSerializer.java
+index 29b4ea6..3244a94 100644
+--- a/com/conveyal/r5/model/json_serialization/LegModeSetSerializer.java
++++ b/com/conveyal/r5/model/json_serialization/LegModeSetSerializer.java
+@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
+  */
+ public class LegModeSetSerializer extends JsonSerializer<EnumSet<LegMode>> {
+     @Override
+-    public void serialize(EnumSet<LegMode> modes, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
++    public void serialize(EnumSet<LegMode> modes, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException { com.conveyal.r5.jmhbench.MutationSwitch.tick(32);
+         String str = modes.stream().map(LegMode::toString).collect(Collectors.joining(","));
+         jsonGenerator.writeString(str);
+     }
+diff --git a/com/conveyal/r5/model/json_serialization/LineStringDeserializer.java b/com/conveyal/r5/model/json_serialization/LineStringDeserializer.java
+index 61e1e48..8048848 100644
+--- a/com/conveyal/r5/model/json_serialization/LineStringDeserializer.java
++++ b/com/conveyal/r5/model/json_serialization/LineStringDeserializer.java
+@@ -18,7 +18,7 @@ public class LineStringDeserializer extends JsonDeserializer<LineString> {
+ 
+     @Override
+     public LineString deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
+-            throws IOException, JsonProcessingException {
++            throws IOException, JsonProcessingException { com.conveyal.r5.jmhbench.MutationSwitch.tick(45);
+         return geometryFactory.createLineString(PolyUtil.decode(jsonParser.getText()));
+     }
+ 
+diff --git a/com/conveyal/r5/point_to_point/PointToPointRouterServer.java b/com/conveyal/r5/point_to_point/PointToPointRouterServer.java
+index eea4a2f..6ed5467 100644
+--- a/com/conveyal/r5/point_to_point/PointToPointRouterServer.java
++++ b/com/conveyal/r5/point_to_point/PointToPointRouterServer.java
+@@ -76,7 +76,7 @@ public class PointToPointRouterServer {
+ 
+     public static final int RADIUS_METERS = 200;
+ 
+-    public static void main(String[] commandArguments) {
++    public static void main(String[] commandArguments) { com.conveyal.r5.jmhbench.MutationSwitch.tick(6);
+ 
+         LOG.info("Arguments: {}", Arrays.toString(commandArguments));
+ 
+@@ -1065,7 +1065,7 @@ public class PointToPointRouterServer {
+      * Used to displace transit stops from the vertices they are linked to, so we can see the linking structure of
+      * complex stops.
+      */
+-    public static Coordinate jitter (VertexStore.Vertex v) {
++    public static Coordinate jitter (VertexStore.Vertex v) { com.conveyal.r5.jmhbench.MutationSwitch.tick(20);
+         double lat = v.getLat();
+         lat += (v.index % 7 - 3.5) * 1e-5;
+         double lon = v.getLon();
+diff --git a/com/conveyal/r5/point_to_point/builder/PointToPointQuery.java b/com/conveyal/r5/point_to_point/builder/PointToPointQuery.java
+index 0fae835..a46da11 100644
+--- a/com/conveyal/r5/point_to_point/builder/PointToPointQuery.java
++++ b/com/conveyal/r5/point_to_point/builder/PointToPointQuery.java
+@@ -84,12 +84,12 @@ public class PointToPointQuery {
+         this.transportNetwork = transportNetwork;
+     }
+ 
+-    public ZoneId getTimezone() {
++    public ZoneId getTimezone() { com.conveyal.r5.jmhbench.MutationSwitch.tick(33);
+         return this.transportNetwork.getTimeZone();
+     }
+ 
+     //Does point to point routing with data from request
+-    public ProfileResponse getPlan(ProfileRequest request) {
++    public ProfileResponse getPlan(ProfileRequest request) { com.conveyal.r5.jmhbench.MutationSwitch.tick(46);
+         long startRouting = System.currentTimeMillis();
+         request.zoneId = transportNetwork.getTimeZone();
+         //Do the query and return result
+diff --git a/com/conveyal/r5/profile/ExecutionTimer.java b/com/conveyal/r5/profile/ExecutionTimer.java
+index 86bfa8b..7e190a9 100644
+--- a/com/conveyal/r5/profile/ExecutionTimer.java
++++ b/com/conveyal/r5/profile/ExecutionTimer.java
+@@ -45,7 +45,7 @@ public class ExecutionTimer {
+         parent.children.add(this);
+     }
+ 
+-    public void start () {
++    public void start () { com.conveyal.r5.jmhbench.MutationSwitch.tick(47);
+         checkState(!running, "Start can only be called on a stopped timer.");
+         startTimeNanos = System.nanoTime();
+         running = true;
+diff --git a/com/conveyal/r5/profile/FareDominatingList.java b/com/conveyal/r5/profile/FareDominatingList.java
+index e7ea133..2d565d1 100644
+--- a/com/conveyal/r5/profile/FareDominatingList.java
++++ b/com/conveyal/r5/profile/FareDominatingList.java
+@@ -108,7 +108,7 @@ public class FareDominatingList implements DominatingList {
+     }
+ 
+     @Override
+-    public Collection<McRaptorSuboptimalPathProfileRouter.McRaptorState> getNonDominatedStates() {
++    public Collection<McRaptorSuboptimalPathProfileRouter.McRaptorState> getNonDominatedStates() { com.conveyal.r5.jmhbench.MutationSwitch.tick(7);
+         return states;
+     }
+ }
+\ No newline at end of file
+diff --git a/com/conveyal/r5/profile/SuboptimalDominatingList.java b/com/conveyal/r5/profile/SuboptimalDominatingList.java
+index d890513..83abc33 100644
+--- a/com/conveyal/r5/profile/SuboptimalDominatingList.java
++++ b/com/conveyal/r5/profile/SuboptimalDominatingList.java
+@@ -80,7 +80,7 @@ public class SuboptimalDominatingList implements DominatingList {
+      * want to document how R5 finds sub-optimal paths in detail.
+      * TODO ADD explanation of why we're running multiple access mode searches at once
+      */
+-    public boolean dominates (McRaptorSuboptimalPathProfileRouter.McRaptorState newState, McRaptorSuboptimalPathProfileRouter.McRaptorState oldState) {
++    public boolean dominates (McRaptorSuboptimalPathProfileRouter.McRaptorState newState, McRaptorSuboptimalPathProfileRouter.McRaptorState oldState) { com.conveyal.r5.jmhbench.MutationSwitch.tick(21);
+         boolean sameAccessMode = oldState.accessMode == newState.accessMode;
+ 
+         // If there is any way to reach this location with less rides and the same or less time, throw away the old state
+@@ -98,7 +98,7 @@ public class SuboptimalDominatingList implements DominatingList {
+         return false;
+     }
+ 
+-    public Collection<McRaptorSuboptimalPathProfileRouter.McRaptorState> getNonDominatedStates () {
++    public Collection<McRaptorSuboptimalPathProfileRouter.McRaptorState> getNonDominatedStates () { com.conveyal.r5.jmhbench.MutationSwitch.tick(34);
+         // We used to prune here, but now we prune on add.
+         // I've observed in the past that pruning on add slows the algorithm down due to all of the looping.
+         // I also tried pruning once per round, but that also slows the algorithm down (perhaps because it's doing
+diff --git a/com/conveyal/r5/rastercost/BooleanField.java b/com/conveyal/r5/rastercost/BooleanField.java
+index 9c5ed4a..6b38bab 100644
+--- a/com/conveyal/r5/rastercost/BooleanField.java
++++ b/com/conveyal/r5/rastercost/BooleanField.java
+@@ -20,7 +20,7 @@ public class BooleanField {
+      */
+     public int[][] breakpoints;
+ 
+-    public int lengthWherePositive (int edgePairIndex) {
++    public int lengthWherePositive (int edgePairIndex) { com.conveyal.r5.jmhbench.MutationSwitch.tick(8);
+         return 0;
+     }
+ 
+diff --git a/com/conveyal/r5/rastercost/ElevationCostField.java b/com/conveyal/r5/rastercost/ElevationCostField.java
+index e1758a7..24ec407 100644
+--- a/com/conveyal/r5/rastercost/ElevationCostField.java
++++ b/com/conveyal/r5/rastercost/ElevationCostField.java
+@@ -60,12 +60,12 @@ public class ElevationCostField implements CostField, Serializable {
+     }
+ 
+     @Override
+-    public int additionalTraversalTimeSeconds (EdgeStore.Edge currentEdge, int traversalTimeSeconds) {
++    public int additionalTraversalTimeSeconds (EdgeStore.Edge currentEdge, int traversalTimeSeconds) { com.conveyal.r5.jmhbench.MutationSwitch.tick(22);
+         return (int) Math.round(traversalTimeSeconds * edgeFactors.get(currentEdge.getEdgeIndex()));
+     }
+ 
+     @Override
+-    public String getDisplayKey () {
++    public String getDisplayKey () { com.conveyal.r5.jmhbench.MutationSwitch.tick(35);
+         return "elevation";
+     }
+ 
+diff --git a/com/conveyal/r5/rastercost/ElevationLoader.java b/com/conveyal/r5/rastercost/ElevationLoader.java
+index 016bf51..66e1694 100644
+--- a/com/conveyal/r5/rastercost/ElevationLoader.java
++++ b/com/conveyal/r5/rastercost/ElevationLoader.java
+@@ -43,7 +43,7 @@ public class ElevationLoader implements CostField.Loader<ElevationCostField> {
+     }
+ 
+     @Override
+-    public ElevationCostField load (StreetLayer streets) {
++    public ElevationCostField load (StreetLayer streets) { com.conveyal.r5.jmhbench.MutationSwitch.tick(48);
+         // For debugging: To check out in the debugger which ImageII implementations were loaded.
+         // IIORegistry registry = IIORegistry.getDefaultInstance();
+ 
+diff --git a/com/conveyal/r5/shapefile/ShapefileMain.java b/com/conveyal/r5/shapefile/ShapefileMain.java
+index 059c9ff..7ba5cf3 100644
+--- a/com/conveyal/r5/shapefile/ShapefileMain.java
++++ b/com/conveyal/r5/shapefile/ShapefileMain.java
+@@ -71,7 +71,7 @@ public class ShapefileMain {
+     /** The transform from the input shapefile coordinate reference system into WGS84 latitude and longitude. */
+     private MathTransform coordinateTransform;
+ 
+-    public static void main (String[] args) throws Throwable {
++    public static void main (String[] args) throws Throwable { com.conveyal.r5.jmhbench.MutationSwitch.tick(9);
+         new ShapefileMain().run();
+     }
+ 
+diff --git a/com/conveyal/r5/shapefile/ShapefileMatcher.java b/com/conveyal/r5/shapefile/ShapefileMatcher.java
+index d348637..4711680 100644
+--- a/com/conveyal/r5/shapefile/ShapefileMatcher.java
++++ b/com/conveyal/r5/shapefile/ShapefileMatcher.java
+@@ -72,7 +72,7 @@ public class ShapefileMatcher {
+      * OSM_INFERRED, OSM_EXPLICIT, SHAPEFILE_MATCH etc. This could also apply to things like speeds and slopes.
+      * The values could be retained only for the duration of network building unless we have a reason to keep them.
+      */
+-    public void match (String shapefileName, String attributeName) {
++    public void match (String shapefileName, String attributeName) { com.conveyal.r5.jmhbench.MutationSwitch.tick(23);
+         try {
+             indexFeatures(shapefileName, attributeName);
+         } catch (Throwable t) {
+@@ -126,7 +126,7 @@ public class ShapefileMatcher {
+     }
+ 
+     // Index is in floating-point WGS84
+-    public void indexFeatures (String shapefileName, String attributeName) throws Throwable {
++    public void indexFeatures (String shapefileName, String attributeName) throws Throwable { com.conveyal.r5.jmhbench.MutationSwitch.tick(36);
+         featureIndex = new STRtree();
+         ShapefileReader reader = new ShapefileReader(new File(shapefileName));
+         Envelope envelope = reader.wgs84Bounds();
+diff --git a/com/conveyal/r5/shapefile/ShapefileMatcherMain.java b/com/conveyal/r5/shapefile/ShapefileMatcherMain.java
+index 13bea84..a788908 100644
+--- a/com/conveyal/r5/shapefile/ShapefileMatcherMain.java
++++ b/com/conveyal/r5/shapefile/ShapefileMatcherMain.java
+@@ -19,7 +19,7 @@ public class ShapefileMatcherMain {
+     private static final String SHAPE_FILE_ATTRIBUTE = "lts_ov";
+     private static final String OSM_FILE = "/Users/abyrd/geodata/la/la-reduced-matching-lts.osm.pbf";
+ 
+-    public static void main (String[] args) throws Throwable {
++    public static void main (String[] args) throws Throwable { com.conveyal.r5.jmhbench.MutationSwitch.tick(49);
+         StreetLayer streetLayer = loadStreetLayer();
+         ShapefileMatcher shapefileMatcher = new ShapefileMatcher(streetLayer);
+         shapefileMatcher.match(SHAPE_FILE, SHAPE_FILE_ATTRIBUTE);
+diff --git a/com/conveyal/r5/streets/LinkedPointSet.java b/com/conveyal/r5/streets/LinkedPointSet.java
+index 5aa59c4..145072a 100644
+--- a/com/conveyal/r5/streets/LinkedPointSet.java
++++ b/com/conveyal/r5/streets/LinkedPointSet.java
+@@ -267,7 +267,7 @@ public class LinkedPointSet implements Serializable {
+      * is now available as a field on the current linkage, so it does not need to be passed as a parameter. So a
+      * factory class could depend on only a progressListener and the current LinkedPointSet.
+      */
+-    public synchronized EgressCostTable getEgressCostTable (ProgressListener progressListener) {
++    public synchronized EgressCostTable getEgressCostTable (ProgressListener progressListener) { com.conveyal.r5.jmhbench.MutationSwitch.tick(10);
+         if (this.egressCostTable == null) {
+             if (this.cropped) {
+                 // This LinkedPointSet was simply cropped out of a larger existing one.
+@@ -290,7 +290,7 @@ public class LinkedPointSet implements Serializable {
+      * single "holder" object along with the network, linkages etc. and those pre-loaded references should be used
+      * throughout the rest of the task's processing.
+      */
+-    public synchronized EgressCostTable getEgressCostTable () {
++    public synchronized EgressCostTable getEgressCostTable () { com.conveyal.r5.jmhbench.MutationSwitch.tick(24);
+         return getEgressCostTable(new NoopProgressListener());
+     }
+ 
+diff --git a/com/conveyal/r5/streets/PointSetTimes.java b/com/conveyal/r5/streets/PointSetTimes.java
+index a7ead01..9956b74 100644
+--- a/com/conveyal/r5/streets/PointSetTimes.java
++++ b/com/conveyal/r5/streets/PointSetTimes.java
+@@ -23,13 +23,13 @@ public class PointSetTimes {
+         this.travelTimes = travelTimes;
+     }
+ 
+-    public static PointSetTimes allUnreached (PointSet pointSet) {
++    public static PointSetTimes allUnreached (PointSet pointSet) { com.conveyal.r5.jmhbench.MutationSwitch.tick(37);
+         int[] times = new int[pointSet.featureCount()];
+         Arrays.fill(times, FastRaptorWorker.UNREACHED);
+         return new PointSetTimes(pointSet, times);
+     }
+ 
+-    public int size()  {
++    public int size()  { com.conveyal.r5.jmhbench.MutationSwitch.tick(50);
+         return travelTimes.length;
+     }
+ 
+diff --git a/com/conveyal/r5/transit/DuplicateFeedException.java b/com/conveyal/r5/transit/DuplicateFeedException.java
+index 0423803..cd0b974 100644
+--- a/com/conveyal/r5/transit/DuplicateFeedException.java
++++ b/com/conveyal/r5/transit/DuplicateFeedException.java
+@@ -11,7 +11,7 @@ public class DuplicateFeedException extends RuntimeException {
+     }
+ 
+     @Override
+-    public String getMessage () {
++    public String getMessage () { com.conveyal.r5.jmhbench.MutationSwitch.tick(11);
+         return String.format("Bundle contains duplicate feeds with feed ID %s", feedId);
+     }
+ }
+diff --git a/com/conveyal/r5/transit/GtfsTransferLoader.java b/com/conveyal/r5/transit/GtfsTransferLoader.java
+index ad7e9c6..5fb9160 100644
+--- a/com/conveyal/r5/transit/GtfsTransferLoader.java
++++ b/com/conveyal/r5/transit/GtfsTransferLoader.java
+@@ -62,7 +62,7 @@ public class GtfsTransferLoader {
+     int nValidAndLoaded = 0;
+ 
+     /// May return null or empty collection.
+-    public TIntCollection patternsToSkipForSourceStop (int sourceStopIndex) {
++    public TIntCollection patternsToSkipForSourceStop (int sourceStopIndex) { com.conveyal.r5.jmhbench.MutationSwitch.tick(25);
+         if (transferConfig == STOP_TO_PATTERN) {
+             return stopAndPatternPairsWithTransfers.get(sourceStopIndex);
+         }
+@@ -70,7 +70,7 @@ public class GtfsTransferLoader {
+     }
+ 
+     // These fields track which transfers have been loaded to supersede OSM-based transfers.
+-    public record StopPair(int fromStop, int toStop) { }
++    public record StopPair(int fromStop, int toStop) { com.conveyal.r5.jmhbench.MutationSwitch.tick(38); }
+     final Set<StopPair> stopPairsWithTransfers = new HashSet<>();
+     final TIntIntHashSetMultimap stopAndPatternPairsWithTransfers = new TIntIntHashSetMultimap();
+ 
+diff --git a/com/conveyal/r5/transitive/TransitiveNetwork.java b/com/conveyal/r5/transitive/TransitiveNetwork.java
+index 0767e27..e6caee0 100644
+--- a/com/conveyal/r5/transitive/TransitiveNetwork.java
++++ b/com/conveyal/r5/transitive/TransitiveNetwork.java
+@@ -93,7 +93,7 @@ public class TransitiveNetwork {
+      * @return a list of Transitive stop references for all the stops in the supplied r5 pattern, including geometries
+      * for the path the vehicle takes after each stop (except the last one, which will be null).
+      */
+-    public static List<TransitivePattern.StopIdRef> getStopRefs (TripPattern r5pattern, TransitLayer transitLayer) {
++    public static List<TransitivePattern.StopIdRef> getStopRefs (TripPattern r5pattern, TransitLayer transitLayer) { com.conveyal.r5.jmhbench.MutationSwitch.tick(12);
+         List<LineString> geometries = r5pattern.getHopGeometries(transitLayer);
+         List<TransitivePattern.StopIdRef> stopRefs = new ArrayList<>();
+         for (int stopPos = 0; stopPos < r5pattern.stops.length; stopPos++) {
+diff --git a/com/conveyal/r5/trove/AugmentedList.java b/com/conveyal/r5/trove/AugmentedList.java
+index 7b34af4..03536df 100644
+--- a/com/conveyal/r5/trove/AugmentedList.java
++++ b/com/conveyal/r5/trove/AugmentedList.java
+@@ -44,7 +44,7 @@ public class AugmentedList<T> implements List<T> {
+     }
+ 
+     @Override
+-    public int size() {
++    public int size() { com.conveyal.r5.jmhbench.MutationSwitch.tick(13);
+         return base.size() + extension.size();
+     }
+ 
+@@ -61,7 +61,7 @@ public class AugmentedList<T> implements List<T> {
+     }
+ 
+     @Override
+-    public int indexOf(Object o) {
++    public int indexOf(Object o) { com.conveyal.r5.jmhbench.MutationSwitch.tick(26);
+         throw new UnsupportedOperationException();
+     }
+ 
+diff --git a/com/conveyal/r5/trove/TByteAugmentedList.java b/com/conveyal/r5/trove/TByteAugmentedList.java
+index 16c934c..bab01a0 100644
+--- a/com/conveyal/r5/trove/TByteAugmentedList.java
++++ b/com/conveyal/r5/trove/TByteAugmentedList.java
+@@ -51,7 +51,7 @@ public class TByteAugmentedList implements TByteList {
+     }
+ 
+     @Override
+-    public int size() {
++    public int size() { com.conveyal.r5.jmhbench.MutationSwitch.tick(39);
+         return base.size() + extension.size();
+     }
+ 
+diff --git a/com/conveyal/r5/util/EmptyTIntCollection.java b/com/conveyal/r5/util/EmptyTIntCollection.java
+index 3b626b1..71d60bc 100644
+--- a/com/conveyal/r5/util/EmptyTIntCollection.java
++++ b/com/conveyal/r5/util/EmptyTIntCollection.java
+@@ -22,7 +22,7 @@ public class EmptyTIntCollection implements TIntCollection {
+     }
+ 
+     @Override
+-    public int getNoEntryValue() {
++    public int getNoEntryValue() { com.conveyal.r5.jmhbench.MutationSwitch.tick(40);
+         return 0;
+     }
+ 
+diff --git a/com/conveyal/r5/util/TIntIntHashSetMultimap.java b/com/conveyal/r5/util/TIntIntHashSetMultimap.java
+index b234a5a..454ccc8 100644
+--- a/com/conveyal/r5/util/TIntIntHashSetMultimap.java
++++ b/com/conveyal/r5/util/TIntIntHashSetMultimap.java
+@@ -25,7 +25,7 @@ public class TIntIntHashSetMultimap {
+ 
+     /// Associate all elements of the supplied values collection with the given key.
+     /// Proper handling for null or empty values.
+-    public boolean putAll(int key, TIntCollection values) {
++    public boolean putAll(int key, TIntCollection values) { com.conveyal.r5.jmhbench.MutationSwitch.tick(14);
+         if (values == null || values.isEmpty()) return false;
+         TIntSet set = map.get(key);
+         if (set == null) {
+@@ -40,7 +40,7 @@ public class TIntIntHashSetMultimap {
+         return (set == null) ? EmptyTIntCollection.get() : set;
+     }
+ 
+-    public boolean containsKey(int key) {
++    public boolean containsKey(int key) { com.conveyal.r5.jmhbench.MutationSwitch.tick(27);
+         return map.containsKey(key);
+     }
+ 

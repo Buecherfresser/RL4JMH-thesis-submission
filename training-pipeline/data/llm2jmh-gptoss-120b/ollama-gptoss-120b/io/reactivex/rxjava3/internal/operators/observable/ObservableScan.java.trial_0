@@ -1,0 +1,67 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.BiFunction;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableScan}.
+ * Measures the throughput of the {@code scan} operator with a simple integer accumulator.
+ *
+ * Best practices applied:
+ * - Use {@link Blackhole} to consume emitted items and prevent dead‑code elimination.
+ * - Keep the benchmark state thread‑local to avoid contention.
+ * - Provide warm‑up, measurement, and fork settings.
+ * - Use {@link Mode#Throughput} with seconds as the output time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class ObservableScanBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    /** Source Observable emitting a range of integers. */
+    private Observable<Integer> source;
+
+    /** Accumulator function used by the scan operator. */
+    private BiFunction<Integer, Integer, Integer> accumulator;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a fresh source for each trial; Observable.range is cold and re‑usable.
+        source = Observable.range(1, size);
+        // Simple addition accumulator; non‑null result guaranteed.
+        accumulator = (a, b) -> a + b;
+    }
+
+    /**
+     * Benchmark that subscribes to the scanned Observable and consumes all emitted items.
+     * The subscription runs synchronously because the source is a cold, non‑async Observable.
+     */
+    @Benchmark
+    public void scanThroughput(Blackhole bh) {
+        source
+            .scan(accumulator)
+            .subscribe(bh::consume);
+    }
+
+    /**
+     * Baseline benchmark without the scan operator to help isolate its overhead.
+     */
+    @Benchmark
+    public void baselineThroughput(Blackhole bh) {
+        source
+            .subscribe(bh::consume);
+    }
+}
+```

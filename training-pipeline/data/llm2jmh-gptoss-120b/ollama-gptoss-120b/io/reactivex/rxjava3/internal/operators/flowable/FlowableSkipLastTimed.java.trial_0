@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableSkipLastTimed}
+ * measuring the throughput of the operator when processing a stream of integers.
+ *
+ * The benchmark creates a hot source of {@code size} sequential integers,
+ * applies {@code skipLastTimed} with a 1 ms window and a small buffer,
+ * then drains the resulting flowable while consuming each element with a {@link Blackhole}.
+ *
+ * The test follows JMH best‑practice guidelines:
+ *   • {@code @State(Scope.Thread)} isolates mutable state per benchmark thread.
+ *   • {@code @Setup(Level.Iteration)} rebuilds the source for each measurement iteration
+ *     to avoid cross‑iteration side effects.
+ *   • Warm‑up and measurement iterations are defined via the {@code @Warmup} and {@code @Measurement}
+ *     annotations (default values can be overridden on the command line).
+ *   • Throughput mode reports operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableSkipLastTimedBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the upstream source. */
+        @Param({"1000", "10000", "100000"})
+        public int size;
+
+        /** The upstream Flowable that emits a range of integers. */
+        public Flowable<Integer> source;
+
+        /** Scheduler used by the operator (computation scheduler is cheap and widely available). */
+        public final io.reactivex.rxjava3.core.Scheduler scheduler = Schedulers.computation();
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            // Create a cold source that emits 'size' sequential integers.
+            source = Flowable.range(1, size);
+        }
+    }
+
+    /**
+     * Executes the {@code skipLastTimed} operator and drains the resulting stream.
+     *
+     * @param state   per‑thread benchmark state containing the source Flowable.
+     * @param bh      Blackhole to consume each emitted item and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void skipLastTimedThroughput(BenchmarkState state, Blackhole bh) {
+        state.source
+                .skipLastTimed(1, TimeUnit.MILLISECONDS, state.scheduler, 128, false)
+                .blockingForEach(bh::consume);
+    }
+}
+```

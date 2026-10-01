@@ -1,0 +1,57 @@
+```java
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@code Observable.takeLast(1)} which internally uses {@code ObservableTakeLastOne}.
+ * Measures throughput (operations per second) for different source sizes.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableTakeLastOneBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the source Observable.
+         * Adjust to evaluate small and large streams.
+         */
+        @Param({"1", "10", "1000", "100000"})
+        public int size;
+
+        /**
+         * Source Observable emitting a range of integers.
+         * Created once per trial to avoid measuring source construction overhead.
+         */
+        Observable<Integer> source;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Observable.range(0, size);
+        }
+    }
+
+    /**
+     * Executes the {@code takeLast(1)} operator and consumes the emitted value.
+     * The {@link Blackhole} ensures the JIT does not eliminate the subscription logic.
+     *
+     * @param state benchmark state containing the source Observable
+     * @param bh    blackhole to consume the emitted item
+     */
+    @Benchmark
+    public void takeLastOne(BenchmarkState state, Blackhole bh) {
+        state.source
+                .takeLast(1)
+                .blockingSubscribe(bh::consume);
+    }
+}
+```

@@ -1,0 +1,642 @@
+diff --git a/org/HdrHistogram/AllValuesIterator.java b/org/HdrHistogram/AllValuesIterator.java
+index 3112ba6..fcaea6e 100644
+--- a/org/HdrHistogram/AllValuesIterator.java
++++ b/org/HdrHistogram/AllValuesIterator.java
+@@ -22,7 +22,7 @@ public class AllValuesIterator extends AbstractHistogramIterator implements Iter
+     /**
+      * Reset iterator for re-use in a fresh iteration over the same histogram data set.
+      */
+-    public void reset() {
++    public void reset() { org.HdrHistogram.jmhbench.MutationSwitch.tick(1);
+         reset(histogram);
+     }
+ 
+diff --git a/org/HdrHistogram/AtomicHistogram.java b/org/HdrHistogram/AtomicHistogram.java
+index 36f84f9..cac2ecb 100644
+--- a/org/HdrHistogram/AtomicHistogram.java
++++ b/org/HdrHistogram/AtomicHistogram.java
+@@ -98,14 +98,14 @@ public class AtomicHistogram extends Histogram {
+     }
+ 
+     @Override
+-    public void setAutoResize(boolean autoResize) {
++    public void setAutoResize(boolean autoResize) { org.HdrHistogram.jmhbench.MutationSwitch.tick(3);
+         throw new IllegalStateException(
+                 "AtomicHistogram does not support AutoResize operation." +
+                         " Use ConcurrentHistogram Instead.");
+     }
+ 
+     @Override
+-    public boolean supportsAutoResize() { return false; }
++    public boolean supportsAutoResize() { org.HdrHistogram.jmhbench.MutationSwitch.tick(5); return false; }
+ 
+     @Override
+     void clearCounts() {
+diff --git a/org/HdrHistogram/ConcurrentHistogram.java b/org/HdrHistogram/ConcurrentHistogram.java
+index ff54bfe..37b3f8b 100644
+--- a/org/HdrHistogram/ConcurrentHistogram.java
++++ b/org/HdrHistogram/ConcurrentHistogram.java
+@@ -427,7 +427,7 @@ public class ConcurrentHistogram extends Histogram {
+     }
+ 
+     @Override
+-    public void setAutoResize(final boolean autoResize) {
++    public void setAutoResize(final boolean autoResize) { org.HdrHistogram.jmhbench.MutationSwitch.tick(7);
+         this.autoResize = true;
+     }
+ 
+@@ -455,7 +455,7 @@ public class ConcurrentHistogram extends Histogram {
+     }
+ 
+     @Override
+-    public ConcurrentHistogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) {
++    public ConcurrentHistogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) { org.HdrHistogram.jmhbench.MutationSwitch.tick(9);
+         ConcurrentHistogram toHistogram = new ConcurrentHistogram(this);
+         toHistogram.addWhileCorrectingForCoordinatedOmission(this, expectedIntervalBetweenValueSamples);
+         return toHistogram;
+diff --git a/org/HdrHistogram/DoubleAllValuesIterator.java b/org/HdrHistogram/DoubleAllValuesIterator.java
+index ab7b555..e83add2 100644
+--- a/org/HdrHistogram/DoubleAllValuesIterator.java
++++ b/org/HdrHistogram/DoubleAllValuesIterator.java
+@@ -22,7 +22,7 @@ public class DoubleAllValuesIterator implements Iterator<DoubleHistogramIteratio
+     /**
+      * Reset iterator for re-use in a fresh iteration over the same histogram data set.
+      */
+-    public void reset() {
++    public void reset() { org.HdrHistogram.jmhbench.MutationSwitch.tick(11);
+         integerAllValuesIterator.reset();
+     }
+ 
+diff --git a/org/HdrHistogram/DoubleHistogram.java b/org/HdrHistogram/DoubleHistogram.java
+index 0820848..8b69fc1 100644
+--- a/org/HdrHistogram/DoubleHistogram.java
++++ b/org/HdrHistogram/DoubleHistogram.java
+@@ -262,11 +262,11 @@ public class DoubleHistogram extends EncodableHistogram implements DoubleValueRe
+     //
+     //
+ 
+-    public boolean isAutoResize() {
++    public boolean isAutoResize() { org.HdrHistogram.jmhbench.MutationSwitch.tick(13);
+         return autoResize;
+     }
+ 
+-    public void setAutoResize(boolean autoResize) {
++    public void setAutoResize(boolean autoResize) { org.HdrHistogram.jmhbench.MutationSwitch.tick(15);
+         this.autoResize = autoResize;
+     }
+ 
+diff --git a/org/HdrHistogram/DoubleHistogramIterationValue.java b/org/HdrHistogram/DoubleHistogramIterationValue.java
+index 86a9d82..36ea698 100644
+--- a/org/HdrHistogram/DoubleHistogramIterationValue.java
++++ b/org/HdrHistogram/DoubleHistogramIterationValue.java
+@@ -55,12 +55,12 @@ public class DoubleHistogramIterationValue {
+                 ", percentileLevelIteratedTo:" + getPercentileLevelIteratedTo();
+     }
+ 
+-    public double getValueIteratedTo() {
++    public double getValueIteratedTo() { org.HdrHistogram.jmhbench.MutationSwitch.tick(17);
+         return integerHistogramIterationValue.getValueIteratedTo() *
+                 integerHistogramIterationValue.getIntegerToDoubleValueConversionRatio();
+     }
+ 
+-    public double getValueIteratedFrom() {
++    public double getValueIteratedFrom() { org.HdrHistogram.jmhbench.MutationSwitch.tick(19);
+         return integerHistogramIterationValue.getValueIteratedFrom() *
+                 integerHistogramIterationValue.getIntegerToDoubleValueConversionRatio();
+     }
+diff --git a/org/HdrHistogram/DoubleLinearIterator.java b/org/HdrHistogram/DoubleLinearIterator.java
+index c77d917..3e39243 100644
+--- a/org/HdrHistogram/DoubleLinearIterator.java
++++ b/org/HdrHistogram/DoubleLinearIterator.java
+@@ -24,7 +24,7 @@ public class DoubleLinearIterator implements Iterator<DoubleHistogramIterationVa
+      * Reset iterator for re-use in a fresh iteration over the same histogram data set.
+      * @param valueUnitsPerBucket The size (in value units) of each bucket iteration.
+      */
+-    public void reset(final double valueUnitsPerBucket) {
++    public void reset(final double valueUnitsPerBucket) { org.HdrHistogram.jmhbench.MutationSwitch.tick(21);
+         integerLinearIterator.reset((long) (valueUnitsPerBucket * histogram.getDoubleToIntegerValueConversionRatio()));
+     }
+ 
+diff --git a/org/HdrHistogram/DoubleLogarithmicIterator.java b/org/HdrHistogram/DoubleLogarithmicIterator.java
+index c05f449..b08dda9 100644
+--- a/org/HdrHistogram/DoubleLogarithmicIterator.java
++++ b/org/HdrHistogram/DoubleLogarithmicIterator.java
+@@ -25,7 +25,7 @@ public class DoubleLogarithmicIterator implements Iterator<DoubleHistogramIterat
+      * @param valueUnitsInFirstBucket the size (in value units) of the first value bucket step
+      * @param logBase the multiplier by which the bucket size is expanded in each iteration step.
+      */
+-    public void reset(final double valueUnitsInFirstBucket, final double logBase) {
++    public void reset(final double valueUnitsInFirstBucket, final double logBase) { org.HdrHistogram.jmhbench.MutationSwitch.tick(23);
+         integerLogarithmicIterator.reset(
+                 (long) (valueUnitsInFirstBucket * histogram.getDoubleToIntegerValueConversionRatio()),
+                 logBase
+diff --git a/org/HdrHistogram/DoublePercentileIterator.java b/org/HdrHistogram/DoublePercentileIterator.java
+index e9b17ce..ae23a04 100644
+--- a/org/HdrHistogram/DoublePercentileIterator.java
++++ b/org/HdrHistogram/DoublePercentileIterator.java
+@@ -25,7 +25,7 @@ public class DoublePercentileIterator implements Iterator<DoubleHistogramIterati
+      *
+      * @param percentileTicksPerHalfDistance The number of iteration steps per half-distance to 100%.
+      */
+-    public void reset(final int percentileTicksPerHalfDistance) {
++    public void reset(final int percentileTicksPerHalfDistance) { org.HdrHistogram.jmhbench.MutationSwitch.tick(24);
+         integerPercentileIterator.reset(percentileTicksPerHalfDistance);
+     }
+ 
+diff --git a/org/HdrHistogram/DoubleRecordedValuesIterator.java b/org/HdrHistogram/DoubleRecordedValuesIterator.java
+index d23b87f..611948e 100644
+--- a/org/HdrHistogram/DoubleRecordedValuesIterator.java
++++ b/org/HdrHistogram/DoubleRecordedValuesIterator.java
+@@ -23,7 +23,7 @@ public class DoubleRecordedValuesIterator implements Iterator<DoubleHistogramIte
+     /**
+      * Reset iterator for re-use in a fresh iteration over the same histogram data set.
+      */
+-    public void reset() {
++    public void reset() { org.HdrHistogram.jmhbench.MutationSwitch.tick(25);
+         integerRecordedValuesIterator.reset();
+     }
+ 
+diff --git a/org/HdrHistogram/DoubleRecorder.java b/org/HdrHistogram/DoubleRecorder.java
+index 87f9f7c..485bd25 100644
+--- a/org/HdrHistogram/DoubleRecorder.java
++++ b/org/HdrHistogram/DoubleRecorder.java
+@@ -106,7 +106,7 @@ public class DoubleRecorder implements DoubleValueRecorder, IntervalHistogramPro
+      * @throws ArrayIndexOutOfBoundsException (may throw) if value is exceeds highestTrackableValue
+      */
+     @Override
+-    public void recordValue(final double value) {
++    public void recordValue(final double value) { org.HdrHistogram.jmhbench.MutationSwitch.tick(26);
+         long criticalValueAtEnter = recordingPhaser.writerCriticalSectionEnter();
+         try {
+             activeHistogram.recordValue(value);
+@@ -123,7 +123,7 @@ public class DoubleRecorder implements DoubleValueRecorder, IntervalHistogramPro
+      * @throws ArrayIndexOutOfBoundsException (may throw) if value is exceeds highestTrackableValue
+      */
+     @Override
+-    public void recordValueWithCount(final double value, final long count) throws ArrayIndexOutOfBoundsException {
++    public void recordValueWithCount(final double value, final long count) throws ArrayIndexOutOfBoundsException { org.HdrHistogram.jmhbench.MutationSwitch.tick(27);
+         long criticalValueAtEnter = recordingPhaser.writerCriticalSectionEnter();
+         try {
+             activeHistogram.recordValueWithCount(value, count);
+diff --git a/org/HdrHistogram/Histogram.java b/org/HdrHistogram/Histogram.java
+index e5844e3..f289157 100644
+--- a/org/HdrHistogram/Histogram.java
++++ b/org/HdrHistogram/Histogram.java
+@@ -112,14 +112,14 @@ public class Histogram extends AbstractHistogram {
+     }
+ 
+     @Override
+-    public Histogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) {
++    public Histogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) { org.HdrHistogram.jmhbench.MutationSwitch.tick(28);
+         Histogram copy = new Histogram(this);
+         copy.addWhileCorrectingForCoordinatedOmission(this, expectedIntervalBetweenValueSamples);
+         return copy;
+     }
+ 
+     @Override
+-    public long getTotalCount() {
++    public long getTotalCount() { org.HdrHistogram.jmhbench.MutationSwitch.tick(29);
+         return totalCount;
+     }
+ 
+diff --git a/org/HdrHistogram/HistogramIterationValue.java b/org/HdrHistogram/HistogramIterationValue.java
+index 633c68d..c6a06c3 100644
+--- a/org/HdrHistogram/HistogramIterationValue.java
++++ b/org/HdrHistogram/HistogramIterationValue.java
+@@ -84,11 +84,11 @@ public class HistogramIterationValue {
+                 ", percentileLevelIteratedTo:" + percentileLevelIteratedTo;
+     }
+ 
+-    public long getValueIteratedTo() {
++    public long getValueIteratedTo() { org.HdrHistogram.jmhbench.MutationSwitch.tick(30);
+         return valueIteratedTo;
+     }
+ 
+-    public double getDoubleValueIteratedTo() {
++    public double getDoubleValueIteratedTo() { org.HdrHistogram.jmhbench.MutationSwitch.tick(31);
+         return valueIteratedTo * integerToDoubleValueConversionRatio;
+     }
+ 
+diff --git a/org/HdrHistogram/HistogramLogProcessor.java b/org/HdrHistogram/HistogramLogProcessor.java
+index 71ed982..680856b 100644
+--- a/org/HdrHistogram/HistogramLogProcessor.java
++++ b/org/HdrHistogram/HistogramLogProcessor.java
+@@ -238,7 +238,7 @@ public class HistogramLogProcessor extends Thread {
+      * Run the log processor with the currently provided arguments.
+      */
+     @Override
+-    public void run() {
++    public void run() { org.HdrHistogram.jmhbench.MutationSwitch.tick(32);
+         PrintStream timeIntervalLog = null;
+         PrintStream movingWindowLog = null;
+         PrintStream histogramPercentileLog = System.out;
+@@ -524,7 +524,7 @@ public class HistogramLogProcessor extends Thread {
+      *
+      * @param args command line arguments
+      */
+-    public static void main(final String[] args)  {
++    public static void main(final String[] args)  { org.HdrHistogram.jmhbench.MutationSwitch.tick(33);
+         final HistogramLogProcessor processor;
+         try {
+             processor = new HistogramLogProcessor(args);
+diff --git a/org/HdrHistogram/HistogramLogReader.java b/org/HdrHistogram/HistogramLogReader.java
+index 97292bb..2cee52c 100644
+--- a/org/HdrHistogram/HistogramLogReader.java
++++ b/org/HdrHistogram/HistogramLogReader.java
+@@ -133,7 +133,7 @@ public class HistogramLogReader implements Closeable {
+         }
+ 
+         @Override
+-        public boolean onException(Throwable t) {
++        public boolean onException(Throwable t) { org.HdrHistogram.jmhbench.MutationSwitch.tick(34);
+             
+             // We ignore NoSuchElementException, but stop processing.
+             // Next call to nextIntervalHistogram may return null.
+@@ -194,7 +194,7 @@ public class HistogramLogReader implements Closeable {
+      * interval's timestamp from the epoch.
+      * @return latest Start Time found in the file (or 0.0 if non found)
+      */
+-    public double getStartTimeSec() {
++    public double getStartTimeSec() { org.HdrHistogram.jmhbench.MutationSwitch.tick(35);
+         return startTimeSec;
+     }
+ 
+diff --git a/org/HdrHistogram/HistogramLogScanner.java b/org/HdrHistogram/HistogramLogScanner.java
+index a848a2b..1456b29 100644
+--- a/org/HdrHistogram/HistogramLogScanner.java
++++ b/org/HdrHistogram/HistogramLogScanner.java
+@@ -128,7 +128,7 @@ public class HistogramLogScanner implements Closeable {
+         scanner.close();
+     }
+ 
+-    public void process(EventHandler handler) {
++    public void process(EventHandler handler) { org.HdrHistogram.jmhbench.MutationSwitch.tick(36);
+         while (scanner.hasNextLine()) {
+             try {
+                 if (scanner.hasNext("\\#.*")) {
+@@ -192,7 +192,7 @@ public class HistogramLogScanner implements Closeable {
+      * 
+      * @return true if additional intervals may exist in the log
+      */
+-    public boolean hasNextLine() {
++    public boolean hasNextLine() { org.HdrHistogram.jmhbench.MutationSwitch.tick(37);
+         return scanner.hasNextLine();
+     }
+ }
+diff --git a/org/HdrHistogram/HistogramLogWriter.java b/org/HdrHistogram/HistogramLogWriter.java
+index 103224f..a533534 100644
+--- a/org/HdrHistogram/HistogramLogWriter.java
++++ b/org/HdrHistogram/HistogramLogWriter.java
+@@ -90,7 +90,7 @@ public class HistogramLogWriter {
+     /**
+      * Closes the file or output stream for this log writer.
+      */
+-    public void close() {
++    public void close() { org.HdrHistogram.jmhbench.MutationSwitch.tick(38);
+         log.close();
+     }
+ 
+@@ -174,7 +174,7 @@ public class HistogramLogWriter {
+      * maxValueUnitRatio if some other ratio is needed for the max value output.
+      * @param histogram The interval histogram to log.
+      */
+-    public void outputIntervalHistogram(final EncodableHistogram histogram) {
++    public void outputIntervalHistogram(final EncodableHistogram histogram) { org.HdrHistogram.jmhbench.MutationSwitch.tick(39);
+         outputIntervalHistogram((histogram.getStartTimeStamp() - baseTime)/1000.0,
+                 (histogram.getEndTimeStamp() - baseTime)/1000.0,
+                 histogram);
+diff --git a/org/HdrHistogram/IntCountsHistogram.java b/org/HdrHistogram/IntCountsHistogram.java
+index 34a58b5..b696dc5 100644
+--- a/org/HdrHistogram/IntCountsHistogram.java
++++ b/org/HdrHistogram/IntCountsHistogram.java
+@@ -107,14 +107,14 @@ public class IntCountsHistogram extends AbstractHistogram {
+     }
+ 
+     @Override
+-    public IntCountsHistogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) {
++    public IntCountsHistogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) { org.HdrHistogram.jmhbench.MutationSwitch.tick(40);
+         IntCountsHistogram toHistogram = new IntCountsHistogram(this);
+         toHistogram.addWhileCorrectingForCoordinatedOmission(this, expectedIntervalBetweenValueSamples);
+         return toHistogram;
+     }
+ 
+     @Override
+-    public long getTotalCount() {
++    public long getTotalCount() { org.HdrHistogram.jmhbench.MutationSwitch.tick(41);
+         return totalCount;
+     }
+ 
+diff --git a/org/HdrHistogram/LinearIterator.java b/org/HdrHistogram/LinearIterator.java
+index 7d76c9c..100ffb6 100644
+--- a/org/HdrHistogram/LinearIterator.java
++++ b/org/HdrHistogram/LinearIterator.java
+@@ -24,7 +24,7 @@ public class LinearIterator extends AbstractHistogramIterator implements Iterato
+      * Reset iterator for re-use in a fresh iteration over the same histogram data set.
+      * @param valueUnitsPerBucket The size (in value units) of each bucket iteration.
+      */
+-    public void reset(final long valueUnitsPerBucket) {
++    public void reset(final long valueUnitsPerBucket) { org.HdrHistogram.jmhbench.MutationSwitch.tick(42);
+         reset(histogram, valueUnitsPerBucket);
+     }
+ 
+diff --git a/org/HdrHistogram/LogarithmicIterator.java b/org/HdrHistogram/LogarithmicIterator.java
+index 98306b7..907780c 100644
+--- a/org/HdrHistogram/LogarithmicIterator.java
++++ b/org/HdrHistogram/LogarithmicIterator.java
+@@ -27,7 +27,7 @@ public class LogarithmicIterator extends AbstractHistogramIterator implements It
+      * @param valueUnitsInFirstBucket the size (in value units) of the first value bucket step
+      * @param logBase the multiplier by which the bucket size is expanded in each iteration step.
+      */
+-    public void reset(final long valueUnitsInFirstBucket, final double logBase) {
++    public void reset(final long valueUnitsInFirstBucket, final double logBase) { org.HdrHistogram.jmhbench.MutationSwitch.tick(43);
+         reset(histogram, valueUnitsInFirstBucket, logBase);
+     }
+ 
+diff --git a/org/HdrHistogram/PackedConcurrentHistogram.java b/org/HdrHistogram/PackedConcurrentHistogram.java
+index d4f6014..60a6c0f 100644
+--- a/org/HdrHistogram/PackedConcurrentHistogram.java
++++ b/org/HdrHistogram/PackedConcurrentHistogram.java
+@@ -76,14 +76,14 @@ public class PackedConcurrentHistogram extends ConcurrentHistogram {
+     }
+ 
+     @Override
+-    public PackedConcurrentHistogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) {
++    public PackedConcurrentHistogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) { org.HdrHistogram.jmhbench.MutationSwitch.tick(44);
+         PackedConcurrentHistogram toHistogram = new PackedConcurrentHistogram(this);
+         toHistogram.addWhileCorrectingForCoordinatedOmission(this, expectedIntervalBetweenValueSamples);
+         return toHistogram;
+     }
+ 
+     @Override
+-    public long getTotalCount() {
++    public long getTotalCount() { org.HdrHistogram.jmhbench.MutationSwitch.tick(45);
+         return totalCountUpdater.get(this);
+     }
+ 
+diff --git a/org/HdrHistogram/PackedHistogram.java b/org/HdrHistogram/PackedHistogram.java
+index 9718be2..a64f586 100644
+--- a/org/HdrHistogram/PackedHistogram.java
++++ b/org/HdrHistogram/PackedHistogram.java
+@@ -94,7 +94,7 @@ public class PackedHistogram extends Histogram {
+     }
+ 
+     @Override
+-    public PackedHistogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) {
++    public PackedHistogram copyCorrectedForCoordinatedOmission(final long expectedIntervalBetweenValueSamples) { org.HdrHistogram.jmhbench.MutationSwitch.tick(46);
+         PackedHistogram toHistogram = new PackedHistogram(this);
+         toHistogram.addWhileCorrectingForCoordinatedOmission(this, expectedIntervalBetweenValueSamples);
+         return toHistogram;
+diff --git a/org/HdrHistogram/PercentileIterator.java b/org/HdrHistogram/PercentileIterator.java
+index eccce07..a6159f4 100644
+--- a/org/HdrHistogram/PercentileIterator.java
++++ b/org/HdrHistogram/PercentileIterator.java
+@@ -26,7 +26,7 @@ public class PercentileIterator extends AbstractHistogramIterator implements Ite
+      *
+      * @param percentileTicksPerHalfDistance The number of iteration steps per half-distance to 100%.
+      */
+-    public void reset(final int percentileTicksPerHalfDistance) {
++    public void reset(final int percentileTicksPerHalfDistance) { org.HdrHistogram.jmhbench.MutationSwitch.tick(47);
+         reset(histogram, percentileTicksPerHalfDistance);
+     }
+ 
+diff --git a/org/HdrHistogram/RecordedValuesIterator.java b/org/HdrHistogram/RecordedValuesIterator.java
+index 32c3813..83a434a 100644
+--- a/org/HdrHistogram/RecordedValuesIterator.java
++++ b/org/HdrHistogram/RecordedValuesIterator.java
+@@ -21,7 +21,7 @@ public class RecordedValuesIterator extends AbstractHistogramIterator implements
+     /**
+      * Reset iterator for re-use in a fresh iteration over the same histogram data set.
+      */
+-    public void reset() {
++    public void reset() { org.HdrHistogram.jmhbench.MutationSwitch.tick(48);
+         reset(histogram);
+     }
+ 
+diff --git a/org/HdrHistogram/Recorder.java b/org/HdrHistogram/Recorder.java
+index 41a8c29..74e6656 100644
+--- a/org/HdrHistogram/Recorder.java
++++ b/org/HdrHistogram/Recorder.java
+@@ -130,7 +130,7 @@ public class Recorder implements ValueRecorder, IntervalHistogramProvider<Histog
+      * @throws ArrayIndexOutOfBoundsException (may throw) if value is exceeds highestTrackableValue
+      */
+     @Override
+-    public void recordValue(final long value) throws ArrayIndexOutOfBoundsException {
++    public void recordValue(final long value) throws ArrayIndexOutOfBoundsException { org.HdrHistogram.jmhbench.MutationSwitch.tick(49);
+         long criticalValueAtEnter = recordingPhaser.writerCriticalSectionEnter();
+         try {
+             activeHistogram.recordValue(value);
+@@ -147,7 +147,7 @@ public class Recorder implements ValueRecorder, IntervalHistogramProvider<Histog
+      * @throws ArrayIndexOutOfBoundsException (may throw) if value is exceeds highestTrackableValue
+      */
+     @Override
+-    public void recordValueWithCount(final long value, final long count) throws ArrayIndexOutOfBoundsException {
++    public void recordValueWithCount(final long value, final long count) throws ArrayIndexOutOfBoundsException { org.HdrHistogram.jmhbench.MutationSwitch.tick(50);
+         long criticalValueAtEnter = recordingPhaser.writerCriticalSectionEnter();
+         try {
+             activeHistogram.recordValueWithCount(value, count);
+diff --git a/org/HdrHistogram/jmhbench/MutationSwitch.java b/org/HdrHistogram/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..96273db
+--- /dev/null
++++ b/org/HdrHistogram/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.HdrHistogram.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/HdrHistogram/packedarray/AbstractPackedLongArray.java b/org/HdrHistogram/packedarray/AbstractPackedLongArray.java
+index 5b10926..8245e52 100644
+--- a/org/HdrHistogram/packedarray/AbstractPackedLongArray.java
++++ b/org/HdrHistogram/packedarray/AbstractPackedLongArray.java
+@@ -35,7 +35,7 @@ abstract public class AbstractPackedLongArray implements Iterable<Long>, Seriali
+      * get the start time stamp [optionally] stored with this array
+      * @return the start time stamp [optionally] stored with this array
+      */
+-    public long getStartTimeStamp() {
++    public long getStartTimeStamp() { org.HdrHistogram.jmhbench.MutationSwitch.tick(2);
+         return startTimeStampMsec;
+     }
+ 
+@@ -43,7 +43,7 @@ abstract public class AbstractPackedLongArray implements Iterable<Long>, Seriali
+      * Set the start time stamp value associated with this array to a given value.
+      * @param timeStampMsec the value to set the time stamp to, [by convention] in msec since the epoch.
+      */
+-    public void setStartTimeStamp(final long timeStampMsec) {
++    public void setStartTimeStamp(final long timeStampMsec) { org.HdrHistogram.jmhbench.MutationSwitch.tick(4);
+         this.startTimeStampMsec = timeStampMsec;
+     }
+ 
+diff --git a/org/HdrHistogram/packedarray/ConcurrentPackedLongArray.java b/org/HdrHistogram/packedarray/ConcurrentPackedLongArray.java
+index ad3dead..19ee7a0 100644
+--- a/org/HdrHistogram/packedarray/ConcurrentPackedLongArray.java
++++ b/org/HdrHistogram/packedarray/ConcurrentPackedLongArray.java
+@@ -73,7 +73,7 @@ public class ConcurrentPackedLongArray extends PackedLongArray {
+     }
+ 
+     @Override
+-    public void setVirtualLength(final int newVirtualArrayLength) {
++    public void setVirtualLength(final int newVirtualArrayLength) { org.HdrHistogram.jmhbench.MutationSwitch.tick(6);
+         if (newVirtualArrayLength < length()) {
+             throw new IllegalArgumentException(
+                     "Cannot set virtual length, as requested length " + newVirtualArrayLength +
+@@ -152,7 +152,7 @@ public class ConcurrentPackedLongArray extends PackedLongArray {
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.HdrHistogram.jmhbench.MutationSwitch.tick(8);
+         try {
+             wrp.readerLock();
+             super.clear();
+diff --git a/org/HdrHistogram/packedarray/IterationValue.java b/org/HdrHistogram/packedarray/IterationValue.java
+index 063f6ab..7f4f72c 100644
+--- a/org/HdrHistogram/packedarray/IterationValue.java
++++ b/org/HdrHistogram/packedarray/IterationValue.java
+@@ -16,7 +16,7 @@ public class IterationValue {
+      * The index iterated to
+      * @return the index iterated to
+      */
+-    public int getIndex() {
++    public int getIndex() { org.HdrHistogram.jmhbench.MutationSwitch.tick(20);
+         return index;
+     }
+ 
+@@ -24,7 +24,7 @@ public class IterationValue {
+      * The value at the index iterated to
+      * @return the value at the index iterated to
+      */
+-    public long getValue() {
++    public long getValue() { org.HdrHistogram.jmhbench.MutationSwitch.tick(22);
+         return value;
+     }
+ 
+diff --git a/org/HdrHistogram/packedarray/PackedArrayRecorder.java b/org/HdrHistogram/packedarray/PackedArrayRecorder.java
+index 6607ecf..ef9cd72 100644
+--- a/org/HdrHistogram/packedarray/PackedArrayRecorder.java
++++ b/org/HdrHistogram/packedarray/PackedArrayRecorder.java
+@@ -79,7 +79,7 @@ public class PackedArrayRecorder {
+      * Returns the virtual length of the array represented by this recorder
+      * @return The virtual length of the array represented by this recorder
+      */
+-    public int length() {
++    public int length() { org.HdrHistogram.jmhbench.MutationSwitch.tick(10);
+         return activeArray.length();
+     }
+ 
+@@ -87,7 +87,7 @@ public class PackedArrayRecorder {
+      * Change the (virtual) length of the array represented by the this recorder
+      * @param newVirtualLength the new (virtual) length to use
+      */
+-    public void setVirtualLength(int newVirtualLength) {
++    public void setVirtualLength(int newVirtualLength) { org.HdrHistogram.jmhbench.MutationSwitch.tick(12);
+         try {
+             recordingPhaser.readerLock();
+             // We don't care about concurrent modifications to the array, as setVirtualLength() in the
+diff --git a/org/HdrHistogram/packedarray/PackedArraySingleWriterRecorder.java b/org/HdrHistogram/packedarray/PackedArraySingleWriterRecorder.java
+index d59a628..13e1862 100644
+--- a/org/HdrHistogram/packedarray/PackedArraySingleWriterRecorder.java
++++ b/org/HdrHistogram/packedarray/PackedArraySingleWriterRecorder.java
+@@ -81,7 +81,7 @@ public class PackedArraySingleWriterRecorder {
+      * Returns the virtual length of the array represented by this recorder
+      * @return The virtual length of the array represented by this recorder
+      */
+-    public int length() {
++    public int length() { org.HdrHistogram.jmhbench.MutationSwitch.tick(14);
+         return activeArray.length();
+     }
+ 
+@@ -89,7 +89,7 @@ public class PackedArraySingleWriterRecorder {
+      * Change the (virtual) length of the array represented by the this recorder
+      * @param newVirtualLength the new (virtual) length to use
+      */
+-    public void setVirtualLength(int newVirtualLength) {
++    public void setVirtualLength(int newVirtualLength) { org.HdrHistogram.jmhbench.MutationSwitch.tick(16);
+         try {
+             recordingPhaser.readerLock();
+             // We don't care about concurrent modifications to the array, as setVirtualLength() in the
+diff --git a/org/HdrHistogram/packedarray/PackedLongArray.java b/org/HdrHistogram/packedarray/PackedLongArray.java
+index e23bda5..618391d 100644
+--- a/org/HdrHistogram/packedarray/PackedLongArray.java
++++ b/org/HdrHistogram/packedarray/PackedLongArray.java
+@@ -28,7 +28,7 @@ public class PackedLongArray extends AbstractPackedLongArray {
+     }
+ 
+     @Override
+-    public void setVirtualLength(final int newVirtualArrayLength) {
++    public void setVirtualLength(final int newVirtualArrayLength) { org.HdrHistogram.jmhbench.MutationSwitch.tick(18);
+         if (newVirtualArrayLength < length()) {
+             throw new IllegalArgumentException(
+                     "Cannot set virtual length, as requested length " + newVirtualArrayLength +

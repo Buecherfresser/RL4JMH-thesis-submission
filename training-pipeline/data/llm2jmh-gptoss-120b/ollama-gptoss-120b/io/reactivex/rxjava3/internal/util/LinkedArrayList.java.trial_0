@@ -1,0 +1,86 @@
+```java
+package io.reactivex.rxjava3.internal.util.benchmark;
+
+import io.reactivex.rxjava3.internal.util.LinkedArrayList;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link LinkedArrayList}.
+ *
+ * <p>Benchmarks focus on the two most critical operations:
+ *
+ * <ul>
+ *   <li>{@code add(Object)} – measures the throughput of inserting elements.</li>
+ *   <li>{@code toString()} – measures the throughput of traversing the internal structure.</li>
+ * </ul>
+ *
+ * <p>Parameters allow experimenting with different capacity hints and total element counts.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class LinkedArrayListBenchmark {
+
+    /**
+     * Capacity hint for the internal arrays.
+     * Typical values are small (e.g., 4, 8, 16) because the structure is designed for low‑overhead chunking.
+     */
+    @Param({"4", "8", "16", "32"})
+    public int capacityHint;
+
+    /**
+     * Number of elements to add during the benchmark.
+     * The value should be large enough to trigger multiple internal array allocations.
+     */
+    @Param({"1000", "10000", "100000"})
+    public int elementCount;
+
+    private LinkedArrayList list;
+
+    /**
+     * Sets up a fresh {@link LinkedArrayList} before each benchmark iteration.
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        list = new LinkedArrayList(capacityHint);
+    }
+
+    /**
+     * Benchmark the {@code add(Object)} method.
+     *
+     * <p>Each invocation adds {@code elementCount} elements to a newly created list.
+     * The list itself is not retained after the method returns, ensuring that the
+     * benchmark measures only the cost of the add operation without interference
+     * from subsequent reads.
+     */
+    @Benchmark
+    public void addBenchmark() {
+        for (int i = 0; i < elementCount; i++) {
+            list.add(i);
+        }
+    }
+
+    /**
+     * Benchmark the {@code toString()} method.
+     *
+     * <p>The list is pre‑filled with {@code elementCount} elements in the {@link #setUp()}
+     * method, then {@code toString()} is invoked. The result is consumed by a {@link Blackhole}
+     * to prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void toStringBenchmark(Blackhole bh) {
+        // Populate the list once per invocation; this cost is part of the benchmark
+        // because {@code toString()} depends on the internal layout.
+        for (int i = 0; i < elementCount; i++) {
+            list.add(i);
+        }
+        bh.consume(list.toString());
+    }
+}
+```

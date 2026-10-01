@@ -1,0 +1,551 @@
+diff --git a/com/github/micycle1/clipper2/Clipper.java b/com/github/micycle1/clipper2/Clipper.java
+index 4886bfb..04d48ca 100644
+--- a/com/github/micycle1/clipper2/Clipper.java
++++ b/com/github/micycle1/clipper2/Clipper.java
+@@ -107,7 +107,7 @@ public final class Clipper {
+ 	 * @param fillRule the polygon fill rule to apply.
+ 	 * @return the intersected paths.
+ 	 */
+-	public static Paths64 intersect(Paths64 subject, Paths64 clip, FillRule fillRule) {
++	public static Paths64 intersect(Paths64 subject, Paths64 clip, FillRule fillRule) { com.github.micycle1.jmhbench.MutationSwitch.tick(1);
+ 		return booleanOp(ClipType.Intersection, subject, clip, fillRule);
+ 	}
+ 
+@@ -119,7 +119,7 @@ public final class Clipper {
+ 	 * @param fillRule the polygon fill rule to apply.
+ 	 * @return the intersected paths.
+ 	 */
+-	public static PathsD intersect(PathsD subject, PathsD clip, FillRule fillRule) {
++	public static PathsD intersect(PathsD subject, PathsD clip, FillRule fillRule) { com.github.micycle1.jmhbench.MutationSwitch.tick(2);
+ 		return intersect(subject, clip, fillRule, 2);
+ 	}
+ 
+@@ -132,7 +132,7 @@ public final class Clipper {
+ 	 * @param precision the decimal precision to use when scaling coordinates.
+ 	 * @return the intersected paths.
+ 	 */
+-	public static PathsD intersect(PathsD subject, PathsD clip, FillRule fillRule, int precision) {
++	public static PathsD intersect(PathsD subject, PathsD clip, FillRule fillRule, int precision) { com.github.micycle1.jmhbench.MutationSwitch.tick(3);
+ 		return booleanOp(ClipType.Intersection, subject, clip, fillRule, precision);
+ 	}
+ 
+@@ -143,7 +143,7 @@ public final class Clipper {
+ 	 * @param fillRule the polygon fill rule to apply.
+ 	 * @return the unioned paths.
+ 	 */
+-	public static Paths64 union(Paths64 subject, FillRule fillRule) {
++	public static Paths64 union(Paths64 subject, FillRule fillRule) { com.github.micycle1.jmhbench.MutationSwitch.tick(4);
+ 		return booleanOp(ClipType.Union, subject, null, fillRule);
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/Minkowski.java b/com/github/micycle1/clipper2/Minkowski.java
+index d89445f..7266e3b 100644
+--- a/com/github/micycle1/clipper2/Minkowski.java
++++ b/com/github/micycle1/clipper2/Minkowski.java
+@@ -12,22 +12,22 @@ public final class Minkowski {
+ 	private Minkowski() {
+ 	}
+ 
+-	public static Paths64 sum(Path64 pattern, Path64 path, boolean isClosed) {
++	public static Paths64 sum(Path64 pattern, Path64 path, boolean isClosed) { com.github.micycle1.jmhbench.MutationSwitch.tick(5);
+ 		return Clipper.union(MinkowskiInternal(pattern, path, true, isClosed), FillRule.NonZero);
+ 	}
+ 
+-	public static PathsD sum(PathD pattern, PathD path, boolean isClosed) {
++	public static PathsD sum(PathD pattern, PathD path, boolean isClosed) { com.github.micycle1.jmhbench.MutationSwitch.tick(6);
+ 		return sum(pattern, path, isClosed, 2);
+ 	}
+ 
+-	public static PathsD sum(PathD pattern, PathD path, boolean isClosed, int decimalPlaces) {
++	public static PathsD sum(PathD pattern, PathD path, boolean isClosed, int decimalPlaces) { com.github.micycle1.jmhbench.MutationSwitch.tick(7);
+ 		double scale = Math.pow(10, decimalPlaces);
+ 		Paths64 tmp = Clipper.union(
+ 				MinkowskiInternal(Clipper.scalePath64(pattern, scale), Clipper.scalePath64(path, scale), true, isClosed), FillRule.NonZero);
+ 		return Clipper.scalePathsD(tmp, 1 / scale);
+ 	}
+ 
+-	public static Paths64 diff(Path64 pattern, Path64 path, boolean isClosed) {
++	public static Paths64 diff(Path64 pattern, Path64 path, boolean isClosed) { com.github.micycle1.jmhbench.MutationSwitch.tick(8);
+ 		return Clipper.union(MinkowskiInternal(pattern, path, false, isClosed), FillRule.NonZero);
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/core/InternalClipper.java b/com/github/micycle1/clipper2/core/InternalClipper.java
+index 8521433..efff25b 100644
+--- a/com/github/micycle1/clipper2/core/InternalClipper.java
++++ b/com/github/micycle1/clipper2/core/InternalClipper.java
+@@ -13,7 +13,7 @@ public final class InternalClipper {
+ 
+ 	private static final String PRECISION_RANGE_ERROR = "Error: Precision is out of range.";
+ 
+-	public static void checkPrecision(int precision) {
++	public static void checkPrecision(int precision) { com.github.micycle1.jmhbench.MutationSwitch.tick(9);
+ 		if (precision < -8 || precision > 8) {
+ 			throw new IllegalArgumentException(PRECISION_RANGE_ERROR);
+ 		}
+@@ -22,7 +22,7 @@ public final class InternalClipper {
+ 	private InternalClipper() {
+ 	}
+ 
+-	public static boolean isAlmostZero(double value) {
++	public static boolean isAlmostZero(double value) { com.github.micycle1.jmhbench.MutationSwitch.tick(10);
+ 		return (Math.abs(value) <= FLOATING_POINT_TOLERANCE);
+ 	}
+ 
+@@ -34,7 +34,7 @@ public final class InternalClipper {
+ 	 * even, to match the C++ <code>nearbyint</code> behaviour, this port uses
+ 	 * {@link Math#rint}.)
+ 	 */
+-	public static long round(double value) {
++	public static long round(double value) { com.github.micycle1.jmhbench.MutationSwitch.tick(11);
+ 		// Math.rint is a single machine instruction but breaks ties to even, so
+ 		// correct the (rare) exact-midpoint case: when rint has rounded towards
+ 		// zero, away-from-zero wants the other neighbour.
+@@ -45,7 +45,7 @@ public final class InternalClipper {
+ 		return (long) r;
+ 	}
+ 
+-	public static double crossProduct(Point64 pt1, Point64 pt2, Point64 pt3) {
++	public static double crossProduct(Point64 pt1, Point64 pt2, Point64 pt3) { com.github.micycle1.jmhbench.MutationSwitch.tick(12);
+ 		// typecast to double to avoid potential int overflow
+ 		return ((double) (pt2.x - pt1.x) * (pt3.y - pt2.y) - (double) (pt2.y - pt1.y) * (pt3.x - pt2.x));
+ 	}
+diff --git a/com/github/micycle1/clipper2/core/Point64.java b/com/github/micycle1/clipper2/core/Point64.java
+index 52132a4..10522c6 100644
+--- a/com/github/micycle1/clipper2/core/Point64.java
++++ b/com/github/micycle1/clipper2/core/Point64.java
+@@ -49,11 +49,11 @@ public final class Point64 {
+ 		y = InternalClipper.round(pt.y * scale);
+ 	}
+ 
+-	public void setX(double x) {
++	public void setX(double x) { com.github.micycle1.jmhbench.MutationSwitch.tick(13);
+ 		this.x = InternalClipper.round(x);
+ 	}
+ 
+-	public void setY(double y) {
++	public void setY(double y) { com.github.micycle1.jmhbench.MutationSwitch.tick(14);
+ 		this.y = InternalClipper.round(y);
+ 	}
+ 	
+@@ -66,11 +66,11 @@ public final class Point64 {
+ 		this.y = other.y;
+ 	}
+ 
+-	public boolean opEquals(Point64 o) {
++	public boolean opEquals(Point64 o) { com.github.micycle1.jmhbench.MutationSwitch.tick(15);
+ 		return x == o.x && y == o.y;
+ 	}
+ 
+-	public static boolean opEquals(Point64 lhs, Point64 rhs) {
++	public static boolean opEquals(Point64 lhs, Point64 rhs) { com.github.micycle1.jmhbench.MutationSwitch.tick(16);
+ 		return lhs.x == rhs.x && lhs.y == rhs.y;
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/core/PointD.java b/com/github/micycle1/clipper2/core/PointD.java
+index f45ccb0..9fefabb 100644
+--- a/com/github/micycle1/clipper2/core/PointD.java
++++ b/com/github/micycle1/clipper2/core/PointD.java
+@@ -42,7 +42,7 @@ public final class PointD {
+ 		this.y = y;
+ 	}
+ 
+-	public void negate() {
++	public void negate() { com.github.micycle1.jmhbench.MutationSwitch.tick(17);
+ 		x = -x;
+ 		y = -y;
+ 	}
+@@ -52,11 +52,11 @@ public final class PointD {
+ 		return String.format("(%1$f,%2$f) ", x, y);
+ 	}
+ 
+-	public static boolean opEquals(PointD lhs, PointD rhs) {
++	public static boolean opEquals(PointD lhs, PointD rhs) { com.github.micycle1.jmhbench.MutationSwitch.tick(18);
+ 		return InternalClipper.isAlmostZero(lhs.x - rhs.x) && InternalClipper.isAlmostZero(lhs.y - rhs.y);
+ 	}
+ 
+-	public static boolean opNotEquals(PointD lhs, PointD rhs) {
++	public static boolean opNotEquals(PointD lhs, PointD rhs) { com.github.micycle1.jmhbench.MutationSwitch.tick(19);
+ 		return !InternalClipper.isAlmostZero(lhs.x - rhs.x) || !InternalClipper.isAlmostZero(lhs.y - rhs.y);
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/core/Rect64.java b/com/github/micycle1/clipper2/core/Rect64.java
+index 0711684..555a12d 100644
+--- a/com/github/micycle1/clipper2/core/Rect64.java
++++ b/com/github/micycle1/clipper2/core/Rect64.java
+@@ -42,19 +42,19 @@ public final class Rect64 {
+ 		bottom = rec.bottom;
+ 	}
+ 
+-	public long getWidth() {
++	public long getWidth() { com.github.micycle1.jmhbench.MutationSwitch.tick(20);
+ 		return right - left;
+ 	}
+ 
+-	public void setWidth(long value) {
++	public void setWidth(long value) { com.github.micycle1.jmhbench.MutationSwitch.tick(21);
+ 		right = left + value;
+ 	}
+ 
+-	public long getHeight() {
++	public long getHeight() { com.github.micycle1.jmhbench.MutationSwitch.tick(22);
+ 		return bottom - top;
+ 	}
+ 
+-	public void setHeight(long value) {
++	public void setHeight(long value) { com.github.micycle1.jmhbench.MutationSwitch.tick(23);
+ 		bottom = top + value;
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/core/RectD.java b/com/github/micycle1/clipper2/core/RectD.java
+index e27e9cb..d9dd3ce 100644
+--- a/com/github/micycle1/clipper2/core/RectD.java
++++ b/com/github/micycle1/clipper2/core/RectD.java
+@@ -44,19 +44,19 @@ public final class RectD {
+ 		}
+ 	}
+ 
+-	public double getWidth() {
++	public double getWidth() { com.github.micycle1.jmhbench.MutationSwitch.tick(24);
+ 		return right - left;
+ 	}
+ 
+-	public void setWidth(double value) {
++	public void setWidth(double value) { com.github.micycle1.jmhbench.MutationSwitch.tick(25);
+ 		right = left + value;
+ 	}
+ 
+-	public double getHeight() {
++	public double getHeight() { com.github.micycle1.jmhbench.MutationSwitch.tick(26);
+ 		return bottom - top;
+ 	}
+ 
+-	public void setHeight(double value) {
++	public void setHeight(double value) { com.github.micycle1.jmhbench.MutationSwitch.tick(27);
+ 		bottom = top + value;
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/engine/Clipper64.java b/com/github/micycle1/clipper2/engine/Clipper64.java
+index 418c257..2c8df07 100644
+--- a/com/github/micycle1/clipper2/engine/Clipper64.java
++++ b/com/github/micycle1/clipper2/engine/Clipper64.java
+@@ -35,7 +35,7 @@ public class Clipper64 extends ClipperBase {
+ 	 * @param solutionOpen receives any open solution paths
+ 	 * @return {@code true} when clipping completed successfully
+ 	 */
+-	public final boolean execute(ClipType clipType, FillRule fillRule, Paths64 solutionClosed, Paths64 solutionOpen) {
++	public final boolean execute(ClipType clipType, FillRule fillRule, Paths64 solutionClosed, Paths64 solutionOpen) { com.github.micycle1.jmhbench.MutationSwitch.tick(28);
+ 		solutionClosed.clear();
+ 		solutionOpen.clear();
+ 		try {
+@@ -58,7 +58,7 @@ public class Clipper64 extends ClipperBase {
+ 	 * @param solutionClosed receives the closed solution paths
+ 	 * @return {@code true} when clipping completed successfully
+ 	 */
+-	public final boolean execute(ClipType clipType, FillRule fillRule, Paths64 solutionClosed) {
++	public final boolean execute(ClipType clipType, FillRule fillRule, Paths64 solutionClosed) { com.github.micycle1.jmhbench.MutationSwitch.tick(29);
+ 		return execute(clipType, fillRule, solutionClosed, new Paths64());
+ 	}
+ 
+@@ -72,7 +72,7 @@ public class Clipper64 extends ClipperBase {
+ 	 * @param openPaths receives any open solution paths
+ 	 * @return {@code true} when clipping completed successfully
+ 	 */
+-	public final boolean execute(ClipType clipType, FillRule fillRule, PolyTree64 polytree, Paths64 openPaths) {
++	public final boolean execute(ClipType clipType, FillRule fillRule, PolyTree64 polytree, Paths64 openPaths) { com.github.micycle1.jmhbench.MutationSwitch.tick(30);
+ 		polytree.clear();
+ 		openPaths.clear();
+ 		usingPolytree = true;
+@@ -96,7 +96,7 @@ public class Clipper64 extends ClipperBase {
+ 	 * @param polytree receives the closed solution hierarchy
+ 	 * @return {@code true} when clipping completed successfully
+ 	 */
+-	public final boolean execute(ClipType clipType, FillRule fillRule, PolyTree64 polytree) {
++	public final boolean execute(ClipType clipType, FillRule fillRule, PolyTree64 polytree) { com.github.micycle1.jmhbench.MutationSwitch.tick(31);
+ 		return execute(clipType, fillRule, polytree, new Paths64());
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/engine/ClipperD.java b/com/github/micycle1/clipper2/engine/ClipperD.java
+index af41819..7de0bc5 100644
+--- a/com/github/micycle1/clipper2/engine/ClipperD.java
++++ b/com/github/micycle1/clipper2/engine/ClipperD.java
+@@ -48,7 +48,7 @@ public class ClipperD extends ClipperBase {
+ 	 * @param path the path to add
+ 	 * @param polytype the role the path will play in the clipping operation
+ 	 */
+-	public void addPath(PathD path, PathType polytype) {
++	public void addPath(PathD path, PathType polytype) { com.github.micycle1.jmhbench.MutationSwitch.tick(32);
+ 		addPath(path, polytype, false);
+ 	}
+ 
+@@ -59,7 +59,7 @@ public class ClipperD extends ClipperBase {
+ 	 * @param polytype the role the path will play in the clipping operation
+ 	 * @param isOpen {@code true} when the path should be treated as open
+ 	 */
+-	public void addPath(PathD path, PathType polytype, boolean isOpen) {
++	public void addPath(PathD path, PathType polytype, boolean isOpen) { com.github.micycle1.jmhbench.MutationSwitch.tick(33);
+ 		super.addPath(Clipper.scalePath64(path, scale), polytype, isOpen);
+ 	}
+ 
+@@ -69,7 +69,7 @@ public class ClipperD extends ClipperBase {
+ 	 * @param paths the paths to add
+ 	 * @param polytype the role the paths will play in the clipping operation
+ 	 */
+-	public void addPaths(PathsD paths, PathType polytype) {
++	public void addPaths(PathsD paths, PathType polytype) { com.github.micycle1.jmhbench.MutationSwitch.tick(34);
+ 		addPaths(paths, polytype, false);
+ 	}
+ 
+@@ -80,7 +80,7 @@ public class ClipperD extends ClipperBase {
+ 	 * @param polytype the role the paths will play in the clipping operation
+ 	 * @param isOpen {@code true} when the paths should be treated as open
+ 	 */
+-	public void addPaths(PathsD paths, PathType polytype, boolean isOpen) {
++	public void addPaths(PathsD paths, PathType polytype, boolean isOpen) { com.github.micycle1.jmhbench.MutationSwitch.tick(35);
+ 		super.addPaths(Clipper.scalePaths64(paths, scale), polytype, isOpen);
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/engine/PolyPath64.java b/com/github/micycle1/clipper2/engine/PolyPath64.java
+index 277d166..292d9b6 100644
+--- a/com/github/micycle1/clipper2/engine/PolyPath64.java
++++ b/com/github/micycle1/clipper2/engine/PolyPath64.java
+@@ -22,7 +22,7 @@ public class PolyPath64 extends PolyPathBase {
+ 	}
+ 
+ 	@Override
+-	public PolyPathBase addChild(Path64 p) {
++	public PolyPathBase addChild(Path64 p) { com.github.micycle1.jmhbench.MutationSwitch.tick(36);
+ 		PolyPath64 newChild = new PolyPath64(this);
+ 		newChild.setPolygon(p);
+ 		children.add(newChild);
+@@ -36,7 +36,7 @@ public class PolyPath64 extends PolyPathBase {
+ 		return (PolyPath64) children.get(index);
+ 	}
+ 
+-	public final double area() {
++	public final double area() { com.github.micycle1.jmhbench.MutationSwitch.tick(37);
+ 		double result = getPolygon() == null ? 0 : Clipper.area(getPolygon());
+ 		for (PolyPathBase polyPathBase : children) {
+ 			PolyPath64 child = (PolyPath64) polyPathBase;
+@@ -45,7 +45,7 @@ public class PolyPath64 extends PolyPathBase {
+ 		return result;
+ 	}
+ 
+-	public final Path64 getPolygon() {
++	public final Path64 getPolygon() { com.github.micycle1.jmhbench.MutationSwitch.tick(38);
+ 		return polygon;
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/engine/PolyPathD.java b/com/github/micycle1/clipper2/engine/PolyPathD.java
+index da84248..7e599b8 100644
+--- a/com/github/micycle1/clipper2/engine/PolyPathD.java
++++ b/com/github/micycle1/clipper2/engine/PolyPathD.java
+@@ -19,7 +19,7 @@ public class PolyPathD extends PolyPathBase {
+ 	}
+ 
+ 	@Override
+-	public PolyPathBase addChild(Path64 p) {
++	public PolyPathBase addChild(Path64 p) { com.github.micycle1.jmhbench.MutationSwitch.tick(39);
+ 		PolyPathD newChild = new PolyPathD(this);
+ 		newChild.setScale(scale);
+ 		newChild.setPolygon(Clipper.scalePathD(p, scale));
+@@ -34,7 +34,7 @@ public class PolyPathD extends PolyPathBase {
+ 		return (PolyPathD) children.get(index);
+ 	}
+ 
+-	public final double area() {
++	public final double area() { com.github.micycle1.jmhbench.MutationSwitch.tick(40);
+ 		double result = getPolygon() == null ? 0 : Clipper.area(getPolygon());
+ 		for (PolyPathBase polyPathBase : children) {
+ 			PolyPathD child = (PolyPathD) polyPathBase;
+@@ -43,7 +43,7 @@ public class PolyPathD extends PolyPathBase {
+ 		return result;
+ 	}
+ 
+-	public final PathD getPolygon() {
++	public final PathD getPolygon() { com.github.micycle1.jmhbench.MutationSwitch.tick(41);
+ 		return polygon;
+ 	}
+ 
+@@ -51,7 +51,7 @@ public class PolyPathD extends PolyPathBase {
+ 		polygon = value;
+ 	}
+ 
+-	public double getScale() {
++	public double getScale() { com.github.micycle1.jmhbench.MutationSwitch.tick(42);
+ 		return scale;
+ 	}
+ 
+diff --git a/com/github/micycle1/clipper2/offset/ClipperOffset.java b/com/github/micycle1/clipper2/offset/ClipperOffset.java
+index 2f7a438..3b12214 100644
+--- a/com/github/micycle1/clipper2/offset/ClipperOffset.java
++++ b/com/github/micycle1/clipper2/offset/ClipperOffset.java
+@@ -174,11 +174,11 @@ public class ClipperOffset {
+ 		setReverseSolution(reverseSolution);
+ 	}
+ 
+-	public final void clear() {
++	public final void clear() { com.github.micycle1.jmhbench.MutationSwitch.tick(43);
+ 		groupList.clear();
+ 	}
+ 
+-	public final void addPath(Path64 path, JoinType joinType, EndType endType) {
++	public final void addPath(Path64 path, JoinType joinType, EndType endType) { com.github.micycle1.jmhbench.MutationSwitch.tick(44);
+ 		int cnt = path.size();
+ 		if (cnt == 0) {
+ 			return;
+@@ -187,7 +187,7 @@ public class ClipperOffset {
+ 		addPaths(pp, joinType, endType);
+ 	}
+ 
+-	public final void addPaths(Paths64 paths, JoinType joinType, EndType endType) {
++	public final void addPaths(Paths64 paths, JoinType joinType, EndType endType) { com.github.micycle1.jmhbench.MutationSwitch.tick(45);
+ 		int cnt = paths.size();
+ 		if (cnt == 0) {
+ 			return;
+@@ -256,7 +256,7 @@ public class ClipperOffset {
+ 		return result;
+ 	}
+ 
+-	public final void execute(double delta, Paths64 solution) {
++	public final void execute(double delta, Paths64 solution) { com.github.micycle1.jmhbench.MutationSwitch.tick(46);
+ 		solution.clear();
+ 		solutionTree = null;
+ 		this.solution = solution;
+diff --git a/com/github/micycle1/clipper2/rectclip/RectClip64.java b/com/github/micycle1/clipper2/rectclip/RectClip64.java
+index d93f71d..dcefffa 100644
+--- a/com/github/micycle1/clipper2/rectclip/RectClip64.java
++++ b/com/github/micycle1/clipper2/rectclip/RectClip64.java
+@@ -248,7 +248,7 @@ public class RectClip64 {
+ 		}
+ 	}
+ 
+-	protected static LocationResult getLocation(Rect64 r, Point64 pt) {
++	protected static LocationResult getLocation(Rect64 r, Point64 pt) { com.github.micycle1.jmhbench.MutationSwitch.tick(47);
+ 		Location loc;
+ 		if (pt.x == r.left && pt.y >= r.top && pt.y <= r.bottom) {
+ 			return new LocationResult(false, Location.left);
+@@ -339,7 +339,7 @@ public class RectClip64 {
+ 		return InternalClipper.getLineIntersectPt(p1, p2, p3, p4, ipRefObject);
+ 	}
+ 
+-	protected static IntersectionResult getIntersection(Path64 rectPath, Point64 p, Point64 p2, Location loc, Point64 ipRefObject) {
++	protected static IntersectionResult getIntersection(Path64 rectPath, Point64 p, Point64 p2, Location loc, Point64 ipRefObject) { com.github.micycle1.jmhbench.MutationSwitch.tick(48);
+ 		ipRefObject.set(new Point64(0, 0));
+ 		switch (loc) {
+ 			case left :
+@@ -403,7 +403,7 @@ public class RectClip64 {
+ 		}
+ 	}
+ 
+-	protected NextLocationResult getNextLocation(Path64 path, Location loc, int i, int highI) {
++	protected NextLocationResult getNextLocation(Path64 path, Location loc, int i, int highI) { com.github.micycle1.jmhbench.MutationSwitch.tick(49);
+ 		switch (loc) {
+ 			case left :
+ 				while (i <= highI && path.get(i).x <= rect_.left) {
+@@ -517,7 +517,7 @@ public class RectClip64 {
+ 		return res > 0;
+ 	}
+ 
+-	protected void executeInternal(Path64 path) {
++	protected void executeInternal(Path64 path) { com.github.micycle1.jmhbench.MutationSwitch.tick(50);
+ 		if (path.size() < 3 || rect_.isEmpty()) {
+ 			return;
+ 		}
+diff --git a/com/github/micycle1/jmhbench/MutationSwitch.java b/com/github/micycle1/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..0a4eefd
+--- /dev/null
++++ b/com/github/micycle1/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.github.micycle1.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

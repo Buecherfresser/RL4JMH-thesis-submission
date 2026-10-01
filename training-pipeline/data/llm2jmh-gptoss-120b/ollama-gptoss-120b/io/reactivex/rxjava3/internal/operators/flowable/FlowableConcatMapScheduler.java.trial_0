@@ -1,0 +1,88 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableConcatMapScheduler;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableConcatMapScheduler.ErrorMode;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableConcatMapScheduler}.
+ *
+ * The benchmark measures the throughput (operations per second) of the operator
+ * when processing a fixed-size synchronous source with a simple mapper.
+ *
+ * Best‑practice JMH settings are used:
+ * - Warm‑up iterations to let the JIT stabilize
+ * - Measurement iterations for reliable results
+ * - Multiple forks to avoid JVM warm‑up effects
+ * - Blackhole consumption to prevent dead‑code elimination
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class FlowableConcatMapSchedulerBenchmark {
+
+    /** Number of items emitted by the source Flowable. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Prefetch size for the operator. */
+    @Param({"32", "128", "1024"})
+    public int prefetch;
+
+    private Flowable<Integer> source;
+    private Function<Integer, Publisher<Integer>> mapper;
+    private Scheduler scheduler;
+    private ErrorMode errorMode;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Synchronous source that emits a known number of integers.
+        source = Flowable.range(1, itemCount);
+
+        // Simple mapper that returns a Flowable emitting the same integer.
+        mapper = v -> Flowable.just(v);
+
+        // Use the computation scheduler to exercise the worker scheduling path.
+        scheduler = Schedulers.computation();
+
+        // Most common error handling mode for this operator.
+        errorMode = ErrorMode.IMMEDIATE;
+    }
+
+    /**
+     * Benchmark the concatMapScheduler operator.
+     *
+     * The subscriber forwards each received item to the Blackhole to ensure the
+     * JIT does not eliminate the processing logic.
+     */
+    @Benchmark
+    public void concatMapScheduler(Blackhole bh) {
+        Flowable<Integer> flowable = new FlowableConcatMapScheduler<>(
+                source,
+                mapper,
+                prefetch,
+                errorMode,
+                scheduler
+        );
+
+        flowable.subscribe(new Consumer<Integer>() {
+            @Override
+            public void accept(Integer value) {
+                bh.consume(value);
+            }
+        }, bh::consume);
+        // The subscription runs synchronously for the given source/mapping,
+        // so the method returns after all items have been processed.
+    }
+}
+```

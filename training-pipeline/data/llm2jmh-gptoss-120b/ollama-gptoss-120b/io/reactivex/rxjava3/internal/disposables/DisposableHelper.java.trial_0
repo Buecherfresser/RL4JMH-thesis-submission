@@ -1,0 +1,108 @@
+```
+package io.reactivex.rxjava3.internal.disposables.jmh;
+
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.disposables.DisposableHelper;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * JMH benchmarks for {@link DisposableHelper}.
+ *
+ * The benchmarks focus on the throughput of the most commonly used static methods.
+ * Each benchmark method receives a fresh {@link AtomicReference} to avoid side‑effects
+ * between invocations. A lightweight {@link DummyDisposable} is used to avoid the
+ * overhead of real disposables while still exercising the {@code dispose()} call.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class DisposableHelperBenchmark {
+
+    /** Simple {@link Disposable} implementation used in the benchmarks. */
+    public static final class DummyDisposable implements Disposable {
+        private volatile boolean disposed;
+
+        @Override
+        public void dispose() {
+            disposed = true;
+        }
+
+        @Override
+        public boolean isDisposed() {
+            return disposed;
+        }
+    }
+
+    /** Holds the {@link AtomicReference} used by the benchmark methods. */
+    private AtomicReference<Disposable> ref;
+
+    /** A fresh disposable instance for each invocation. */
+    private DummyDisposable disposable;
+
+    /** A second disposable used for replace/trySet scenarios. */
+    private DummyDisposable otherDisposable;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        ref = new AtomicReference<>();
+        disposable = new DummyDisposable();
+        otherDisposable = new DummyDisposable();
+    }
+
+    @Benchmark
+    public void benchmarkSet(Blackhole bh) {
+        boolean result = DisposableHelper.set(ref, disposable);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void benchmarkSetOnce(Blackhole bh) {
+        // setOnce expects the field to be null; we reset it in setUp()
+        boolean result = DisposableHelper.setOnce(ref, disposable);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void benchmarkReplace(Blackhole bh) {
+        // Ensure the reference holds a disposable before replace
+        ref.set(disposable);
+        boolean result = DisposableHelper.replace(ref, otherDisposable);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void benchmarkDispose(Blackhole bh) {
+        // Ensure the reference holds a disposable before dispose
+        ref.set(disposable);
+        boolean result = DisposableHelper.dispose(ref);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void benchmarkValidate(Blackhole bh) {
+        // current is null, next is a disposable
+        boolean result = DisposableHelper.validate(null, disposable);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void benchmarkTrySet(Blackhole bh) {
+        boolean result = DisposableHelper.trySet(ref, disposable);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void benchmarkIsDisposed(Blackhole bh) {
+        // Direct call to the enum instance; trivial but included for completeness
+        boolean result = DisposableHelper.DISPOSED.isDisposed();
+        bh.consume(result);
+    }
+}
+```

@@ -1,0 +1,634 @@
+diff --git a/com/tngtech/junit/dataprovider/DataProviderExtension.java b/com/tngtech/junit/dataprovider/DataProviderExtension.java
+index f32661b..fea9f5e 100644
+--- a/com/tngtech/junit/dataprovider/DataProviderExtension.java
++++ b/com/tngtech/junit/dataprovider/DataProviderExtension.java
+@@ -34,7 +34,7 @@ public class DataProviderExtension extends DataProviderInvocationContextProvider
+     }
+ 
+     @Override
+-    protected ConverterContext getConverterContext(DataProvider dataProvider) {
++    protected ConverterContext getConverterContext(DataProvider dataProvider) { com.tngtech.junit.jmhbench.MutationSwitch.tick(7);
+         return new ConverterContext(ReflectionSupport.newInstance(dataProvider.objectArrayConverter()),
+                 ReflectionSupport.newInstance(dataProvider.singleArgConverter()),
+                 ReflectionSupport.newInstance(dataProvider.stringConverter()), dataProvider.splitBy(),
+@@ -42,7 +42,7 @@ public class DataProviderExtension extends DataProviderInvocationContextProvider
+     }
+ 
+     @Override
+-    protected DisplayNameContext getDisplayNameContext(DataProvider dataProvider) {
++    protected DisplayNameContext getDisplayNameContext(DataProvider dataProvider) { com.tngtech.junit.jmhbench.MutationSwitch.tick(8);
+         return new DisplayNameContext(dataProvider.formatter(), dataProvider.format(), getDefaultPlaceholders());
+     }
+ }
+diff --git a/com/tngtech/junit/dataprovider/DataProviderInvocationContext.java b/com/tngtech/junit/dataprovider/DataProviderInvocationContext.java
+index 424a427..fd2ddc0 100644
+--- a/com/tngtech/junit/dataprovider/DataProviderInvocationContext.java
++++ b/com/tngtech/junit/dataprovider/DataProviderInvocationContext.java
+@@ -42,7 +42,7 @@ class DataProviderInvocationContext implements TestTemplateInvocationContext {
+     }
+ 
+     @Override
+-    public String getDisplayName(int invocationIndex) {
++    public String getDisplayName(int invocationIndex) { com.tngtech.junit.jmhbench.MutationSwitch.tick(9);
+         Class<? extends DataProviderTestNameFormatter> formatter = displayNameContext.getFormatter();
+         if (formatter == null || DataProviderPlaceholderFormatter.class.equals(formatter)) {
+             return new DataProviderPlaceholderFormatter(displayNameContext.getFormat(),
+@@ -52,7 +52,7 @@ class DataProviderInvocationContext implements TestTemplateInvocationContext {
+     }
+ 
+     @Override
+-    public List<Extension> getAdditionalExtensions() {
++    public List<Extension> getAdditionalExtensions() { com.tngtech.junit.jmhbench.MutationSwitch.tick(10);
+         return singletonList(new DataProviderParameterResolver(arguments));
+     }
+ }
+diff --git a/com/tngtech/junit/dataprovider/DataProviderParameterResolver.java b/com/tngtech/junit/dataprovider/DataProviderParameterResolver.java
+index 96a9e5e..a044160 100644
+--- a/com/tngtech/junit/dataprovider/DataProviderParameterResolver.java
++++ b/com/tngtech/junit/dataprovider/DataProviderParameterResolver.java
+@@ -36,7 +36,7 @@ class DataProviderParameterResolver implements ParameterResolver {
+     }
+ 
+     @Override
+-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
++    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) { com.tngtech.junit.jmhbench.MutationSwitch.tick(11);
+         Executable declaringExecutable = parameterContext.getParameter().getDeclaringExecutable();
+         Method testMethod = extensionContext.getTestMethod().orElse(null);
+         return declaringExecutable.equals(testMethod) && parameterContext.getIndex() < arguments.size();
+@@ -44,7 +44,7 @@ class DataProviderParameterResolver implements ParameterResolver {
+ 
+     @Override
+     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+-            throws ParameterResolutionException {
++            throws ParameterResolutionException { com.tngtech.junit.jmhbench.MutationSwitch.tick(12);
+         return arguments.get(parameterContext.getIndex());
+     }
+ }
+diff --git a/com/tngtech/junit/dataprovider/DataProviders.java b/com/tngtech/junit/dataprovider/DataProviders.java
+index bdb8ae8..442a6c6 100644
+--- a/com/tngtech/junit/dataprovider/DataProviders.java
++++ b/com/tngtech/junit/dataprovider/DataProviders.java
+@@ -36,7 +36,7 @@ public class DataProviders {
+      * @return an {@link Object} array containing all the given {@code args}
+      * @see #$$
+      */
+-    public static Object[] $(Object... args) { // define it with <T> produces var-args warning on user side for java < 6
++    public static Object[] $(Object... args) { com.tngtech.junit.jmhbench.MutationSwitch.tick(13); // define it with <T> produces var-args warning on user side for java < 6
+         return args;
+     }
+ 
+@@ -59,7 +59,7 @@ public class DataProviders {
+      * @return an array of {@link Object} arrays containing all the given {@code args}
+      * @see #$
+      */
+-    public static Object[][] $$(Object[]... args) {
++    public static Object[][] $$(Object[]... args) { com.tngtech.junit.jmhbench.MutationSwitch.tick(14);
+         return args;
+     }
+ 
+@@ -69,7 +69,7 @@ public class DataProviders {
+      * @param args which are wrapped in {@link Object} arrays and combined to {@link Object}{@code [][]}
+      * @return an array which contains {@link Object} arrays for each single argument
+      */
+-    public static Object[][] testForEach(Object... args) {
++    public static Object[][] testForEach(Object... args) { com.tngtech.junit.jmhbench.MutationSwitch.tick(15);
+         Object[][] result = new Object[args.length][1];
+         for (int idx = 0; idx < args.length; idx++) {
+             result[idx][0] = args[idx];
+diff --git a/com/tngtech/junit/dataprovider/DisplayNameContext.java b/com/tngtech/junit/dataprovider/DisplayNameContext.java
+index 8edf068..09401e5 100644
+--- a/com/tngtech/junit/dataprovider/DisplayNameContext.java
++++ b/com/tngtech/junit/dataprovider/DisplayNameContext.java
+@@ -41,15 +41,15 @@ public class DisplayNameContext {
+         this.placeholders = new ArrayList<>(checkNotNull(placeholders, "'placeholders' must not be null"));
+     }
+ 
+-    public Class<? extends DataProviderTestNameFormatter> getFormatter() {
++    public Class<? extends DataProviderTestNameFormatter> getFormatter() { com.tngtech.junit.jmhbench.MutationSwitch.tick(16);
+         return formatter;
+     }
+ 
+-    public String getFormat() {
++    public String getFormat() { com.tngtech.junit.jmhbench.MutationSwitch.tick(17);
+         return format;
+     }
+ 
+-    public List<? extends BasePlaceholder> getPlaceholders() {
++    public List<? extends BasePlaceholder> getPlaceholders() { com.tngtech.junit.jmhbench.MutationSwitch.tick(18);
+         return unmodifiableList(placeholders);
+     }
+ }
+diff --git a/com/tngtech/junit/dataprovider/Preconditions.java b/com/tngtech/junit/dataprovider/Preconditions.java
+index 916dc20..b07e010 100644
+--- a/com/tngtech/junit/dataprovider/Preconditions.java
++++ b/com/tngtech/junit/dataprovider/Preconditions.java
+@@ -17,20 +17,20 @@ package com.tngtech.junit.dataprovider;
+ 
+ public class Preconditions {
+ 
+-    public static <T> T checkNotNull(T object, String errorMessage) {
++    public static <T> T checkNotNull(T object, String errorMessage) { com.tngtech.junit.jmhbench.MutationSwitch.tick(19);
+         if (object == null) {
+             throw new NullPointerException(errorMessage);
+         }
+         return object;
+     }
+ 
+-    public static void checkArgument(boolean expression, String errorMessage) {
++    public static void checkArgument(boolean expression, String errorMessage) { com.tngtech.junit.jmhbench.MutationSwitch.tick(20);
+         if (!expression) {
+             throw new IllegalArgumentException(errorMessage);
+         }
+     }
+ 
+-    public static void checkArgument(boolean expression, String errorMessageFormat, Object... errorMessageArgs) {
++    public static void checkArgument(boolean expression, String errorMessageFormat, Object... errorMessageArgs) { com.tngtech.junit.jmhbench.MutationSwitch.tick(21);
+         if (!expression) {
+             throw new IllegalArgumentException(String.format(errorMessageFormat, errorMessageArgs));
+         }
+diff --git a/com/tngtech/junit/dataprovider/StringDataProviderArgumentProvider.java b/com/tngtech/junit/dataprovider/StringDataProviderArgumentProvider.java
+index 80a9849..cb5a24a 100644
+--- a/com/tngtech/junit/dataprovider/StringDataProviderArgumentProvider.java
++++ b/com/tngtech/junit/dataprovider/StringDataProviderArgumentProvider.java
+@@ -25,7 +25,7 @@ import com.tngtech.junit.dataprovider.convert.ConverterContext;
+ class StringDataProviderArgumentProvider extends AbstractStringDataProviderArgumentProvider<DataProvider> {
+ 
+     @Override
+-    public void accept(DataProvider sourceAnnotation) {
++    public void accept(DataProvider sourceAnnotation) { com.tngtech.junit.jmhbench.MutationSwitch.tick(1);
+         this.sourceAnnotation = sourceAnnotation;
+     }
+ 
+@@ -35,7 +35,7 @@ class StringDataProviderArgumentProvider extends AbstractStringDataProviderArgum
+     }
+ 
+     @Override
+-    protected ConverterContext getConverterContext(DataProvider dataProvider) {
++    protected ConverterContext getConverterContext(DataProvider dataProvider) { com.tngtech.junit.jmhbench.MutationSwitch.tick(2);
+         return new ConverterContext(ReflectionSupport.newInstance(dataProvider.objectArrayConverter()),
+                 ReflectionSupport.newInstance(dataProvider.singleArgConverter()),
+                 ReflectionSupport.newInstance(dataProvider.stringConverter()), dataProvider.splitBy(),
+diff --git a/com/tngtech/junit/dataprovider/UseDataProviderArgumentProvider.java b/com/tngtech/junit/dataprovider/UseDataProviderArgumentProvider.java
+index a859bfa..fc6876a 100644
+--- a/com/tngtech/junit/dataprovider/UseDataProviderArgumentProvider.java
++++ b/com/tngtech/junit/dataprovider/UseDataProviderArgumentProvider.java
+@@ -35,13 +35,13 @@ class UseDataProviderArgumentProvider
+     }
+ 
+     @Override
+-    public void accept(UseDataProvider sourceAnnotation) {
++    public void accept(UseDataProvider sourceAnnotation) { com.tngtech.junit.jmhbench.MutationSwitch.tick(22);
+         this.sourceAnnotation = sourceAnnotation;
+     }
+ 
+     @Override
+     protected DataProviderResolverContext getDataProviderResolverContext(ExtensionContext extensionContext,
+-            UseDataProvider testAnnotation) {
++            UseDataProvider testAnnotation) { com.tngtech.junit.jmhbench.MutationSwitch.tick(23);
+         return new DataProviderResolverContext(extensionContext.getRequiredTestMethod(),
+                 asList(sourceAnnotation.resolver()), sourceAnnotation.resolveStrategy(),
+                 generateLocations(extensionContext.getRequiredTestClass(), sourceAnnotation.location()),
+@@ -49,7 +49,7 @@ class UseDataProviderArgumentProvider
+     }
+ 
+     @Override
+-    protected ConverterContext getConverterContext(DataProvider dataProvider) {
++    protected ConverterContext getConverterContext(DataProvider dataProvider) { com.tngtech.junit.jmhbench.MutationSwitch.tick(24);
+         return new ConverterContext(ReflectionSupport.newInstance(dataProvider.objectArrayConverter()),
+                 ReflectionSupport.newInstance(dataProvider.singleArgConverter()),
+                 ReflectionSupport.newInstance(dataProvider.stringConverter()), dataProvider.splitBy(),
+diff --git a/com/tngtech/junit/dataprovider/UseDataProviderExtension.java b/com/tngtech/junit/dataprovider/UseDataProviderExtension.java
+index 6c165b8..8965225 100644
+--- a/com/tngtech/junit/dataprovider/UseDataProviderExtension.java
++++ b/com/tngtech/junit/dataprovider/UseDataProviderExtension.java
+@@ -35,7 +35,7 @@ public class UseDataProviderExtension extends UseDataProviderInvocationContextPr
+ 
+     @Override
+     protected DataProviderResolverContext getDataProviderResolverContext(ExtensionContext extensionContext,
+-            UseDataProvider testAnnotation) {
++            UseDataProvider testAnnotation) { com.tngtech.junit.jmhbench.MutationSwitch.tick(25);
+         return new DataProviderResolverContext(extensionContext.getRequiredTestMethod(),
+                 asList(testAnnotation.resolver()), testAnnotation.resolveStrategy(),
+                 generateLocations(extensionContext.getRequiredTestClass(), testAnnotation.location()),
+@@ -43,7 +43,7 @@ public class UseDataProviderExtension extends UseDataProviderInvocationContextPr
+     }
+ 
+     @Override
+-    protected ConverterContext getConverterContext(DataProvider dataProvider) {
++    protected ConverterContext getConverterContext(DataProvider dataProvider) { com.tngtech.junit.jmhbench.MutationSwitch.tick(26);
+         return new ConverterContext(ReflectionSupport.newInstance(dataProvider.objectArrayConverter()),
+                 ReflectionSupport.newInstance(dataProvider.singleArgConverter()),
+                 ReflectionSupport.newInstance(dataProvider.stringConverter()), dataProvider.splitBy(),
+@@ -51,7 +51,7 @@ public class UseDataProviderExtension extends UseDataProviderInvocationContextPr
+     }
+ 
+     @Override
+-    protected boolean cacheDataProviderResult(DataProvider dataProviderAnnotation) {
++    protected boolean cacheDataProviderResult(DataProvider dataProviderAnnotation) { com.tngtech.junit.jmhbench.MutationSwitch.tick(27);
+         return dataProviderAnnotation.cache();
+     }
+ 
+diff --git a/com/tngtech/junit/dataprovider/convert/ConverterContext.java b/com/tngtech/junit/dataprovider/convert/ConverterContext.java
+index 9f17b82..bfe4ab1 100644
+--- a/com/tngtech/junit/dataprovider/convert/ConverterContext.java
++++ b/com/tngtech/junit/dataprovider/convert/ConverterContext.java
+@@ -102,7 +102,7 @@ public class ConverterContext {
+     /**
+      * @return the delimiting regular expression by which the regex-separated {@link String}s are split.
+      */
+-    public String getSplitBy() {
++    public String getSplitBy() { com.tngtech.junit.jmhbench.MutationSwitch.tick(28);
+         return splitBy;
+     }
+ 
+@@ -110,7 +110,7 @@ public class ConverterContext {
+      * @return if every {@value #NULL}-{@link String} in dataprovider's {@link String} {@code data} should be converted
+      *         to {@code null} (= {@code true}) or used as {@link String} (= {@code false}).
+      */
+-    public boolean isConvertNulls() {
++    public boolean isConvertNulls() { com.tngtech.junit.jmhbench.MutationSwitch.tick(29);
+         return convertNulls;
+     }
+ 
+@@ -118,7 +118,7 @@ public class ConverterContext {
+      * @return {@code true} if leading and trailing whitespace should be omitted in split {@link String}s, {@code false}
+      *         otherwise.
+      */
+-    public boolean isTrimValues() {
++    public boolean isTrimValues() { com.tngtech.junit.jmhbench.MutationSwitch.tick(30);
+         return trimValues;
+     }
+ 
+diff --git a/com/tngtech/junit/dataprovider/convert/DataConverter.java b/com/tngtech/junit/dataprovider/convert/DataConverter.java
+index 88eb002..48669c1 100644
+--- a/com/tngtech/junit/dataprovider/convert/DataConverter.java
++++ b/com/tngtech/junit/dataprovider/convert/DataConverter.java
+@@ -53,7 +53,7 @@ public class DataConverter {
+      * @throws IllegalStateException if and only if given {@code context} is {@code null} but data is {@code String[]}
+      * @throws ClassCastException if and only if {@code data} is not a compatible type
+      */
+-    public List<Object[]> convert(Object data, boolean isVarargs, Class<?>[] parameterTypes, ConverterContext context) {
++    public List<Object[]> convert(Object data, boolean isVarargs, Class<?>[] parameterTypes, ConverterContext context) { com.tngtech.junit.jmhbench.MutationSwitch.tick(31);
+         checkNotNull(parameterTypes, "'parameterTypes' must not be null");
+         checkArgument(parameterTypes.length != 0, "'parameterTypes' must not be empty");
+ 
+diff --git a/com/tngtech/junit/dataprovider/convert/ObjectArrayConverter.java b/com/tngtech/junit/dataprovider/convert/ObjectArrayConverter.java
+index aeefc56..c269c9f 100644
+--- a/com/tngtech/junit/dataprovider/convert/ObjectArrayConverter.java
++++ b/com/tngtech/junit/dataprovider/convert/ObjectArrayConverter.java
+@@ -29,7 +29,7 @@ public class ObjectArrayConverter extends AbstractObjectConverter<Object[]> {
+      * @throws IllegalArgumentException if and only if the data does not fit the {@code parameterTypes}
+      */
+     @Override
+-    public Object[] convert(Object[] data, boolean isVarargs, Class<?>[] parameterTypes) {
++    public Object[] convert(Object[] data, boolean isVarargs, Class<?>[] parameterTypes) { com.tngtech.junit.jmhbench.MutationSwitch.tick(3);
+         Object[] result;
+         if (isVarargs) {
+             result = new Object[parameterTypes.length];
+diff --git a/com/tngtech/junit/dataprovider/convert/SingleArgConverter.java b/com/tngtech/junit/dataprovider/convert/SingleArgConverter.java
+index 312bfcf..659a2f1 100644
+--- a/com/tngtech/junit/dataprovider/convert/SingleArgConverter.java
++++ b/com/tngtech/junit/dataprovider/convert/SingleArgConverter.java
+@@ -30,7 +30,7 @@ public class SingleArgConverter extends AbstractObjectConverter<Object> {
+      *             there is a type mismatch
+      */
+     @Override
+-    public Object[] convert(Object data, boolean isVarargs, Class<?>[] parameterTypes) {
++    public Object[] convert(Object data, boolean isVarargs, Class<?>[] parameterTypes) { com.tngtech.junit.jmhbench.MutationSwitch.tick(32);
+         checkArgument(parameterTypes.length >= 1,
+                 "Object[] dataprovider must at least have a single argument for the dataprovider but found no parameters");
+         checkArgument(!isVarargs, "Object[] dataprovider does not support varargs");
+diff --git a/com/tngtech/junit/dataprovider/convert/StringConverter.java b/com/tngtech/junit/dataprovider/convert/StringConverter.java
+index 855e032..ad1dd0c 100644
+--- a/com/tngtech/junit/dataprovider/convert/StringConverter.java
++++ b/com/tngtech/junit/dataprovider/convert/StringConverter.java
+@@ -36,7 +36,7 @@ public class StringConverter {
+      * @throws IllegalArgumentException if and only if count of split data and parameter types does not match or
+      *             argument cannot be converted to required type
+      */
+-    public Object[] convert(String data, boolean isVarargs, Class<?>[] parameterTypes, ConverterContext context, int rowIdx) {
++    public Object[] convert(String data, boolean isVarargs, Class<?>[] parameterTypes, ConverterContext context, int rowIdx) { com.tngtech.junit.jmhbench.MutationSwitch.tick(4);
+         if (data == null) {
+             return new Object[] { null };
+         }
+@@ -57,7 +57,7 @@ public class StringConverter {
+         return convert(splitData, isVarargs, parameterTypes, context);
+     }
+ 
+-    protected String[] splitBy(String data, String regex) {
++    protected String[] splitBy(String data, String regex) { com.tngtech.junit.jmhbench.MutationSwitch.tick(5);
+         // add trailing null terminator that split for "regex" ending data works properly
+         String[] splitData = (data + "\0").split(regex);
+ 
+@@ -68,7 +68,7 @@ public class StringConverter {
+         return splitData;
+     }
+ 
+-    protected void checkArgumentsAndParameterCount(int argCount, int paramCount, boolean isVarargs, int rowIdx) {
++    protected void checkArgumentsAndParameterCount(int argCount, int paramCount, boolean isVarargs, int rowIdx) { com.tngtech.junit.jmhbench.MutationSwitch.tick(6);
+         if ((isVarargs && paramCount - 1 > argCount) || (!isVarargs && paramCount < argCount)) {
+             throw new IllegalArgumentException(
+                     String.format("%sest method has %d parameters but got %s%d arguments in row %d",
+diff --git a/com/tngtech/junit/dataprovider/format/DataProviderPlaceholderFormatter.java b/com/tngtech/junit/dataprovider/format/DataProviderPlaceholderFormatter.java
+index 1a2bde4..80f6e28 100644
+--- a/com/tngtech/junit/dataprovider/format/DataProviderPlaceholderFormatter.java
++++ b/com/tngtech/junit/dataprovider/format/DataProviderPlaceholderFormatter.java
+@@ -32,7 +32,7 @@ public class DataProviderPlaceholderFormatter implements DataProviderTestNameFor
+     }
+ 
+     @Override
+-    public String format(Method testMethod, int invocationIndex, List<Object> arguments) {
++    public String format(Method testMethod, int invocationIndex, List<Object> arguments) { com.tngtech.junit.jmhbench.MutationSwitch.tick(33);
+         ReplacementData data = ReplacementData.of(testMethod, invocationIndex, arguments);
+ 
+         String result = format;
+diff --git a/com/tngtech/junit/dataprovider/placeholder/ArgumentPlaceholder.java b/com/tngtech/junit/dataprovider/placeholder/ArgumentPlaceholder.java
+index d063985..09130b7 100644
+--- a/com/tngtech/junit/dataprovider/placeholder/ArgumentPlaceholder.java
++++ b/com/tngtech/junit/dataprovider/placeholder/ArgumentPlaceholder.java
+@@ -30,7 +30,7 @@ public class ArgumentPlaceholder extends AbstractArgumentPlaceholder {
+     }
+ 
+     @Override
+-    protected String getReplacementFor(String placeholder, ReplacementData data) {
++    protected String getReplacementFor(String placeholder, ReplacementData data) { com.tngtech.junit.jmhbench.MutationSwitch.tick(34);
+         FromAndTo fromAndTo = calcFromAndToForSubscriptAndArguments(placeholder, 3, data.getArguments().size());
+         return formatAll(data.getArguments().subList(fromAndTo.from, fromAndTo.to));
+     }
+@@ -42,7 +42,7 @@ public class ArgumentPlaceholder extends AbstractArgumentPlaceholder {
+      * @param arguments to be formatted
+      * @return the {@link String} representation of the given {@link List}{@code <Object>}
+      */
+-    protected String formatAll(List<Object> arguments) {
++    protected String formatAll(List<Object> arguments) { com.tngtech.junit.jmhbench.MutationSwitch.tick(35);
+         StringBuilder stringBuilder = new StringBuilder();
+         for (int i = 0; i < arguments.size(); i++) {
+             stringBuilder.append(format(arguments.get(i)));
+diff --git a/com/tngtech/junit/dataprovider/placeholder/CanonicalClassNamePlaceholder.java b/com/tngtech/junit/dataprovider/placeholder/CanonicalClassNamePlaceholder.java
+index 01d8c4d..323c6f7 100644
+--- a/com/tngtech/junit/dataprovider/placeholder/CanonicalClassNamePlaceholder.java
++++ b/com/tngtech/junit/dataprovider/placeholder/CanonicalClassNamePlaceholder.java
+@@ -21,7 +21,7 @@ public class CanonicalClassNamePlaceholder extends BasePlaceholder {
+     }
+ 
+     @Override
+-    protected String getReplacementFor(String placeholder, ReplacementData data) {
++    protected String getReplacementFor(String placeholder, ReplacementData data) { com.tngtech.junit.jmhbench.MutationSwitch.tick(36);
+         return data.getTestMethod().getDeclaringClass().getCanonicalName();
+     }
+ }
+diff --git a/com/tngtech/junit/dataprovider/placeholder/CompleteMethodSignaturePlaceholder.java b/com/tngtech/junit/dataprovider/placeholder/CompleteMethodSignaturePlaceholder.java
+index bdfe88b..d36ed2f 100644
+--- a/com/tngtech/junit/dataprovider/placeholder/CompleteMethodSignaturePlaceholder.java
++++ b/com/tngtech/junit/dataprovider/placeholder/CompleteMethodSignaturePlaceholder.java
+@@ -21,7 +21,7 @@ public class CompleteMethodSignaturePlaceholder extends BasePlaceholder {
+     }
+ 
+     @Override
+-    protected String getReplacementFor(String placeholder, ReplacementData data) {
++    protected String getReplacementFor(String placeholder, ReplacementData data) { com.tngtech.junit.jmhbench.MutationSwitch.tick(37);
+         return data.getTestMethod().toString();
+     }
+ }
+diff --git a/com/tngtech/junit/dataprovider/placeholder/IndexPlaceholder.java b/com/tngtech/junit/dataprovider/placeholder/IndexPlaceholder.java
+index 713f9a0..e25f8e9 100644
+--- a/com/tngtech/junit/dataprovider/placeholder/IndexPlaceholder.java
++++ b/com/tngtech/junit/dataprovider/placeholder/IndexPlaceholder.java
+@@ -21,7 +21,7 @@ public class IndexPlaceholder extends BasePlaceholder {
+     }
+ 
+     @Override
+-    protected String getReplacementFor(String placeholder, ReplacementData data) {
++    protected String getReplacementFor(String placeholder, ReplacementData data) { com.tngtech.junit.jmhbench.MutationSwitch.tick(38);
+         return String.valueOf(data.getTestIndex());
+     }
+ }
+diff --git a/com/tngtech/junit/dataprovider/placeholder/NamedArgumentPlaceholder.java b/com/tngtech/junit/dataprovider/placeholder/NamedArgumentPlaceholder.java
+index 5ee0277..0ebb07a 100644
+--- a/com/tngtech/junit/dataprovider/placeholder/NamedArgumentPlaceholder.java
++++ b/com/tngtech/junit/dataprovider/placeholder/NamedArgumentPlaceholder.java
+@@ -37,7 +37,7 @@ public class NamedArgumentPlaceholder extends AbstractArgumentPlaceholder {
+     }
+ 
+     @Override
+-    protected String getReplacementFor(String placeholder, ReplacementData data) {
++    protected String getReplacementFor(String placeholder, ReplacementData data) { com.tngtech.junit.jmhbench.MutationSwitch.tick(39);
+         FromAndTo fromAndTo = calcFromAndToForSubscriptAndArguments(placeholder, 4, data.getArguments().size());
+         return formatAll(getSubArrayOfMethodParameters(data.getTestMethod(), fromAndTo),
+                 data.getArguments().subList(fromAndTo.from, fromAndTo.to));
+@@ -51,7 +51,7 @@ public class NamedArgumentPlaceholder extends AbstractArgumentPlaceholder {
+      * @param arguments to be formatted
+      * @return the formatted {@link String} of the given {@link Parameter}{@code []} and {@link List}{@code <Object>}
+      */
+-    protected String formatAll(Parameter[] parameters, List<Object> arguments) {
++    protected String formatAll(Parameter[] parameters, List<Object> arguments) { com.tngtech.junit.jmhbench.MutationSwitch.tick(40);
+         StringBuilder stringBuilder = new StringBuilder();
+         for (int idx = 0; idx < arguments.size(); idx++) {
+             String parameterName = (parameters.length > idx) ? parameters[idx].getName() : "?";
+diff --git a/com/tngtech/junit/dataprovider/placeholder/ReplacementData.java b/com/tngtech/junit/dataprovider/placeholder/ReplacementData.java
+index fe831d7..d019666 100644
+--- a/com/tngtech/junit/dataprovider/placeholder/ReplacementData.java
++++ b/com/tngtech/junit/dataprovider/placeholder/ReplacementData.java
+@@ -36,7 +36,7 @@ public class ReplacementData {
+      * @return {@link ReplacementData} containing the given values
+      * @throws NullPointerException if and only if a given value is {@code null}
+      */
+-    public static ReplacementData of(Method testMethod, int testIndex, List<Object> arguments) {
++    public static ReplacementData of(Method testMethod, int testIndex, List<Object> arguments) { com.tngtech.junit.jmhbench.MutationSwitch.tick(41);
+         return new ReplacementData(testMethod, testIndex, arguments);
+     }
+ 
+@@ -50,11 +50,11 @@ public class ReplacementData {
+         this.arguments = new ArrayList<Object>(checkNotNull(arguments, "'arguments' must not be null"));
+     }
+ 
+-    public Method getTestMethod() {
++    public Method getTestMethod() { com.tngtech.junit.jmhbench.MutationSwitch.tick(42);
+         return testMethod;
+     }
+ 
+-    public int getTestIndex() {
++    public int getTestIndex() { com.tngtech.junit.jmhbench.MutationSwitch.tick(43);
+         return testIndex;
+     }
+ 
+diff --git a/com/tngtech/junit/dataprovider/placeholder/SimpleClassNamePlaceholder.java b/com/tngtech/junit/dataprovider/placeholder/SimpleClassNamePlaceholder.java
+index fe6acd6..69a4f3e 100644
+--- a/com/tngtech/junit/dataprovider/placeholder/SimpleClassNamePlaceholder.java
++++ b/com/tngtech/junit/dataprovider/placeholder/SimpleClassNamePlaceholder.java
+@@ -21,7 +21,7 @@ public class SimpleClassNamePlaceholder extends BasePlaceholder {
+     }
+ 
+     @Override
+-    protected String getReplacementFor(String placeholder, ReplacementData data) {
++    protected String getReplacementFor(String placeholder, ReplacementData data) { com.tngtech.junit.jmhbench.MutationSwitch.tick(44);
+         return data.getTestMethod().getDeclaringClass().getSimpleName();
+     }
+ }
+diff --git a/com/tngtech/junit/dataprovider/placeholder/SimpleMethodNamePlaceholder.java b/com/tngtech/junit/dataprovider/placeholder/SimpleMethodNamePlaceholder.java
+index c2ed366..05f8d87 100644
+--- a/com/tngtech/junit/dataprovider/placeholder/SimpleMethodNamePlaceholder.java
++++ b/com/tngtech/junit/dataprovider/placeholder/SimpleMethodNamePlaceholder.java
+@@ -21,7 +21,7 @@ public class SimpleMethodNamePlaceholder extends BasePlaceholder {
+     }
+ 
+     @Override
+-    protected String getReplacementFor(String placeholder, ReplacementData data) {
++    protected String getReplacementFor(String placeholder, ReplacementData data) { com.tngtech.junit.jmhbench.MutationSwitch.tick(45);
+         return data.getTestMethod().getName();
+     }
+ }
+diff --git a/com/tngtech/junit/dataprovider/resolver/DataProviderMethodResolverHelper.java b/com/tngtech/junit/dataprovider/resolver/DataProviderMethodResolverHelper.java
+index 4d9e591..377d3bf 100644
+--- a/com/tngtech/junit/dataprovider/resolver/DataProviderMethodResolverHelper.java
++++ b/com/tngtech/junit/dataprovider/resolver/DataProviderMethodResolverHelper.java
+@@ -36,7 +36,7 @@ public class DataProviderMethodResolverHelper {
+      * @return the found dataprovider methods or an empty list
+      * @throws NullPointerException if and only if given context is {@code null}
+      */
+-    public static List<Method> findDataProviderMethods(DataProviderResolverContext context) {
++    public static List<Method> findDataProviderMethods(DataProviderResolverContext context) { com.tngtech.junit.jmhbench.MutationSwitch.tick(46);
+         checkNotNull(context, "'context' must not be null");
+ 
+         List<Method> result = new ArrayList<Method>();
+diff --git a/com/tngtech/junit/dataprovider/resolver/DataProviderResolverContext.java b/com/tngtech/junit/dataprovider/resolver/DataProviderResolverContext.java
+index e02d678..0ef659e 100644
+--- a/com/tngtech/junit/dataprovider/resolver/DataProviderResolverContext.java
++++ b/com/tngtech/junit/dataprovider/resolver/DataProviderResolverContext.java
+@@ -46,7 +46,7 @@ public class DataProviderResolverContext {
+      * @return {@link List} of locations taken from given {@code explicitLocations} or {@code testClass} otherwise
+      * @throws NullPointerException if {@code testClass} is {@code null}
+      */
+-    public static List<Class<?>> generateLocations(Class<?> testClass, Class<?>... explicitLocations) {
++    public static List<Class<?>> generateLocations(Class<?> testClass, Class<?>... explicitLocations) { com.tngtech.junit.jmhbench.MutationSwitch.tick(47);
+         checkNotNull(testClass, "'testClass' must not be null");
+         if (explicitLocations == null || explicitLocations.length == 0) {
+             @SuppressWarnings({ "rawtypes", "unchecked" })
+@@ -99,14 +99,14 @@ public class DataProviderResolverContext {
+     /**
+      * @return {@code true} if and only if dataprovider name should be derived by convention
+      */
+-    public boolean useDataProviderNameConvention() {
++    public boolean useDataProviderNameConvention() { com.tngtech.junit.jmhbench.MutationSwitch.tick(48);
+         return METHOD_NAME_TO_USE_CONVENTION.equals(dataProviderName);
+     }
+ 
+     /**
+      * @return test method for which a dataprovider should be resolved
+      */
+-    public Method getTestMethod() {
++    public Method getTestMethod() { com.tngtech.junit.jmhbench.MutationSwitch.tick(49);
+         return testMethod;
+     }
+ 
+diff --git a/com/tngtech/junit/dataprovider/resolver/DefaultDataProviderMethodResolver.java b/com/tngtech/junit/dataprovider/resolver/DefaultDataProviderMethodResolver.java
+index 1b1eab1..522fc02 100644
+--- a/com/tngtech/junit/dataprovider/resolver/DefaultDataProviderMethodResolver.java
++++ b/com/tngtech/junit/dataprovider/resolver/DefaultDataProviderMethodResolver.java
+@@ -70,7 +70,7 @@ public class DefaultDataProviderMethodResolver implements DataProviderMethodReso
+      * @see DefaultDataProviderMethodResolver
+      */
+     @Override
+-    public List<Method> resolve(DataProviderResolverContext context) {
++    public List<Method> resolve(DataProviderResolverContext context) { com.tngtech.junit.jmhbench.MutationSwitch.tick(50);
+         checkNotNull(context, "'context' must not be null");
+ 
+         List<Method> dataProviderMethods = findAnnotatedMethods(context.getLocations(),
+diff --git a/com/tngtech/junit/jmhbench/MutationSwitch.java b/com/tngtech/junit/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..6a1166b
+--- /dev/null
++++ b/com/tngtech/junit/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.tngtech.junit.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

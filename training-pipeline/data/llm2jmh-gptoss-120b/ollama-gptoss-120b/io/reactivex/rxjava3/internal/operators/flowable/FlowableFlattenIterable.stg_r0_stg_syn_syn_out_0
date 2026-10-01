@@ -1,0 +1,112 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableFlattenIterable}.
+ *
+ * The benchmark measures the throughput (operations per second) of the flattenIterable
+ * operator under different prefetch sizes, source sizes and inner iterable sizes.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize the benchmark to explore a realistic range of configurations.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Provide warm‑up, measurement, and fork settings that are commonly recommended.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class FlowableFlattenIterableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the upstream Flowable.
+         */
+        @Param({ "1000", "10000" })
+        public int sourceSize;
+
+        /**
+         * Size of the inner Iterable produced for each upstream item.
+         */
+        @Param({ "1", "5", "10" })
+        public int innerIterableSize;
+
+        /**
+         * Prefetch size used by the flattenIterable operator.
+         */
+        @Param({ "32", "128", "1024" })
+        public int prefetch;
+
+        /**
+         * The Flowable under test.
+         */
+        Flowable<Integer> flowable;
+
+        /**
+         * Mapper that turns an upstream Integer into an Iterable<Integer>.
+         */
+        Function<Integer, Iterable<Integer>> mapper;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a mapper that returns a List of {@code innerIterableSize} integers.
+            mapper = upstream -> {
+                List<Integer> list = new ArrayList<>(innerIterableSize);
+                for (int i = 0; i < innerIterableSize; i++) {
+                    list.add(upstream);
+                }
+                return list;
+            };
+            // Build the Flowable: a range source followed by flattenIterable.
+            flowable = Flowable.range(1, sourceSize).flattenIterable(mapper, prefetch);
+        }
+    }
+
+    @Benchmark
+    public void flattenIterableThroughput(BenchmarkState state, Blackhole bh) {
+        // Subscribe and consume all items, using Blackhole to avoid dead‑code elimination.
+        state.flowable.blockingSubscribe(bh::consume);
+    }
+}

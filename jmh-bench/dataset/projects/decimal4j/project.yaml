@@ -1,0 +1,102 @@
+name: decimal4j
+display_name: decimal4j
+version: 1.0.3
+
+# Where the pristine, vendored subject-under-test lives (relative to this dir).
+# Sources are the published `org.decimal4j:decimal4j:1.0.3` sources artefact.
+# decimal4j generates its 19 per-scale specialisations (Decimal0f ... Decimal18f
+# and their scale metrics) at build time; the published artefact ships the
+# expanded result, so the vendored tree needs no code generation.
+source_dir: src/main/java
+
+provenance:
+  project: decimal4j
+  url: https://github.com/tools4j/decimal4j/tree/1.0.3
+  tag: "1.0.3"
+  released: 2016-08-24
+
+mutations_patch: mutations.patch
+mutants_registry: mutants.yaml
+api_surface: api_surface.md
+
+harness_input:
+  mode: per_class
+  # The public API (`api`), the immutable/mutable/generic Decimal families,
+  # the arithmetic back-ends, scale metrics, factories, rounding/overflow
+  # policies and the double-rounding utility.
+  include_packages:
+    - api
+    - arithmetic
+    - base
+    - exact
+    - factory
+    - generic
+    - immutable
+    - mutable
+    - scale
+    - truncate
+    - util
+  name_filter: "(Decimal|Arithmetic|Scale|Factory|Rounding|Round|Truncat|Checked|Unchecked|Overflow|Metrics|Rounder|Multipliable)"
+
+# decimal4j has no runtime dependencies; the SUT compiles against the JDK alone.
+dependencies: []
+
+mutation:
+  switch_class: org.decimal4j.jmhbench.MutationSwitch
+  arm_property: jmhbench.mutant
+  record_property: jmhbench.record
+  record_file_property: jmhbench.record.file
+  count: 50
+  # Scalar arithmetic kernels on top of the generator's shared hot-name list.
+  # A benchmark loop calls these millions of times per op, so mutants go on the
+  # coarser conversion / parsing / formatting / factory entry points instead.
+  skip_methods:
+    - addLong
+    - addUnscaled
+    - subtractLong
+    - subtractUnscaled
+    - multiplyByLong
+    - multiplyByUnscaled
+    - multiplyByPowerOf10
+    - divideByLong
+    - divideByUnscaled
+    - divideByPowerOf10
+    - divideToLongValue
+    - divideToIntegralValue
+    - invert
+    - square
+    - sqrt
+    - pow
+    - avg
+    - abs
+    - negate
+    - shiftLeft
+    - shiftRight
+    - round
+    - unscaledValue
+    - getScaleMetrics
+    - getRoundingMode
+    - getOverflowMode
+    - getTruncationPolicy
+    - one
+    - two
+    - three
+    - four
+    - five
+    - ten
+    - minusOne
+    - half
+    - tenth
+    - hundredth
+    - thousandth
+    - millionth
+    - ulp
+    # Scale-factor kernels: one call per elementary operation, so they fire once
+    # per element of whatever a benchmark loops over.
+    - multiplyByScaleFactor
+    - multiplyByScaleFactorExact
+    - mulloByScaleFactor
+    - mulhiByScaleFactor
+    - divideByScaleFactor
+    - divideUnscaledByScaleFactor
+    - moduloByScaleFactor

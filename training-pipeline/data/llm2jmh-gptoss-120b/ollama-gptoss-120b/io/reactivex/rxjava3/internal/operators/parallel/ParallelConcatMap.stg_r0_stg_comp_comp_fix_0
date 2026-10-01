@@ -1,0 +1,41 @@
+```
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import org.reactivestreams.Publisher;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.parallel.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class ParallelConcatMapBenchmark {
+
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    @Param({ "32", "256", "1024" })
+    public int prefetch;
+
+    private ParallelFlowable<Integer> source;
+
+    private Function<Integer, Publisher<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Flowable.range(1, 1_000_000).parallel(parallelism);
+        mapper = v -> Flowable.just(v);
+    }
+
+    @Benchmark
+    public void concatMapThroughput(Blackhole bh) {
+        source
+            .concatMap(mapper, prefetch)
+            .sequential()
+            .blockingSubscribe(bh::consume);
+    }
+}
+```

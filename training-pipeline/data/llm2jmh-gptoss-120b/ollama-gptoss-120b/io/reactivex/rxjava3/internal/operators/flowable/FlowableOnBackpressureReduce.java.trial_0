@@ -1,0 +1,111 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableOnBackpressureReduce;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableOnBackpressureReduce}.
+ *
+ * The benchmark measures the throughput (items processed per second) of the
+ * backpressure-reduce operator when applied to a fast upstream source.
+ *
+ * Best‑practice notes:
+ * • {@link Blackhole} is used to consume the terminal values and prevent dead‑code elimination.
+ * • The source {@link Flowable} is created in {@link Setup} to avoid measuring creation overhead.
+ * • Parameters allow varying the number of emitted items and the reducer function.
+ * • The benchmark runs with warm‑up iterations, measurement iterations, and multiple forks
+ *   to obtain stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, warmups = 1)
+public class FlowableOnBackpressureReduceBenchmark {
+
+    /**
+     * Number of items emitted by the upstream source.
+     */
+    @Param({"1_000", "10_000", "100_000"})
+    public int itemCount;
+
+    /**
+     * Choose a reducer implementation.
+     * "add" – integer addition,
+     * "max" – maximum value,
+     * "concat" – string concatenation (to exercise object allocation).
+     */
+    @Param({"add", "max", "concat"})
+    public String reducerType;
+
+    private Flowable<Integer> intSource;
+    private Flowable<String> stringSource;
+    private BiFunction<Integer, Integer, Integer> intReducer;
+    private BiFunction<String, String, String> stringReducer;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple fast source that emits a range of integers.
+        intSource = Flowable.range(1, itemCount);
+
+        // Reducer implementations for integer streams.
+        intReducer = (a, b) -> a + b; // addition
+        BiFunction<Integer, Integer, Integer> maxReducer = Math::max;
+
+        // Choose reducer based on parameter.
+        if ("add".equals(reducerType)) {
+            intReducer = (a, b) -> a + b;
+        } else if ("max".equals(reducerType)) {
+            intReducer = Math::max;
+        }
+
+        // String source and reducer for the "concat" case.
+        if ("concat".equals(reducerType)) {
+            // Create a source of short strings to keep memory usage reasonable.
+            stringSource = Flowable.range(1, itemCount)
+                    .map(i -> "s" + i);
+            stringReducer = (a, b) -> a + b;
+        }
+    }
+
+    /**
+     * Benchmark for integer streams.
+     */
+    @Benchmark
+    public void reduceInt(Blackhole bh) {
+        // Apply the operator under test.
+        Flowable<Integer> reduced = new FlowableOnBackpressureReduce<>(
+                intSource,
+                intReducer
+        );
+
+        // Subscribe and consume the final reduced value.
+        reduced.blockingSubscribe(bh::consume);
+    }
+
+    /**
+     * Benchmark for string concatenation (object allocation heavy).
+     */
+    @Benchmark
+    public void reduceString(Blackhole bh) {
+        if (!"concat".equals(reducerType)) {
+            // Skip this benchmark when not applicable.
+            return;
+        }
+
+        Flowable<String> reduced = new FlowableOnBackpressureReduce<>(
+                stringSource,
+                stringReducer
+        );
+
+        reduced.blockingSubscribe(bh::consume);
+    }
+}
+```

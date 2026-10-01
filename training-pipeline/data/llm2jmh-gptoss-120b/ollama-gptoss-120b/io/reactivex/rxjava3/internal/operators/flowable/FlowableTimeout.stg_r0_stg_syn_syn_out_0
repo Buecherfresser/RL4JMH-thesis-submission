@@ -1,0 +1,117 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link FlowableTimeout}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * {@code timeout} operator under three typical scenarios:
+ *
+ * <ul>
+ *   <li>{@code noTimeout} – the timeout indicators never fire, so the operator
+ *       behaves like a pass‑through.</li>
+ *   <li>{@code timeout} – the timeout indicators fire immediately, causing the
+ *       upstream to be cancelled with a {@link java.util.concurrent.TimeoutException}.</li>
+ *   <li>{@code fallback} – the timeout indicators fire immediately and the
+ *       operator switches to a fallback {@link Flowable}.</li>
+ * </ul>
+ *
+ * The source {@link Flowable} emits a fixed number of integers (1 000) to keep
+ * the benchmark duration reasonable while still exercising the operator's
+ * internal state machines.
+ *
+ * Best practices applied:
+ * <ul>
+ *   <li>All mutable state is kept in a {@link State} object with {@code Scope.Thread}
+ *       to avoid cross‑thread interference.</li>
+ *   <li>Parameters are expressed with {@link Param} to let JMH generate separate
+ *       benchmark runs for each scenario.</li>
+ *   <li>Blackhole is used to consume the emitted items, preventing dead‑code elimination.</li>
+ *   <li>Throughput mode (operations per second) is the most relevant metric for
+ *       a streaming operator.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableTimeoutBenchmark {
+
+    @Param({ "noTimeout", "timeout", "fallback" })
+    public String scenario;
+
+    private Flowable<Integer> flowable;
+
+    /**
+     * Sets up the {@link Flowable} according to the selected scenario.
+     */
+    @Setup
+    public void setup() {
+        Flowable<Integer> source = Flowable.range(1, 1_000);
+        switch(scenario) {
+            case "noTimeout":
+                // No timeout ever fires – the operator should act as a simple pass‑through.
+                flowable = source.timeout(Flowable.never(), item -> Flowable.never());
+                break;
+            case "timeout":
+                // Timeout fires immediately for each item, causing an error.
+                flowable = source.timeout(Flowable.timer(1, TimeUnit.NANOSECONDS), item -> Flowable.timer(1, TimeUnit.NANOSECONDS));
+                break;
+            case "fallback":
+                // Timeout fires immediately and switches to a fallback Flowable.
+                Flowable<Integer> fallback = Flowable.range(1_001, 100);
+                flowable = source.timeout(Flowable.timer(1, TimeUnit.NANOSECONDS), item -> Flowable.timer(1, TimeUnit.NANOSECONDS), fallback);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown scenario: " + scenario);
+        }
+    }
+
+    /**
+     * Executes the benchmark. The subscription is performed for each iteration,
+     * and emitted items are consumed by the {@link Blackhole} to avoid dead‑code
+     * elimination.
+     *
+     * @param bh Blackhole to consume items and terminal signals.
+     */
+    @Benchmark
+    public void runTimeoutOperator(Blackhole bh) {
+        flowable.subscribe(// onNext
+        bh::consume, // onError
+        bh::consume, // onComplete
+        bh::consume);
+    }
+}

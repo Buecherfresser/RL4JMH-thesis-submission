@@ -1,0 +1,86 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link Flowable#throttleLatest(long, TimeUnit, Scheduler, boolean, io.reactivex.rxjava3.functions.Consumer)}.
+ * Measures the throughput (items per second) that can be processed when the operator is applied
+ * to a fast emitting source.
+ *
+ * The benchmark follows best practices:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Initialize the source and the subscription in @Setup(Level.Iteration) to include any lazy
+ *   initialization cost in the measurement only once per iteration.
+ * - Use Blackhole to consume emitted items and prevent dead-code elimination.
+ * - Run in Mode.Throughput with a time unit of seconds.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableThrottleLatestBenchmark {
+
+    /** Timeout for the throttleLatest operator (1 millisecond). */
+    @Param({"1"})
+    public long timeout;
+
+    /** Whether the last item should be emitted after completion. */
+    @Param({"true", "false"})
+    public boolean emitLast;
+
+    /** Scheduler used by the operator (computation scheduler). */
+    private Scheduler scheduler;
+
+    /** Source that emits items as fast as possible (1 µs interval). */
+    private Flowable<Long> source;
+
+    /** Consumer that drops items; a no‑op to avoid extra overhead. */
+    private io.reactivex.rxjava3.functions.Consumer<Object> onDropped;
+
+    /** Subscription used during the benchmark; disposed after each iteration. */
+    private Disposable subscription;
+
+    @Setup(Level.Iteration)
+    public void setUp() {
+        scheduler = Schedulers.computation();
+
+        // Fast source: emits a long value every microsecond.
+        source = Flowable.interval(0, 1, TimeUnit.MICROSECONDS, scheduler)
+                .onBackpressureDrop(); // ensure source never blocks
+
+        // No‑op onDropped consumer.
+        onDropped = v -> { /* intentionally empty */ };
+    }
+
+    @TearDown(Level.Iteration)
+    public void tearDown() {
+        if (subscription != null && !subscription.isDisposed()) {
+            subscription.dispose();
+        }
+    }
+
+    @Benchmark
+    public void throttleLatestThroughput(Blackhole bh) {
+        // Apply the operator with the configured parameters.
+        Flowable<Long> throttled = source.throttleLatest(
+                timeout,
+                TimeUnit.MILLISECONDS,
+                scheduler,
+                emitLast,
+                onDropped
+        );
+
+        // Subscribe and consume items with Blackhole to prevent dead‑code elimination.
+        subscription = throttled.subscribe(
+                bh::consume,
+                bh::consume,
+                () -> {}
+        );
+    }
+}
+```

@@ -1,0 +1,62 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+
+/**
+ * Benchmark for {@code Observable.repeat(long)} which internally uses {@code ObservableRepeat}.
+ * Measures the throughput of repeating a finite source observable.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class ObservableRepeatBenchmark {
+
+    /** Number of items emitted by the source observable per repetition. */
+    @Param({"10"})
+    int sourceSize;
+
+    /** Number of repetitions of the source observable. */
+    @Param({"1000"})
+    long repeatCount;
+
+    /** The observable that repeats the source. Created once per benchmark thread. */
+    Observable<Integer> repeatedObservable;
+
+    /** Blackhole used to consume emitted items and prevent dead‑code elimination. */
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple synchronous source that emits a range of integers.
+        Observable<Integer> source = Observable.range(1, sourceSize);
+        // The public API that internally creates an ObservableRepeat instance.
+        repeatedObservable = source.repeat(repeatCount);
+    }
+
+    /**
+     * Subscribes to the repeated observable and consumes all emitted items.
+     * The subscription is performed synchronously because the source is a
+     * {@code Observable.range}, which emits on the calling thread.
+     */
+    @Benchmark
+    public void repeatThroughput(Blackhole bh) {
+        // Use a disposable to ensure the subscription is properly disposed,
+        // although for a synchronous source it completes immediately.
+        Disposable d = repeatedObservable.subscribe(
+                bh::consume,          // onNext
+                bh::consume,          // onError (should not happen)
+                bh::consume           // onComplete
+        );
+        // Explicitly dispose to avoid any lingering resources.
+        d.dispose();
+    }
+}
+```

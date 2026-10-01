@@ -1,0 +1,607 @@
+diff --git a/io/vertx/core/buffer/impl/BufferImpl.java b/io/vertx/core/buffer/impl/BufferImpl.java
+index 8a26bfc..1bbf764 100644
+--- a/io/vertx/core/buffer/impl/BufferImpl.java
++++ b/io/vertx/core/buffer/impl/BufferImpl.java
+@@ -84,12 +84,12 @@ public class BufferImpl implements BufferInternal {
+ 
+ 
+   @Override
+-  public JsonObject toJsonObject() {
++  public JsonObject toJsonObject() { io.vertx.jmhbench.MutationSwitch.tick(1);
+     return new JsonObject(this);
+   }
+ 
+   @Override
+-  public JsonArray toJsonArray() {
++  public JsonArray toJsonArray() { io.vertx.jmhbench.MutationSwitch.tick(2);
+     return new JsonArray(this);
+   }
+ 
+diff --git a/io/vertx/core/datagram/impl/PacketWriteStreamImpl.java b/io/vertx/core/datagram/impl/PacketWriteStreamImpl.java
+index 8b3fd0c..d5a1329 100644
+--- a/io/vertx/core/datagram/impl/PacketWriteStreamImpl.java
++++ b/io/vertx/core/datagram/impl/PacketWriteStreamImpl.java
+@@ -37,14 +37,14 @@ class PacketWriteStreamImpl implements WriteStream<Buffer>, Handler<AsyncResult<
+   }
+ 
+   @Override
+-  public void handle(AsyncResult<Void> event) {
++  public void handle(AsyncResult<Void> event) { io.vertx.jmhbench.MutationSwitch.tick(3);
+     if (event.failed() && exceptionHandler != null) {
+       exceptionHandler.handle(event.cause());
+     }
+   }
+ 
+   @Override
+-  public PacketWriteStreamImpl exceptionHandler(Handler<Throwable> handler) {
++  public PacketWriteStreamImpl exceptionHandler(Handler<Throwable> handler) { io.vertx.jmhbench.MutationSwitch.tick(4);
+     exceptionHandler = handler;
+     return this;
+   }
+diff --git a/io/vertx/core/eventbus/impl/BodyReadStream.java b/io/vertx/core/eventbus/impl/BodyReadStream.java
+index 417f47f..7ab2e99 100644
+--- a/io/vertx/core/eventbus/impl/BodyReadStream.java
++++ b/io/vertx/core/eventbus/impl/BodyReadStream.java
+@@ -30,13 +30,13 @@ public class BodyReadStream<T> implements ReadStream<T> {
+   }
+ 
+   @Override
+-  public ReadStream<T> exceptionHandler(Handler<Throwable> handler) {
++  public ReadStream<T> exceptionHandler(Handler<Throwable> handler) { io.vertx.jmhbench.MutationSwitch.tick(5);
+     delegate.exceptionHandler(handler);
+     return this;
+   }
+ 
+   @Override
+-  public ReadStream<T> handler(Handler<T> handler) {
++  public ReadStream<T> handler(Handler<T> handler) { io.vertx.jmhbench.MutationSwitch.tick(6);
+     if (handler != null) {
+       delegate.handler(message -> handler.handle(message.body()));
+     } else {
+diff --git a/io/vertx/core/eventbus/impl/codecs/BufferMessageCodec.java b/io/vertx/core/eventbus/impl/codecs/BufferMessageCodec.java
+index 41c363e..9a148da 100644
+--- a/io/vertx/core/eventbus/impl/codecs/BufferMessageCodec.java
++++ b/io/vertx/core/eventbus/impl/codecs/BufferMessageCodec.java
+@@ -20,13 +20,13 @@ import io.vertx.core.eventbus.MessageCodec;
+ public class BufferMessageCodec implements MessageCodec<Buffer, Buffer> {
+ 
+   @Override
+-  public void encodeToWire(Buffer buffer, Buffer b) {
++  public void encodeToWire(Buffer buffer, Buffer b) { io.vertx.jmhbench.MutationSwitch.tick(7);
+     buffer.appendInt(b.length());
+     buffer.appendBuffer(b);
+   }
+ 
+   @Override
+-  public Buffer decodeFromWire(int pos, Buffer buffer) {
++  public Buffer decodeFromWire(int pos, Buffer buffer) { io.vertx.jmhbench.MutationSwitch.tick(8);
+     int length = buffer.getInt(pos);
+     pos += 4;
+     return buffer.getBuffer(pos, pos + length);
+diff --git a/io/vertx/core/eventbus/impl/codecs/ByteArrayMessageCodec.java b/io/vertx/core/eventbus/impl/codecs/ByteArrayMessageCodec.java
+index 9357477..371cf8a 100644
+--- a/io/vertx/core/eventbus/impl/codecs/ByteArrayMessageCodec.java
++++ b/io/vertx/core/eventbus/impl/codecs/ByteArrayMessageCodec.java
+@@ -20,13 +20,13 @@ import io.vertx.core.eventbus.MessageCodec;
+ public class ByteArrayMessageCodec implements MessageCodec<byte[], byte[]> {
+ 
+   @Override
+-  public void encodeToWire(Buffer buffer, byte[] byteArray) {
++  public void encodeToWire(Buffer buffer, byte[] byteArray) { io.vertx.jmhbench.MutationSwitch.tick(9);
+     buffer.appendInt(byteArray.length);
+     buffer.appendBytes(byteArray);
+   }
+ 
+   @Override
+-  public byte[] decodeFromWire(int pos, Buffer buffer) {
++  public byte[] decodeFromWire(int pos, Buffer buffer) { io.vertx.jmhbench.MutationSwitch.tick(10);
+     int length = buffer.getInt(pos);
+     pos += 4;
+     return buffer.getBytes(pos, pos + length);
+diff --git a/io/vertx/core/eventbus/impl/codecs/JsonArrayMessageCodec.java b/io/vertx/core/eventbus/impl/codecs/JsonArrayMessageCodec.java
+index 3fc7800..49eb4b1 100644
+--- a/io/vertx/core/eventbus/impl/codecs/JsonArrayMessageCodec.java
++++ b/io/vertx/core/eventbus/impl/codecs/JsonArrayMessageCodec.java
+@@ -21,14 +21,14 @@ import io.vertx.core.json.JsonArray;
+ public class JsonArrayMessageCodec implements MessageCodec<JsonArray, JsonArray> {
+ 
+   @Override
+-  public void encodeToWire(Buffer buffer, JsonArray jsonArray) {
++  public void encodeToWire(Buffer buffer, JsonArray jsonArray) { io.vertx.jmhbench.MutationSwitch.tick(11);
+     Buffer encoded = jsonArray.toBuffer();
+     buffer.appendInt(encoded.length());
+     buffer.appendBuffer(encoded);
+   }
+ 
+   @Override
+-  public JsonArray decodeFromWire(int pos, Buffer buffer) {
++  public JsonArray decodeFromWire(int pos, Buffer buffer) { io.vertx.jmhbench.MutationSwitch.tick(12);
+     int length = buffer.getInt(pos);
+     pos += 4;
+     return new JsonArray(buffer.slice(pos, pos + length));
+diff --git a/io/vertx/core/eventbus/impl/codecs/StringMessageCodec.java b/io/vertx/core/eventbus/impl/codecs/StringMessageCodec.java
+index d61c623..ff3dd4d 100644
+--- a/io/vertx/core/eventbus/impl/codecs/StringMessageCodec.java
++++ b/io/vertx/core/eventbus/impl/codecs/StringMessageCodec.java
+@@ -21,14 +21,14 @@ import io.vertx.core.eventbus.MessageCodec;
+ public class StringMessageCodec implements MessageCodec<String, String> {
+ 
+   @Override
+-  public void encodeToWire(Buffer buffer, String s) {
++  public void encodeToWire(Buffer buffer, String s) { io.vertx.jmhbench.MutationSwitch.tick(13);
+     byte[] strBytes = s.getBytes(CharsetUtil.UTF_8);
+     buffer.appendInt(strBytes.length);
+     buffer.appendBytes(strBytes);
+   }
+ 
+   @Override
+-  public String decodeFromWire(int pos, Buffer buffer) {
++  public String decodeFromWire(int pos, Buffer buffer) { io.vertx.jmhbench.MutationSwitch.tick(14);
+     int length = buffer.getInt(pos);
+     pos += 4;
+     byte[] bytes = buffer.getBytes(pos, pos + length);
+diff --git a/io/vertx/core/http/FormDecoderConfig.java b/io/vertx/core/http/FormDecoderConfig.java
+index 75a82e3..feff552 100644
+--- a/io/vertx/core/http/FormDecoderConfig.java
++++ b/io/vertx/core/http/FormDecoderConfig.java
+@@ -41,7 +41,7 @@ public class FormDecoderConfig {
+   /**
+    * @return Returns the maximum size of a form attribute
+    */
+-  public int getMaxAttributeSize() {
++  public int getMaxAttributeSize() { io.vertx.jmhbench.MutationSwitch.tick(15);
+     return maxAttributeSize;
+   }
+ 
+@@ -51,7 +51,7 @@ public class FormDecoderConfig {
+    * @param maxSize the new maximum size
+    * @return a reference to this, so the API can be used fluently
+    */
+-  public FormDecoderConfig setMaxAttributeSize(int maxSize) {
++  public FormDecoderConfig setMaxAttributeSize(int maxSize) { io.vertx.jmhbench.MutationSwitch.tick(16);
+     this.maxAttributeSize = maxSize;
+     return this;
+   }
+diff --git a/io/vertx/core/http/Http2Settings.java b/io/vertx/core/http/Http2Settings.java
+index b4f5ded..2edec3a 100644
+--- a/io/vertx/core/http/Http2Settings.java
++++ b/io/vertx/core/http/Http2Settings.java
+@@ -198,7 +198,7 @@ public final class Http2Settings extends HttpSettings {
+   /**
+    * @return the {@literal SETTINGS_HEADER_TABLE_SIZE} HTTP/2 setting
+    */
+-  public long getHeaderTableSize() {
++  public long getHeaderTableSize() { io.vertx.jmhbench.MutationSwitch.tick(17);
+     return getOrDefault(HEADER_TABLE_SIZE);
+   }
+ 
+@@ -208,7 +208,7 @@ public final class Http2Settings extends HttpSettings {
+    * @param headerTableSize the new value
+    * @return a reference to this, so the API can be used fluently
+    */
+-  public Http2Settings setHeaderTableSize(long headerTableSize) {
++  public Http2Settings setHeaderTableSize(long headerTableSize) { io.vertx.jmhbench.MutationSwitch.tick(18);
+     setLong(HEADER_TABLE_SIZE, headerTableSize);
+     return this;
+   }
+diff --git a/io/vertx/core/http/Http3Settings.java b/io/vertx/core/http/Http3Settings.java
+index 54d4f10..01f4bd0 100644
+--- a/io/vertx/core/http/Http3Settings.java
++++ b/io/vertx/core/http/Http3Settings.java
+@@ -85,7 +85,7 @@ public class Http3Settings extends HttpSettings {
+   /**
+    * @return the {@code QPACK_MAX_TABLE_CAPACITY} setting value
+    */
+-  public long getQPackMaxTableCapacity() {
++  public long getQPackMaxTableCapacity() { io.vertx.jmhbench.MutationSwitch.tick(19);
+     return getOrDefault(QPACK_MAX_TABLE_CAPACITY);
+   }
+ 
+@@ -98,7 +98,7 @@ public class Http3Settings extends HttpSettings {
+    * @param value the setting value
+    * @return a reference to this, so the API can be used fluently
+    */
+-  public Http3Settings setQPackMaxTableCapacity(long value) {
++  public Http3Settings setQPackMaxTableCapacity(long value) { io.vertx.jmhbench.MutationSwitch.tick(20);
+     return set(QPACK_MAX_TABLE_CAPACITY, value);
+   }
+ 
+diff --git a/io/vertx/core/http/HttpSetting.java b/io/vertx/core/http/HttpSetting.java
+index 575f498..ca1187e 100644
+--- a/io/vertx/core/http/HttpSetting.java
++++ b/io/vertx/core/http/HttpSetting.java
+@@ -58,14 +58,14 @@ public class HttpSetting<T> {
+   /**
+    * @return the setting identifier
+    */
+-  public int identifier() {
++  public int identifier() { io.vertx.jmhbench.MutationSwitch.tick(21);
+     return identifier;
+   }
+ 
+   /**
+    * @return the name of this setting
+    */
+-  public String name() {
++  public String name() { io.vertx.jmhbench.MutationSwitch.tick(22);
+     return name;
+   }
+ 
+diff --git a/io/vertx/core/http/MimeMapping.java b/io/vertx/core/http/MimeMapping.java
+index ede5393..d489650 100644
+--- a/io/vertx/core/http/MimeMapping.java
++++ b/io/vertx/core/http/MimeMapping.java
+@@ -1020,7 +1020,7 @@ public final class MimeMapping {
+   /**
+    * @return an iterator over the known mime mappings
+    */
+-  public Iterator<Map.Entry<String, String>> iterate() {
++  public Iterator<Map.Entry<String, String>> iterate() { io.vertx.jmhbench.MutationSwitch.tick(23);
+     return MAPPING.entrySet().iterator();
+   }
+ 
+@@ -1028,7 +1028,7 @@ public final class MimeMapping {
+    * @param ext the file name extension in lower-case format
+    * @return the matching mime type for a file extension (e.g. {@code .mkv}) or {@code null}
+    */
+-  public static String mimeTypeForExtension(String ext) {
++  public static String mimeTypeForExtension(String ext) { io.vertx.jmhbench.MutationSwitch.tick(24);
+     return MAPPING.get(ext);
+   }
+ 
+diff --git a/io/vertx/core/http/QueryParamDecoderConfig.java b/io/vertx/core/http/QueryParamDecoderConfig.java
+index 74d3566..9367071 100644
+--- a/io/vertx/core/http/QueryParamDecoderConfig.java
++++ b/io/vertx/core/http/QueryParamDecoderConfig.java
+@@ -60,7 +60,7 @@ public class QueryParamDecoderConfig {
+   /**
+    * @return the maximum number of parameters to decode
+    */
+-  public int getMaxSize() {
++  public int getMaxSize() { io.vertx.jmhbench.MutationSwitch.tick(25);
+     return maxSize;
+   }
+ 
+@@ -70,7 +70,7 @@ public class QueryParamDecoderConfig {
+    * @param maxSize the max size
+    * @return a reference to this, so the API can be used fluently
+    */
+-  public QueryParamDecoderConfig setMaxSize(int maxSize) {
++  public QueryParamDecoderConfig setMaxSize(int maxSize) { io.vertx.jmhbench.MutationSwitch.tick(26);
+     if (maxSize < 1) {
+       throw new IllegalArgumentException("maxSize must be > 0");
+     }
+diff --git a/io/vertx/core/http/StreamPriority.java b/io/vertx/core/http/StreamPriority.java
+index 65acfc6..94fdf24 100644
+--- a/io/vertx/core/http/StreamPriority.java
++++ b/io/vertx/core/http/StreamPriority.java
+@@ -51,7 +51,7 @@ public class StreamPriority {
+    * @return An integer value between {@code 1} and {@code 256} representing a priority weight
+    *         for the stream.
+    */
+-  public short getWeight() {
++  public short getWeight() { io.vertx.jmhbench.MutationSwitch.tick(27);
+     return weight;
+   }
+ 
+@@ -61,7 +61,7 @@ public class StreamPriority {
+    * @param weight the new value
+    * @return a reference to this, so the API can be used fluently
+    */
+-  public StreamPriority setWeight(short weight) {
++  public StreamPriority setWeight(short weight) { io.vertx.jmhbench.MutationSwitch.tick(28);
+     this.weight = weight;
+     return this;
+   }
+diff --git a/io/vertx/core/http/StreamResetException.java b/io/vertx/core/http/StreamResetException.java
+index 872d9be..e0bc47a 100644
+--- a/io/vertx/core/http/StreamResetException.java
++++ b/io/vertx/core/http/StreamResetException.java
+@@ -35,7 +35,7 @@ public class StreamResetException extends VertxException {
+   /**
+    * @return the reset error code
+    */
+-  public long getCode() {
++  public long getCode() { io.vertx.jmhbench.MutationSwitch.tick(29);
+     return code;
+   }
+ }
+diff --git a/io/vertx/core/http/impl/HttpClientBuilderInternal.java b/io/vertx/core/http/impl/HttpClientBuilderInternal.java
+index 2d260ac..4223b7a 100644
+--- a/io/vertx/core/http/impl/HttpClientBuilderInternal.java
++++ b/io/vertx/core/http/impl/HttpClientBuilderInternal.java
+@@ -53,14 +53,14 @@ public final class HttpClientBuilderInternal implements HttpClientBuilder {
+     this.resolverIdleTimeout = Duration.ofSeconds(10);
+   }
+ 
+-  public HttpClientBuilderInternal with(HttpClientConfig config) {
++  public HttpClientBuilderInternal with(HttpClientConfig config) { io.vertx.jmhbench.MutationSwitch.tick(30);
+     this.clientConfig = config;
+     this.forceSNI = false;
+     return this;
+   }
+ 
+   @Override
+-  public HttpClientBuilderInternal with(HttpClientOptions options) {
++  public HttpClientBuilderInternal with(HttpClientOptions options) { io.vertx.jmhbench.MutationSwitch.tick(31);
+     if (options != null) {
+       this.clientConfig = new HttpClientConfig(options);
+       this.sslOptions = options.getSslOptions();
+diff --git a/io/vertx/core/http/impl/HttpParser.java b/io/vertx/core/http/impl/HttpParser.java
+index 114dcbf..1e0b71a 100644
+--- a/io/vertx/core/http/impl/HttpParser.java
++++ b/io/vertx/core/http/impl/HttpParser.java
+@@ -18,7 +18,7 @@ import static io.vertx.core.net.impl.Rfc5234Parser.*;
+  */
+ public class HttpParser {
+ 
+-  public static int parseQuotedString(String s, int from, int to) {
++  public static int parseQuotedString(String s, int from, int to) { io.vertx.jmhbench.MutationSwitch.tick(32);
+     if (from + 1 >= to || !isDQUOTE(s.charAt(from++))) {
+       return -1;
+     }
+@@ -34,7 +34,7 @@ public class HttpParser {
+     return from < to && isDQUOTE(s.charAt(from++)) ? from : -1;
+   }
+ 
+-  public static boolean isQDText(char c) {
++  public static boolean isQDText(char c) { io.vertx.jmhbench.MutationSwitch.tick(33);
+     return isHTAB(c) || isSP(c) || c == 0x21 || (0x23 <= c && c <= 0x5B) || (0x5D <= c && c <= 0x7E) || isObsText(c);
+   }
+ 
+diff --git a/io/vertx/core/http/impl/HttpServerBuilderImpl.java b/io/vertx/core/http/impl/HttpServerBuilderImpl.java
+index 8e99935..676564b 100644
+--- a/io/vertx/core/http/impl/HttpServerBuilderImpl.java
++++ b/io/vertx/core/http/impl/HttpServerBuilderImpl.java
+@@ -42,13 +42,13 @@ public class HttpServerBuilderImpl implements HttpServerBuilder {
+   }
+ 
+   @Override
+-  public HttpServerBuilderImpl with(HttpServerConfig config) {
++  public HttpServerBuilderImpl with(HttpServerConfig config) { io.vertx.jmhbench.MutationSwitch.tick(34);
+     this.config = config;
+     return this;
+   }
+ 
+   @Override
+-  public HttpServerBuilderImpl with(ServerSSLOptions options) {
++  public HttpServerBuilderImpl with(ServerSSLOptions options) { io.vertx.jmhbench.MutationSwitch.tick(35);
+     this.sslOptions = options;
+     return this;
+   }
+diff --git a/io/vertx/core/http/impl/HttpUtils.java b/io/vertx/core/http/impl/HttpUtils.java
+index d75ba9c..5a85a60 100644
+--- a/io/vertx/core/http/impl/HttpUtils.java
++++ b/io/vertx/core/http/impl/HttpUtils.java
+@@ -75,12 +75,12 @@ public final class HttpUtils {
+ 
+   public static final TagExtractor<HttpServerRequest> SERVER_REQUEST_TAG_EXTRACTOR = new TagExtractor<>() {
+     @Override
+-    public int len(HttpServerRequest req) {
++    public int len(HttpServerRequest req) { io.vertx.jmhbench.MutationSwitch.tick(36);
+       return req.query() == null ? 4 : 5;
+     }
+ 
+     @Override
+-    public String name(HttpServerRequest req, int index) {
++    public String name(HttpServerRequest req, int index) { io.vertx.jmhbench.MutationSwitch.tick(37);
+       switch (index) {
+         case 0:
+           return "http.url";
+diff --git a/io/vertx/core/http/impl/StatisticsGatheringHttpClientStream.java b/io/vertx/core/http/impl/StatisticsGatheringHttpClientStream.java
+index 204ad15..6773099 100644
+--- a/io/vertx/core/http/impl/StatisticsGatheringHttpClientStream.java
++++ b/io/vertx/core/http/impl/StatisticsGatheringHttpClientStream.java
+@@ -38,12 +38,12 @@ class StatisticsGatheringHttpClientStream implements HttpClientStream {
+   }
+ 
+   @Override
+-  public long id() {
++  public long id() { io.vertx.jmhbench.MutationSwitch.tick(38);
+     return delegate.id();
+   }
+ 
+   @Override
+-  public Object metric() {
++  public Object metric() { io.vertx.jmhbench.MutationSwitch.tick(39);
+     return delegate.metric();
+   }
+ 
+diff --git a/io/vertx/core/http/impl/http1/VertxHttpRequestDecoder.java b/io/vertx/core/http/impl/http1/VertxHttpRequestDecoder.java
+index 49b5d7c..7562750 100644
+--- a/io/vertx/core/http/impl/http1/VertxHttpRequestDecoder.java
++++ b/io/vertx/core/http/impl/http1/VertxHttpRequestDecoder.java
+@@ -72,7 +72,7 @@ public class VertxHttpRequestDecoder extends HttpRequestDecoder {
+   }
+ 
+   @Override
+-  protected AsciiString splitHeaderName(byte[] sb, int start, int length) {
++  protected AsciiString splitHeaderName(byte[] sb, int start, int length) { io.vertx.jmhbench.MutationSwitch.tick(40);
+     final byte firstChar = sb[start];
+     if (firstChar == 'H' || firstChar == 'h') {
+       if (length == 4 && isHost(sb, start)) {
+@@ -169,7 +169,7 @@ public class VertxHttpRequestDecoder extends HttpRequestDecoder {
+   }
+ 
+   @Override
+-  protected HttpMessage createMessage(String[] initialLine) {
++  protected HttpMessage createMessage(String[] initialLine) { io.vertx.jmhbench.MutationSwitch.tick(41);
+     return new DefaultHttpRequest(
+       HttpVersion.valueOf(initialLine[2]),
+       HttpMethod.valueOf(initialLine[0]),
+diff --git a/io/vertx/core/http/impl/http1/VertxHttpResponseEncoder.java b/io/vertx/core/http/impl/http1/VertxHttpResponseEncoder.java
+index 2143ed4..f771ad3 100644
+--- a/io/vertx/core/http/impl/http1/VertxHttpResponseEncoder.java
++++ b/io/vertx/core/http/impl/http1/VertxHttpResponseEncoder.java
+@@ -35,7 +35,7 @@ public final class VertxHttpResponseEncoder extends HttpResponseEncoder {
+   private final boolean cacheImmutableResponseHeaders = SysProps.CACHE_IMMUTABLE_HTTP_RESPONSE_HEADERS.getBoolean();
+ 
+   @Override
+-  protected void encodeHeaders(HttpHeaders headers, ByteBuf buf) {
++  protected void encodeHeaders(HttpHeaders headers, ByteBuf buf) { io.vertx.jmhbench.MutationSwitch.tick(42);
+     if (headers instanceof Http1xHeaders) {
+       Http1xHeaders vertxHeaders = (Http1xHeaders) headers;
+       vertxHeaders.encode(buf, cacheImmutableResponseHeaders);
+@@ -45,7 +45,7 @@ public final class VertxHttpResponseEncoder extends HttpResponseEncoder {
+   }
+ 
+   @Override
+-  public boolean acceptOutboundMessage(Object msg) throws Exception {
++  public boolean acceptOutboundMessage(Object msg) throws Exception { io.vertx.jmhbench.MutationSwitch.tick(43);
+     // fast-path singleton(s)
+     if (msg == Unpooled.EMPTY_BUFFER || msg == LastHttpContent.EMPTY_LAST_CONTENT) {
+       return true;
+diff --git a/io/vertx/core/http/impl/http2/DefaultHttp2ClientStream.java b/io/vertx/core/http/impl/http2/DefaultHttp2ClientStream.java
+index 6c84b39..6f4b61c 100644
+--- a/io/vertx/core/http/impl/http2/DefaultHttp2ClientStream.java
++++ b/io/vertx/core/http/impl/http2/DefaultHttp2ClientStream.java
+@@ -91,12 +91,12 @@ class DefaultHttp2ClientStream extends DefaultHttp2Stream<DefaultHttp2ClientStre
+   }
+ 
+   @Override
+-  public String scheme() {
++  public String scheme() { io.vertx.jmhbench.MutationSwitch.tick(44);
+     return scheme;
+   }
+ 
+   @Override
+-  public HostAndPort authority() {
++  public HostAndPort authority() { io.vertx.jmhbench.MutationSwitch.tick(45);
+     return authority;
+   }
+ 
+diff --git a/io/vertx/core/http/impl/http2/DefaultHttp2ServerStream.java b/io/vertx/core/http/impl/http2/DefaultHttp2ServerStream.java
+index 54ed55c..7105192 100644
+--- a/io/vertx/core/http/impl/http2/DefaultHttp2ServerStream.java
++++ b/io/vertx/core/http/impl/http2/DefaultHttp2ServerStream.java
+@@ -93,11 +93,11 @@ class DefaultHttp2ServerStream extends DefaultHttp2Stream<DefaultHttp2ServerStre
+     return observable;
+   }
+ 
+-  public HttpHeaders headers() {
++  public HttpHeaders headers() { io.vertx.jmhbench.MutationSwitch.tick(46);
+     return requestHeaders;
+   }
+ 
+-  public HttpMethod method() {
++  public HttpMethod method() { io.vertx.jmhbench.MutationSwitch.tick(47);
+     return method;
+   }
+ 
+diff --git a/io/vertx/core/http/impl/http2/codec/VertxCompressorHttp2ConnectionEncoder.java b/io/vertx/core/http/impl/http2/codec/VertxCompressorHttp2ConnectionEncoder.java
+index b94c2b1..d5c6992 100644
+--- a/io/vertx/core/http/impl/http2/codec/VertxCompressorHttp2ConnectionEncoder.java
++++ b/io/vertx/core/http/impl/http2/codec/VertxCompressorHttp2ConnectionEncoder.java
+@@ -91,14 +91,14 @@ public class VertxCompressorHttp2ConnectionEncoder implements Http2FrameWriter,
+   }
+ 
+   @Override
+-  public ChannelFuture writeHeaders(ChannelHandlerContext ctx, int streamId, Http2Headers headers, int padding, boolean endStream, ChannelPromise promise) {
++  public ChannelFuture writeHeaders(ChannelHandlerContext ctx, int streamId, Http2Headers headers, int padding, boolean endStream, ChannelPromise promise) { io.vertx.jmhbench.MutationSwitch.tick(48);
+     Http2ConnectionEncoder encoder = selectEncoder(ctx, streamId, headers);
+     storeEncoder(streamId, encoder);
+     return encoder.writeHeaders(ctx, streamId, headers, padding, endStream, promise);
+   }
+ 
+   @Override
+-  public ChannelFuture writeHeaders(ChannelHandlerContext ctx, int streamId, Http2Headers headers, int streamDependency, short weight, boolean exclusive, int padding, boolean endStream, ChannelPromise promise) {
++  public ChannelFuture writeHeaders(ChannelHandlerContext ctx, int streamId, Http2Headers headers, int streamDependency, short weight, boolean exclusive, int padding, boolean endStream, ChannelPromise promise) { io.vertx.jmhbench.MutationSwitch.tick(49);
+     Http2ConnectionEncoder encoder = selectEncoder(ctx, streamId, headers);
+     storeEncoder(streamId, encoder);
+     return encoder.writeHeaders(ctx, streamId, headers, streamDependency, weight, exclusive, padding, endStream, promise);
+diff --git a/io/vertx/core/http/impl/http2/codec/VertxHttp2ConnectionHandlerBuilder.java b/io/vertx/core/http/impl/http2/codec/VertxHttp2ConnectionHandlerBuilder.java
+index 460b7ad..82ad7b6 100644
+--- a/io/vertx/core/http/impl/http2/codec/VertxHttp2ConnectionHandlerBuilder.java
++++ b/io/vertx/core/http/impl/http2/codec/VertxHttp2ConnectionHandlerBuilder.java
+@@ -33,7 +33,7 @@ public class VertxHttp2ConnectionHandlerBuilder<C extends Http2ConnectionImpl> e
+   private boolean logEnabled;
+   private boolean server;
+ 
+-  public VertxHttp2ConnectionHandlerBuilder<C> server(boolean isServer) {
++  public VertxHttp2ConnectionHandlerBuilder<C> server(boolean isServer) { io.vertx.jmhbench.MutationSwitch.tick(50);
+     this.server = isServer;
+     return this;
+   }
+diff --git a/io/vertx/jmhbench/MutationSwitch.java b/io/vertx/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..b68d676
+--- /dev/null
++++ b/io/vertx/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.vertx.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

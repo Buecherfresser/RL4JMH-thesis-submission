@@ -1,0 +1,72 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.jdk8;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.jdk8.SingleFlattenStreamAsObservable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
+/**
+ * Benchmark for {@link SingleFlattenStreamAsObservable}.
+ * Measures the throughput of subscribing to the Observable and consuming all emitted items.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class SingleFlattenStreamAsObservableBenchmark {
+
+    // Simple source Single emitting a fixed value
+    private Single<Integer> source;
+
+    // Mapper turning the Integer into a Stream of Integers (e.g., range 0..N-1)
+    private Function<Integer, Stream<Integer>> mapper;
+
+    // Number of elements produced by the mapper
+    @Param({"10", "100", "1000"})
+    private int streamSize;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        source = Single.just(1);
+        mapper = i -> Stream.iterate(0, n -> n + 1).limit(streamSize);
+    }
+
+    /**
+     * Subscribes to the SingleFlattenStreamAsObservable and consumes all emitted items.
+     * The Blackhole ensures that the emitted values are not optimized away.
+     */
+    @Benchmark
+    public void flattenStreamAsObservable(Blackhole bh) {
+        Observable<Integer> observable = new SingleFlattenStreamAsObservable<>(source, mapper);
+        observable.subscribe(new Observer<Integer>() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+                // No-op
+            }
+
+            @Override
+            public void onNext(@NonNull Integer value) {
+                bh.consume(value);
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+                // Propagate errors to the Blackhole to avoid dead code elimination
+                bh.consume(e);
+            }
+
+            @Override
+            public void onComplete() {
+                // No-op
+            }
+        });
+    }
+}
+```

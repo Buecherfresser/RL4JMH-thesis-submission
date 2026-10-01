@@ -1,0 +1,635 @@
+diff --git a/com/jsoniter/CodegenImplArray.java b/com/jsoniter/CodegenImplArray.java
+index a80ef7a..014ff35 100644
+--- a/com/jsoniter/CodegenImplArray.java
++++ b/com/jsoniter/CodegenImplArray.java
+@@ -13,7 +13,7 @@ class CodegenImplArray {
+         add(Vector.class);
+     }};
+ 
+-    public static String genArray(ClassInfo classInfo) {
++    public static String genArray(ClassInfo classInfo) { com.jsoniter.jmhbench.MutationSwitch.tick(1);
+         Class compType = classInfo.clazz.getComponentType();
+         if (compType.isArray()) {
+             throw new IllegalArgumentException("nested array not supported: " + classInfo.clazz.getCanonicalName());
+@@ -79,7 +79,7 @@ class CodegenImplArray {
+                 "{{op}}", CodegenImplNative.genReadOp(compType));
+     }
+ 
+-    public static String genCollection(ClassInfo classInfo) {
++    public static String genCollection(ClassInfo classInfo) { com.jsoniter.jmhbench.MutationSwitch.tick(8);
+         if (WITH_CAPACITY_COLLECTION_CLASSES.contains(classInfo.clazz)) {
+             return CodegenImplArray.genCollectionWithCapacity(classInfo.clazz, classInfo.typeArgs[0]);
+         } else {
+diff --git a/com/jsoniter/CodegenImplMap.java b/com/jsoniter/CodegenImplMap.java
+index 4f64a77..fdb4b90 100644
+--- a/com/jsoniter/CodegenImplMap.java
++++ b/com/jsoniter/CodegenImplMap.java
+@@ -7,7 +7,7 @@ import java.lang.reflect.Type;
+ 
+ class CodegenImplMap {
+ 
+-    public static String genMap(ClassInfo classInfo) {
++    public static String genMap(ClassInfo classInfo) { com.jsoniter.jmhbench.MutationSwitch.tick(14);
+         Type keyType = classInfo.typeArgs[0];
+         Type valueType = classInfo.typeArgs[1];
+         StringBuilder lines = new StringBuilder();
+diff --git a/com/jsoniter/IterImplArray.java b/com/jsoniter/IterImplArray.java
+index 80120a2..8045e93 100644
+--- a/com/jsoniter/IterImplArray.java
++++ b/com/jsoniter/IterImplArray.java
+@@ -4,7 +4,7 @@ import java.io.IOException;
+ 
+ class IterImplArray {
+ 
+-    public static final boolean readArray(final JsonIterator iter) throws IOException {
++    public static final boolean readArray(final JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(20);
+         byte c = IterImpl.nextToken(iter);
+         switch (c) {
+             case '[':
+@@ -25,7 +25,7 @@ class IterImplArray {
+         }
+     }
+ 
+-    public static final boolean readArrayCB(final JsonIterator iter, final JsonIterator.ReadArrayCallback callback, Object attachment) throws IOException {
++    public static final boolean readArrayCB(final JsonIterator iter, final JsonIterator.ReadArrayCallback callback, Object attachment) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(26);
+         byte c = IterImpl.nextToken(iter);
+         if (c == '[') {
+             c = IterImpl.nextToken(iter);
+diff --git a/com/jsoniter/IterImplForStreaming.java b/com/jsoniter/IterImplForStreaming.java
+index 2cef3a1..8232279 100644
+--- a/com/jsoniter/IterImplForStreaming.java
++++ b/com/jsoniter/IterImplForStreaming.java
+@@ -8,7 +8,7 @@ import java.io.IOException;
+ 
+ class IterImplForStreaming {
+ 
+-    public static final int readObjectFieldAsHash(JsonIterator iter) throws IOException {
++    public static final int readObjectFieldAsHash(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(32);
+         if (nextToken(iter) != '"') {
+             throw iter.reportError("readObjectFieldAsHash", "expect \"");
+         }
+@@ -37,7 +37,7 @@ class IterImplForStreaming {
+         }
+     }
+ 
+-    public static final Slice readObjectFieldAsSlice(JsonIterator iter) throws IOException {
++    public static final Slice readObjectFieldAsSlice(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(38);
+         Slice field = readSlice(iter);
+         boolean notCopied = field != null;
+         if (CodegenAccess.skipWhitespacesWithoutLoadMore(iter)) {
+diff --git a/com/jsoniter/IterImplNumber.java b/com/jsoniter/IterImplNumber.java
+index c521cdd..db8cd17 100644
+--- a/com/jsoniter/IterImplNumber.java
++++ b/com/jsoniter/IterImplNumber.java
+@@ -61,7 +61,7 @@ class IterImplNumber {
+         floatDigits['.'] = DOT_IN_NUMBER;
+     }
+ 
+-    public static final double readDouble(final JsonIterator iter) throws IOException {
++    public static final double readDouble(final JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(44);
+         final byte c = IterImpl.nextToken(iter);
+         if (c == '-') {
+             return -IterImpl.readDouble(iter);
+@@ -71,7 +71,7 @@ class IterImplNumber {
+         }
+     }
+ 
+-    public static final float readFloat(final JsonIterator iter) throws IOException {
++    public static final float readFloat(final JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(50);
+         return (float) IterImplNumber.readDouble(iter);
+     }
+ 
+diff --git a/com/jsoniter/any/ArrayAny.java b/com/jsoniter/any/ArrayAny.java
+index 50d5c17..8bce4bb 100644
+--- a/com/jsoniter/any/ArrayAny.java
++++ b/com/jsoniter/any/ArrayAny.java
+@@ -19,12 +19,12 @@ class ArrayAny extends Any {
+     }
+ 
+     @Override
+-    public ValueType valueType() {
++    public ValueType valueType() { com.jsoniter.jmhbench.MutationSwitch.tick(2);
+         return ValueType.ARRAY;
+     }
+ 
+     @Override
+-    public Object object() {
++    public Object object() { com.jsoniter.jmhbench.MutationSwitch.tick(9);
+         return val;
+     }
+ 
+diff --git a/com/jsoniter/any/ArrayLazyAny.java b/com/jsoniter/any/ArrayLazyAny.java
+index 1398364..75d57fb 100644
+--- a/com/jsoniter/any/ArrayLazyAny.java
++++ b/com/jsoniter/any/ArrayLazyAny.java
+@@ -25,12 +25,12 @@ class ArrayLazyAny extends LazyAny {
+     }
+ 
+     @Override
+-    public ValueType valueType() {
++    public ValueType valueType() { com.jsoniter.jmhbench.MutationSwitch.tick(15);
+         return ValueType.ARRAY;
+     }
+ 
+     @Override
+-    public Object object() {
++    public Object object() { com.jsoniter.jmhbench.MutationSwitch.tick(21);
+         fillCache();
+         return cache;
+     }
+diff --git a/com/jsoniter/any/ArrayWrapperAny.java b/com/jsoniter/any/ArrayWrapperAny.java
+index f569366..276bef4 100644
+--- a/com/jsoniter/any/ArrayWrapperAny.java
++++ b/com/jsoniter/any/ArrayWrapperAny.java
+@@ -21,12 +21,12 @@ class ArrayWrapperAny extends Any {
+     }
+ 
+     @Override
+-    public ValueType valueType() {
++    public ValueType valueType() { com.jsoniter.jmhbench.MutationSwitch.tick(27);
+         return ValueType.ARRAY;
+     }
+ 
+     @Override
+-    public Object object() {
++    public Object object() { com.jsoniter.jmhbench.MutationSwitch.tick(33);
+         fillCache();
+         return cache;
+     }
+diff --git a/com/jsoniter/any/ListWrapperAny.java b/com/jsoniter/any/ListWrapperAny.java
+index 4434514..3b73a62 100644
+--- a/com/jsoniter/any/ListWrapperAny.java
++++ b/com/jsoniter/any/ListWrapperAny.java
+@@ -20,12 +20,12 @@ class ListWrapperAny extends Any {
+     }
+ 
+     @Override
+-    public ValueType valueType() {
++    public ValueType valueType() { com.jsoniter.jmhbench.MutationSwitch.tick(39);
+         return ValueType.ARRAY;
+     }
+ 
+     @Override
+-    public Object object() {
++    public Object object() { com.jsoniter.jmhbench.MutationSwitch.tick(45);
+         fillCache();
+         return cache;
+     }
+diff --git a/com/jsoniter/extra/Base64FloatSupport.java b/com/jsoniter/extra/Base64FloatSupport.java
+index b2fdf73..3fcf30c 100644
+--- a/com/jsoniter/extra/Base64FloatSupport.java
++++ b/com/jsoniter/extra/Base64FloatSupport.java
+@@ -45,7 +45,7 @@ public class Base64FloatSupport {
+ 
+     private static boolean enabled;
+ 
+-    public static synchronized void enableEncodersAndDecoders() {
++    public static synchronized void enableEncodersAndDecoders() { com.jsoniter.jmhbench.MutationSwitch.tick(3);
+         if (enabled) {
+             throw new JsonException("BinaryFloatSupport.enable can only be called once");
+         }
+@@ -60,7 +60,7 @@ public class Base64FloatSupport {
+             }
+ 
+             @Override
+-            public Any wrap(Object obj) {
++            public Any wrap(Object obj) { com.jsoniter.jmhbench.MutationSwitch.tick(10);
+                 Double number = (Double) obj;
+                 return Any.wrap(number.doubleValue());
+             }
+diff --git a/com/jsoniter/extra/Base64Support.java b/com/jsoniter/extra/Base64Support.java
+index 676178f..ad6a0c8 100644
+--- a/com/jsoniter/extra/Base64Support.java
++++ b/com/jsoniter/extra/Base64Support.java
+@@ -15,7 +15,7 @@ import java.io.IOException;
+  */
+ public class Base64Support {
+     private static boolean enabled;
+-    public static synchronized void enable() {
++    public static synchronized void enable() { com.jsoniter.jmhbench.MutationSwitch.tick(16);
+         if (enabled) {
+             throw new JsonException("Base64Support.enable can only be called once");
+         }
+diff --git a/com/jsoniter/extra/GsonCompatibilityMode.java b/com/jsoniter/extra/GsonCompatibilityMode.java
+index 7d6b6a6..fa32882 100644
+--- a/com/jsoniter/extra/GsonCompatibilityMode.java
++++ b/com/jsoniter/extra/GsonCompatibilityMode.java
+@@ -59,7 +59,7 @@ public class GsonCompatibilityMode extends Config {
+         super(configName, builder);
+     }
+ 
+-    protected Builder builder() {
++    protected Builder builder() { com.jsoniter.jmhbench.MutationSwitch.tick(22);
+         return (Builder) super.builder();
+     }
+ 
+@@ -68,7 +68,7 @@ public class GsonCompatibilityMode extends Config {
+         private boolean disableHtmlEscaping = false;
+         private ThreadLocal<DateFormat> dateFormat = new ThreadLocal<DateFormat>() {
+             @Override
+-            protected DateFormat initialValue() {
++            protected DateFormat initialValue() { com.jsoniter.jmhbench.MutationSwitch.tick(28);
+                 return DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.US);
+             }
+         };
+diff --git a/com/jsoniter/extra/JacksonCompatibilityMode.java b/com/jsoniter/extra/JacksonCompatibilityMode.java
+index 1935b3c..195c1b4 100644
+--- a/com/jsoniter/extra/JacksonCompatibilityMode.java
++++ b/com/jsoniter/extra/JacksonCompatibilityMode.java
+@@ -12,12 +12,12 @@ import java.lang.annotation.Annotation;
+ public class JacksonCompatibilityMode extends Config {
+ 
+     public static class Builder extends Config.Builder {
+-        public JacksonCompatibilityMode build() {
++        public JacksonCompatibilityMode build() { com.jsoniter.jmhbench.MutationSwitch.tick(34);
+             return (JacksonCompatibilityMode) super.build();
+         }
+ 
+         @Override
+-        protected Config doBuild(String configName) {
++        protected Config doBuild(String configName) { com.jsoniter.jmhbench.MutationSwitch.tick(40);
+             return new JacksonCompatibilityMode(configName, this);
+         }
+ 
+diff --git a/com/jsoniter/extra/JdkDatetimeSupport.java b/com/jsoniter/extra/JdkDatetimeSupport.java
+index f66c050..e493493 100644
+--- a/com/jsoniter/extra/JdkDatetimeSupport.java
++++ b/com/jsoniter/extra/JdkDatetimeSupport.java
+@@ -21,7 +21,7 @@ public class JdkDatetimeSupport {
+     private static String pattern;
+     private final static ThreadLocal<SimpleDateFormat> sdf = new ThreadLocal<SimpleDateFormat>() {
+         @Override
+-        protected SimpleDateFormat initialValue() {
++        protected SimpleDateFormat initialValue() { com.jsoniter.jmhbench.MutationSwitch.tick(46);
+             return new SimpleDateFormat(pattern);
+         }
+     };
+diff --git a/com/jsoniter/fuzzy/MaybeStringDoubleDecoder.java b/com/jsoniter/fuzzy/MaybeStringDoubleDecoder.java
+index 7e23254..f324a1e 100644
+--- a/com/jsoniter/fuzzy/MaybeStringDoubleDecoder.java
++++ b/com/jsoniter/fuzzy/MaybeStringDoubleDecoder.java
+@@ -9,7 +9,7 @@ import java.io.IOException;
+ public class MaybeStringDoubleDecoder extends Decoder.DoubleDecoder {
+ 
+     @Override
+-    public double decodeDouble(JsonIterator iter) throws IOException {
++    public double decodeDouble(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(4);
+         byte c = CodegenAccess.nextToken(iter);
+         if (c != '"') {
+             CodegenAccess.unreadByte(iter);
+diff --git a/com/jsoniter/fuzzy/MaybeStringFloatDecoder.java b/com/jsoniter/fuzzy/MaybeStringFloatDecoder.java
+index dd8ed6e..740f0a4 100644
+--- a/com/jsoniter/fuzzy/MaybeStringFloatDecoder.java
++++ b/com/jsoniter/fuzzy/MaybeStringFloatDecoder.java
+@@ -9,7 +9,7 @@ import java.io.IOException;
+ public class MaybeStringFloatDecoder extends Decoder.FloatDecoder {
+ 
+     @Override
+-    public float decodeFloat(JsonIterator iter) throws IOException {
++    public float decodeFloat(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(11);
+         byte c = CodegenAccess.nextToken(iter);
+         if (c != '"') {
+             CodegenAccess.unreadByte(iter);
+diff --git a/com/jsoniter/fuzzy/MaybeStringIntDecoder.java b/com/jsoniter/fuzzy/MaybeStringIntDecoder.java
+index 3e02351..620e397 100644
+--- a/com/jsoniter/fuzzy/MaybeStringIntDecoder.java
++++ b/com/jsoniter/fuzzy/MaybeStringIntDecoder.java
+@@ -9,7 +9,7 @@ import java.io.IOException;
+ public class MaybeStringIntDecoder extends Decoder.IntDecoder {
+ 
+     @Override
+-    public int decodeInt(JsonIterator iter) throws IOException {
++    public int decodeInt(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(17);
+         byte c = CodegenAccess.nextToken(iter);
+         if (c != '"') {
+             CodegenAccess.unreadByte(iter);
+diff --git a/com/jsoniter/fuzzy/MaybeStringLongDecoder.java b/com/jsoniter/fuzzy/MaybeStringLongDecoder.java
+index 53709e1..12477c0 100644
+--- a/com/jsoniter/fuzzy/MaybeStringLongDecoder.java
++++ b/com/jsoniter/fuzzy/MaybeStringLongDecoder.java
+@@ -9,7 +9,7 @@ import java.io.IOException;
+ public class MaybeStringLongDecoder extends Decoder.LongDecoder {
+ 
+     @Override
+-    public long decodeLong(JsonIterator iter) throws IOException {
++    public long decodeLong(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(23);
+         byte c = CodegenAccess.nextToken(iter);
+         if (c != '"') {
+             CodegenAccess.unreadByte(iter);
+diff --git a/com/jsoniter/fuzzy/MaybeStringShortDecoder.java b/com/jsoniter/fuzzy/MaybeStringShortDecoder.java
+index 075646d..e8f0a0c 100644
+--- a/com/jsoniter/fuzzy/MaybeStringShortDecoder.java
++++ b/com/jsoniter/fuzzy/MaybeStringShortDecoder.java
+@@ -9,7 +9,7 @@ import java.io.IOException;
+ public class MaybeStringShortDecoder extends Decoder.ShortDecoder {
+ 
+     @Override
+-    public short decodeShort(JsonIterator iter) throws IOException {
++    public short decodeShort(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(29);
+         byte c = CodegenAccess.nextToken(iter);
+         if (c != '"') {
+             CodegenAccess.unreadByte(iter);
+diff --git a/com/jsoniter/fuzzy/StringDoubleDecoder.java b/com/jsoniter/fuzzy/StringDoubleDecoder.java
+index f419727..88ea778 100644
+--- a/com/jsoniter/fuzzy/StringDoubleDecoder.java
++++ b/com/jsoniter/fuzzy/StringDoubleDecoder.java
+@@ -9,7 +9,7 @@ import java.io.IOException;
+ public class StringDoubleDecoder extends Decoder.DoubleDecoder {
+ 
+     @Override
+-    public double decodeDouble(JsonIterator iter) throws IOException {
++    public double decodeDouble(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(35);
+         byte c = CodegenAccess.nextToken(iter);
+         if (c != '"') {
+             throw iter.reportError("StringDoubleDecoder", "expect \", but found: " + (char) c);
+diff --git a/com/jsoniter/fuzzy/StringFloatDecoder.java b/com/jsoniter/fuzzy/StringFloatDecoder.java
+index e4b5f0d..b0f7d06 100644
+--- a/com/jsoniter/fuzzy/StringFloatDecoder.java
++++ b/com/jsoniter/fuzzy/StringFloatDecoder.java
+@@ -9,7 +9,7 @@ import java.io.IOException;
+ public class StringFloatDecoder extends Decoder.FloatDecoder {
+ 
+     @Override
+-    public float decodeFloat(JsonIterator iter) throws IOException {
++    public float decodeFloat(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(41);
+         byte c = CodegenAccess.nextToken(iter);
+         if (c != '"') {
+             throw iter.reportError("StringFloatDecoder", "expect \", but found: " + (char) c);
+diff --git a/com/jsoniter/fuzzy/StringIntDecoder.java b/com/jsoniter/fuzzy/StringIntDecoder.java
+index 5bd6096..e72c180 100644
+--- a/com/jsoniter/fuzzy/StringIntDecoder.java
++++ b/com/jsoniter/fuzzy/StringIntDecoder.java
+@@ -9,7 +9,7 @@ import java.io.IOException;
+ public class StringIntDecoder extends Decoder.IntDecoder {
+ 
+     @Override
+-    public int decodeInt(JsonIterator iter) throws IOException {
++    public int decodeInt(JsonIterator iter) throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(47);
+         byte c = CodegenAccess.nextToken(iter);
+         if (c != '"') {
+             throw iter.reportError("StringIntDecoder", "expect \", but found: " + (char) c);
+diff --git a/com/jsoniter/jmhbench/MutationSwitch.java b/com/jsoniter/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..af67dd0
+--- /dev/null
++++ b/com/jsoniter/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.jsoniter.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/jsoniter/output/CodegenImplArray.java b/com/jsoniter/output/CodegenImplArray.java
+index 19af553..b8078e7 100644
+--- a/com/jsoniter/output/CodegenImplArray.java
++++ b/com/jsoniter/output/CodegenImplArray.java
+@@ -8,7 +8,7 @@ import java.util.*;
+ 
+ class CodegenImplArray {
+ 
+-    public static CodegenResult genCollection(String cacheKey, ClassInfo classInfo) {
++    public static CodegenResult genCollection(String cacheKey, ClassInfo classInfo) { com.jsoniter.jmhbench.MutationSwitch.tick(5);
+         Type[] typeArgs = classInfo.typeArgs;
+         Class clazz = classInfo.clazz;
+         Type compType = Object.class;
+@@ -33,7 +33,7 @@ class CodegenImplArray {
+         }
+     }
+ 
+-    public static CodegenResult genArray(String cacheKey, ClassInfo classInfo) {
++    public static CodegenResult genArray(String cacheKey, ClassInfo classInfo) { com.jsoniter.jmhbench.MutationSwitch.tick(12);
+         boolean noIndention = JsoniterSpi.getCurrentConfig().indentionStep() == 0;
+         Class clazz = classInfo.clazz;
+         Class compType = clazz.getComponentType();
+diff --git a/com/jsoniter/output/CodegenImplMap.java b/com/jsoniter/output/CodegenImplMap.java
+index 006817d..d20b556 100644
+--- a/com/jsoniter/output/CodegenImplMap.java
++++ b/com/jsoniter/output/CodegenImplMap.java
+@@ -6,7 +6,7 @@ import com.jsoniter.spi.JsoniterSpi;
+ import java.lang.reflect.Type;
+ 
+ class CodegenImplMap {
+-    public static CodegenResult genMap(String cacheKey, ClassInfo classInfo) {
++    public static CodegenResult genMap(String cacheKey, ClassInfo classInfo) { com.jsoniter.jmhbench.MutationSwitch.tick(18);
+         boolean noIndention = JsoniterSpi.getCurrentConfig().indentionStep() == 0;
+         Type[] typeArgs = classInfo.typeArgs;
+         boolean isCollectionValueNullable = true;
+diff --git a/com/jsoniter/output/JsonStream.java b/com/jsoniter/output/JsonStream.java
+index 7886bc0..c364eec 100644
+--- a/com/jsoniter/output/JsonStream.java
++++ b/com/jsoniter/output/JsonStream.java
+@@ -23,7 +23,7 @@ public class JsonStream extends OutputStream {
+         this.buf = new byte[bufSize];
+     }
+ 
+-    public void reset(OutputStream out) {
++    public void reset(OutputStream out) { com.jsoniter.jmhbench.MutationSwitch.tick(24);
+         this.out = out;
+         this.count = 0;
+     }
+@@ -119,7 +119,7 @@ public class JsonStream extends OutputStream {
+     }
+ 
+     @Override
+-    public void close() throws IOException {
++    public void close() throws IOException { com.jsoniter.jmhbench.MutationSwitch.tick(30);
+         if (out == null) {
+             return;
+         }
+diff --git a/com/jsoniter/output/JsonStreamPool.java b/com/jsoniter/output/JsonStreamPool.java
+index 5a2acb8..852a119 100644
+--- a/com/jsoniter/output/JsonStreamPool.java
++++ b/com/jsoniter/output/JsonStreamPool.java
+@@ -5,7 +5,7 @@ public class JsonStreamPool {
+     private final static ThreadLocal<JsonStream> slot1 = new ThreadLocal<JsonStream>();
+     private final static ThreadLocal<JsonStream> slot2 = new ThreadLocal<JsonStream>();
+ 
+-    public static JsonStream borrowJsonStream() {
++    public static JsonStream borrowJsonStream() { com.jsoniter.jmhbench.MutationSwitch.tick(36);
+         JsonStream stream = slot1.get();
+         if (stream != null) {
+             slot1.set(null);
+@@ -19,7 +19,7 @@ public class JsonStreamPool {
+         return new JsonStream(null, 512);
+     }
+ 
+-    public static void returnJsonStream(JsonStream jsonStream) {
++    public static void returnJsonStream(JsonStream jsonStream) { com.jsoniter.jmhbench.MutationSwitch.tick(42);
+         jsonStream.configCache = null;
+         jsonStream.indention = 0;
+         if (slot1.get() == null) {
+diff --git a/com/jsoniter/output/MapKeyEncoders.java b/com/jsoniter/output/MapKeyEncoders.java
+index 401ebfb..c2ba928 100644
+--- a/com/jsoniter/output/MapKeyEncoders.java
++++ b/com/jsoniter/output/MapKeyEncoders.java
+@@ -8,7 +8,7 @@ import java.lang.reflect.WildcardType;
+ 
+ class MapKeyEncoders {
+ 
+-    public static Encoder registerOrGetExisting(Type mapKeyType) {
++    public static Encoder registerOrGetExisting(Type mapKeyType) { com.jsoniter.jmhbench.MutationSwitch.tick(48);
+         String cacheKey = JsoniterSpi.getMapKeyEncoderCacheKey(mapKeyType);
+         Encoder mapKeyEncoder = JsoniterSpi.getMapKeyEncoder(cacheKey);
+         if (null != mapKeyEncoder) {
+diff --git a/com/jsoniter/spi/Binding.java b/com/jsoniter/spi/Binding.java
+index 72afc79..39d6650 100644
+--- a/com/jsoniter/spi/Binding.java
++++ b/com/jsoniter/spi/Binding.java
+@@ -40,11 +40,11 @@ public class Binding {
+         this.valueTypeLiteral = TypeLiteral.create(this.valueType);
+     }
+ 
+-    public String decoderCacheKey() {
++    public String decoderCacheKey() { com.jsoniter.jmhbench.MutationSwitch.tick(6);
+         return this.name + "@" + this.clazzTypeLiteral.getDecoderCacheKey();
+     }
+ 
+-    public String encoderCacheKey() {
++    public String encoderCacheKey() { com.jsoniter.jmhbench.MutationSwitch.tick(13);
+         return this.name + "@" + this.clazzTypeLiteral.getEncoderCacheKey();
+     }
+ 
+diff --git a/com/jsoniter/spi/ClassDescriptor.java b/com/jsoniter/spi/ClassDescriptor.java
+index a47dbe5..a0cc47f 100644
+--- a/com/jsoniter/spi/ClassDescriptor.java
++++ b/com/jsoniter/spi/ClassDescriptor.java
+@@ -24,7 +24,7 @@ public class ClassDescriptor {
+     private ClassDescriptor() {
+     }
+ 
+-    public static ClassDescriptor getDecodingClassDescriptor(ClassInfo classInfo, boolean includingPrivate) {
++    public static ClassDescriptor getDecodingClassDescriptor(ClassInfo classInfo, boolean includingPrivate) { com.jsoniter.jmhbench.MutationSwitch.tick(19);
+         Class clazz = classInfo.clazz;
+         Map<String, Type> lookup = collectTypeVariableLookup(classInfo.type);
+         ClassDescriptor desc = new ClassDescriptor();
+@@ -80,7 +80,7 @@ public class ClassDescriptor {
+         return desc;
+     }
+ 
+-    public static ClassDescriptor getEncodingClassDescriptor(ClassInfo classInfo, boolean includingPrivate) {
++    public static ClassDescriptor getEncodingClassDescriptor(ClassInfo classInfo, boolean includingPrivate) { com.jsoniter.jmhbench.MutationSwitch.tick(25);
+         Class clazz = classInfo.clazz;
+         Map<String, Type> lookup = collectTypeVariableLookup(classInfo.type);
+         ClassDescriptor desc = new ClassDescriptor();
+diff --git a/com/jsoniter/spi/Config.java b/com/jsoniter/spi/Config.java
+index 5b0d6c9..684af3a 100644
+--- a/com/jsoniter/spi/Config.java
++++ b/com/jsoniter/spi/Config.java
+@@ -30,11 +30,11 @@ public class Config extends EmptyExtension {
+         this.builder = builder;
+     }
+ 
+-    public String configName() {
++    public String configName() { com.jsoniter.jmhbench.MutationSwitch.tick(31);
+         return configName;
+     }
+ 
+-    public String getDecoderCacheKey(Type type) {
++    public String getDecoderCacheKey(Type type) { com.jsoniter.jmhbench.MutationSwitch.tick(37);
+         String cacheKey = decoderCacheKeys.get(type);
+         if (cacheKey != null) {
+             return cacheKey;
+diff --git a/com/jsoniter/spi/EmptyExtension.java b/com/jsoniter/spi/EmptyExtension.java
+index 5ba53f8..e9fe9cb 100644
+--- a/com/jsoniter/spi/EmptyExtension.java
++++ b/com/jsoniter/spi/EmptyExtension.java
+@@ -5,12 +5,12 @@ import java.lang.reflect.Type;
+ public class EmptyExtension implements Extension {
+ 
+     @Override
+-    public Type chooseImplementation(Type type) {
++    public Type chooseImplementation(Type type) { com.jsoniter.jmhbench.MutationSwitch.tick(43);
+         return type;
+     }
+ 
+     @Override
+-    public boolean canCreate(Class clazz) {
++    public boolean canCreate(Class clazz) { com.jsoniter.jmhbench.MutationSwitch.tick(49);
+         return false;
+     }
+ 
+diff --git a/com/jsoniter/static_codegen/StaticCodegen.java b/com/jsoniter/static_codegen/StaticCodegen.java
+index 8900258..b29c905 100644
+--- a/com/jsoniter/static_codegen/StaticCodegen.java
++++ b/com/jsoniter/static_codegen/StaticCodegen.java
+@@ -10,7 +10,7 @@ import com.jsoniter.spi.JsonException;
+ import java.io.File;
+ 
+ public class StaticCodegen {
+-    public static void main(String[] args) throws Exception {
++    public static void main(String[] args) throws Exception { com.jsoniter.jmhbench.MutationSwitch.tick(7);
+         if (args.length == 0) {
+             System.out.println("StaticCodegen configClassName [outputDir]");
+             System.out.println("configClassName: like a.b.Config, a class defining what to codegen");

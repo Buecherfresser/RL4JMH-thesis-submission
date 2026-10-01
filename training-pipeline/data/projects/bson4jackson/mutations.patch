@@ -1,0 +1,640 @@
+diff --git a/de/undercouch/bson4jackson/BsonFactory.java b/de/undercouch/bson4jackson/BsonFactory.java
+index c57cde1..ecfd997 100644
+--- a/de/undercouch/bson4jackson/BsonFactory.java
++++ b/de/undercouch/bson4jackson/BsonFactory.java
+@@ -85,7 +85,7 @@ public class BsonFactory extends JsonFactory {
+      * @param state true if the feature should be enabled, false otherwise
+      * @return this BsonFactory
+      */
+-    public final BsonFactory configure(BsonGenerator.Feature f, boolean state) {
++    public final BsonFactory configure(BsonGenerator.Feature f, boolean state) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(16);
+         if (state) {
+             return enable(f);
+         }
+@@ -98,7 +98,7 @@ public class BsonFactory extends JsonFactory {
+      * @param f the feature to enable
+      * @return this BsonFactory
+      */
+-    public BsonFactory enable(BsonGenerator.Feature f) {
++    public BsonFactory enable(BsonGenerator.Feature f) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(21);
+         _bsonGeneratorFeatures |= f.getMask();
+         return this;
+     }
+@@ -109,7 +109,7 @@ public class BsonFactory extends JsonFactory {
+      * @param f the feature to disable
+      * @return this BsonFactory
+      */
+-    public BsonFactory disable(BsonGenerator.Feature f) {
++    public BsonFactory disable(BsonGenerator.Feature f) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(26);
+         _bsonGeneratorFeatures &= ~f.getMask();
+         return this;
+     }
+diff --git a/de/undercouch/bson4jackson/BsonGenerator.java b/de/undercouch/bson4jackson/BsonGenerator.java
+index 1fb169f..c616278 100644
+--- a/de/undercouch/bson4jackson/BsonGenerator.java
++++ b/de/undercouch/bson4jackson/BsonGenerator.java
+@@ -75,7 +75,7 @@ public class BsonGenerator extends GeneratorBase {
+         /**
+          * @return the bit mask that identifies this feature
+          */
+-        public int getMask() {
++        public int getMask() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(31);
+             return 1 << ordinal();
+         }
+     }
+@@ -191,7 +191,7 @@ public class BsonGenerator extends GeneratorBase {
+     }
+ 
+     @Override
+-    public JsonGenerator setCharacterEscapes(CharacterEscapes esc) {
++    public JsonGenerator setCharacterEscapes(CharacterEscapes esc) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(35);
+         _characterEscapes = esc;
+         if (esc == null) {
+             _outputEscapes = null;
+@@ -202,7 +202,7 @@ public class BsonGenerator extends GeneratorBase {
+     }
+ 
+     @Override
+-    public CharacterEscapes getCharacterEscapes() {
++    public CharacterEscapes getCharacterEscapes() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(39);
+         return _characterEscapes;
+     }
+ 
+diff --git a/de/undercouch/bson4jackson/BsonModule.java b/de/undercouch/bson4jackson/BsonModule.java
+index 1dff576..8c30d73 100644
+--- a/de/undercouch/bson4jackson/BsonModule.java
++++ b/de/undercouch/bson4jackson/BsonModule.java
+@@ -11,17 +11,17 @@ import de.undercouch.bson4jackson.serializers.BsonSerializers;
+  */
+ public class BsonModule extends JacksonModule {
+     @Override
+-    public String getModuleName() {
++    public String getModuleName() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(43);
+         return "BsonModule";
+     }
+ 
+     @Override
+-    public Version version() {
++    public Version version() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(46);
+         return new Version(3, 0, 0, "", "de.undercouch", "bson4jackson");
+     }
+ 
+     @Override
+-    public void setupModule(SetupContext context) {
++    public void setupModule(SetupContext context) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(49);
+         context.addSerializers(new BsonSerializers());
+         context.addDeserializers(new BsonDeserializers());
+     }
+diff --git a/de/undercouch/bson4jackson/BsonParser.java b/de/undercouch/bson4jackson/BsonParser.java
+index 5b26495..6e15777 100644
+--- a/de/undercouch/bson4jackson/BsonParser.java
++++ b/de/undercouch/bson4jackson/BsonParser.java
+@@ -59,7 +59,7 @@ public class BsonParser extends ParserBase {
+         /**
+          * @return the bit mask that identifies this feature
+          */
+-        public int getMask() {
++        public int getMask() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(1);
+             return 1 << ordinal();
+         }
+     }
+@@ -133,12 +133,12 @@ public class BsonParser extends ParserBase {
+      * @param f the feature
+      * @return true if the given feature is enabled
+      */
+-    protected boolean isEnabled(Feature f) {
++    protected boolean isEnabled(Feature f) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(6);
+         return (_bsonFeatures & f.getMask()) != 0;
+     }
+ 
+     @Override
+-    public boolean isExpectedStartArrayToken() {
++    public boolean isExpectedStartArrayToken() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(11);
+         JsonToken t = _currToken;
+         if (t == JsonToken.START_OBJECT) {
+             // FIX FOR ISSUE #31:
+diff --git a/de/undercouch/bson4jackson/deserializers/BsonCalendarDeserializer.java b/de/undercouch/bson4jackson/deserializers/BsonCalendarDeserializer.java
+index f8a315e..a031b32 100644
+--- a/de/undercouch/bson4jackson/deserializers/BsonCalendarDeserializer.java
++++ b/de/undercouch/bson4jackson/deserializers/BsonCalendarDeserializer.java
+@@ -16,7 +16,7 @@ import java.util.Date;
+  */
+ public class BsonCalendarDeserializer extends ValueDeserializer<Calendar> {
+     @Override
+-    public Calendar deserialize(JsonParser jp, DeserializationContext ctxt) {
++    public Calendar deserialize(JsonParser jp, DeserializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(2);
+         if (jp instanceof BsonParser bsonParser) {
+             if (bsonParser.currentToken() != JsonToken.VALUE_EMBEDDED_OBJECT ||
+                     bsonParser.getCurrentBsonType() != BsonConstants.TYPE_DATETIME) {
+diff --git a/de/undercouch/bson4jackson/deserializers/BsonDateDeserializer.java b/de/undercouch/bson4jackson/deserializers/BsonDateDeserializer.java
+index 8ab2316..0cc2394 100644
+--- a/de/undercouch/bson4jackson/deserializers/BsonDateDeserializer.java
++++ b/de/undercouch/bson4jackson/deserializers/BsonDateDeserializer.java
+@@ -15,7 +15,7 @@ import java.util.Date;
+  */
+ public class BsonDateDeserializer extends ValueDeserializer<Date> {
+     @Override
+-    public Date deserialize(JsonParser jp, DeserializationContext ctxt) {
++    public Date deserialize(JsonParser jp, DeserializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(7);
+         if (jp instanceof BsonParser bsonParser) {
+             if (bsonParser.currentToken() != JsonToken.VALUE_EMBEDDED_OBJECT ||
+                     bsonParser.getCurrentBsonType() != BsonConstants.TYPE_DATETIME) {
+diff --git a/de/undercouch/bson4jackson/deserializers/BsonJavaScriptDeserializer.java b/de/undercouch/bson4jackson/deserializers/BsonJavaScriptDeserializer.java
+index 0d0ed0f..90112f4 100644
+--- a/de/undercouch/bson4jackson/deserializers/BsonJavaScriptDeserializer.java
++++ b/de/undercouch/bson4jackson/deserializers/BsonJavaScriptDeserializer.java
+@@ -20,7 +20,7 @@ import java.util.Map;
+  */
+ public class BsonJavaScriptDeserializer extends ValueDeserializer<JavaScript> {
+     @Override
+-    public JavaScript deserialize(JsonParser jp, DeserializationContext ctxt) {
++    public JavaScript deserialize(JsonParser jp, DeserializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(12);
+         if (jp instanceof BsonParser bsonParser) {
+             if (bsonParser.currentToken() != JsonToken.VALUE_EMBEDDED_OBJECT ||
+                     (bsonParser.getCurrentBsonType() != BsonConstants.TYPE_JAVASCRIPT &&
+diff --git a/de/undercouch/bson4jackson/deserializers/BsonObjectIdDeserializer.java b/de/undercouch/bson4jackson/deserializers/BsonObjectIdDeserializer.java
+index d6f308b..1454951 100644
+--- a/de/undercouch/bson4jackson/deserializers/BsonObjectIdDeserializer.java
++++ b/de/undercouch/bson4jackson/deserializers/BsonObjectIdDeserializer.java
+@@ -16,7 +16,7 @@ import tools.jackson.databind.node.ValueNode;
+  */
+ public class BsonObjectIdDeserializer extends ValueDeserializer<ObjectId> {
+     @Override
+-    public ObjectId deserialize(JsonParser jp, DeserializationContext ctxt) {
++    public ObjectId deserialize(JsonParser jp, DeserializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(17);
+         if (jp instanceof BsonParser bsonParser) {
+             if (bsonParser.currentToken() != JsonToken.VALUE_EMBEDDED_OBJECT ||
+                     bsonParser.getCurrentBsonType() != BsonConstants.TYPE_OBJECTID) {
+diff --git a/de/undercouch/bson4jackson/deserializers/BsonRegexDeserializer.java b/de/undercouch/bson4jackson/deserializers/BsonRegexDeserializer.java
+index 650ea20..c4c769a 100644
+--- a/de/undercouch/bson4jackson/deserializers/BsonRegexDeserializer.java
++++ b/de/undercouch/bson4jackson/deserializers/BsonRegexDeserializer.java
+@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
+  */
+ public class BsonRegexDeserializer extends ValueDeserializer<Pattern> {
+     @Override
+-    public Pattern deserialize(JsonParser jp, DeserializationContext ctxt) {
++    public Pattern deserialize(JsonParser jp, DeserializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(22);
+         if (jp instanceof BsonParser bsonParser) {
+             if (bsonParser.currentToken() != JsonToken.VALUE_EMBEDDED_OBJECT ||
+                     bsonParser.getCurrentBsonType() != BsonConstants.TYPE_REGEX) {
+diff --git a/de/undercouch/bson4jackson/deserializers/BsonTimestampDeserializer.java b/de/undercouch/bson4jackson/deserializers/BsonTimestampDeserializer.java
+index 872b972..89c8936 100644
+--- a/de/undercouch/bson4jackson/deserializers/BsonTimestampDeserializer.java
++++ b/de/undercouch/bson4jackson/deserializers/BsonTimestampDeserializer.java
+@@ -16,7 +16,7 @@ import de.undercouch.bson4jackson.types.Timestamp;
+  */
+ public class BsonTimestampDeserializer extends ValueDeserializer<Timestamp> {
+     @Override
+-    public Timestamp deserialize(JsonParser jp, DeserializationContext ctxt) {
++    public Timestamp deserialize(JsonParser jp, DeserializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(27);
+         if (jp instanceof BsonParser bsonParser) {
+             if (bsonParser.currentToken() != JsonToken.VALUE_EMBEDDED_OBJECT ||
+                     bsonParser.getCurrentBsonType() != BsonConstants.TYPE_TIMESTAMP) {
+diff --git a/de/undercouch/bson4jackson/io/BoundedInputStream.java b/de/undercouch/bson4jackson/io/BoundedInputStream.java
+index 2137172..20f0be6 100644
+--- a/de/undercouch/bson4jackson/io/BoundedInputStream.java
++++ b/de/undercouch/bson4jackson/io/BoundedInputStream.java
+@@ -89,13 +89,13 @@ public class BoundedInputStream extends FilterInputStream {
+     }
+ 
+     @Override
+-    public void mark(int readlimit) {
++    public void mark(int readlimit) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(3);
+         mark = count;
+         super.mark(readlimit);
+     }
+ 
+     @Override
+-    public void reset() throws IOException {
++    public void reset() throws IOException { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(8);
+         if (super.markSupported()) {
+             count = mark;
+         }
+diff --git a/de/undercouch/bson4jackson/io/ByteOrderUtil.java b/de/undercouch/bson4jackson/io/ByteOrderUtil.java
+index 899d0a6..70482f2 100644
+--- a/de/undercouch/bson4jackson/io/ByteOrderUtil.java
++++ b/de/undercouch/bson4jackson/io/ByteOrderUtil.java
+@@ -9,7 +9,7 @@ public class ByteOrderUtil {
+      * @param i the integer
+      * @return the flipped integer
+      */
+-    public static int flip(int i) {
++    public static int flip(int i) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(13);
+         int result = 0;
+         result |= (i & 0xFF) << 24;
+         result |= (i & 0xFF00) << 8;
+diff --git a/de/undercouch/bson4jackson/io/CountingInputStream.java b/de/undercouch/bson4jackson/io/CountingInputStream.java
+index f219605..4ab9a5a 100644
+--- a/de/undercouch/bson4jackson/io/CountingInputStream.java
++++ b/de/undercouch/bson4jackson/io/CountingInputStream.java
+@@ -29,7 +29,7 @@ public class CountingInputStream extends FilterInputStream {
+     /**
+      * @return the number of bytes read or skipped
+      */
+-    public int getPosition() {
++    public int getPosition() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(18);
+         return _pos;
+     }
+ 
+@@ -70,13 +70,13 @@ public class CountingInputStream extends FilterInputStream {
+     }
+ 
+     @Override
+-    public synchronized void mark(int readlimit) {
++    public synchronized void mark(int readlimit) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(23);
+         _markpos = _pos;
+         super.mark(readlimit);
+     }
+ 
+     @Override
+-    public synchronized void reset() throws IOException {
++    public synchronized void reset() throws IOException { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(28);
+         super.reset();
+         _pos = _markpos;
+     }
+diff --git a/de/undercouch/bson4jackson/io/DynamicOutputBuffer.java b/de/undercouch/bson4jackson/io/DynamicOutputBuffer.java
+index a70fdc2..3dcddd2 100644
+--- a/de/undercouch/bson4jackson/io/DynamicOutputBuffer.java
++++ b/de/undercouch/bson4jackson/io/DynamicOutputBuffer.java
+@@ -158,7 +158,7 @@ public class DynamicOutputBuffer {
+      * before allocating a new one.
+      * @param count the number of buffers to save for reuse
+      */
+-    public void setReuseBuffersCount(int count) {
++    public void setReuseBuffersCount(int count) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(32);
+         _reuseBuffersCount = count;
+         if (_buffersToReuse != null) {
+             if (_reuseBuffersCount == 0) {
+@@ -175,7 +175,7 @@ public class DynamicOutputBuffer {
+      * Allocates a new buffer or attempts to reuse an existing one.
+      * @return a new buffer with the current buffer size and the current byte order
+      */
+-    protected ByteBuffer allocateBuffer() {
++    protected ByteBuffer allocateBuffer() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(36);
+         if (_buffersToReuse != null && !_buffersToReuse.isEmpty()) {
+             ByteBuffer bb = _buffersToReuse.poll();
+             bb.rewind();
+@@ -192,7 +192,7 @@ public class DynamicOutputBuffer {
+      * reuse if this feature is enabled.
+      * @param n the number of the buffer to remove
+      */
+-    protected void deallocateBuffer(int n) {
++    protected void deallocateBuffer(int n) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(40);
+         ByteBuffer bb = _buffers.set(n, null);
+         if (bb != null && _reuseBuffersCount > 0) {
+             if (_buffersToReuse == null) {
+diff --git a/de/undercouch/bson4jackson/io/LittleEndianInputStream.java b/de/undercouch/bson4jackson/io/LittleEndianInputStream.java
+index d0358e8..b1e43f8 100644
+--- a/de/undercouch/bson4jackson/io/LittleEndianInputStream.java
++++ b/de/undercouch/bson4jackson/io/LittleEndianInputStream.java
+@@ -69,12 +69,12 @@ public class LittleEndianInputStream extends FilterInputStream implements DataIn
+     }
+ 
+     @Override
+-    public void readFully(byte[] b) throws IOException {
++    public void readFully(byte[] b) throws IOException { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(44);
+         readFully(b, 0, b.length);
+     }
+ 
+     @Override
+-    public void readFully(byte[] b, int off, int len) throws IOException {
++    public void readFully(byte[] b, int off, int len) throws IOException { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(47);
+         while (len > 0) {
+             int r = read(b, off, len);
+             if (r < 0) {
+@@ -86,7 +86,7 @@ public class LittleEndianInputStream extends FilterInputStream implements DataIn
+     }
+ 
+     @Override
+-    public int skipBytes(int n) throws IOException {
++    public int skipBytes(int n) throws IOException { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(50);
+         int r = 0;
+         while (n > 0) {
+             long s = skip(n);
+diff --git a/de/undercouch/bson4jackson/jmhbench/MutationSwitch.java b/de/undercouch/bson4jackson/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..9b3308c
+--- /dev/null
++++ b/de/undercouch/bson4jackson/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package de.undercouch.bson4jackson.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/de/undercouch/bson4jackson/serializers/BsonCalendarSerializer.java b/de/undercouch/bson4jackson/serializers/BsonCalendarSerializer.java
+index 90325b7..d523134 100644
+--- a/de/undercouch/bson4jackson/serializers/BsonCalendarSerializer.java
++++ b/de/undercouch/bson4jackson/serializers/BsonCalendarSerializer.java
+@@ -14,7 +14,7 @@ import java.util.Calendar;
+ public class BsonCalendarSerializer extends ValueSerializer<Calendar> {
+     @Override
+     public void serialize(Calendar value, JsonGenerator gen,
+-            SerializationContext ctxt) {
++            SerializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(4);
+         if (value == null) {
+             ctxt.defaultSerializeNullValue(gen);
+         } else if (gen instanceof BsonGenerator bgen) {
+diff --git a/de/undercouch/bson4jackson/serializers/BsonDateSerializer.java b/de/undercouch/bson4jackson/serializers/BsonDateSerializer.java
+index 044b022..546f409 100644
+--- a/de/undercouch/bson4jackson/serializers/BsonDateSerializer.java
++++ b/de/undercouch/bson4jackson/serializers/BsonDateSerializer.java
+@@ -14,7 +14,7 @@ import java.util.Date;
+ public class BsonDateSerializer extends ValueSerializer<Date> {
+     @Override
+     public void serialize(Date value, JsonGenerator gen,
+-            SerializationContext ctxt) {
++            SerializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(9);
+         if (value == null) {
+             ctxt.defaultSerializeNullValue(gen);
+         } else if (gen instanceof BsonGenerator bgen) {
+diff --git a/de/undercouch/bson4jackson/serializers/BsonJavaScriptSerializer.java b/de/undercouch/bson4jackson/serializers/BsonJavaScriptSerializer.java
+index a38399a..359f7b4 100644
+--- a/de/undercouch/bson4jackson/serializers/BsonJavaScriptSerializer.java
++++ b/de/undercouch/bson4jackson/serializers/BsonJavaScriptSerializer.java
+@@ -13,7 +13,7 @@ import tools.jackson.databind.ValueSerializer;
+ public class BsonJavaScriptSerializer extends ValueSerializer<JavaScript> {
+     @Override
+     public void serialize(JavaScript value, JsonGenerator gen,
+-            SerializationContext ctxt) {
++            SerializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(14);
+         if (value == null) {
+             ctxt.defaultSerializeNullValue(gen);
+         } else if (gen instanceof BsonGenerator bgen) {
+diff --git a/de/undercouch/bson4jackson/serializers/BsonObjectIdSerializer.java b/de/undercouch/bson4jackson/serializers/BsonObjectIdSerializer.java
+index 41ada2f..0de52cf 100644
+--- a/de/undercouch/bson4jackson/serializers/BsonObjectIdSerializer.java
++++ b/de/undercouch/bson4jackson/serializers/BsonObjectIdSerializer.java
+@@ -13,7 +13,7 @@ import tools.jackson.databind.ValueSerializer;
+ public class BsonObjectIdSerializer extends ValueSerializer<ObjectId> {
+     @Override
+     public void serialize(ObjectId value, JsonGenerator gen,
+-            SerializationContext ctxt) {
++            SerializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(19);
+         if (value == null) {
+             ctxt.defaultSerializeNullValue(gen);
+         } else if (gen instanceof BsonGenerator bgen) {
+diff --git a/de/undercouch/bson4jackson/serializers/BsonRegexSerializer.java b/de/undercouch/bson4jackson/serializers/BsonRegexSerializer.java
+index 6c8f687..e1b8024 100644
+--- a/de/undercouch/bson4jackson/serializers/BsonRegexSerializer.java
++++ b/de/undercouch/bson4jackson/serializers/BsonRegexSerializer.java
+@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
+ public class BsonRegexSerializer extends ValueSerializer<Pattern> {
+     @Override
+     public void serialize(Pattern value, JsonGenerator gen,
+-            SerializationContext ctxt) {
++            SerializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(24);
+         if (value == null) {
+             ctxt.defaultSerializeNullValue(gen);
+         } else if (gen instanceof BsonGenerator bgen) {
+diff --git a/de/undercouch/bson4jackson/serializers/BsonSymbolSerializer.java b/de/undercouch/bson4jackson/serializers/BsonSymbolSerializer.java
+index 835ce44..d04b7d4 100644
+--- a/de/undercouch/bson4jackson/serializers/BsonSymbolSerializer.java
++++ b/de/undercouch/bson4jackson/serializers/BsonSymbolSerializer.java
+@@ -13,7 +13,7 @@ import tools.jackson.databind.ValueSerializer;
+ public class BsonSymbolSerializer extends ValueSerializer<Symbol> {
+     @Override
+     public void serialize(Symbol value, JsonGenerator gen,
+-            SerializationContext ctxt) {
++            SerializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(29);
+         if (value == null) {
+             ctxt.defaultSerializeNullValue(gen);
+         } else if (gen instanceof BsonGenerator bgen) {
+diff --git a/de/undercouch/bson4jackson/serializers/BsonTimestampSerializer.java b/de/undercouch/bson4jackson/serializers/BsonTimestampSerializer.java
+index b23b3db..2a573d6 100644
+--- a/de/undercouch/bson4jackson/serializers/BsonTimestampSerializer.java
++++ b/de/undercouch/bson4jackson/serializers/BsonTimestampSerializer.java
+@@ -13,7 +13,7 @@ import tools.jackson.databind.ValueSerializer;
+ public class BsonTimestampSerializer extends ValueSerializer<Timestamp> {
+     @Override
+     public void serialize(Timestamp value, JsonGenerator gen,
+-            SerializationContext ctxt) {
++            SerializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(33);
+         if (value == null) {
+             ctxt.defaultSerializeNullValue(gen);
+         } else if (gen instanceof BsonGenerator bgen) {
+diff --git a/de/undercouch/bson4jackson/serializers/BsonUuidSerializer.java b/de/undercouch/bson4jackson/serializers/BsonUuidSerializer.java
+index 0178eac..428c919 100644
+--- a/de/undercouch/bson4jackson/serializers/BsonUuidSerializer.java
++++ b/de/undercouch/bson4jackson/serializers/BsonUuidSerializer.java
+@@ -15,7 +15,7 @@ import java.util.UUID;
+ public class BsonUuidSerializer extends ValueSerializer<UUID> {
+     @Override
+     public void serialize(UUID value, JsonGenerator gen,
+-            SerializationContext ctxt) {
++            SerializationContext ctxt) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(37);
+         if (gen instanceof BsonGenerator bgen) {
+             bgen.writeBinary(null, BsonConstants.SUBTYPE_UUID,
+                     uuidToLittleEndianBytes(value), 0, 16);
+@@ -29,7 +29,7 @@ public class BsonUuidSerializer extends ValueSerializer<UUID> {
+      * @param uuid The UUID to convert
+      * @return a byte array representing the UUID in little endian format
+      */
+-    protected static byte[] uuidToLittleEndianBytes(UUID uuid) {
++    protected static byte[] uuidToLittleEndianBytes(UUID uuid) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(41);
+         long msb = uuid.getMostSignificantBits();
+         long lsb = uuid.getLeastSignificantBits();
+         byte[] buffer = new byte[16];
+diff --git a/de/undercouch/bson4jackson/types/Decimal128.java b/de/undercouch/bson4jackson/types/Decimal128.java
+index e85b2bd..c69250d 100644
+--- a/de/undercouch/bson4jackson/types/Decimal128.java
++++ b/de/undercouch/bson4jackson/types/Decimal128.java
+@@ -108,7 +108,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
+      * <a href="https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst#from-string-representation">
+      *     From-String Specification</a>
+      */
+-    public static Decimal128 parse(final String value) {
++    public static Decimal128 parse(final String value) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(5);
+         String lowerCasedValue = value.toLowerCase();
+ 
+         if (NaN_STRINGS.contains(lowerCasedValue)) {
+@@ -134,7 +134,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
+      * @param low  the low-order 64 bits
+      * @return the Decimal128 value representing the given high and low order bits
+      */
+-    public static Decimal128 fromIEEE754BIDEncoding(final long high, final long low) {
++    public static Decimal128 fromIEEE754BIDEncoding(final long high, final long low) { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(10);
+         return new Decimal128(high, low);
+     }
+ 
+@@ -254,7 +254,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
+      *
+      * @return the high-order 64 bits of this Decimal128
+      */
+-    public long getHigh() {
++    public long getHigh() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(15);
+         return high;
+     }
+ 
+diff --git a/de/undercouch/bson4jackson/types/JavaScript.java b/de/undercouch/bson4jackson/types/JavaScript.java
+index fe9fbd0..9bd294b 100644
+--- a/de/undercouch/bson4jackson/types/JavaScript.java
++++ b/de/undercouch/bson4jackson/types/JavaScript.java
+@@ -37,14 +37,14 @@ public class JavaScript {
+     /**
+      * @return the actual code
+      */
+-    public String getCode() {
++    public String getCode() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(20);
+         return _code;
+     }
+ 
+     /**
+      * @return the scope (may be null)
+      */
+-    public Map<String, Object> getScope() {
++    public Map<String, Object> getScope() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(25);
+         return _scope;
+     }
+ }
+diff --git a/de/undercouch/bson4jackson/types/ObjectId.java b/de/undercouch/bson4jackson/types/ObjectId.java
+index 04826c5..f8fa53c 100644
+--- a/de/undercouch/bson4jackson/types/ObjectId.java
++++ b/de/undercouch/bson4jackson/types/ObjectId.java
+@@ -27,21 +27,21 @@ public class ObjectId {
+     /**
+      * @return the timestamp
+      */
+-    public int getTimestamp() {
++    public int getTimestamp() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(30);
+         return timestamp;
+     }
+ 
+     /**
+      * @return the counter
+      */
+-    public int getCounter() {
++    public int getCounter() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(34);
+         return counter;
+     }
+ 
+     /**
+      * @return a random value
+      */
+-    public int getRandomValue1() {
++    public int getRandomValue1() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(38);
+         return randomValue1;
+     }
+ 
+diff --git a/de/undercouch/bson4jackson/types/Symbol.java b/de/undercouch/bson4jackson/types/Symbol.java
+index 51d197a..9245681 100644
+--- a/de/undercouch/bson4jackson/types/Symbol.java
++++ b/de/undercouch/bson4jackson/types/Symbol.java
+@@ -20,7 +20,7 @@ public class Symbol {
+     /**
+      * @return the actual symbol
+      */
+-    public String getSymbol() {
++    public String getSymbol() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(42);
+         return _symbol;
+     }
+ 
+diff --git a/de/undercouch/bson4jackson/types/Timestamp.java b/de/undercouch/bson4jackson/types/Timestamp.java
+index c2954a7..99d453c 100644
+--- a/de/undercouch/bson4jackson/types/Timestamp.java
++++ b/de/undercouch/bson4jackson/types/Timestamp.java
+@@ -27,14 +27,14 @@ public class Timestamp {
+     /**
+      * @return the increment
+      */
+-    public int getInc() {
++    public int getInc() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(45);
+         return _inc;
+     }
+ 
+     /**
+      * @return the actual timestamp
+      */
+-    public int getTime() {
++    public int getTime() { de.undercouch.bson4jackson.jmhbench.MutationSwitch.tick(48);
+         return _time;
+     }
+ 

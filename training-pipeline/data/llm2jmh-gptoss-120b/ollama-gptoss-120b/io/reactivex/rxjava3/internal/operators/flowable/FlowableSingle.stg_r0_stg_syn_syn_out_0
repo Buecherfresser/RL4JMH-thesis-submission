@@ -1,0 +1,119 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link FlowableSingle}.
+ *
+ * Measures the throughput of the operator under three typical scenarios:
+ *   - empty source (should complete or error depending on configuration)
+ *   - single-element source (normal successful path)
+ *   - multiple-element source (error path)
+ *
+ * The benchmark uses {@code blockingFirst()} to force subscription
+ * and terminal signal propagation while consuming the result with a {@link Blackhole}
+ * to avoid dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableSingleBenchmark {
+
+    /**
+     * Scenario selector.
+     * <ul>
+     *   <li>empty    – Flowable.empty()</li>
+     *   <li>single   – Flowable.just(42)</li>
+     *   <li>multiple – Flowable.range(1, 10)</li>
+     * </ul>
+     */
+    @Param({ "empty", "single", "multiple" })
+    public String scenario;
+
+    private Flowable<Integer> source;
+
+    private Flowable<Integer> singleFlowable;
+
+    /**
+     * Creates the source Flowable and wraps it with {@link FlowableSingle}
+     * before each iteration. This isolates benchmark iterations from each other
+     * and ensures a fresh subscription chain.
+     */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        switch(scenario) {
+            case "empty":
+                source = Flowable.empty();
+                // failOnEmpty = true to trigger NoSuchElementException on empty
+                singleFlowable = new FlowableSingle<>(source, null, true);
+                break;
+            case "single":
+                source = Flowable.just(42);
+                singleFlowable = new FlowableSingle<>(source, null, true);
+                break;
+            case "multiple":
+                source = Flowable.range(1, 10);
+                singleFlowable = new FlowableSingle<>(source, null, true);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported scenario: " + scenario);
+        }
+    }
+
+    /**
+     * Executes the FlowableSingle operator and consumes the terminal signal.
+     * Using {@code blockingFirst()} forces the whole reactive chain to run
+     * synchronously, which is appropriate for a micro‑benchmark measuring
+     * raw operator overhead.
+     *
+     * @param bh Blackhole to consume results and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void runSingle(Blackhole bh) {
+        try {
+            // For the error case (multiple elements) blockingFirst() will throw.
+            Integer result = singleFlowable.blockingFirst();
+            bh.consume(result);
+        } catch (Throwable t) {
+            // Consume the exception to keep the benchmark realistic.
+            bh.consume(t);
+        }
+    }
+}

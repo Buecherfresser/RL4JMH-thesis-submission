@@ -1,0 +1,106 @@
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link CompletableMergeArray}.
+ *
+ * The benchmark measures the throughput of merging a configurable number of
+ * already completed {@link CompletableSource}s. The sources are created once
+ * in the {@link Setup} phase to avoid measuring allocation overhead.
+ *
+ * Best practices applied:
+ * - Use {@code @State(Scope.Thread)} to keep benchmark data isolated per thread.
+ * - Parameterize the number of merged sources to explore scaling behavior.
+ * - Use {@code Mode.Throughput} with a time unit of {@code TimeUnit.SECONDS}.
+ * - Include warm‑up and measurement iterations, as well as multiple forks.
+ * - Avoid dead code elimination by performing a real subscription and
+ *   blocking until completion.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class CompletableMergeArrayBenchmark {
+
+    /**
+     * Number of Completable sources to merge.
+     * Typical values explore small to large merges.
+     */
+    @Param({ "1", "10", "100", "1000" })
+    public int sourceCount;
+
+    /**
+     * Array of already completed CompletableSources used in the benchmark.
+     */
+    private CompletableSource[] sources;
+
+    /**
+     * The CompletableMergeArray instance created per iteration.
+     */
+    private Completable merge;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create an array of already completed CompletableSources.
+        sources = new CompletableSource[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            sources[i] = Completable.complete();
+        }
+    }
+
+    @Setup(Level.Iteration)
+    public void createMerge() {
+        // Create a fresh CompletableMergeArray for each measurement iteration.
+        merge = new CompletableMergeArray(sources);
+    }
+
+    /**
+     * Benchmark method that subscribes to the merge and blocks until all
+     * sources have completed. The blocking call ensures the whole merge
+     * operation is measured.
+     */
+    @Benchmark
+    public void mergeAndAwait() {
+        // blockingAwait returns true if completed without error.
+        // The result is ignored because the operation itself is the subject
+        // of measurement.
+        merge.blockingAwait();
+    }
+}

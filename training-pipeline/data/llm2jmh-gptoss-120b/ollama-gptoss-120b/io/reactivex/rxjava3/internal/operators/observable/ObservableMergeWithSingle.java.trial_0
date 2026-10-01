@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableMergeWithSingle}.
+ *
+ * The benchmark measures the throughput of merging an {@link Observable} with a {@link Single}
+ * under two typical scenarios:
+ *
+ * 1. Fast‑path: the source Observable emits a single item, so no internal queue is used.
+ * 2. Queue‑path: the source Observable emits many items, forcing the operator to use its
+ *    {@link io.reactivex.rxjava3.operators.SpscLinkedArrayQueue}.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * - State is scoped to a thread to avoid contention.
+ * - Sources are created once per trial in {@link #setup()}.
+ * - The merged Observable is recreated for each iteration to ensure a fresh subscription.
+ * - {@link Blackhole} consumes the emitted items to prevent dead‑code elimination.
+ * - Warm‑up, measurement, and fork settings are chosen to provide stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class ObservableMergeWithSingleBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     * Small values trigger the fast‑path (no queue), larger values trigger the queue‑path.
+     */
+    @Param({"1", "1000"})
+    public int sourceSize;
+
+    private Observable<Integer> source;
+    private Single<Integer> single;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Observable that emits a range of integers.
+        source = Observable.range(1, sourceSize);
+        // Single that emits a single integer (zero).
+        single = Single.just(0);
+    }
+
+    /**
+     * Executes the mergeWith operator and consumes all emitted items.
+     *
+     * @param bh Blackhole to consume the items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void mergeWithSingle(Blackhole bh) {
+        // Create a fresh merged Observable for each iteration to get a new subscription.
+        Observable<Integer> merged = source.mergeWith(single);
+        // blockingSubscribe guarantees the benchmark thread waits until the stream completes.
+        merged.blockingSubscribe(bh::consume);
+    }
+}
+```

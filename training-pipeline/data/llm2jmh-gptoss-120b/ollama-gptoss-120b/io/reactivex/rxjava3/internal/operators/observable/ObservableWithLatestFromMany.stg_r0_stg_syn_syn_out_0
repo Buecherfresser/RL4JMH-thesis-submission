@@ -1,0 +1,115 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link ObservableWithLatestFromMany}.
+ * Measures throughput (items processed per second) of the operator
+ * with a configurable number of source items and other observables.
+ *
+ * Best practices applied:
+ * - Use @State with Scope.Thread to avoid sharing mutable state across threads.
+ * - Initialize heavy objects in @Setup(Level.Trial) to exclude construction cost.
+ * - Use Blackhole to consume results and prevent dead‑code elimination.
+ * - Run the benchmark in Mode.Throughput with a time unit of seconds.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ObservableWithLatestFromManyBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the main source observable.
+         */
+        @Param({ "1000", "10000", "100000" })
+        public int sourceItemCount;
+
+        /**
+         * Number of "other" observables combined with the source.
+         */
+        @Param({ "2", "4", "8" })
+        public int otherCount;
+
+        /**
+         * Main source observable.
+         */
+        Observable<Integer> source;
+
+        /**
+         * Array of other observables.
+         */
+        ObservableSource<?>[] others;
+
+        /**
+         * Combiner that sums all values (source + others).
+         */
+        Function<Object[], Integer> combiner;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Main source emits a range of integers.
+            source = Observable.range(1, sourceItemCount);
+            // Each "other" observable emits a single constant value.
+            others = new ObservableSource<?>[otherCount];
+            for (int i = 0; i < otherCount; i++) {
+                others[i] = Observable.just(1);
+            }
+            // Simple combiner: sum of all numbers (source value + each other value).
+            combiner = objects -> {
+                int sum = 0;
+                for (Object o : objects) {
+                    sum += ((Number) o).intValue();
+                }
+                return sum;
+            };
+        }
+    }
+
+    @Benchmark
+    public void withLatestFromMany(BenchmarkState state, Blackhole bh) {
+        // Create the operator instance directly (public constructor).
+        ObservableWithLatestFromMany<Integer, Integer> observable = new ObservableWithLatestFromMany<>(state.source, state.others, state.combiner);
+        // Subscribe and consume all items, ensuring the pipeline runs to completion.
+        observable.blockingSubscribe(bh::consume);
+    }
+}

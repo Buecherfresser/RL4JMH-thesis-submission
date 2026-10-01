@@ -1,0 +1,81 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmarks for the {@code Flowable.buffer} operator which internally uses
+ * {@code FlowableBuffer}. The benchmarks cover the three buffering strategies:
+ *
+ * <ul>
+ *   <li>Exact buffering (size == skip)</li>
+ *   <li>Skipping buffering (skip > size)</li>
+ *   <li>Overlapping buffering (skip < size)</li>
+ * </ul>
+ *
+ * The source is a hot {@link Flowable} emitting a large number of integers.
+ * Results are consumed via {@link Blackhole} to avoid dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableBufferBenchmark {
+
+    /** Number of items emitted by the source Flowable. */
+    @Param({ "1000000" })
+    public int itemCount;
+
+    /** Buffer size for the benchmark. */
+    @Param({ "10", "100", "1000" })
+    public int size;
+
+    /** Skip value for the benchmark. */
+    @Param({ "10", "20", "5" })
+    public int skip;
+
+    /** Source Flowable used by all benchmark methods. */
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A simple range source; using computation scheduler to emulate async upstream.
+        source = Flowable.range(1, itemCount)
+                         .subscribeOn(Schedulers.computation())
+                         .hide(); // hide to avoid fusion optimisations that bypass the operator
+    }
+
+    /** Exact buffering: size == skip. */
+    @Benchmark
+    public void exactBuffer(Blackhole bh) {
+        source.buffer(size)
+              .subscribe(bh::consume,
+                         t -> bh.consume(t),
+                         () -> {});
+    }
+
+    /** Skipping buffering: skip > size. */
+    @Benchmark
+    public void skipBuffer(Blackhole bh) {
+        source.buffer(size, skip)
+              .subscribe(bh::consume,
+                         t -> bh.consume(t),
+                         () -> {});
+    }
+
+    /** Overlapping buffering: skip < size. */
+    @Benchmark
+    public void overlappingBuffer(Blackhole bh) {
+        source.buffer(size, skip)
+              .subscribe(bh::consume,
+                         t -> bh.consume(t),
+                         () -> {});
+    }
+}
+```

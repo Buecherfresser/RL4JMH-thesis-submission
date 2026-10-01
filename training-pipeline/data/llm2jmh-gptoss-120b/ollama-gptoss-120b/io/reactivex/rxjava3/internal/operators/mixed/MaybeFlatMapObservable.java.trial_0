@@ -1,0 +1,62 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@code MaybeFlatMapObservable} operator.
+ *
+ * <p>Measures the throughput of flatMapping a {@code Maybe} into an {@code Observable}
+ * and consuming all emitted items. The benchmark follows JMH best practices:
+ * <ul>
+ *   <li>Separate {@code @State} for immutable test data.</li>
+ *   <li>Warm‑up and measurement iterations.</li>
+ *   <li>Blackhole consumption to avoid dead‑code elimination.</li>
+ *   <li>Throughput mode (operations per second).</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeFlatMapObservableBenchmark {
+
+    /** Number of items emitted by the inner Observable for each subscription. */
+    @Param({"100", "1000", "10000"})
+    public int innerCount;
+
+    /** The source {@code Maybe} that always succeeds with a single value. */
+    private Maybe<Integer> source;
+
+    /** Mapper that turns the upstream value into an {@code Observable} emitting {@code innerCount} items. */
+    private Function<? super Integer, ? extends ObservableSource<? extends Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Maybe.just(1);
+        mapper = i -> Observable.range(0, innerCount);
+    }
+
+    /**
+     * Executes the flatMap operation and consumes all emitted items.
+     *
+     * @param bh Blackhole to consume the items and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void flatMapObservable(Blackhole bh) {
+        source
+            .flatMapObservable(mapper)
+            .subscribe(bh::consume);
+    }
+}
+```

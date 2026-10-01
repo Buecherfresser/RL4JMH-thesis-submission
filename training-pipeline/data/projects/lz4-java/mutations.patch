@@ -1,0 +1,544 @@
+diff --git a/java/net/jpountz/lz4/LZ4BlockInputStream.java b/java/net/jpountz/lz4/LZ4BlockInputStream.java
+index 23fd5e3..dec0414 100644
+--- a/java/net/jpountz/lz4/LZ4BlockInputStream.java
++++ b/java/net/jpountz/lz4/LZ4BlockInputStream.java
+@@ -285,19 +285,19 @@ public class LZ4BlockInputStream extends FilterInputStream {
+   }
+ 
+   @Override
+-  public boolean markSupported() {
++  public boolean markSupported() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(1);
+     return false;
+   }
+ 
+   @SuppressWarnings("sync-override")
+   @Override
+-  public void mark(int readlimit) {
++  public void mark(int readlimit) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(2);
+     // unsupported
+   }
+ 
+   @SuppressWarnings("sync-override")
+   @Override
+-  public void reset() throws IOException {
++  public void reset() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(3);
+     throw new IOException("mark/reset not supported");
+   }
+ 
+diff --git a/java/net/jpountz/lz4/LZ4BlockOutputStream.java b/java/net/jpountz/lz4/LZ4BlockOutputStream.java
+index 623eb1c..94c2b7c 100644
+--- a/java/net/jpountz/lz4/LZ4BlockOutputStream.java
++++ b/java/net/jpountz/lz4/LZ4BlockOutputStream.java
+@@ -190,7 +190,7 @@ public class LZ4BlockOutputStream extends FilterOutputStream {
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(4);
+     if (!finished) {
+       finish();
+     }
+@@ -252,7 +252,7 @@ public class LZ4BlockOutputStream extends FilterOutputStream {
+    *
+    * @throws IOException if an I/O error occurs.
+    */
+-  public void finish() throws IOException {
++  public void finish() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(5);
+     ensureNotFinished();
+     flushBufferedData();
+     compressedBuffer[MAGIC_LENGTH] = (byte) (COMPRESSION_METHOD_RAW | compressionLevel);
+diff --git a/java/net/jpountz/lz4/LZ4CompressorWithLength.java b/java/net/jpountz/lz4/LZ4CompressorWithLength.java
+index e52ae1e..fed9beb 100644
+--- a/java/net/jpountz/lz4/LZ4CompressorWithLength.java
++++ b/java/net/jpountz/lz4/LZ4CompressorWithLength.java
+@@ -62,7 +62,7 @@ public class LZ4CompressorWithLength {
+    * @param length the input size in bytes
+    * @return the maximum compressed length in bytes
+    */
+-  public int maxCompressedLength(int length) {
++  public int maxCompressedLength(int length) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(30);
+     return compressor.maxCompressedLength(length) + 4;
+   }
+ 
+@@ -73,7 +73,7 @@ public class LZ4CompressorWithLength {
+    * @param src the source data
+    * @return the compressed data
+    */
+-  public byte[] compress(byte[] src) {
++  public byte[] compress(byte[] src) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(31);
+     return compress(src, 0, src.length);
+   }
+ 
+@@ -97,7 +97,7 @@ public class LZ4CompressorWithLength {
+    * @param srcLen the number of bytes to compress
+    * @return the compressed data
+    */
+-  public byte[] compress(byte[] src, int srcOff, int srcLen) {
++  public byte[] compress(byte[] src, int srcOff, int srcLen) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(32);
+     final int maxCompressedLength = maxCompressedLength(srcLen);
+     final byte[] compressed = new byte[maxCompressedLength];
+     final int compressedLength = compress(src, srcOff, srcLen, compressed, 0);
+@@ -113,7 +113,7 @@ public class LZ4CompressorWithLength {
+    * @throws LZ4Exception if dest is too small
+    * @return the compressed size
+    */
+-  public int compress(byte[] src, byte[] dest) {
++  public int compress(byte[] src, byte[] dest) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(33);
+     return compress(src, 0, src.length, dest, 0);
+   }
+ 
+@@ -129,7 +129,7 @@ public class LZ4CompressorWithLength {
+    * @throws LZ4Exception if dest is too small
+    * @return the compressed size
+    */
+-  public int compress(byte[] src, int srcOff, int srcLen, byte[] dest, int destOff) {
++  public int compress(byte[] src, int srcOff, int srcLen, byte[] dest, int destOff) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(34);
+     return compress(src, srcOff, srcLen, dest, destOff, dest.length - destOff);
+   }
+ 
+@@ -152,7 +152,7 @@ public class LZ4CompressorWithLength {
+    * @throws LZ4Exception if maxDestLen is too small
+    * @return the compressed size
+    */
+-  public int compress(byte[] src, int srcOff, int srcLen, byte[] dest, int destOff, int maxDestLen) {
++  public int compress(byte[] src, int srcOff, int srcLen, byte[] dest, int destOff, int maxDestLen) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(35);
+     final int compressedLength = compressor.compress(src, srcOff, srcLen, dest, destOff + 4, maxDestLen - 4);
+     putOriginalLength(dest, destOff, srcLen);
+     return compressedLength + 4;
+diff --git a/java/net/jpountz/lz4/LZ4DecompressorWithLength.java b/java/net/jpountz/lz4/LZ4DecompressorWithLength.java
+index a89413c..e7a1327 100644
+--- a/java/net/jpountz/lz4/LZ4DecompressorWithLength.java
++++ b/java/net/jpountz/lz4/LZ4DecompressorWithLength.java
+@@ -38,7 +38,7 @@ public class LZ4DecompressorWithLength {
+    * @param src the compressed data
+    * @return the decompressed length
+    */
+-  public static int getDecompressedLength(byte[] src) {
++  public static int getDecompressedLength(byte[] src) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(36);
+     return getDecompressedLength(src, 0);
+   }
+ 
+@@ -49,7 +49,7 @@ public class LZ4DecompressorWithLength {
+    * @param srcOff the start offset in src
+    * @return the decompressed length
+    */
+-  public static int getDecompressedLength(byte[] src, int srcOff) {
++  public static int getDecompressedLength(byte[] src, int srcOff) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(37);
+     return (src[srcOff] & 0xFF) | (src[srcOff + 1] & 0xFF) << 8 | (src[srcOff + 2] & 0xFF) << 16 | src[srcOff + 3] << 24;
+   }
+ 
+@@ -59,7 +59,7 @@ public class LZ4DecompressorWithLength {
+    * @param src the compressed data
+    * @return the decompressed length
+    */
+-  public static int getDecompressedLength(ByteBuffer src) {
++  public static int getDecompressedLength(ByteBuffer src) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(38);
+     return getDecompressedLength(src, src.position());
+   }
+ 
+@@ -70,7 +70,7 @@ public class LZ4DecompressorWithLength {
+    * @param srcOff the start offset in src
+    * @return the decompressed length
+    */
+-  public static int getDecompressedLength(ByteBuffer src, int srcOff) {
++  public static int getDecompressedLength(ByteBuffer src, int srcOff) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(39);
+     return (src.get(srcOff) & 0xFF) | (src.get(srcOff + 1) & 0xFF) << 8 | (src.get(srcOff + 2) & 0xFF) << 16 | src.get(srcOff + 3) << 24;
+   }
+ 
+@@ -104,7 +104,7 @@ public class LZ4DecompressorWithLength {
+    * @param dest the destination buffer to store the decompressed data
+    * @return the number of bytes read to restore the original input
+    */
+-  public int decompress(byte[] src, byte[] dest) {
++  public int decompress(byte[] src, byte[] dest) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(40);
+     return decompress(src, 0, dest, 0);
+   }
+ 
+@@ -122,7 +122,7 @@ public class LZ4DecompressorWithLength {
+    * @param destOff the start offset in dest
+    * @return the number of bytes read to restore the original input (when {@link LZ4FastDecompressor} is used), or the number of decompressed bytes (when  {@link LZ4SafeDecompressor} is used)
+    */
+-  public int decompress(byte[] src, int srcOff, byte[] dest, int destOff) {
++  public int decompress(byte[] src, int srcOff, byte[] dest, int destOff) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(41);
+     if (safeDecompressor != null) {
+       return decompress(src, srcOff, src.length - srcOff, dest, destOff);
+     }
+diff --git a/java/net/jpountz/lz4/LZ4Factory.java b/java/net/jpountz/lz4/LZ4Factory.java
+index 1350c40..4967b5a 100644
+--- a/java/net/jpountz/lz4/LZ4Factory.java
++++ b/java/net/jpountz/lz4/LZ4Factory.java
+@@ -88,7 +88,7 @@ public final class LZ4Factory {
+    * @return a {@link LZ4Factory} instance that returns compressors and
+    * decompressors that are native bindings to the original C library
+    */
+-  public static synchronized LZ4Factory nativeInstance() {
++  public static synchronized LZ4Factory nativeInstance() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(42);
+     if (NATIVE_INSTANCE == null) {
+       NATIVE_INSTANCE = instance("JNI");
+     }
+@@ -102,7 +102,7 @@ public final class LZ4Factory {
+    * @return a {@link LZ4Factory} instance that returns compressors and
+    * decompressors that are written with Java's official API.
+    */
+-  public static synchronized LZ4Factory safeInstance() {
++  public static synchronized LZ4Factory safeInstance() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(43);
+     if (JAVA_SAFE_INSTANCE == null) {
+       JAVA_SAFE_INSTANCE = instance("JavaSafe");
+     }
+@@ -118,7 +118,7 @@ public final class LZ4Factory {
+    * decompressors that may use {@link sun.misc.Unsafe} to speed up compression
+    * and decompression.
+    */
+-  public static synchronized LZ4Factory unsafeInstance() {
++  public static synchronized LZ4Factory unsafeInstance() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(44);
+     if (JAVA_UNSAFE_INSTANCE == null) {
+       JAVA_UNSAFE_INSTANCE = instance("JavaUnsafe");
+     }
+@@ -135,7 +135,7 @@ public final class LZ4Factory {
+    * @return the fastest available {@link LZ4Factory} instance which does not
+    * rely on JNI bindings.
+    */
+-  public static LZ4Factory fastestJavaInstance() {
++  public static LZ4Factory fastestJavaInstance() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(45);
+     if (Utils.isUnalignedAccessAllowed()) {
+       try {
+         return unsafeInstance();
+@@ -159,7 +159,7 @@ public final class LZ4Factory {
+    *
+    * @return the fastest available {@link LZ4Factory} instance
+    */
+-  public static LZ4Factory fastestInstance() {
++  public static LZ4Factory fastestInstance() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(46);
+     if (Native.isLoaded()
+         || Native.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
+       try {
+@@ -226,7 +226,7 @@ public final class LZ4Factory {
+    *
+    * @return a blazing fast {@link LZ4Compressor}
+    */
+-  public LZ4Compressor fastCompressor() {
++  public LZ4Compressor fastCompressor() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(47);
+     return fastCompressor;
+   }
+ 
+diff --git a/java/net/jpountz/lz4/LZ4FrameInputStream.java b/java/net/jpountz/lz4/LZ4FrameInputStream.java
+index 4a75bac..9faedb4 100644
+--- a/java/net/jpountz/lz4/LZ4FrameInputStream.java
++++ b/java/net/jpountz/lz4/LZ4FrameInputStream.java
+@@ -384,22 +384,22 @@ public class LZ4FrameInputStream extends FilterInputStream {
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(6);
+     super.close();
+   }
+ 
+   @Override
+-  public synchronized void mark(int readlimit) {
++  public synchronized void mark(int readlimit) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(7);
+     throw new UnsupportedOperationException("mark not supported");
+   }
+ 
+   @Override
+-  public synchronized void reset() throws IOException {
++  public synchronized void reset() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(8);
+     throw new UnsupportedOperationException("reset not supported");
+   }
+ 
+   @Override
+-  public boolean markSupported() {
++  public boolean markSupported() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(9);
+     return false;
+   }
+ 
+@@ -413,7 +413,7 @@ public class LZ4FrameInputStream extends FilterInputStream {
+    *
+    * @see #LZ4FrameInputStream(InputStream, LZ4SafeDecompressor,  XXHash32, boolean)
+    */
+-  public long getExpectedContentSize() throws IOException {
++  public long getExpectedContentSize() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(10);
+     if (!readSingleFrame) {
+       throw new UnsupportedOperationException("Operation not permitted when multiple frames can be read");
+     }
+@@ -431,7 +431,7 @@ public class LZ4FrameInputStream extends FilterInputStream {
+    * @return true if this instance is supposed to read only one frame and if the optional content size is set in the frame.
+    * @throws IOException On input stream read exception
+    */
+-  public boolean isExpectedContentSizeDefined() throws IOException {
++  public boolean isExpectedContentSizeDefined() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(11);
+     if (readSingleFrame) {
+       if (!firstFrameHeaderRead) {
+ 	if (!nextFrameInfo()) {
+diff --git a/java/net/jpountz/lz4/LZ4FrameOutputStream.java b/java/net/jpountz/lz4/LZ4FrameOutputStream.java
+index 421d16e..bc4c3e9 100644
+--- a/java/net/jpountz/lz4/LZ4FrameOutputStream.java
++++ b/java/net/jpountz/lz4/LZ4FrameOutputStream.java
+@@ -65,10 +65,10 @@ public class LZ4FrameOutputStream extends FilterOutputStream {
+     BLOCKSIZE(int indicator) {
+       this.indicator = indicator;
+     }
+-    public int getIndicator() {
++    public int getIndicator() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(12);
+       return this.indicator;
+     }
+-    public static BLOCKSIZE valueOf(int indicator) {
++    public static BLOCKSIZE valueOf(int indicator) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(13);
+       switch(indicator) {
+         case 7: return SIZE_4MB;
+         case 6: return SIZE_1MB;
+@@ -297,7 +297,7 @@ public class LZ4FrameOutputStream extends FilterOutputStream {
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(14);
+     if (!frameInfo.isFinished()) {
+       flush();
+       writeEndMark();
+@@ -342,12 +342,12 @@ public class LZ4FrameOutputStream extends FilterOutputStream {
+       validate();
+     }
+ 
+-    public static FLG fromByte(byte flg) {
++    public static FLG fromByte(byte flg) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(15);
+       final byte versionMask = (byte)(flg & (3 << 6));
+       return new FLG(versionMask >>> 6, (byte) (flg ^ versionMask));
+     }
+ 
+-    public byte toByte() {
++    public byte toByte() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(16);
+       return (byte)(bitSet.toByteArray()[0] | ((version & 3) << 6));
+     }
+ 
+@@ -366,7 +366,7 @@ public class LZ4FrameOutputStream extends FilterOutputStream {
+       }
+     }
+ 
+-    public boolean isEnabled(Bits bit) {
++    public boolean isEnabled(Bits bit) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(17);
+       return bitSet.get(bit.position);
+     }
+ 
+diff --git a/java/net/jpountz/lz4/LZ4HCJNICompressor.java b/java/net/jpountz/lz4/LZ4HCJNICompressor.java
+index bf23025..7963316 100644
+--- a/java/net/jpountz/lz4/LZ4HCJNICompressor.java
++++ b/java/net/jpountz/lz4/LZ4HCJNICompressor.java
+@@ -40,7 +40,7 @@ final class LZ4HCJNICompressor extends LZ4Compressor {
+   }
+ 
+   @Override
+-  public int compress(byte[] src, int srcOff, int srcLen, byte[] dest, int destOff, int maxDestLen) {
++  public int compress(byte[] src, int srcOff, int srcLen, byte[] dest, int destOff, int maxDestLen) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(48);
+     SafeUtils.checkRange(src, srcOff, srcLen);
+     SafeUtils.checkRange(dest, destOff, maxDestLen);
+     final int result = LZ4JNI.LZ4_compressHC(src, null, srcOff, srcLen, dest, null, destOff, maxDestLen, compressionLevel);
+@@ -51,7 +51,7 @@ final class LZ4HCJNICompressor extends LZ4Compressor {
+   }
+ 
+   @Override
+-  public int compress(ByteBuffer src, int srcOff, int srcLen, ByteBuffer dest, int destOff, int maxDestLen) {
++  public int compress(ByteBuffer src, int srcOff, int srcLen, ByteBuffer dest, int destOff, int maxDestLen) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(49);
+     ByteBufferUtils.checkNotReadOnly(dest);
+     ByteBufferUtils.checkRange(src, srcOff, srcLen);
+     ByteBufferUtils.checkRange(dest, destOff, maxDestLen);
+diff --git a/java/net/jpountz/lz4/LZ4JNICompressor.java b/java/net/jpountz/lz4/LZ4JNICompressor.java
+index f38e2b6..03e4586 100644
+--- a/java/net/jpountz/lz4/LZ4JNICompressor.java
++++ b/java/net/jpountz/lz4/LZ4JNICompressor.java
+@@ -32,7 +32,7 @@ final class LZ4JNICompressor extends LZ4Compressor {
+   private static LZ4Compressor SAFE_INSTANCE;
+ 
+   @Override
+-  public int compress(byte[] src, int srcOff, int srcLen, byte[] dest, int destOff, int maxDestLen) {
++  public int compress(byte[] src, int srcOff, int srcLen, byte[] dest, int destOff, int maxDestLen) { net.jpountz.lz4.jmhbench.MutationSwitch.tick(50);
+     checkRange(src, srcOff, srcLen);
+     checkRange(dest, destOff, maxDestLen);
+     final int result = LZ4JNI.LZ4_compress_limitedOutput(src, null, srcOff, srcLen, dest, null, destOff, maxDestLen);
+diff --git a/net/jpountz/lz4/jmhbench/MutationSwitch.java b/net/jpountz/lz4/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..9b6324d
+--- /dev/null
++++ b/net/jpountz/lz4/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.jpountz.lz4.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/test/net/jpountz/lz4/LZ4BlockStreamingTest.java b/test/net/jpountz/lz4/LZ4BlockStreamingTest.java
+index a88c35a..628a64e 100644
+--- a/test/net/jpountz/lz4/LZ4BlockStreamingTest.java
++++ b/test/net/jpountz/lz4/LZ4BlockStreamingTest.java
+@@ -117,7 +117,7 @@ public class LZ4BlockStreamingTest extends AbstractLZ4Test {
+     }
+ 
+     @Override
+-    public void close() throws IOException {
++    public void close() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(18);
+       flushPendingData();
+       out.close();
+     }
+@@ -134,27 +134,27 @@ public class LZ4BlockStreamingTest extends AbstractLZ4Test {
+ 
+   @Test
+   @Repeat(iterations=5)
+-  public void testRoundtripGeo() throws IOException {
++  public void testRoundtripGeo() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(19);
+     testRoundTrip("/calgary/geo");
+   }
+ 
+   @Test
+   @Repeat(iterations=5)
+-  public void testRoundtripBook1() throws IOException {
++  public void testRoundtripBook1() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(20);
+     testRoundTrip("/calgary/book1");
+   }
+ 
+   @Test
+   @Repeat(iterations=5)
+-  public void testRoundtripPic() throws IOException {
++  public void testRoundtripPic() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(21);
+     testRoundTrip("/calgary/pic");
+   }
+ 
+-  public void testRoundTrip(String resource) throws IOException {
++  public void testRoundTrip(String resource) throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(22);
+     testRoundTrip(readResource(resource));
+   }
+ 
+-  public void testRoundTrip(byte[] data) throws IOException {
++  public void testRoundTrip(byte[] data) throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(23);
+     final ByteArrayOutputStream compressed = new ByteArrayOutputStream();
+     final int blockSize;
+     switch (randomInt(2)) {
+diff --git a/test/net/jpountz/lz4/LZ4FrameIOStreamTest.java b/test/net/jpountz/lz4/LZ4FrameIOStreamTest.java
+index bc00377..1b34f53 100644
+--- a/test/net/jpountz/lz4/LZ4FrameIOStreamTest.java
++++ b/test/net/jpountz/lz4/LZ4FrameIOStreamTest.java
+@@ -71,7 +71,7 @@ public class LZ4FrameIOStreamTest {
+   }
+ 
+   @Parameterized.Parameters
+-  public static Iterable<Object[]> parameters(){
++  public static Iterable<Object[]> parameters(){ net.jpountz.lz4.jmhbench.MutationSwitch.tick(24);
+     final List<Object[]> retval = new LinkedList<>(
+         Arrays.asList(
+             new Object[]{0},
+@@ -98,7 +98,7 @@ public class LZ4FrameIOStreamTest {
+   File tmpFile = null;
+ 
+   @Before
+-  public void setUp() throws IOException {
++  public void setUp() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(25);
+     final int fill = 0xDEADBEEF;
+     tmpFile = Files.createTempFile("lz4ioTest", ".dat").toFile();
+     final Random rnd = new Random(5378L);
+@@ -119,7 +119,7 @@ public class LZ4FrameIOStreamTest {
+   }
+ 
+   @After
+-  public void tearDown() {
++  public void tearDown() { net.jpountz.lz4.jmhbench.MutationSwitch.tick(26);
+     if (tmpFile != null && tmpFile.exists() && !tmpFile.delete()){
+       Assert.fail(String.format("Could not delete file [%s]", tmpFile.getAbsolutePath()));
+     }
+@@ -169,7 +169,7 @@ public class LZ4FrameIOStreamTest {
+   }
+ 
+   @Test
+-  public void testValidator() throws IOException {
++  public void testValidator() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(27);
+     try (InputStream is = new FileInputStream(tmpFile)) {
+       validateStreamEquals(is, tmpFile);
+     }
+@@ -189,7 +189,7 @@ public class LZ4FrameIOStreamTest {
+   }
+ 
+   @Test
+-  public void testOutputSimple() throws IOException {
++  public void testOutputSimple() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(28);
+     final File lz4File = Files.createTempFile("lz4test", ".lz4").toFile();
+     try {
+       try (OutputStream os = new LZ4FrameOutputStream(new FileOutputStream(lz4File))) {
+@@ -217,7 +217,7 @@ public class LZ4FrameIOStreamTest {
+   }
+ 
+   @Test
+-  public void testInputOutputSimple() throws IOException {
++  public void testInputOutputSimple() throws IOException { net.jpountz.lz4.jmhbench.MutationSwitch.tick(29);
+     final File lz4File = Files.createTempFile("lz4test", ".lz4").toFile();
+     try {
+       try (OutputStream os = new LZ4FrameOutputStream(new FileOutputStream(lz4File))) {

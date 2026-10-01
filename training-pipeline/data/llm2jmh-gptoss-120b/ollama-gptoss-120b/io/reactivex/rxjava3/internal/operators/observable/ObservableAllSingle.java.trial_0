@@ -1,0 +1,73 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.Predicate;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableAllSingle;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableAllSingle}.
+ *
+ * The benchmark measures the throughput of the {@code all} operator
+ * when applied to a hot Observable emitting a configurable number of items.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source Observable and predicate in @Setup to exclude allocation overhead.
+ * - Use Blackhole to consume the result and prevent dead‑code elimination.
+ * - Run in Mode.Throughput (operations per time unit) which is the most common metric for reactive streams.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableAllSingleBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** The source Observable emitting a range of integers. */
+    private Observable<Integer> source;
+
+    /** Predicate used by the operator – always returns true to force full traversal. */
+    private Predicate<Integer> alwaysTrue;
+
+    /** The Single produced by the operator under test. */
+    private Single<Boolean> allSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits a sequential range of integers.
+        source = Observable.range(1, itemCount);
+
+        // Simple predicate that always returns true; this forces the operator to process every item.
+        alwaysTrue = value -> true;
+
+        // Build the operator under test.
+        ObservableSource<Integer> src = source;
+        allSingle = new ObservableAllSingle<>(src, alwaysTrue);
+    }
+
+    /**
+     * Benchmark the execution of {@code ObservableAllSingle}.
+     *
+     * The Single is subscribed to and blocked until the result is available.
+     * The result is consumed by the Blackhole to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void allSingleThroughput(Blackhole bh) {
+        // blockingGet() forces the whole reactive chain to be executed synchronously.
+        boolean result = allSingle.blockingGet();
+        bh.consume(result);
+    }
+}
+```

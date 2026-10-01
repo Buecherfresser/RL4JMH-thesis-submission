@@ -1,0 +1,26 @@
+instance_id: log4j2_threadcontext_get_001
+target_class: bench.ThreadContextLookup
+expected_input_shapes: []
+tags:
+- collections
+- log4j2
+- real-world
+provenance:
+  project: apache/logging-log4j2
+  url: https://github.com/apache/logging-log4j2
+  description: 'Inspired by general log4j2 ThreadContext access patterns (no
+
+    single PR cited): hot paths avoid the containsKey+get double
+
+    lookup in favour of a single get-then-null-check. The
+
+    simplified SUT here is a Map.get with default; the full real
+
+    class is not extracted.
+
+    '
+junit_test_path: tests/ThreadContextLookupTest.java
+regressions:
+- id: double_lookup
+  patch: regressions/double_lookup.patch
+  description: Replace single get with containsKey + get double lookup.

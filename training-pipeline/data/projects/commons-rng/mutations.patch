@@ -1,0 +1,646 @@
+diff --git a/org/apache/commons/rng/UniformRandomProviderSupport.java b/org/apache/commons/rng/UniformRandomProviderSupport.java
+index b6f9175..edc9d5f 100644
+--- a/org/apache/commons/rng/UniformRandomProviderSupport.java
++++ b/org/apache/commons/rng/UniformRandomProviderSupport.java
+@@ -483,7 +483,7 @@ final class UniformRandomProviderSupport {
+          * {@inheritDoc}
+          */
+         @Override
+-        public long estimateSize() {
++        public long estimateSize() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(1);
+             return end - position;
+         }
+ 
+@@ -491,7 +491,7 @@ final class UniformRandomProviderSupport {
+          * {@inheritDoc}
+          */
+         @Override
+-        public int characteristics() {
++        public int characteristics() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(5);
+             return SIZED | SUBSIZED | NONNULL | IMMUTABLE;
+         }
+     }
+diff --git a/org/apache/commons/rng/core/RandomProviderDefaultState.java b/org/apache/commons/rng/core/RandomProviderDefaultState.java
+index bf0eafe..8569fc4 100644
+--- a/org/apache/commons/rng/core/RandomProviderDefaultState.java
++++ b/org/apache/commons/rng/core/RandomProviderDefaultState.java
+@@ -52,7 +52,7 @@ public class RandomProviderDefaultState implements RandomProviderState {
+      *
+      * @return the internal state.
+      */
+-    public byte[] getState() {
++    public byte[] getState() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(15);
+         return Arrays.copyOf(state, state.length);
+     }
+ }
+diff --git a/org/apache/commons/rng/core/source32/DotyHumphreySmallFastCounting32.java b/org/apache/commons/rng/core/source32/DotyHumphreySmallFastCounting32.java
+index d25b507..2db735b 100644
+--- a/org/apache/commons/rng/core/source32/DotyHumphreySmallFastCounting32.java
++++ b/org/apache/commons/rng/core/source32/DotyHumphreySmallFastCounting32.java
+@@ -79,14 +79,14 @@ public class DotyHumphreySmallFastCounting32 extends IntProvider {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected byte[] getStateInternal() {
++    protected byte[] getStateInternal() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(18);
+         return composeStateInternal(NumberFactory.makeByteArray(new int[] {a, b, c, counter}),
+                                     super.getStateInternal());
+     }
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected void setStateInternal(byte[] s) {
++    protected void setStateInternal(byte[] s) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(21);
+         final byte[][] parts = splitStateInternal(s, 4 * 4);
+ 
+         final int[] tmp = NumberFactory.makeIntArray(parts[0]);
+diff --git a/org/apache/commons/rng/core/source32/ISAACRandom.java b/org/apache/commons/rng/core/source32/ISAACRandom.java
+index eff8b2e..127efc8 100644
+--- a/org/apache/commons/rng/core/source32/ISAACRandom.java
++++ b/org/apache/commons/rng/core/source32/ISAACRandom.java
+@@ -84,7 +84,7 @@ public class ISAACRandom extends IntProvider {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected byte[] getStateInternal() {
++    protected byte[] getStateInternal() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(24);
+         final int[] sRsl = Arrays.copyOf(rsl, SIZE);
+         final int[] sMem = Arrays.copyOf(mem, SIZE);
+         final int[] sRem = Arrays.copyOf(new int[] {count, isaacA, isaacB, isaacC}, 4);
+@@ -100,7 +100,7 @@ public class ISAACRandom extends IntProvider {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected void setStateInternal(byte[] s) {
++    protected void setStateInternal(byte[] s) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(27);
+         final byte[][] c = splitStateInternal(s, (2 * SIZE + 4) * 4);
+ 
+         final int[] tmp = NumberFactory.makeIntArray(c[0]);
+diff --git a/org/apache/commons/rng/core/source32/JDKRandom.java b/org/apache/commons/rng/core/source32/JDKRandom.java
+index 3c36c86..975a2d1 100644
+--- a/org/apache/commons/rng/core/source32/JDKRandom.java
++++ b/org/apache/commons/rng/core/source32/JDKRandom.java
+@@ -101,7 +101,7 @@ public class JDKRandom extends IntProvider {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected byte[] getStateInternal() {
++    protected byte[] getStateInternal() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(30);
+         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+              ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+ 
+@@ -123,7 +123,7 @@ public class JDKRandom extends IntProvider {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected void setStateInternal(byte[] s) {
++    protected void setStateInternal(byte[] s) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(33);
+         // First obtain the state size
+         final byte[][] s2 = splitStateInternal(s, 4);
+         final int stateSize = NumberFactory.makeInt(s2[0]);
+diff --git a/org/apache/commons/rng/core/source32/JenkinsSmallFast32.java b/org/apache/commons/rng/core/source32/JenkinsSmallFast32.java
+index eb3cac1..5f946fe 100644
+--- a/org/apache/commons/rng/core/source32/JenkinsSmallFast32.java
++++ b/org/apache/commons/rng/core/source32/JenkinsSmallFast32.java
+@@ -74,14 +74,14 @@ public class JenkinsSmallFast32 extends IntProvider {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected byte[] getStateInternal() {
++    protected byte[] getStateInternal() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(36);
+         return composeStateInternal(NumberFactory.makeByteArray(new int[] {a, b, c, d}),
+                                     super.getStateInternal());
+     }
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected void setStateInternal(byte[] s) {
++    protected void setStateInternal(byte[] s) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(39);
+         final byte[][] parts = splitStateInternal(s, 4 * 4);
+ 
+         final int[] tmp = NumberFactory.makeIntArray(parts[0]);
+diff --git a/org/apache/commons/rng/core/source32/KISSRandom.java b/org/apache/commons/rng/core/source32/KISSRandom.java
+index f88d568..97d1a1a 100644
+--- a/org/apache/commons/rng/core/source32/KISSRandom.java
++++ b/org/apache/commons/rng/core/source32/KISSRandom.java
+@@ -54,14 +54,14 @@ public class KISSRandom extends IntProvider {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected byte[] getStateInternal() {
++    protected byte[] getStateInternal() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(42);
+         return composeStateInternal(NumberFactory.makeByteArray(new int[] {z, w, jsr, jcong}),
+                                     super.getStateInternal());
+     }
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected void setStateInternal(byte[] s) {
++    protected void setStateInternal(byte[] s) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(45);
+         final byte[][] c = splitStateInternal(s, SEED_SIZE * 4);
+ 
+         final int[] tmp = NumberFactory.makeIntArray(c[0]);
+diff --git a/org/apache/commons/rng/core/source32/L32X64Mix.java b/org/apache/commons/rng/core/source32/L32X64Mix.java
+index cb21433..9c8bc71 100644
+--- a/org/apache/commons/rng/core/source32/L32X64Mix.java
++++ b/org/apache/commons/rng/core/source32/L32X64Mix.java
+@@ -148,7 +148,7 @@ public final class L32X64Mix extends IntProvider implements LongJumpableUniformR
+ 
+     /** {@inheritDoc} */
+     @Override
+-    protected byte[] getStateInternal() {
++    protected byte[] getStateInternal() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(48);
+         return composeStateInternal(NumberFactory.makeByteArray(new int[] {la, ls, x0, x1}),
+                                     super.getStateInternal());
+     }
+diff --git a/org/apache/commons/rng/core/util/NumberFactory.java b/org/apache/commons/rng/core/util/NumberFactory.java
+index 07ef5e9..2d51fb5 100644
+--- a/org/apache/commons/rng/core/util/NumberFactory.java
++++ b/org/apache/commons/rng/core/util/NumberFactory.java
+@@ -59,7 +59,7 @@ public final class NumberFactory {
+      * <a href="https://issues.apache.org/jira/browse/RNG-57">RNG-57</a>.
+      */
+     @Deprecated
+-    public static boolean makeBoolean(int v) {
++    public static boolean makeBoolean(int v) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(2);
+         return v < 0;
+     }
+ 
+@@ -73,7 +73,7 @@ public final class NumberFactory {
+      * <a href="https://issues.apache.org/jira/browse/RNG-57">RNG-57</a>.
+      */
+     @Deprecated
+-    public static boolean makeBoolean(long v) {
++    public static boolean makeBoolean(long v) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(6);
+         return v < 0;
+     }
+ 
+diff --git a/org/apache/commons/rng/core/util/RandomStreams.java b/org/apache/commons/rng/core/util/RandomStreams.java
+index f8bfb60..8c64767 100644
+--- a/org/apache/commons/rng/core/util/RandomStreams.java
++++ b/org/apache/commons/rng/core/util/RandomStreams.java
+@@ -214,12 +214,12 @@ public final class RandomStreams {
+         }
+ 
+         @Override
+-        public long estimateSize() {
++        public long estimateSize() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(9);
+             return end - position;
+         }
+ 
+         @Override
+-        public int characteristics() {
++        public int characteristics() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(12);
+             return SIZED | SUBSIZED | IMMUTABLE;
+         }
+ 
+diff --git a/org/apache/commons/rng/jmhbench/MutationSwitch.java b/org/apache/commons/rng/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..8a1cb18
+--- /dev/null
++++ b/org/apache/commons/rng/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.apache.commons.rng.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/apache/commons/rng/sampling/ArraySampler.java b/org/apache/commons/rng/sampling/ArraySampler.java
+index 9217dda..05aea17 100644
+--- a/org/apache/commons/rng/sampling/ArraySampler.java
++++ b/org/apache/commons/rng/sampling/ArraySampler.java
+@@ -59,7 +59,7 @@ public final class ArraySampler {
+      * @param array Array whose entries will be shuffled (in-place).
+      * @return a reference to the given array
+      */
+-    public static boolean[] shuffle(UniformRandomProvider rng, boolean[] array) {
++    public static boolean[] shuffle(UniformRandomProvider rng, boolean[] array) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(3);
+         int i = array.length;
+         for (; i > BATCH_2; --i) {
+             swap(array, i - 1, rng.nextInt(i));
+@@ -83,7 +83,7 @@ public final class ArraySampler {
+      * @param array Array whose entries will be shuffled (in-place).
+      * @return a reference to the given array
+      */
+-    public static byte[] shuffle(UniformRandomProvider rng, byte[] array) {
++    public static byte[] shuffle(UniformRandomProvider rng, byte[] array) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(7);
+         int i = array.length;
+         for (; i > BATCH_2; --i) {
+             swap(array, i - 1, rng.nextInt(i));
+diff --git a/org/apache/commons/rng/sampling/CollectionSampler.java b/org/apache/commons/rng/sampling/CollectionSampler.java
+index 183cfae..9623522 100644
+--- a/org/apache/commons/rng/sampling/CollectionSampler.java
++++ b/org/apache/commons/rng/sampling/CollectionSampler.java
+@@ -69,7 +69,7 @@ public class CollectionSampler<T> implements SharedStateObjectSampler<T> {
+      * @return a random sample.
+      */
+     @Override
+-    public T sample() {
++    public T sample() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(16);
+         return items.get(rng.nextInt(items.size()));
+     }
+ 
+@@ -79,7 +79,7 @@ public class CollectionSampler<T> implements SharedStateObjectSampler<T> {
+      * @since 1.3
+      */
+     @Override
+-    public CollectionSampler<T> withUniformRandomProvider(UniformRandomProvider rng) {
++    public CollectionSampler<T> withUniformRandomProvider(UniformRandomProvider rng) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(19);
+         return new CollectionSampler<>(rng, this.items);
+     }
+ 
+diff --git a/org/apache/commons/rng/sampling/CombinationSampler.java b/org/apache/commons/rng/sampling/CombinationSampler.java
+index 5e1c22a..9ecd912 100644
+--- a/org/apache/commons/rng/sampling/CombinationSampler.java
++++ b/org/apache/commons/rng/sampling/CombinationSampler.java
+@@ -118,7 +118,7 @@ public class CombinationSampler implements SharedStateObjectSampler<int[]> {
+      * @return a random combination.
+      */
+     @Override
+-    public int[] sample() {
++    public int[] sample() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(22);
+         return SubsetSamplerUtils.partialSample(domain, steps, rng, upper);
+     }
+ 
+@@ -128,7 +128,7 @@ public class CombinationSampler implements SharedStateObjectSampler<int[]> {
+      * @since 1.3
+      */
+     @Override
+-    public CombinationSampler withUniformRandomProvider(UniformRandomProvider rng) {
++    public CombinationSampler withUniformRandomProvider(UniformRandomProvider rng) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(25);
+         return new CombinationSampler(rng, this);
+     }
+ }
+diff --git a/org/apache/commons/rng/sampling/CompositeSamplers.java b/org/apache/commons/rng/sampling/CompositeSamplers.java
+index 9ea142f..462a994 100644
+--- a/org/apache/commons/rng/sampling/CompositeSamplers.java
++++ b/org/apache/commons/rng/sampling/CompositeSamplers.java
+@@ -97,14 +97,14 @@ public final class CompositeSamplers {
+         /** Sample using a guide table (see {@link GuideTableDiscreteSampler}). */
+         GUIDE_TABLE {
+             @Override
+-            public SharedStateDiscreteSampler create(UniformRandomProvider rng, double[] probabilities) {
++            public SharedStateDiscreteSampler create(UniformRandomProvider rng, double[] probabilities) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(28);
+                 return GuideTableDiscreteSampler.of(rng, probabilities);
+             }
+         },
+         /** Sample using the alias method (see {@link AliasMethodDiscreteSampler}). */
+         ALIAS_METHOD {
+             @Override
+-            public SharedStateDiscreteSampler create(UniformRandomProvider rng, double[] probabilities) {
++            public SharedStateDiscreteSampler create(UniformRandomProvider rng, double[] probabilities) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(31);
+                 return AliasMethodDiscreteSampler.of(rng, probabilities);
+             }
+         },
+diff --git a/org/apache/commons/rng/sampling/DiscreteProbabilityCollectionSampler.java b/org/apache/commons/rng/sampling/DiscreteProbabilityCollectionSampler.java
+index 44be33d..2da3bd9 100644
+--- a/org/apache/commons/rng/sampling/DiscreteProbabilityCollectionSampler.java
++++ b/org/apache/commons/rng/sampling/DiscreteProbabilityCollectionSampler.java
+@@ -104,7 +104,7 @@ public class DiscreteProbabilityCollectionSampler<T> implements SharedStateObjec
+      * @return a random sample.
+      */
+     @Override
+-    public T sample() {
++    public T sample() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(34);
+         return items.get(sampler.sample());
+     }
+ 
+@@ -114,7 +114,7 @@ public class DiscreteProbabilityCollectionSampler<T> implements SharedStateObjec
+      * @since 1.3
+      */
+     @Override
+-    public DiscreteProbabilityCollectionSampler<T> withUniformRandomProvider(UniformRandomProvider rng) {
++    public DiscreteProbabilityCollectionSampler<T> withUniformRandomProvider(UniformRandomProvider rng) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(37);
+         return new DiscreteProbabilityCollectionSampler<>(items, sampler.withUniformRandomProvider(rng));
+     }
+ 
+diff --git a/org/apache/commons/rng/sampling/PermutationSampler.java b/org/apache/commons/rng/sampling/PermutationSampler.java
+index a301de5..e6f8346 100644
+--- a/org/apache/commons/rng/sampling/PermutationSampler.java
++++ b/org/apache/commons/rng/sampling/PermutationSampler.java
+@@ -82,7 +82,7 @@ public class PermutationSampler implements SharedStateObjectSampler<int[]> {
+      * @see #PermutationSampler(UniformRandomProvider,int,int)
+      */
+     @Override
+-    public int[] sample() {
++    public int[] sample() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(40);
+         return SubsetSamplerUtils.partialSample(domain, size, rng, true);
+     }
+ 
+@@ -92,7 +92,7 @@ public class PermutationSampler implements SharedStateObjectSampler<int[]> {
+      * @since 1.3
+      */
+     @Override
+-    public PermutationSampler withUniformRandomProvider(UniformRandomProvider rng) {
++    public PermutationSampler withUniformRandomProvider(UniformRandomProvider rng) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(43);
+         return new PermutationSampler(rng, this);
+     }
+ 
+diff --git a/org/apache/commons/rng/sampling/UnitSphereSampler.java b/org/apache/commons/rng/sampling/UnitSphereSampler.java
+index bdcef4a..ad2b7ab 100644
+--- a/org/apache/commons/rng/sampling/UnitSphereSampler.java
++++ b/org/apache/commons/rng/sampling/UnitSphereSampler.java
+@@ -69,7 +69,7 @@ public class UnitSphereSampler implements SharedStateObjectSampler<double[]> {
+         }
+ 
+         @Override
+-        public double[] sample() {
++        public double[] sample() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(46);
+             // Either:
+             // 1 - 0 = 1
+             // 1 - 2 = -1
+@@ -78,7 +78,7 @@ public class UnitSphereSampler implements SharedStateObjectSampler<double[]> {
+         }
+ 
+         @Override
+-        public UnitSphereSampler withUniformRandomProvider(UniformRandomProvider rng) {
++        public UnitSphereSampler withUniformRandomProvider(UniformRandomProvider rng) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(49);
+             return new UnitSphereSampler1D(rng);
+         }
+     }
+diff --git a/org/apache/commons/rng/sampling/distribution/InternalUtils.java b/org/apache/commons/rng/sampling/distribution/InternalUtils.java
+index 8e150d0..dc49269 100644
+--- a/org/apache/commons/rng/sampling/distribution/InternalUtils.java
++++ b/org/apache/commons/rng/sampling/distribution/InternalUtils.java
+@@ -306,7 +306,7 @@ final class InternalUtils {
+          *
+          * @return an instance with no precomputed values.
+          */
+-        public static FactorialLog create() {
++        public static FactorialLog create() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(10);
+             return new FactorialLog(0, null);
+         }
+ 
+@@ -318,7 +318,7 @@ final class InternalUtils {
+          * precomputed.
+          * @throws IllegalArgumentException if {@code n < 0}.
+          */
+-        public FactorialLog withCache(final int cacheSize) {
++        public FactorialLog withCache(final int cacheSize) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(13);
+             return new FactorialLog(cacheSize, logFactorials);
+         }
+ 
+diff --git a/org/apache/commons/rng/simple/JDKRandomBridge.java b/org/apache/commons/rng/simple/JDKRandomBridge.java
+index 57749d7..1a15a5c 100644
+--- a/org/apache/commons/rng/simple/JDKRandomBridge.java
++++ b/org/apache/commons/rng/simple/JDKRandomBridge.java
+@@ -66,7 +66,7 @@ public final class JDKRandomBridge extends Random {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public synchronized void setSeed(long seed) {
++    public synchronized void setSeed(long seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(41);
+         if (isInitialized) {
+             try {
+                 instanceLock.lock();
+diff --git a/org/apache/commons/rng/simple/JDKRandomWrapper.java b/org/apache/commons/rng/simple/JDKRandomWrapper.java
+index 84f52b8..84a4888 100644
+--- a/org/apache/commons/rng/simple/JDKRandomWrapper.java
++++ b/org/apache/commons/rng/simple/JDKRandomWrapper.java
+@@ -53,7 +53,7 @@ public final class JDKRandomWrapper implements UniformRandomProvider {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public void nextBytes(byte[] bytes) {
++    public void nextBytes(byte[] bytes) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(44);
+         rng.nextBytes(bytes);
+     }
+ 
+@@ -69,7 +69,7 @@ public final class JDKRandomWrapper implements UniformRandomProvider {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public int nextInt() {
++    public int nextInt() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(47);
+         return rng.nextInt();
+     }
+ 
+diff --git a/org/apache/commons/rng/simple/RandomSource.java b/org/apache/commons/rng/simple/RandomSource.java
+index 0cc3f89..8ce0f3d 100644
+--- a/org/apache/commons/rng/simple/RandomSource.java
++++ b/org/apache/commons/rng/simple/RandomSource.java
+@@ -707,7 +707,7 @@ public enum RandomSource {
+      * @return {@code true} if the type of {@code seed} is the native
+      * type for this RNG source.
+      */
+-    public boolean isNativeSeed(Object seed) {
++    public boolean isNativeSeed(Object seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(50);
+         return internalIdentifier.isNativeSeed(seed);
+     }
+ 
+diff --git a/org/apache/commons/rng/simple/internal/ByteArray2IntArray.java b/org/apache/commons/rng/simple/internal/ByteArray2IntArray.java
+index 564b5b9..b41645f 100644
+--- a/org/apache/commons/rng/simple/internal/ByteArray2IntArray.java
++++ b/org/apache/commons/rng/simple/internal/ByteArray2IntArray.java
+@@ -29,7 +29,7 @@ public class ByteArray2IntArray implements SeedConverter<byte[], int[]> {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public int[] convert(byte[] seed) {
++    public int[] convert(byte[] seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(4);
+         // Full length conversion
+         return Conversions.byteArray2IntArray(seed, Conversions.intSizeFromByteSize(seed.length));
+     }
+diff --git a/org/apache/commons/rng/simple/internal/ByteArray2LongArray.java b/org/apache/commons/rng/simple/internal/ByteArray2LongArray.java
+index 0646f25..810f9e7 100644
+--- a/org/apache/commons/rng/simple/internal/ByteArray2LongArray.java
++++ b/org/apache/commons/rng/simple/internal/ByteArray2LongArray.java
+@@ -29,7 +29,7 @@ public class ByteArray2LongArray implements SeedConverter<byte[], long[]> {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public long[] convert(byte[] seed) {
++    public long[] convert(byte[] seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(8);
+         // Full length conversion
+         return Conversions.byteArray2LongArray(seed, Conversions.longSizeFromByteSize(seed.length));
+     }
+diff --git a/org/apache/commons/rng/simple/internal/IntArray2Int.java b/org/apache/commons/rng/simple/internal/IntArray2Int.java
+index aef12c3..b98ab97 100644
+--- a/org/apache/commons/rng/simple/internal/IntArray2Int.java
++++ b/org/apache/commons/rng/simple/internal/IntArray2Int.java
+@@ -29,7 +29,7 @@ public class IntArray2Int implements SeedConverter<int[], Integer> {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public Integer convert(int[] seed) {
++    public Integer convert(int[] seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(11);
+         return Conversions.intArray2Int(seed);
+     }
+ }
+diff --git a/org/apache/commons/rng/simple/internal/IntArray2LongArray.java b/org/apache/commons/rng/simple/internal/IntArray2LongArray.java
+index 718943d..9d57eb0 100644
+--- a/org/apache/commons/rng/simple/internal/IntArray2LongArray.java
++++ b/org/apache/commons/rng/simple/internal/IntArray2LongArray.java
+@@ -33,7 +33,7 @@ public class IntArray2LongArray implements SeedConverter<int[], long[]> {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public long[] convert(int[] seed) {
++    public long[] convert(int[] seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(14);
+         // Full length conversion
+         return Conversions.intArray2LongArray(seed, Conversions.longSizeFromIntSize(seed.length));
+     }
+diff --git a/org/apache/commons/rng/simple/internal/Long2IntArray.java b/org/apache/commons/rng/simple/internal/Long2IntArray.java
+index 6f09b23..2b98b8b 100644
+--- a/org/apache/commons/rng/simple/internal/Long2IntArray.java
++++ b/org/apache/commons/rng/simple/internal/Long2IntArray.java
+@@ -39,7 +39,7 @@ public class Long2IntArray implements Seed2ArrayConverter<Long, int[]> {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public int[] convert(Long seed) {
++    public int[] convert(Long seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(17);
+         return convert(seed, size);
+     }
+ 
+@@ -49,7 +49,7 @@ public class Long2IntArray implements Seed2ArrayConverter<Long, int[]> {
+      * @since 1.3
+      */
+     @Override
+-    public int[] convert(Long seed, int outputSize) {
++    public int[] convert(Long seed, int outputSize) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(20);
+         return Conversions.long2IntArray(seed, outputSize);
+     }
+ }
+diff --git a/org/apache/commons/rng/simple/internal/Long2LongArray.java b/org/apache/commons/rng/simple/internal/Long2LongArray.java
+index eb873cd..5cc7536 100644
+--- a/org/apache/commons/rng/simple/internal/Long2LongArray.java
++++ b/org/apache/commons/rng/simple/internal/Long2LongArray.java
+@@ -40,7 +40,7 @@ public class Long2LongArray implements Seed2ArrayConverter<Long, long[]> {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public long[] convert(Long seed) {
++    public long[] convert(Long seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(23);
+         return convert(seed, size);
+     }
+ 
+@@ -50,7 +50,7 @@ public class Long2LongArray implements Seed2ArrayConverter<Long, long[]> {
+      * @since 1.3
+      */
+     @Override
+-    public long[] convert(Long seed, int outputSize) {
++    public long[] convert(Long seed, int outputSize) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(26);
+         return Conversions.long2LongArray(seed, outputSize);
+     }
+ }
+diff --git a/org/apache/commons/rng/simple/internal/LongArray2IntArray.java b/org/apache/commons/rng/simple/internal/LongArray2IntArray.java
+index 1110309..dfcf730 100644
+--- a/org/apache/commons/rng/simple/internal/LongArray2IntArray.java
++++ b/org/apache/commons/rng/simple/internal/LongArray2IntArray.java
+@@ -32,7 +32,7 @@ public class LongArray2IntArray implements SeedConverter<long[], int[]> {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public int[] convert(long[] seed) {
++    public int[] convert(long[] seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(29);
+         // Full length conversion
+         return Conversions.longArray2IntArray(seed, Conversions.intSizeFromLongSize(seed.length));
+     }
+diff --git a/org/apache/commons/rng/simple/internal/LongArray2Long.java b/org/apache/commons/rng/simple/internal/LongArray2Long.java
+index a359d0f..bd9b967 100644
+--- a/org/apache/commons/rng/simple/internal/LongArray2Long.java
++++ b/org/apache/commons/rng/simple/internal/LongArray2Long.java
+@@ -29,7 +29,7 @@ public class LongArray2Long implements SeedConverter<long[], Long> {
+ 
+     /** {@inheritDoc} */
+     @Override
+-    public Long convert(long[] seed) {
++    public Long convert(long[] seed) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(32);
+         return Conversions.longArray2Long(seed);
+     }
+ }
+diff --git a/org/apache/commons/rng/simple/internal/ProviderBuilder.java b/org/apache/commons/rng/simple/internal/ProviderBuilder.java
+index ddf5e96..457bac2 100644
+--- a/org/apache/commons/rng/simple/internal/ProviderBuilder.java
++++ b/org/apache/commons/rng/simple/internal/ProviderBuilder.java
+@@ -104,7 +104,7 @@ public final class ProviderBuilder {
+      * generator implemented by the given {@code source} is missing.
+      * @since 1.3
+      */
+-    public static RestorableUniformRandomProvider create(RandomSourceInternal source) {
++    public static RestorableUniformRandomProvider create(RandomSourceInternal source) { org.apache.commons.rng.jmhbench.MutationSwitch.tick(35);
+         // Delegate to the random source allowing generator specific implementations.
+         return source.create();
+     }
+@@ -281,7 +281,7 @@ public final class ProviderBuilder {
+              3, 2, 3,
+              NativeSeedType.LONG_ARRAY) {
+             @Override
+-            protected Object createSeed() {
++            protected Object createSeed() { org.apache.commons.rng.jmhbench.MutationSwitch.tick(38);
+                 return createMswsSeed(SeedFactory.createLong());
+             }
+ 

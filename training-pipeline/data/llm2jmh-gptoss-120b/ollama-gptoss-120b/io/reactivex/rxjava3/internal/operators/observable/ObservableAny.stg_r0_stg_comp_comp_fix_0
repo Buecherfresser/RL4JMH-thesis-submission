@@ -1,0 +1,48 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.openjdk.jmh.annotations.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableAnyBenchmark {
+
+    @Param({ "10", "1000", "100000" })
+    public int size;
+
+    private Observable<Integer> source;
+    private Predicate<Integer> alwaysFalse;
+    private Predicate<Integer> alwaysTrue;
+    private Predicate<Integer> evenPredicate;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Observable.range(1, size);
+        alwaysFalse = v -> false;
+        alwaysTrue = v -> true;
+        evenPredicate = v -> (v & 1) == 0;
+    }
+
+    @Benchmark
+    public boolean anyNeverMatches() {
+        return source.any(alwaysFalse).blockingGet();
+    }
+
+    @Benchmark
+    public boolean anyMatchesImmediately() {
+        return source.any(alwaysTrue).blockingGet();
+    }
+
+    @Benchmark
+    public boolean anyMatchesHalfway() {
+        return source.any(evenPredicate).blockingGet();
+    }
+}
+```

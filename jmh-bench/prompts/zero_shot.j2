@@ -1,0 +1,38 @@
+Write a JMH microbenchmark for the subject under test below.
+
+Choose which method(s) to benchmark from the source itself — no separate task description is provided.
+
+Minimal shape to follow:
+```java
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import java.util.concurrent.TimeUnit;
+
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@Fork(1)
+@Warmup(iterations = 1, time = 1)
+@Measurement(iterations = 3, time = 1)
+public class ExampleBenchmark {
+    // non-final @State fields, populated in @Setup
+    // Read-only subject: build once at Level.Trial. Mutating subject (list.add,
+    // in-place sort, ...): use a Trial-built pool cycled by index, or rebuild at
+    // Level.Invocation only for operations that run over ~1ms.
+    @Setup
+    public void setup() { /* build inputs here */ }
+
+    @Benchmark
+    public void measure(Blackhole bh) {
+        var result = /* one call into the SUT */;
+        bh.consume(result);
+    }
+}
+```
+
+Subject under test source:
+```java
+{{ task.sut_source }}
+```
+
+Output the complete Java file and NOTHING ELSE. Do not wrap in markdown fences.

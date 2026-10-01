@@ -1,0 +1,104 @@
+```
+package io.reactivex.rxjava3.internal.schedulers.jmh;
+
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.schedulers.TrampolineScheduler;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * JMH benchmarks for {@link TrampolineScheduler}.
+ *
+ * The benchmarks focus on the throughput of scheduling tasks
+ * (both immediate and delayed) via the scheduler's direct API
+ * and via a {@link Scheduler.Worker}. The workload of the scheduled
+ * {@code Runnable} is intentionally trivial to isolate the overhead
+ * of the scheduling mechanism itself.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Benchmark)
+public class TrampolineSchedulerBenchmark {
+
+    /** Scheduler instance under test. */
+    private Scheduler scheduler;
+
+    /** Worker obtained from the scheduler (reused across iterations). */
+    private Scheduler.Worker worker;
+
+    /** Simple runnable that does minimal work; the Blackhole prevents dead‑code elimination. */
+    private Runnable blackholeRunnable;
+
+    /** Counter used inside the runnable to create a tiny side‑effect. */
+    private AtomicInteger counter;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        scheduler = TrampolineScheduler.instance();
+        worker = scheduler.createWorker();
+        counter = new AtomicInteger();
+        blackholeRunnable = () -> counter.incrementAndGet();
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        worker.dispose();
+    }
+
+    /* --------------------------------------------------------------------- */
+    /* Direct scheduling benchmarks (no delay)                              */
+    /* --------------------------------------------------------------------- */
+
+    @Benchmark
+    public Disposable scheduleDirectNoDelay(Blackhole bh) {
+        Disposable d = scheduler.scheduleDirect(() -> bh.consume(counter.incrementAndGet()));
+        // The returned Disposable is a no‑op (EmptyDisposable), but we return it
+        // to keep the benchmark signature realistic.
+        return d;
+    }
+
+    @Benchmark
+    public Disposable scheduleDirectWithDelay(Blackhole bh) {
+        // 1 µs delay – small enough to keep the benchmark fast while still exercising the delayed path.
+        Disposable d = scheduler.scheduleDirect(() -> bh.consume(counter.incrementAndGet()), 1, TimeUnit.MICROSECONDS);
+        return d;
+    }
+
+    /* --------------------------------------------------------------------- */
+    /* Worker scheduling benchmarks (no delay)                              */
+    /* --------------------------------------------------------------------- */
+
+    @Benchmark
+    public Disposable workerScheduleNoDelay(Blackhole bh) {
+        Disposable d = worker.schedule(() -> bh.consume(counter.incrementAndGet()));
+        return d;
+    }
+
+    @Benchmark
+    public Disposable workerScheduleWithDelay(Blackhole bh) {
+        // 1 µs delay – exercises the SleepingRunnable path without introducing noticeable wall‑clock latency.
+        Disposable d = worker.schedule(() -> bh.consume(counter.incrementAndGet()), 1, TimeUnit.MICROSECONDS);
+        return d;
+    }
+
+    /* --------------------------------------------------------------------- */
+    /* Helper benchmark that repeatedly schedules a batch of tasks.         */
+    /* This mimics a realistic usage pattern where many tasks are queued.   */
+    /* --------------------------------------------------------------------- */
+
+    @Benchmark
+    public void scheduleBatchOfTasks(Blackhole bh) {
+        // Schedule a small batch (e.g., 10 tasks) to amortize loop overhead.
+        for (int i = 0; i < 10; i++) {
+            worker.schedule(() -> bh.consume(counter.incrementAndGet()));
+        }
+    }
+}
+```

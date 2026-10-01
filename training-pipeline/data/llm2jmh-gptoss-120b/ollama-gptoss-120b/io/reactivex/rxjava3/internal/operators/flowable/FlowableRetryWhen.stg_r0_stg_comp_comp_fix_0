@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Publisher;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.processors.UnicastProcessor;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableRetryWhen}
+ * measuring the throughput of a retryWhen flow under a typical error‑retry scenario.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableRetryWhenBenchmark {
+
+    @Param({ "1000" })
+    public int itemCount;
+
+    @Param({ "3" })
+    public int maxRetries;
+
+    private Flowable<Integer> source;
+    private Flowable<Integer> retryWhenFlowable;
+    private AtomicInteger retryCounter;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Flowable.range(1, itemCount)
+                .concatWith(Flowable.error(new RuntimeException("forced failure")));
+
+        retryCounter = new AtomicInteger(0);
+
+        Function<Flowable<Throwable>, Publisher<?>> handler = errors -> {
+            UnicastProcessor<Throwable> processor = UnicastProcessor.create();
+            return errors.doOnNext(e -> {
+                int attempt = retryCounter.incrementAndGet();
+                if (attempt > maxRetries) {
+                    processor.onError(e);
+                } else {
+                    processor.onComplete();
+                }
+            }).ignoreElements().andThen(processor);
+        };
+
+        retryWhenFlowable = source.retryWhen(handler);
+    }
+
+    @Benchmark
+    public void retryWhenThroughput(Blackhole bh) {
+        TestSubscriber<Integer> ts = new TestSubscriber<>(0);
+        retryWhenFlowable.subscribe(ts);
+        ts.request(Long.MAX_VALUE);
+        ts.awaitDone(5, TimeUnit.SECONDS);
+        bh.consume(ts);
+    }
+}
+```

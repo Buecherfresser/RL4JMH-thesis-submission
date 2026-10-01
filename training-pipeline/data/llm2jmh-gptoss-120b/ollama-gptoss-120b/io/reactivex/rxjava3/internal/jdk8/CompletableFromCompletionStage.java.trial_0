@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.internal.jdk8.benchmark;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.jdk8.CompletableFromCompletionStage;
+
+/**
+ * Benchmark for {@link CompletableFromCompletionStage}.
+ *
+ * The benchmark measures the throughput of subscribing to a {@code Completable}
+ * that wraps an already completed {@link CompletionStage}. This isolates the
+ * overhead of the adapter itself (subscription, handler allocation, and
+ * completion signaling) from the cost of the asynchronous source.
+ *
+ * Best practices applied:
+ * - Use a pre‑completed {@link CompletionStage} to avoid variability.
+ * - Keep the observer implementation lightweight (no‑op) to focus on the
+ *   adapter cost.
+ * - Scope the state to {@code Thread} to avoid contention.
+ * - Include warm‑up, measurement, and fork settings recommended by JMH.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class CompletableFromCompletionStageBenchmark {
+
+    /** A completed CompletionStage used for all benchmark iterations. */
+    private CompletionStage<Object> completedStage;
+
+    /** The Completable wrapper under test. */
+    private CompletableFromCompletionStage<Object> completable;
+
+    /** A no‑op observer that simply disposes the subscription. */
+    private static final class NoOpObserver implements CompletableObserver, Disposable {
+        @Override public void onSubscribe(Disposable d) { /* no‑op */ }
+        @Override public void onError(Throwable e) { /* no‑op */ }
+        @Override public void onComplete() { /* no‑op */ }
+        @Override public void dispose() { /* no‑op */ }
+        @Override public boolean isDisposed() { return false; }
+    }
+
+    private final NoOpObserver observer = new NoOpObserver();
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // CompletableFuture.completedFuture(null) yields a CompletionStage already in the completed state.
+        completedStage = CompletableFuture.completedFuture(null);
+        completable = new CompletableFromCompletionStage<>(completedStage);
+    }
+
+    @Benchmark
+    public void subscribeAndComplete() {
+        // Each iteration creates a fresh subscription; the underlying stage is already completed,
+        // so the handler will be invoked immediately.
+        completable.subscribe(observer);
+    }
+}
+```

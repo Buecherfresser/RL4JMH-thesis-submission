@@ -1,0 +1,42 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableMergeWithMaybeBenchmark {
+
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    private Observable<Integer> source;
+    private Maybe<Integer> maybe;
+    private Observable<Integer> merged;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Observable emitting a configurable number of sequential integers
+        source = Observable.range(0, itemCount);
+        // Maybe that emits a single value (could be any type, here Integer)
+        maybe = Maybe.just(-1);
+        // The operator under test: merge Observable with Maybe
+        merged = source.mergeWith(maybe);
+    }
+
+    @Benchmark
+    public void mergeWithMaybe(Blackhole bh) {
+        // Consume all items; blockingForEach ensures the whole stream is processed
+        merged.blockingForEach(bh::consume);
+    }
+}
+```

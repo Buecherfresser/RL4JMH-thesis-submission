@@ -1,0 +1,601 @@
+diff --git a/com/zaxxer/hikari/HikariConfig.java b/com/zaxxer/hikari/HikariConfig.java
+index cc3de63..f2f8db1 100644
+--- a/com/zaxxer/hikari/HikariConfig.java
++++ b/com/zaxxer/hikari/HikariConfig.java
+@@ -165,14 +165,14 @@ public class HikariConfig implements HikariConfigMXBean
+    /** {@inheritDoc} */
+    @Override
+    public String getCatalog()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(1);
+       return catalog;
+    }
+ 
+    /** {@inheritDoc} */
+    @Override
+    public void setCatalog(String catalog)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(6);
+       this.catalog = catalog;
+    }
+ 
+@@ -180,7 +180,7 @@ public class HikariConfig implements HikariConfigMXBean
+    /** {@inheritDoc} */
+    @Override
+    public long getConnectionTimeout()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(11);
+       return connectionTimeout;
+    }
+ 
+diff --git a/com/zaxxer/hikari/HikariDataSource.java b/com/zaxxer/hikari/HikariDataSource.java
+index 335a438..fbefe2d 100644
+--- a/com/zaxxer/hikari/HikariDataSource.java
++++ b/com/zaxxer/hikari/HikariDataSource.java
+@@ -90,7 +90,7 @@ public class HikariDataSource extends HikariConfig implements DataSource, Closea
+    /** {@inheritDoc} */
+    @Override
+    public Connection getConnection() throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(16);
+       if (isClosed()) {
+          throw new SQLException("HikariDataSource " + this + " has been closed.");
+       }
+@@ -130,14 +130,14 @@ public class HikariDataSource extends HikariConfig implements DataSource, Closea
+    /** {@inheritDoc} */
+    @Override
+    public Connection getConnection(String username, String password) throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(21);
+       throw new SQLFeatureNotSupportedException();
+    }
+ 
+    /** {@inheritDoc} */
+    @Override
+    public PrintWriter getLogWriter() throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(25);
+       HikariPool p = pool;
+       return (p != null ? p.getUnwrappedDataSource().getLogWriter() : null);
+    }
+diff --git a/com/zaxxer/hikari/hibernate/HikariConfigurationUtil.java b/com/zaxxer/hikari/hibernate/HikariConfigurationUtil.java
+index 7b58e2d..a083a01 100644
+--- a/com/zaxxer/hikari/hibernate/HikariConfigurationUtil.java
++++ b/com/zaxxer/hikari/hibernate/HikariConfigurationUtil.java
+@@ -41,7 +41,7 @@ public class HikariConfigurationUtil
+     */
+    @SuppressWarnings("rawtypes")
+    public static HikariConfig loadConfiguration(Map props)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(2);
+       Properties hikariProps = new Properties();
+       copyProperty(AvailableSettings.ISOLATION, props, "transactionIsolation", hikariProps);
+       copyProperty(AvailableSettings.AUTOCOMMIT, props, "autoCommit", hikariProps);
+diff --git a/com/zaxxer/hikari/hibernate/HikariConnectionProvider.java b/com/zaxxer/hikari/hibernate/HikariConnectionProvider.java
+index 4f9656c..3bad44e 100644
+--- a/com/zaxxer/hikari/hibernate/HikariConnectionProvider.java
++++ b/com/zaxxer/hikari/hibernate/HikariConnectionProvider.java
+@@ -79,7 +79,7 @@ public class HikariConnectionProvider implements ConnectionProvider, Configurabl
+    @SuppressWarnings("rawtypes")
+    @Override
+    public void configure(Map props) throws HibernateException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(7);
+       try {
+          LOGGER.debug("Configuring HikariCP");
+ 
+@@ -100,7 +100,7 @@ public class HikariConnectionProvider implements ConnectionProvider, Configurabl
+ 
+    @Override
+    public Connection getConnection() throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(12);
+       Connection conn = null;
+       if (this.hds != null) {
+          conn = this.hds.getConnection();
+@@ -111,7 +111,7 @@ public class HikariConnectionProvider implements ConnectionProvider, Configurabl
+ 
+    @Override
+    public void closeConnection(Connection conn) throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(17);
+       conn.close();
+    }
+ 
+diff --git a/com/zaxxer/hikari/jmhbench/MutationSwitch.java b/com/zaxxer/hikari/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..5e098a4
+--- /dev/null
++++ b/com/zaxxer/hikari/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.zaxxer.hikari.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/zaxxer/hikari/metrics/dropwizard/CodaHaleMetricsTracker.java b/com/zaxxer/hikari/metrics/dropwizard/CodaHaleMetricsTracker.java
+index 3126edc..82616ba 100644
+--- a/com/zaxxer/hikari/metrics/dropwizard/CodaHaleMetricsTracker.java
++++ b/com/zaxxer/hikari/metrics/dropwizard/CodaHaleMetricsTracker.java
+@@ -78,7 +78,7 @@ public final class CodaHaleMetricsTracker implements IMetricsTracker
+    /** {@inheritDoc} */
+    @Override
+    public void close()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(3);
+       registry.remove(MetricRegistry.name(poolName, METRIC_CATEGORY, METRIC_NAME_WAIT));
+       registry.remove(MetricRegistry.name(poolName, METRIC_CATEGORY, METRIC_NAME_USAGE));
+       registry.remove(MetricRegistry.name(poolName, METRIC_CATEGORY, METRIC_NAME_CONNECT));
+@@ -94,14 +94,14 @@ public final class CodaHaleMetricsTracker implements IMetricsTracker
+    /** {@inheritDoc} */
+    @Override
+    public void recordConnectionAcquiredNanos(final long elapsedAcquiredNanos)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(8);
+       connectionObtainTimer.update(elapsedAcquiredNanos, TimeUnit.NANOSECONDS);
+    }
+ 
+    /** {@inheritDoc} */
+    @Override
+    public void recordConnectionUsageMillis(final long elapsedBorrowedMillis)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(13);
+       connectionUsage.update(elapsedBorrowedMillis);
+    }
+ 
+diff --git a/com/zaxxer/hikari/metrics/dropwizard/CodahaleHealthChecker.java b/com/zaxxer/hikari/metrics/dropwizard/CodahaleHealthChecker.java
+index c46f9f8..2506005 100644
+--- a/com/zaxxer/hikari/metrics/dropwizard/CodahaleHealthChecker.java
++++ b/com/zaxxer/hikari/metrics/dropwizard/CodahaleHealthChecker.java
+@@ -52,7 +52,7 @@ public final class CodahaleHealthChecker
+     * @param registry the HealthCheckRegistry into which checks will be registered
+     */
+    public static void registerHealthChecks(final HikariPool pool, final HikariConfig hikariConfig, final HealthCheckRegistry registry)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(18);
+       final var healthCheckProperties = hikariConfig.getHealthCheckProperties();
+ 
+       final var checkTimeoutMs = Long.parseLong(healthCheckProperties.getProperty("connectivityCheckTimeoutMs", String.valueOf(hikariConfig.getConnectionTimeout())));
+@@ -92,7 +92,7 @@ public final class CodahaleHealthChecker
+       /** {@inheritDoc} */
+       @Override
+       protected Result check() throws Exception
+-      {
++      { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(22);
+          try (Connection connection = pool.getConnection(checkTimeoutMs)) {
+             return Result.healthy();
+          }
+@@ -116,7 +116,7 @@ public final class CodahaleHealthChecker
+       /** {@inheritDoc} */
+       @Override
+       protected Result check() throws Exception
+-      {
++      { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(26);
+          final long the99thPercentile = TimeUnit.NANOSECONDS.toMillis(Math.round(waitTimer.getSnapshot().get99thPercentile()));
+          return the99thPercentile <= expected99thPercentile ? Result.healthy() : Result.unhealthy("99th percentile connection wait time of %dms exceeds the threshold %dms", the99thPercentile, expected99thPercentile);
+       }
+diff --git a/com/zaxxer/hikari/metrics/dropwizard/CodahaleMetricsTrackerFactory.java b/com/zaxxer/hikari/metrics/dropwizard/CodahaleMetricsTrackerFactory.java
+index d978edd..706c819 100644
+--- a/com/zaxxer/hikari/metrics/dropwizard/CodahaleMetricsTrackerFactory.java
++++ b/com/zaxxer/hikari/metrics/dropwizard/CodahaleMetricsTrackerFactory.java
+@@ -31,13 +31,13 @@ public final class CodahaleMetricsTrackerFactory implements MetricsTrackerFactor
+    }
+ 
+    public MetricRegistry getRegistry()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(29);
+       return registry;
+    }
+ 
+    @Override
+    public IMetricsTracker create(String poolName, PoolStats poolStats)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(32);
+       return new CodaHaleMetricsTracker(poolName, poolStats, registry);
+    }
+ }
+diff --git a/com/zaxxer/hikari/metrics/dropwizard/Dropwizard5MetricsTracker.java b/com/zaxxer/hikari/metrics/dropwizard/Dropwizard5MetricsTracker.java
+index 56b099a..85c0196 100644
+--- a/com/zaxxer/hikari/metrics/dropwizard/Dropwizard5MetricsTracker.java
++++ b/com/zaxxer/hikari/metrics/dropwizard/Dropwizard5MetricsTracker.java
+@@ -78,7 +78,7 @@ public class Dropwizard5MetricsTracker implements IMetricsTracker
+    /** {@inheritDoc} */
+    @Override
+    public void close()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(35);
+       registry.remove(MetricRegistry.name(poolName, METRIC_CATEGORY, METRIC_NAME_WAIT));
+       registry.remove(MetricRegistry.name(poolName, METRIC_CATEGORY, METRIC_NAME_USAGE));
+       registry.remove(MetricRegistry.name(poolName, METRIC_CATEGORY, METRIC_NAME_CONNECT));
+@@ -94,14 +94,14 @@ public class Dropwizard5MetricsTracker implements IMetricsTracker
+    /** {@inheritDoc} */
+    @Override
+    public void recordConnectionAcquiredNanos(final long elapsedAcquiredNanos)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(38);
+       connectionObtainTimer.update(elapsedAcquiredNanos, TimeUnit.NANOSECONDS);
+    }
+ 
+    /** {@inheritDoc} */
+    @Override
+    public void recordConnectionUsageMillis(final long elapsedBorrowedMillis)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(40);
+       connectionUsage.update(elapsedBorrowedMillis);
+    }
+ 
+diff --git a/com/zaxxer/hikari/metrics/dropwizard/Dropwizard5MetricsTrackerFactory.java b/com/zaxxer/hikari/metrics/dropwizard/Dropwizard5MetricsTrackerFactory.java
+index 27400d9..fc3af9b 100644
+--- a/com/zaxxer/hikari/metrics/dropwizard/Dropwizard5MetricsTrackerFactory.java
++++ b/com/zaxxer/hikari/metrics/dropwizard/Dropwizard5MetricsTrackerFactory.java
+@@ -31,13 +31,13 @@ public class Dropwizard5MetricsTrackerFactory implements MetricsTrackerFactory
+    }
+ 
+    public MetricRegistry getRegistry()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(42);
+       return registry;
+    }
+ 
+    @Override
+    public IMetricsTracker create(final String poolName, final PoolStats poolStats)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(44);
+       return new Dropwizard5MetricsTracker(poolName, poolStats, registry);
+    }
+ }
+diff --git a/com/zaxxer/hikari/metrics/micrometer/MicrometerMetricsTracker.java b/com/zaxxer/hikari/metrics/micrometer/MicrometerMetricsTracker.java
+index d994824..c4d4cb7 100644
+--- a/com/zaxxer/hikari/metrics/micrometer/MicrometerMetricsTracker.java
++++ b/com/zaxxer/hikari/metrics/micrometer/MicrometerMetricsTracker.java
+@@ -149,20 +149,20 @@ public class MicrometerMetricsTracker implements IMetricsTracker
+    /** {@inheritDoc} */
+    @Override
+    public void recordConnectionAcquiredNanos(final long elapsedAcquiredNanos)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(46);
+       connectionObtainTimer.record(elapsedAcquiredNanos, TimeUnit.NANOSECONDS);
+    }
+ 
+    /** {@inheritDoc} */
+    @Override
+    public void recordConnectionUsageMillis(final long elapsedBorrowedMillis)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(48);
+       connectionUsage.record(elapsedBorrowedMillis, TimeUnit.MILLISECONDS);
+    }
+ 
+    @Override
+    public void recordConnectionTimeout()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(50);
+       connectionTimeoutCounter.increment();
+    }
+ 
+diff --git a/com/zaxxer/hikari/pool/HikariPool.java b/com/zaxxer/hikari/pool/HikariPool.java
+index a7b21ec..6505ca9 100644
+--- a/com/zaxxer/hikari/pool/HikariPool.java
++++ b/com/zaxxer/hikari/pool/HikariPool.java
+@@ -138,7 +138,7 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
+     * @throws SQLException thrown if a timeout occurs trying to obtain a connection
+     */
+    public Connection getConnection() throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(4);
+       return getConnection(connectionTimeout);
+    }
+ 
+@@ -150,7 +150,7 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
+     * @throws SQLException thrown if a timeout occurs trying to obtain a connection
+     */
+    public Connection getConnection(final long hardTimeout) throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(9);
+       suspendResumeLock.acquire();
+       final var startTime = currentTime();
+ 
+@@ -199,7 +199,7 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
+     * @throws InterruptedException thrown if the thread is interrupted during shutdown
+     */
+    public synchronized void shutdown() throws InterruptedException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(14);
+       try {
+          poolState = POOL_SHUTDOWN;
+ 
+diff --git a/com/zaxxer/hikari/pool/PoolEntry.java b/com/zaxxer/hikari/pool/PoolEntry.java
+index a2392b9..75f9a43 100644
+--- a/com/zaxxer/hikari/pool/PoolEntry.java
++++ b/com/zaxxer/hikari/pool/PoolEntry.java
+@@ -92,7 +92,7 @@ final class PoolEntry implements IConcurrentBagEntry
+       this.endOfLife = endOfLife;
+    }
+ 
+-   public void setKeepalive(ScheduledFuture<?> keepalive) {
++   public void setKeepalive(ScheduledFuture<?> keepalive) { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(19);
+       this.keepalive = keepalive;
+    }
+ 
+@@ -154,14 +154,14 @@ final class PoolEntry implements IConcurrentBagEntry
+    /** {@inheritDoc} */
+    @Override
+    public int getState()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(23);
+       return stateUpdater.get(this);
+    }
+ 
+    /** {@inheritDoc} */
+    @Override
+    public boolean compareAndSet(int expect, int update)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(27);
+       return stateUpdater.compareAndSet(this, expect, update);
+    }
+ 
+diff --git a/com/zaxxer/hikari/pool/ProxyLeakTask.java b/com/zaxxer/hikari/pool/ProxyLeakTask.java
+index f61f723..0a1bae5 100644
+--- a/com/zaxxer/hikari/pool/ProxyLeakTask.java
++++ b/com/zaxxer/hikari/pool/ProxyLeakTask.java
+@@ -47,10 +47,10 @@ class ProxyLeakTask implements Runnable
+          void schedule(ScheduledExecutorService executorService, long leakDetectionThreshold) {}
+ 
+          @Override
+-         public void run() {}
++         public void run() { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(30);}
+ 
+          @Override
+-         public void cancel() {}
++         public void cancel() { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(33);}
+       };
+    }
+ 
+@@ -73,7 +73,7 @@ class ProxyLeakTask implements Runnable
+    /** {@inheritDoc} */
+    @Override
+    public void run()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(36);
+       isLeaked = true;
+ 
+       final var stackTrace = exception.getStackTrace();
+diff --git a/com/zaxxer/hikari/util/ConcurrentBag.java b/com/zaxxer/hikari/util/ConcurrentBag.java
+index 60cab1c..e10f362 100644
+--- a/com/zaxxer/hikari/util/ConcurrentBag.java
++++ b/com/zaxxer/hikari/util/ConcurrentBag.java
+@@ -159,7 +159,7 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
+     * @throws InterruptedException if interrupted while waiting
+     */
+    public T borrow(long timeout, final TimeUnit timeUnit) throws InterruptedException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(31);
+       // Try the thread-local list first
+       final var list = threadLocalList.get();
+       for (var i = list.size() - 1; i >= 0; i--) {
+@@ -214,7 +214,7 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
+     * @throws IllegalStateException if the bagEntry was not borrowed from the bag
+     */
+    public void requite(final T bagEntry)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(34);
+       bagEntry.setState(STATE_NOT_IN_USE);
+ 
+       final var isVirtualThread = isCurrentThreadVirtual();
+@@ -287,7 +287,7 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
+     */
+    @Override
+    public void close()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(37);
+       closed = true;
+    }
+ 
+diff --git a/com/zaxxer/hikari/util/Credentials.java b/com/zaxxer/hikari/util/Credentials.java
+index 3d6d8b5..65ad219 100644
+--- a/com/zaxxer/hikari/util/Credentials.java
++++ b/com/zaxxer/hikari/util/Credentials.java
+@@ -34,7 +34,7 @@ public final class Credentials
+     * @param password the password
+     * @return a new Credentials object
+     */
+-   public static Credentials of(final String username, final String password) {
++   public static Credentials of(final String username, final String password) { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(39);
+       return new Credentials(username, password);
+    }
+ 
+@@ -57,7 +57,7 @@ public final class Credentials
+     * @return the username
+     */
+    public String getUsername()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(41);
+       return username;
+    }
+ 
+@@ -67,7 +67,7 @@ public final class Credentials
+     * @return the password
+     */
+    public String getPassword()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(43);
+       return password;
+    }
+ }
+diff --git a/com/zaxxer/hikari/util/DriverDataSource.java b/com/zaxxer/hikari/util/DriverDataSource.java
+index 09808c3..54d4fda 100644
+--- a/com/zaxxer/hikari/util/DriverDataSource.java
++++ b/com/zaxxer/hikari/util/DriverDataSource.java
+@@ -123,13 +123,13 @@ public final class DriverDataSource implements DataSource
+ 
+    @Override
+    public Connection getConnection() throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(45);
+       return driver.connect(jdbcUrl, driverProperties);
+    }
+ 
+    @Override
+    public Connection getConnection(final String username, final String password) throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(47);
+       final var cloned = (Properties) driverProperties.clone();
+       if (username != null) {
+          cloned.put(USER, username);
+@@ -146,7 +146,7 @@ public final class DriverDataSource implements DataSource
+ 
+    @Override
+    public PrintWriter getLogWriter() throws SQLException
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(49);
+       throw new SQLFeatureNotSupportedException();
+    }
+ 
+diff --git a/com/zaxxer/hikari/util/FastList.java b/com/zaxxer/hikari/util/FastList.java
+index 3f22b0b..392a826 100644
+--- a/com/zaxxer/hikari/util/FastList.java
++++ b/com/zaxxer/hikari/util/FastList.java
+@@ -113,7 +113,7 @@ public final class FastList<T> implements List<T>, RandomAccess, Serializable
+     * @return the last element of the list
+     */
+    public T removeLast()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(5);
+       T element = elementData[--size];
+       elementData[size] = null;
+       return element;
+@@ -148,7 +148,7 @@ public final class FastList<T> implements List<T>, RandomAccess, Serializable
+     */
+    @Override
+    public void clear()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(10);
+       for (var i = 0; i < size; i++) {
+          elementData[i] = null;
+       }
+@@ -163,7 +163,7 @@ public final class FastList<T> implements List<T>, RandomAccess, Serializable
+     */
+    @Override
+    public int size()
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(15);
+       return size;
+    }
+ 
+diff --git a/com/zaxxer/hikari/util/UtilityElf.java b/com/zaxxer/hikari/util/UtilityElf.java
+index e046f1d..759d25c 100644
+--- a/com/zaxxer/hikari/util/UtilityElf.java
++++ b/com/zaxxer/hikari/util/UtilityElf.java
+@@ -54,7 +54,7 @@ public final class UtilityElf
+    }
+ 
+    public static String maskPasswordInJdbcUrl(String jdbcUrl)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(20);
+       return PASSWORD_MASKING_PATTERN.matcher(jdbcUrl).replaceAll("$1<masked>");
+    }
+ 
+@@ -65,7 +65,7 @@ public final class UtilityElf
+     * @return null if string is null or empty, trimmed string otherwise
+    */
+    public static String getNullIfEmpty(final String text)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(24);
+       return text == null ? null : text.trim().isEmpty() ? null : text.trim();
+    }
+ 
+@@ -75,7 +75,7 @@ public final class UtilityElf
+     * @param millis the number of milliseconds to sleep
+     */
+    public static void quietlySleep(final long millis)
+-   {
++   { com.zaxxer.hikari.jmhbench.MutationSwitch.tick(28);
+       try {
+          Thread.sleep(millis);
+       }

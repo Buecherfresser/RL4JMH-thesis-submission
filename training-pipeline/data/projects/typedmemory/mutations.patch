@@ -1,0 +1,595 @@
+diff --git a/com/mamba/typedmemory/api/MemLayout.java b/com/mamba/typedmemory/api/MemLayout.java
+index b95b7ec..67f6daa 100644
+--- a/com/mamba/typedmemory/api/MemLayout.java
++++ b/com/mamba/typedmemory/api/MemLayout.java
+@@ -39,7 +39,7 @@ import com.mamba.typedmemory.util.MemLayoutString.SummaryStyle;
+ ///
+ /// @param layout the primary layout for the record or sequence
+ /// @param groupLayouts nested group layouts discovered while deriving the layout
+-public record MemLayout(MemoryLayout layout, Optional<List<MemoryLayout>> groupLayouts) implements LayoutRules{
++public record MemLayout(MemoryLayout layout, Optional<List<MemoryLayout>> groupLayouts) implements LayoutRules{ com.mamba.typedmemory.jmhbench.MutationSwitch.tick(1);
+     /// Creates a layout descriptor.
+     ///
+     /// @param layout the primary layout for the record or sequence
+@@ -61,7 +61,7 @@ public record MemLayout(MemoryLayout layout, Optional<List<MemoryLayout>> groupL
+     /// Returns the size, in bytes, of the primary layout.
+     ///
+     /// @return the primary layout size in bytes
+-    public long byteSize() {
++    public long byteSize() { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(4);
+         return layout.byteSize();
+     }
+ 
+diff --git a/com/mamba/typedmemory/api/MemTypeCache.java b/com/mamba/typedmemory/api/MemTypeCache.java
+index 027b968..0b75f8f 100644
+--- a/com/mamba/typedmemory/api/MemTypeCache.java
++++ b/com/mamba/typedmemory/api/MemTypeCache.java
+@@ -26,7 +26,7 @@ final class MemTypeCache {
+ 
+     private static final ClassValue<TypeMetadata> TYPES = new ClassValue<>() {
+         @Override
+-        protected TypeMetadata computeValue(Class<?> type) {
++        protected TypeMetadata computeValue(Class<?> type) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(7);
+             if (!type.isRecord()) {
+                 throw new IllegalArgumentException("Must be record");
+             }
+diff --git a/com/mamba/typedmemory/api/Nulls.java b/com/mamba/typedmemory/api/Nulls.java
+index 2ae8963..dd8552f 100644
+--- a/com/mamba/typedmemory/api/Nulls.java
++++ b/com/mamba/typedmemory/api/Nulls.java
+@@ -29,7 +29,7 @@ public final class Nulls {
+     /// Returns the untyped native null pointer.
+     ///
+     /// @return {@link Ptr#NULL}
+-    public static Ptr of() {
++    public static Ptr of() { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(10);
+         return Ptr.NULL;
+     }
+ 
+@@ -40,7 +40,7 @@ public final class Nulls {
+     /// @return a typed native-null reference retaining {@code type} and its
+     ///         derived layout
+     /// @throws NullPointerException if {@code type} is null
+-    public static <T extends Record> RawMem<T> of(Class<T> type) {
++    public static <T extends Record> RawMem<T> of(Class<T> type) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(13);
+         return RawMem.of(type);
+     }
+ }
+diff --git a/com/mamba/typedmemory/api/PrimitiveTransforms.java b/com/mamba/typedmemory/api/PrimitiveTransforms.java
+index 581c840..899b4b7 100644
+--- a/com/mamba/typedmemory/api/PrimitiveTransforms.java
++++ b/com/mamba/typedmemory/api/PrimitiveTransforms.java
+@@ -73,7 +73,7 @@ public final class PrimitiveTransforms {
+             Mem<R> mem,
+             long index,
+             BooleanFunction<? extends R> transform,
+-            boolean... values) {
++            boolean... values) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(15);
+         Objects.requireNonNull(transform, "transform");
+         checkRange(mem, index, values.length);
+         for (int i = 0; i < values.length; i++) {
+@@ -117,7 +117,7 @@ public final class PrimitiveTransforms {
+             Mem<R> mem,
+             long index,
+             ByteFunction<? extends R> transform,
+-            byte... values) {
++            byte... values) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(17);
+         Objects.requireNonNull(transform, "transform");
+         checkRange(mem, index, values.length);
+         for (int i = 0; i < values.length; i++) {
+diff --git a/com/mamba/typedmemory/jmhbench/MutationSwitch.java b/com/mamba/typedmemory/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..749f102
+--- /dev/null
++++ b/com/mamba/typedmemory/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.mamba.typedmemory.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/mamba/typedmemory/opcode/ArrayAccessKind.java b/com/mamba/typedmemory/opcode/ArrayAccessKind.java
+index 57828a3..578c701 100644
+--- a/com/mamba/typedmemory/opcode/ArrayAccessKind.java
++++ b/com/mamba/typedmemory/opcode/ArrayAccessKind.java
+@@ -28,7 +28,7 @@ public enum ArrayAccessKind {
+     FLOAT,
+     DOUBLE;
+     
+-    public static ArrayAccessKind kind(Class<?> elementType) {
++    public static ArrayAccessKind kind(Class<?> elementType) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(2);
+         if (!elementType.isPrimitive()) {
+             return ArrayAccessKind.REFERENCE;
+         }
+diff --git a/com/mamba/typedmemory/opcode/Generator.java b/com/mamba/typedmemory/opcode/Generator.java
+index eda38ff..0e65ddb 100644
+--- a/com/mamba/typedmemory/opcode/Generator.java
++++ b/com/mamba/typedmemory/opcode/Generator.java
+@@ -46,7 +46,7 @@ import java.lang.constant.MethodTypeDesc;
+ ///
+ /// @author joemw
+ public class Generator {    
+-    public static byte[] generate(ClassDesc owner, Class<? extends Record> record, MemLayout memLayout){
++    public static byte[] generate(ClassDesc owner, Class<? extends Record> record, MemLayout memLayout){ com.mamba.typedmemory.jmhbench.MutationSwitch.tick(28);
+         var recordDesc = ClassDesc.ofDescriptor(record.descriptorString());
+         var memLayoutString = MemLayoutString.of(memLayout);
+         
+@@ -257,7 +257,7 @@ public class Generator {
+         );
+     }   
+     
+-    public static ClassDesc generateUserImplName(Class<?> valueType) {
++    public static ClassDesc generateUserImplName(Class<?> valueType) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(29);
+         String pkg = valueType.getPackageName();
+         String simple = "Mem$" + valueType.getSimpleName()
+                 + "_Impl_" + Long.toHexString(System.nanoTime());
+diff --git a/com/mamba/typedmemory/opcode/LocalAllocator.java b/com/mamba/typedmemory/opcode/LocalAllocator.java
+index 701f04d..37d45e2 100644
+--- a/com/mamba/typedmemory/opcode/LocalAllocator.java
++++ b/com/mamba/typedmemory/opcode/LocalAllocator.java
+@@ -24,7 +24,7 @@ import java.util.Deque;
+ ///
+ /// @author joemw
+ public class LocalAllocator {
+-    public record LocalBinding(int slot, JVMType kind, String name) {}
++    public record LocalBinding(int slot, JVMType kind, String name) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(30);}
+ 
+     private int nextSlot;
+     private final Deque<Integer> marks = new ArrayDeque<>();
+@@ -33,7 +33,7 @@ public class LocalAllocator {
+         this.nextSlot = computeStartSlot(isStatic, methodType);
+     }
+ 
+-    public void enterScope() {
++    public void enterScope() { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(31);
+         marks.push(nextSlot);
+     }
+ 
+diff --git a/com/mamba/typedmemory/opcode/LocalBindings.java b/com/mamba/typedmemory/opcode/LocalBindings.java
+index f8dafd5..4b51dd0 100644
+--- a/com/mamba/typedmemory/opcode/LocalBindings.java
++++ b/com/mamba/typedmemory/opcode/LocalBindings.java
+@@ -36,7 +36,7 @@ public final class LocalBindings {
+         return binding;
+     }
+ 
+-    public Expr expr(String name) {
++    public Expr expr(String name) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(32);
+         return new LocalExpr(get(name));
+     }
+ }
+diff --git a/com/mamba/typedmemory/opcode/OpcodeHelper.java b/com/mamba/typedmemory/opcode/OpcodeHelper.java
+index 65e731b..7d788c9 100644
+--- a/com/mamba/typedmemory/opcode/OpcodeHelper.java
++++ b/com/mamba/typedmemory/opcode/OpcodeHelper.java
+@@ -42,7 +42,7 @@ public class OpcodeHelper {
+         VIRTUAL, STATIC, INTERFACE, SPECIAL
+     }
+     
+-    public static JVMType jvmType(Class<?> classType) {
++    public static JVMType jvmType(Class<?> classType) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(33);
+         Objects.requireNonNull(classType);
+         return switch (classType) {
+             case Class<?> c when c == long.class   -> JVMType.LONG;
+@@ -53,7 +53,7 @@ public class OpcodeHelper {
+         };
+     }
+     
+-    public static void emitLoad(CodeEmitter out, JVMType type, int slot) {
++    public static void emitLoad(CodeEmitter out, JVMType type, int slot) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(34);
+         switch (type) {
+             case INT_LIKE -> out.iload(slot);
+             case LONG     -> out.lload(slot);
+diff --git a/com/mamba/typedmemory/opcode/emitter/BytecodeEmitter.java b/com/mamba/typedmemory/opcode/emitter/BytecodeEmitter.java
+index 96f452f..8ed39c5 100644
+--- a/com/mamba/typedmemory/opcode/emitter/BytecodeEmitter.java
++++ b/com/mamba/typedmemory/opcode/emitter/BytecodeEmitter.java
+@@ -37,12 +37,12 @@ public class BytecodeEmitter implements CodeEmitter{
+     }
+ 
+     @Override
+-    public void iconst(int v) {
++    public void iconst(int v) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(35);
+         this.iconst(builder, v);
+     }
+ 
+     @Override
+-    public void astore(int slot) {
++    public void astore(int slot) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(36);
+         builder.astore(slot);
+     }
+ 
+diff --git a/com/mamba/typedmemory/opcode/emitter/DebugEmitter.java b/com/mamba/typedmemory/opcode/emitter/DebugEmitter.java
+index 238f2f1..77c2f98 100644
+--- a/com/mamba/typedmemory/opcode/emitter/DebugEmitter.java
++++ b/com/mamba/typedmemory/opcode/emitter/DebugEmitter.java
+@@ -33,11 +33,11 @@ public class DebugEmitter implements CodeEmitter{
+     }    
+ 
+     @Override
+-    public void iconst(int value) {
++    public void iconst(int value) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(37);
+         IO.println("iconst " + value);}
+ 
+     @Override
+-    public void astore(int slot) {
++    public void astore(int slot) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(38);
+         IO.println("astore " + slot);
+     }
+ 
+diff --git a/com/mamba/typedmemory/opcode/expr/arrays/ArrayExpr.java b/com/mamba/typedmemory/opcode/expr/arrays/ArrayExpr.java
+index 454b9de..6313056 100644
+--- a/com/mamba/typedmemory/opcode/expr/arrays/ArrayExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/arrays/ArrayExpr.java
+@@ -7,9 +7,9 @@ import com.mamba.typedmemory.opcode.expr.NewArrayExpr;
+ 
+ ///
+ /// @author joemw
+-public record ArrayExpr(NewArrayExpr alloc, ArrayInitialiserExpr init) implements Expr {
++public record ArrayExpr(NewArrayExpr alloc, ArrayInitialiserExpr init) implements Expr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(5);
+         @Override
+-        public void emit(CodeEmitter out) {
++        public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(8);
+             // new MemoryLayout[elements.size()]
+             alloc.emit(out);
+             // stack: [array]
+diff --git a/com/mamba/typedmemory/opcode/expr/arrays/ArrayInitialiserExpr.java b/com/mamba/typedmemory/opcode/expr/arrays/ArrayInitialiserExpr.java
+index 7a706f1..7904ed5 100644
+--- a/com/mamba/typedmemory/opcode/expr/arrays/ArrayInitialiserExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/arrays/ArrayInitialiserExpr.java
+@@ -7,12 +7,12 @@ import java.util.List;
+ 
+ /// Initializes the array currently on top of the stack with the given elements.
+ /// Leaves the array reference on the stack.
+-public record ArrayInitialiserExpr(List<Expr> elements) implements Expr {
++public record ArrayInitialiserExpr(List<Expr> elements) implements Expr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(11);
+     public ArrayInitialiserExpr{
+         elements = List.copyOf(elements);
+     }
+     @Override
+-    public void emit(CodeEmitter out) {
++    public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(14);
+         for (int i = 0; i < elements.size(); i++) {
+             out.dup();
+             new IntLiteralExpr(i).emit(out);
+diff --git a/com/mamba/typedmemory/opcode/expr/arrays/ArrayLengthExpr.java b/com/mamba/typedmemory/opcode/expr/arrays/ArrayLengthExpr.java
+index 3ecb3c2..6aca4bc 100644
+--- a/com/mamba/typedmemory/opcode/expr/arrays/ArrayLengthExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/arrays/ArrayLengthExpr.java
+@@ -10,9 +10,9 @@ import com.mamba.typedmemory.opcode.expr.values.IntExpr;
+ 
+ ///
+ /// @author joemw
+-public record ArrayLengthExpr(Expr array) implements IntExpr {
++public record ArrayLengthExpr(Expr array) implements IntExpr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(16);
+     @Override
+-    public void emit(CodeEmitter out) {
++    public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(18);
+         array.emit(out);
+         out.arraylength();
+     }
+diff --git a/com/mamba/typedmemory/opcode/expr/arrays/ArrayLoadExpr.java b/com/mamba/typedmemory/opcode/expr/arrays/ArrayLoadExpr.java
+index d7e9dea..15fe89f 100644
+--- a/com/mamba/typedmemory/opcode/expr/arrays/ArrayLoadExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/arrays/ArrayLoadExpr.java
+@@ -12,9 +12,9 @@ import com.mamba.typedmemory.opcode.expr.values.IntExpr;
+ 
+ ///
+ /// @author joemw
+-public record ArrayLoadExpr(ArrayAccessKind kind, Expr array, IntExpr index) implements Expr {
++public record ArrayLoadExpr(ArrayAccessKind kind, Expr array, IntExpr index) implements Expr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(19);
+     @Override
+-    public void emit(CodeEmitter out) {
++    public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(20);
+         array.emit(out);
+         index.emit(out);
+ 
+diff --git a/com/mamba/typedmemory/opcode/expr/arrays/NewObjectArrayExpr.java b/com/mamba/typedmemory/opcode/expr/arrays/NewObjectArrayExpr.java
+index 3b96db9..922f722 100644
+--- a/com/mamba/typedmemory/opcode/expr/arrays/NewObjectArrayExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/arrays/NewObjectArrayExpr.java
+@@ -11,9 +11,9 @@ import java.lang.constant.ClassDesc;
+ 
+ ///
+ /// @author joemw
+-public record NewObjectArrayExpr(ClassDesc elementType, IntExpr size) implements NewArrayExpr {
++public record NewObjectArrayExpr(ClassDesc elementType, IntExpr size) implements NewArrayExpr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(21);
+     @Override
+-    public void emit(CodeEmitter out) {
++    public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(22);
+         size.emit(out);
+         out.anewarray(elementType);
+     }
+diff --git a/com/mamba/typedmemory/opcode/expr/arrays/NewPrimitiveArrayExpr.java b/com/mamba/typedmemory/opcode/expr/arrays/NewPrimitiveArrayExpr.java
+index 5c8ddf3..66a57c6 100644
+--- a/com/mamba/typedmemory/opcode/expr/arrays/NewPrimitiveArrayExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/arrays/NewPrimitiveArrayExpr.java
+@@ -11,7 +11,7 @@ import java.lang.classfile.TypeKind;
+ 
+ ///
+ /// @author joemw
+-public record NewPrimitiveArrayExpr(TypeKind elementType, IntExpr size) implements NewArrayExpr{
++public record NewPrimitiveArrayExpr(TypeKind elementType, IntExpr size) implements NewArrayExpr{ com.mamba.typedmemory.jmhbench.MutationSwitch.tick(23);
+     
+     public NewPrimitiveArrayExpr {
+         switch(elementType){
+@@ -20,7 +20,7 @@ public record NewPrimitiveArrayExpr(TypeKind elementType, IntExpr size) implemen
+     }
+ 
+     @Override
+-    public void emit(CodeEmitter out) {
++    public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(24);
+         size.emit(out);
+         out.newarray(elementType);
+     }
+diff --git a/com/mamba/typedmemory/opcode/expr/bind/BlockExpr.java b/com/mamba/typedmemory/opcode/expr/bind/BlockExpr.java
+index d23e2cc..548b68f 100644
+--- a/com/mamba/typedmemory/opcode/expr/bind/BlockExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/bind/BlockExpr.java
+@@ -11,9 +11,9 @@ import java.util.List;
+ 
+ ///
+ /// @author joemw
+-public record BlockExpr(List<Stmt> statements, Expr result) implements Expr {
++public record BlockExpr(List<Stmt> statements, Expr result) implements Expr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(39);
+     @Override
+-    public void emit(CodeEmitter out) {
++    public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(40);
+         for (Stmt stmt : statements) {
+             stmt.emit(out);
+         }        
+diff --git a/com/mamba/typedmemory/opcode/expr/bind/LetExpr.java b/com/mamba/typedmemory/opcode/expr/bind/LetExpr.java
+index 2527628..61b483e 100644
+--- a/com/mamba/typedmemory/opcode/expr/bind/LetExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/bind/LetExpr.java
+@@ -11,10 +11,10 @@ import com.mamba.typedmemory.opcode.expr.Expr;
+ 
+ ///
+ /// @author joemw
+-public record LetExpr(LocalBinding binding, Expr init, Expr body) implements Expr {
++public record LetExpr(LocalBinding binding, Expr init, Expr body) implements Expr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(41);
+ 
+     @Override
+-    public void emit(CodeEmitter out) {
++    public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(42);
+         init.emit(out);
+         OpcodeHelper.emitStore(out, binding.kind(), binding.slot());
+         body.emit(out);
+diff --git a/com/mamba/typedmemory/opcode/expr/numeric/PrimitiveConversionExpr.java b/com/mamba/typedmemory/opcode/expr/numeric/PrimitiveConversionExpr.java
+index a310ef2..dae481b 100644
+--- a/com/mamba/typedmemory/opcode/expr/numeric/PrimitiveConversionExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/numeric/PrimitiveConversionExpr.java
+@@ -9,7 +9,7 @@ import java.lang.classfile.TypeKind;
+ 
+ ///
+ /// @author joemw
+-public record PrimitiveConversionExpr(PrimitiveConversion conversion, NumericExpr expr) implements NumericExpr {
++public record PrimitiveConversionExpr(PrimitiveConversion conversion, NumericExpr expr) implements NumericExpr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(43);
+     
+     public enum PrimitiveConversion {
+         LONG_TO_INT,
+@@ -22,7 +22,7 @@ public record PrimitiveConversionExpr(PrimitiveConversion conversion, NumericExp
+     }
+     
+     @Override
+-    public TypeKind typeKind() {
++    public TypeKind typeKind() { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(44);
+         return switch (conversion) {
+             case LONG_TO_INT -> TypeKind.INT;
+             case INT_TO_LONG -> TypeKind.LONG;
+diff --git a/com/mamba/typedmemory/opcode/expr/ops/AddExpr.java b/com/mamba/typedmemory/opcode/expr/ops/AddExpr.java
+index fe15d54..98a4db6 100644
+--- a/com/mamba/typedmemory/opcode/expr/ops/AddExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/ops/AddExpr.java
+@@ -16,7 +16,7 @@ import com.mamba.typedmemory.opcode.expr.values.LongExpr;
+ public final class AddExpr {
+     private AddExpr() {}
+     
+-    public static NumericExpr of(NumericExpr left, NumericExpr right) {
++    public static NumericExpr of(NumericExpr left, NumericExpr right) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(45);
+         return switch (NumericExpr.promote(left, right)) {
+             case INT -> new IntAddExpr(NumericExpr.asInt(left), NumericExpr.asInt(right));
+             case LONG -> new LongAddExpr(NumericExpr.asLong(left), NumericExpr.asLong(right));
+@@ -26,7 +26,7 @@ public final class AddExpr {
+         };
+     }
+     
+-    public record IntAddExpr(IntExpr left, IntExpr right) implements IntExpr {
++    public record IntAddExpr(IntExpr left, IntExpr right) implements IntExpr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(46);
+         @Override
+         public void emit(CodeEmitter out) {
+             left.emit(out);
+diff --git a/com/mamba/typedmemory/opcode/expr/ops/CastExpr.java b/com/mamba/typedmemory/opcode/expr/ops/CastExpr.java
+index 14771a2..ec1d9bf 100644
+--- a/com/mamba/typedmemory/opcode/expr/ops/CastExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/ops/CastExpr.java
+@@ -10,9 +10,9 @@ import java.lang.constant.ClassDesc;
+ 
+ ///
+ /// @author joemw
+-public record CastExpr(ClassDesc type, Expr expr) implements Expr {
++public record CastExpr(ClassDesc type, Expr expr) implements Expr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(47);
+     @Override
+-    public void emit(CodeEmitter out) {
++    public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(48);
+         expr.emit(out);
+         out.checkcast(type);
+     }
+diff --git a/com/mamba/typedmemory/opcode/expr/ops/MulExpr.java b/com/mamba/typedmemory/opcode/expr/ops/MulExpr.java
+index f6eb92a..bd4bd92 100644
+--- a/com/mamba/typedmemory/opcode/expr/ops/MulExpr.java
++++ b/com/mamba/typedmemory/opcode/expr/ops/MulExpr.java
+@@ -16,7 +16,7 @@ import com.mamba.typedmemory.opcode.expr.values.LongExpr;
+ public final class MulExpr {
+     private MulExpr() {}
+     
+-    public static NumericExpr of(NumericExpr left, NumericExpr right) {
++    public static NumericExpr of(NumericExpr left, NumericExpr right) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(49);
+         return switch (NumericExpr.promote(left, right)) {
+             case INT -> new IntMulExpr(NumericExpr.asInt(left), NumericExpr.asInt(right));
+             case LONG -> new LongMulExpr(NumericExpr.asLong(left), NumericExpr.asLong(right));
+@@ -26,7 +26,7 @@ public final class MulExpr {
+         };
+     }
+     
+-    public record IntMulExpr(IntExpr left, IntExpr right) implements IntExpr {
++    public record IntMulExpr(IntExpr left, IntExpr right) implements IntExpr { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(50);
+         @Override
+         public void emit(CodeEmitter out) {
+             left.emit(out);
+diff --git a/com/mamba/typedmemory/opcode/lowering/SetLowering.java b/com/mamba/typedmemory/opcode/lowering/SetLowering.java
+index c2d228b..a908107 100644
+--- a/com/mamba/typedmemory/opcode/lowering/SetLowering.java
++++ b/com/mamba/typedmemory/opcode/lowering/SetLowering.java
+@@ -63,7 +63,7 @@ public class SetLowering {
+     
+     record WriteContext(ClassDesc owner, Expr segmentExpr, Expr baseOffsetExpr) {}
+     
+-    public static Stmt lower(ClassDesc owner, Class<? extends Record> recordType, MemLayout memLayout) {
++    public static Stmt lower(ClassDesc owner, Class<? extends Record> recordType, MemLayout memLayout) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(25);
+         // method signature for set(long index, T t)
+         var setType = MethodTypeDesc.ofDescriptor(
+                 MethodType.methodType(void.class, long.class, recordType).descriptorString());
+diff --git a/com/mamba/typedmemory/opcode/stmt/ArrayStoreStmt.java b/com/mamba/typedmemory/opcode/stmt/ArrayStoreStmt.java
+index f691ece..31d913a 100644
+--- a/com/mamba/typedmemory/opcode/stmt/ArrayStoreStmt.java
++++ b/com/mamba/typedmemory/opcode/stmt/ArrayStoreStmt.java
+@@ -11,9 +11,9 @@ import com.mamba.typedmemory.opcode.expr.values.IntExpr;
+ 
+ ///
+ /// @author joemw
+-public record ArrayStoreStmt(ArrayAccessKind kind, Expr array, IntExpr index, Expr value) implements Stmt {
++public record ArrayStoreStmt(ArrayAccessKind kind, Expr array, IntExpr index, Expr value) implements Stmt { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(26);
+     @Override
+-    public void emit(CodeEmitter out) {
++    public void emit(CodeEmitter out) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(27);
+         array.emit(out);
+         index.emit(out);
+         value.emit(out);
+diff --git a/com/mamba/typedmemory/util/MemLayoutString.java b/com/mamba/typedmemory/util/MemLayoutString.java
+index b72a100..eb6e26e 100644
+--- a/com/mamba/typedmemory/util/MemLayoutString.java
++++ b/com/mamba/typedmemory/util/MemLayoutString.java
+@@ -45,7 +45,7 @@ import java.util.StringJoiner;
+ ///
+ /// @param layout the layout being formatted
+ /// @param stringLayout the formatted layout source text
+-public record MemLayoutString(MemoryLayout layout, String stringLayout) implements LayoutRules{
++public record MemLayoutString(MemoryLayout layout, String stringLayout) implements LayoutRules{ com.mamba.typedmemory.jmhbench.MutationSwitch.tick(3);
+     /// Selects the branch glyphs used when rendering a type layout summary.
+     public enum SummaryStyle {
+         /// Uses plain ASCII branch glyphs for terminals or logs without Unicode
+@@ -66,7 +66,7 @@ public record MemLayoutString(MemoryLayout layout, String stringLayout) implemen
+             this.indent = indent;
+         }
+         
+-        public String branch() {
++        public String branch() { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(6);
+             return branch;
+         }
+         
+diff --git a/com/mamba/typedmemory/util/MemoryRefs.java b/com/mamba/typedmemory/util/MemoryRefs.java
+index 58b35a8..90aa042 100644
+--- a/com/mamba/typedmemory/util/MemoryRefs.java
++++ b/com/mamba/typedmemory/util/MemoryRefs.java
+@@ -30,11 +30,11 @@ public final class MemoryRefs {
+     private MemoryRefs() {
+     }
+ 
+-    public static Ptr nullPtr() {
++    public static Ptr nullPtr() { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(9);
+         return new NativePtr(MemorySegment.NULL);
+     }
+ 
+-    public static Ptr ptr(MemorySegment segment) {
++    public static Ptr ptr(MemorySegment segment) { com.mamba.typedmemory.jmhbench.MutationSwitch.tick(12);
+         requireNative(segment);
+         return segment.address() == 0 ? Ptr.NULL : new NativePtr(segment);
+     }

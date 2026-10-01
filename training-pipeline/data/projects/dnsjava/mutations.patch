@@ -1,0 +1,652 @@
+diff --git a/org/xbill/DNS/A6Record.java b/org/xbill/DNS/A6Record.java
+index 7f19152..fbab059 100644
+--- a/org/xbill/DNS/A6Record.java
++++ b/org/xbill/DNS/A6Record.java
+@@ -42,7 +42,7 @@ public class A6Record extends Record {
+   }
+ 
+   @Override
+-  protected void rrFromWire(DNSInput in) throws IOException {
++  protected void rrFromWire(DNSInput in) throws IOException { org.xbill.DNS.jmhbench.MutationSwitch.tick(31);
+     prefixBits = in.readU8();
+     int suffixbits = 128 - prefixBits;
+     int suffixbytes = (suffixbits + 7) / 8;
+@@ -57,7 +57,7 @@ public class A6Record extends Record {
+   }
+ 
+   @Override
+-  protected void rdataFromString(Tokenizer st, Name origin) throws IOException {
++  protected void rdataFromString(Tokenizer st, Name origin) throws IOException { org.xbill.DNS.jmhbench.MutationSwitch.tick(36);
+     prefixBits = st.getUInt8();
+     if (prefixBits > 128) {
+       throw st.exception("prefix bits must be [0..128]");
+diff --git a/org/xbill/DNS/AAAARecord.java b/org/xbill/DNS/AAAARecord.java
+index a834c2f..6367fde 100644
+--- a/org/xbill/DNS/AAAARecord.java
++++ b/org/xbill/DNS/AAAARecord.java
+@@ -47,12 +47,12 @@ public class AAAARecord extends Record {
+   }
+ 
+   @Override
+-  protected void rrFromWire(DNSInput in) throws IOException {
++  protected void rrFromWire(DNSInput in) throws IOException { org.xbill.DNS.jmhbench.MutationSwitch.tick(41);
+     address = in.readByteArray(16);
+   }
+ 
+   @Override
+-  protected void rdataFromString(Tokenizer st, Name origin) throws IOException {
++  protected void rdataFromString(Tokenizer st, Name origin) throws IOException { org.xbill.DNS.jmhbench.MutationSwitch.tick(45);
+     address = st.getAddressBytes(Address.IPv6);
+   }
+ 
+diff --git a/org/xbill/DNS/AFSDBRecord.java b/org/xbill/DNS/AFSDBRecord.java
+index 6ca2f05..fd75f5c 100644
+--- a/org/xbill/DNS/AFSDBRecord.java
++++ b/org/xbill/DNS/AFSDBRecord.java
+@@ -23,7 +23,7 @@ public class AFSDBRecord extends U16NameBase {
+   }
+ 
+   /** Gets the subtype indicating the service provided by the host. */
+-  public int getSubtype() {
++  public int getSubtype() { org.xbill.DNS.jmhbench.MutationSwitch.tick(49);
+     return getU16Field();
+   }
+ 
+diff --git a/org/xbill/DNS/ReverseMap.java b/org/xbill/DNS/ReverseMap.java
+index 21a307b..e38a9e6 100644
+--- a/org/xbill/DNS/ReverseMap.java
++++ b/org/xbill/DNS/ReverseMap.java
+@@ -28,7 +28,7 @@ public final class ReverseMap {
+    * @param addr The address from which to build a name.
+    * @return The name corresponding to the address in the reverse map.
+    */
+-  public static Name fromAddress(byte[] addr) {
++  public static Name fromAddress(byte[] addr) { org.xbill.DNS.jmhbench.MutationSwitch.tick(1);
+     if (addr.length != 4 && addr.length != 16) {
+       throw new IllegalArgumentException("array must contain 4 or 16 elements");
+     }
+@@ -73,7 +73,7 @@ public final class ReverseMap {
+    * @param addr The address from which to build a name.
+    * @return The name corresponding to the address in the reverse map.
+    */
+-  public static Name fromAddress(int[] addr) {
++  public static Name fromAddress(int[] addr) { org.xbill.DNS.jmhbench.MutationSwitch.tick(10);
+     byte[] bytes = new byte[addr.length];
+     for (int i = 0; i < addr.length; i++) {
+       if (addr[i] < 0 || addr[i] > 0xFF) {
+diff --git a/org/xbill/DNS/SetResponse.java b/org/xbill/DNS/SetResponse.java
+index 589bd22..b2e6dc8 100644
+--- a/org/xbill/DNS/SetResponse.java
++++ b/org/xbill/DNS/SetResponse.java
+@@ -97,12 +97,12 @@ public class SetResponse {
+   }
+ 
+   /** Is the answer to the query unknown? */
+-  public boolean isUnknown() {
++  public boolean isUnknown() { org.xbill.DNS.jmhbench.MutationSwitch.tick(18);
+     return type == UNKNOWN;
+   }
+ 
+   /** Is the answer to the query that the name does not exist? */
+-  public boolean isNXDOMAIN() {
++  public boolean isNXDOMAIN() { org.xbill.DNS.jmhbench.MutationSwitch.tick(25);
+     return type == NXDOMAIN;
+   }
+ 
+diff --git a/org/xbill/DNS/config/AndroidResolverConfigProvider.java b/org/xbill/DNS/config/AndroidResolverConfigProvider.java
+index c78f10a..a5ff46f 100644
+--- a/org/xbill/DNS/config/AndroidResolverConfigProvider.java
++++ b/org/xbill/DNS/config/AndroidResolverConfigProvider.java
+@@ -25,12 +25,12 @@ public class AndroidResolverConfigProvider extends BaseResolverConfigProvider {
+   private static Context context = null;
+ 
+   /** Gets the current configuration */
+-  public static void setContext(Context ctx) {
++  public static void setContext(Context ctx) { org.xbill.DNS.jmhbench.MutationSwitch.tick(2);
+     context = ctx;
+   }
+ 
+   @Override
+-  public void initialize() throws InitializationException {
++  public void initialize() throws InitializationException { org.xbill.DNS.jmhbench.MutationSwitch.tick(11);
+     reset();
+     if (context == null) {
+       throw new InitializationException("Context must be initialized by calling setContext");
+diff --git a/org/xbill/DNS/config/FallbackPropertyResolverConfigProvider.java b/org/xbill/DNS/config/FallbackPropertyResolverConfigProvider.java
+index 98fef5b..8674a3f 100644
+--- a/org/xbill/DNS/config/FallbackPropertyResolverConfigProvider.java
++++ b/org/xbill/DNS/config/FallbackPropertyResolverConfigProvider.java
+@@ -14,7 +14,7 @@ public class FallbackPropertyResolverConfigProvider extends PropertyResolverConf
+   public static final String DNS_FALLBACK_NDOTS_PROP = "dns.fallback.ndots";
+ 
+   @Override
+-  public void initialize() {
++  public void initialize() { org.xbill.DNS.jmhbench.MutationSwitch.tick(19);
+     initialize(DNS_FALLBACK_SERVER_PROP, DNS_FALLBACK_SEARCH_PROP, DNS_FALLBACK_NDOTS_PROP);
+   }
+ }
+diff --git a/org/xbill/DNS/config/JndiContextResolverConfigProvider.java b/org/xbill/DNS/config/JndiContextResolverConfigProvider.java
+index 536cf6d..86c8543 100644
+--- a/org/xbill/DNS/config/JndiContextResolverConfigProvider.java
++++ b/org/xbill/DNS/config/JndiContextResolverConfigProvider.java
+@@ -42,7 +42,7 @@ public class JndiContextResolverConfigProvider implements ResolverConfigProvider
+     }
+ 
+     @Override
+-    public void initialize() {
++    public void initialize() { org.xbill.DNS.jmhbench.MutationSwitch.tick(26);
+       reset();
+       Hashtable<String, String> env = new Hashtable<>();
+       env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
+@@ -85,7 +85,7 @@ public class JndiContextResolverConfigProvider implements ResolverConfigProvider
+   }
+ 
+   @Override
+-  public void initialize() {
++  public void initialize() { org.xbill.DNS.jmhbench.MutationSwitch.tick(32);
+     inner.initialize();
+   }
+ 
+diff --git a/org/xbill/DNS/config/PropertyResolverConfigProvider.java b/org/xbill/DNS/config/PropertyResolverConfigProvider.java
+index e570d6c..87e0ed9 100644
+--- a/org/xbill/DNS/config/PropertyResolverConfigProvider.java
++++ b/org/xbill/DNS/config/PropertyResolverConfigProvider.java
+@@ -19,7 +19,7 @@ public class PropertyResolverConfigProvider extends BaseResolverConfigProvider {
+   private int ndots;
+ 
+   @Override
+-  public void initialize() {
++  public void initialize() { org.xbill.DNS.jmhbench.MutationSwitch.tick(37);
+     initialize(DNS_SERVER_PROP, DNS_SEARCH_PROP, DNS_NDOTS_PROP);
+   }
+ 
+@@ -32,7 +32,7 @@ public class PropertyResolverConfigProvider extends BaseResolverConfigProvider {
+    * @param ndotsName the property name for the ndots setting
+    * @since 3.2
+    */
+-  protected void initialize(String serverName, String searchName, String ndotsName) {
++  protected void initialize(String serverName, String searchName, String ndotsName) { org.xbill.DNS.jmhbench.MutationSwitch.tick(42);
+     reset();
+     String servers = System.getProperty(serverName);
+     if (servers != null) {
+diff --git a/org/xbill/DNS/config/ResolvConfResolverConfigProvider.java b/org/xbill/DNS/config/ResolvConfResolverConfigProvider.java
+index 73ee8b5..f8dd744 100644
+--- a/org/xbill/DNS/config/ResolvConfResolverConfigProvider.java
++++ b/org/xbill/DNS/config/ResolvConfResolverConfigProvider.java
+@@ -16,7 +16,7 @@ public class ResolvConfResolverConfigProvider extends BaseResolverConfigProvider
+   private int ndots = 1;
+ 
+   @Override
+-  public void initialize() {
++  public void initialize() { org.xbill.DNS.jmhbench.MutationSwitch.tick(46);
+     reset();
+     // first try the default unix config path
+     if (!tryParseResolveConf("/etc/resolv.conf")) {
+@@ -39,7 +39,7 @@ public class ResolvConfResolverConfigProvider extends BaseResolverConfigProvider
+     return false;
+   }
+ 
+-  protected void parseResolvConf(InputStream in) throws IOException {
++  protected void parseResolvConf(InputStream in) throws IOException { org.xbill.DNS.jmhbench.MutationSwitch.tick(50);
+     try (InputStreamReader isr = new InputStreamReader(in);
+         BufferedReader br = new BufferedReader(isr)) {
+       String line;
+diff --git a/org/xbill/DNS/dnssec/DefaultTrustAnchorStore.java b/org/xbill/DNS/dnssec/DefaultTrustAnchorStore.java
+index 9439105..374a671 100644
+--- a/org/xbill/DNS/dnssec/DefaultTrustAnchorStore.java
++++ b/org/xbill/DNS/dnssec/DefaultTrustAnchorStore.java
+@@ -31,7 +31,7 @@ final class DefaultTrustAnchorStore implements TrustAnchorStore {
+    * @param rrset The key set to store as trusted.
+    */
+   @Override
+-  public void store(RRset rrset) {
++  public void store(RRset rrset) { org.xbill.DNS.jmhbench.MutationSwitch.tick(33);
+     if (rrset.getType() != Type.DS && rrset.getType() != Type.DNSKEY) {
+       throw new IllegalArgumentException("Trust anchors can only be DS or DNSKEY records");
+     }
+@@ -63,7 +63,7 @@ final class DefaultTrustAnchorStore implements TrustAnchorStore {
+    * @return The closest found key for <code>name</code> or <code>null</code>.
+    */
+   @Override
+-  public RRset find(Name name, int dclass) {
++  public RRset find(Name name, int dclass) { org.xbill.DNS.jmhbench.MutationSwitch.tick(38);
+     while (name.labels() > 0) {
+       String k = this.key(name, dclass);
+       RRset r = this.lookup(k);
+diff --git a/org/xbill/DNS/dnssec/DnsSecVerifier.java b/org/xbill/DNS/dnssec/DnsSecVerifier.java
+index e169f0c..e402642 100644
+--- a/org/xbill/DNS/dnssec/DnsSecVerifier.java
++++ b/org/xbill/DNS/dnssec/DnsSecVerifier.java
+@@ -49,7 +49,7 @@ final class DnsSecVerifier {
+    *
+    * @param config The configuration data for this module.
+    */
+-  public void init(Properties config) {
++  public void init(Properties config) { org.xbill.DNS.jmhbench.MutationSwitch.tick(43);
+     maxValidateRRsigs = Integer.parseInt(config.getProperty(MAX_VALIDATE_RRSIGS_PROPERTY, "8"));
+   }
+ 
+@@ -158,7 +158,7 @@ final class DnsSecVerifier {
+    * @return {@link SecurityStatus#SECURE} if the {@link RRset} verified positively, {@link
+    *     SecurityStatus#BOGUS} otherwise.
+    */
+-  public JustifiedSecStatus verify(SRRset rrset, KeyEntry keyRrset, Instant date) {
++  public JustifiedSecStatus verify(SRRset rrset, KeyEntry keyRrset, Instant date) { org.xbill.DNS.jmhbench.MutationSwitch.tick(47);
+     List<RRSIGRecord> sigs = rrset.sigs();
+     if (sigs.isEmpty()) {
+       log.info(
+diff --git a/org/xbill/DNS/dnssec/NSEC3ValUtils.java b/org/xbill/DNS/dnssec/NSEC3ValUtils.java
+index 50aafb6..3720c6c 100644
+--- a/org/xbill/DNS/dnssec/NSEC3ValUtils.java
++++ b/org/xbill/DNS/dnssec/NSEC3ValUtils.java
+@@ -131,7 +131,7 @@ final class NSEC3ValUtils {
+    *
+    * @param nsec3s List of NSEC3 records to check. The list is modified by this method.
+    */
+-  public void stripUnknownAlgNSEC3s(List<SRRset> nsec3s) {
++  public void stripUnknownAlgNSEC3s(List<SRRset> nsec3s) { org.xbill.DNS.jmhbench.MutationSwitch.tick(3);
+     for (ListIterator<SRRset> i = nsec3s.listIterator(); i.hasNext(); ) {
+       NSEC3Record nsec3 = (NSEC3Record) i.next().first();
+       if (!this.supportsHashAlgorithm(nsec3.getHashAlgorithm())) {
+@@ -449,7 +449,7 @@ final class NSEC3ValUtils {
+    * @param dnskeyRrset The set of validating DNSKEYs.
+    * @return true if all NSEC3s can be legally ignored, false if not.
+    */
+-  public boolean allNSEC3sIgnorable(List<SRRset> nsec3s, KeyCache dnskeyRrset) {
++  public boolean allNSEC3sIgnorable(List<SRRset> nsec3s, KeyCache dnskeyRrset) { org.xbill.DNS.jmhbench.MutationSwitch.tick(12);
+     Map<Name, NSEC3Record> foundNsecs = new HashMap<>();
+     for (SRRset set : nsec3s) {
+       for (Record r : set.rrs()) {
+diff --git a/org/xbill/DNS/dnssec/ValUtils.java b/org/xbill/DNS/dnssec/ValUtils.java
+index 46553b0..1c3a149 100644
+--- a/org/xbill/DNS/dnssec/ValUtils.java
++++ b/org/xbill/DNS/dnssec/ValUtils.java
+@@ -76,7 +76,7 @@ final class ValUtils {
+    * @param set The RRset to canonicalize.
+    * @param sig The signature that validated this RRset.
+    */
+-  public static void setCanonicalNsecOwner(SRRset set, RRSIGRecord sig) {
++  public static void setCanonicalNsecOwner(SRRset set, RRSIGRecord sig) { org.xbill.DNS.jmhbench.MutationSwitch.tick(20);
+     if (set.getType() != Type.NSEC) {
+       return;
+     }
+@@ -109,7 +109,7 @@ final class ValUtils {
+    *
+    * @param config The configuration data for this module.
+    */
+-  public void init(Properties config) {
++  public void init(Properties config) { org.xbill.DNS.jmhbench.MutationSwitch.tick(27);
+     hasGost = Security.getProviders("MessageDigest.GOST3411") != null;
+     hasEd25519 = Security.getProviders("KeyFactory.Ed25519") != null;
+     hasEd448 = Security.getProviders("KeyFactory.Ed448") != null;
+diff --git a/org/xbill/DNS/hosts/HostsFileParser.java b/org/xbill/DNS/hosts/HostsFileParser.java
+index 2dda049..a713756 100644
+--- a/org/xbill/DNS/hosts/HostsFileParser.java
++++ b/org/xbill/DNS/hosts/HostsFileParser.java
+@@ -100,7 +100,7 @@ public final class HostsFileParser {
+    * @throws IllegalArgumentException when {@code type} is not {@link org.xbill.DNS.Type#A} or{@link
+    *     org.xbill.DNS.Type#AAAA}.
+    */
+-  public Optional<InetAddress> getAddressForHost(Name name, int type) throws IOException {
++  public Optional<InetAddress> getAddressForHost(Name name, int type) throws IOException { org.xbill.DNS.jmhbench.MutationSwitch.tick(4);
+     Objects.requireNonNull(name, "name is required");
+     if (type != Type.A && type != Type.AAAA) {
+       throw new IllegalArgumentException("type can only be A or AAAA");
+diff --git a/org/xbill/DNS/io/DefaultIoClientFactory.java b/org/xbill/DNS/io/DefaultIoClientFactory.java
+index 04d173f..c5b61c6 100644
+--- a/org/xbill/DNS/io/DefaultIoClientFactory.java
++++ b/org/xbill/DNS/io/DefaultIoClientFactory.java
+@@ -19,12 +19,12 @@ public class DefaultIoClientFactory implements IoClientFactory {
+   private static final DefaultIoClient RESOLVER_CLIENT = new DefaultIoClient();
+ 
+   @Override
+-  public TcpIoClient createOrGetTcpClient() {
++  public TcpIoClient createOrGetTcpClient() { org.xbill.DNS.jmhbench.MutationSwitch.tick(5);
+     return RESOLVER_CLIENT;
+   }
+ 
+   @Override
+-  public UdpIoClient createOrGetUdpClient() {
++  public UdpIoClient createOrGetUdpClient() { org.xbill.DNS.jmhbench.MutationSwitch.tick(13);
+     return RESOLVER_CLIENT;
+   }
+ }
+diff --git a/org/xbill/DNS/jmhbench/MutationSwitch.java b/org/xbill/DNS/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..2e23bd3
+--- /dev/null
++++ b/org/xbill/DNS/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.xbill.DNS.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/xbill/DNS/lookup/LookupFailedException.java b/org/xbill/DNS/lookup/LookupFailedException.java
+index f45fb61..36dfb16 100644
+--- a/org/xbill/DNS/lookup/LookupFailedException.java
++++ b/org/xbill/DNS/lookup/LookupFailedException.java
+@@ -62,7 +62,7 @@ public class LookupFailedException extends RuntimeException {
+   }
+ 
+   /** Gets the Name being looked up when this failure occurred. */
+-  public Name getName() {
++  public Name getName() { org.xbill.DNS.jmhbench.MutationSwitch.tick(6);
+     return name;
+   }
+ 
+diff --git a/org/xbill/DNS/lookup/LookupSession.java b/org/xbill/DNS/lookup/LookupSession.java
+index 8925947..be6809d 100644
+--- a/org/xbill/DNS/lookup/LookupSession.java
++++ b/org/xbill/DNS/lookup/LookupSession.java
+@@ -119,7 +119,7 @@ public class LookupSession {
+      *
+      * @return {@code this}.
+      */
+-    public LookupSessionBuilder resolver(@NonNull Resolver resolver) {
++    public LookupSessionBuilder resolver(@NonNull Resolver resolver) { org.xbill.DNS.jmhbench.MutationSwitch.tick(14);
+       this.resolver = resolver;
+       return this;
+     }
+@@ -131,7 +131,7 @@ public class LookupSession {
+      *
+      * @return {@code this}.
+      */
+-    public LookupSessionBuilder maxRedirects(int maxRedirects) {
++    public LookupSessionBuilder maxRedirects(int maxRedirects) { org.xbill.DNS.jmhbench.MutationSwitch.tick(21);
+       this.maxRedirects = maxRedirects;
+       return this;
+     }
+diff --git a/org/xbill/DNS/spi/DNSJavaNameService.java b/org/xbill/DNS/spi/DNSJavaNameService.java
+index dcc1198..2941869 100644
+--- a/org/xbill/DNS/spi/DNSJavaNameService.java
++++ b/org/xbill/DNS/spi/DNSJavaNameService.java
+@@ -114,7 +114,7 @@ public class DNSJavaNameService implements NameService {
+    * @return All the ip addresses found for the host name.
+    */
+   @Override
+-  public InetAddress[] lookupAllHostAddr(String host) throws UnknownHostException {
++  public InetAddress[] lookupAllHostAddr(String host) throws UnknownHostException { org.xbill.DNS.jmhbench.MutationSwitch.tick(7);
+     Name name;
+     try {
+       name = new Name(host);
+@@ -166,7 +166,7 @@ public class DNSJavaNameService implements NameService {
+    * @return The host name found for the ip address.
+    */
+   @Override
+-  public String getHostByAddr(byte[] addr) throws UnknownHostException {
++  public String getHostByAddr(byte[] addr) throws UnknownHostException { org.xbill.DNS.jmhbench.MutationSwitch.tick(15);
+     Name name = ReverseMap.fromAddress(InetAddress.getByAddress(addr));
+     Record[] records = new Lookup(name, Type.PTR).run();
+     if (records == null) {
+diff --git a/org/xbill/DNS/spi/DNSJavaNameServiceDescriptor.java b/org/xbill/DNS/spi/DNSJavaNameServiceDescriptor.java
+index daf6f84..4c057bb 100644
+--- a/org/xbill/DNS/spi/DNSJavaNameServiceDescriptor.java
++++ b/org/xbill/DNS/spi/DNSJavaNameServiceDescriptor.java
+@@ -15,7 +15,7 @@ import sun.net.spi.nameservice.NameServiceDescriptor;
+ public class DNSJavaNameServiceDescriptor implements NameServiceDescriptor {
+   /** Returns a reference to a dnsjava name server provider. */
+   @Override
+-  public NameService createNameService() {
++  public NameService createNameService() { org.xbill.DNS.jmhbench.MutationSwitch.tick(22);
+     return new DNSJavaNameService();
+   }
+ 
+@@ -25,7 +25,7 @@ public class DNSJavaNameServiceDescriptor implements NameServiceDescriptor {
+   }
+ 
+   @Override
+-  public String getProviderName() {
++  public String getProviderName() { org.xbill.DNS.jmhbench.MutationSwitch.tick(28);
+     return "dnsjava";
+   }
+ }
+diff --git a/org/xbill/DNS/tools/Tools.java b/org/xbill/DNS/tools/Tools.java
+index 6765e07..ffbd7f1 100644
+--- a/org/xbill/DNS/tools/Tools.java
++++ b/org/xbill/DNS/tools/Tools.java
+@@ -2,7 +2,7 @@
+ package org.xbill.DNS.tools;
+ 
+ public class Tools {
+-  public static void main(String[] args) throws Exception {
++  public static void main(String[] args) throws Exception { org.xbill.DNS.jmhbench.MutationSwitch.tick(8);
+     if (args == null || args.length == 0) {
+       System.out.println("Usage: <command> <options>");
+       System.out.println("  Commands:");
+diff --git a/org/xbill/DNS/tools/dig.java b/org/xbill/DNS/tools/dig.java
+index e080f2f..c79192a 100644
+--- a/org/xbill/DNS/tools/dig.java
++++ b/org/xbill/DNS/tools/dig.java
+@@ -40,7 +40,7 @@ public class dig {
+     System.out.println(";; Query time: " + ms + " ms");
+   }
+ 
+-  public static void main(String[] argv) throws IOException {
++  public static void main(String[] argv) throws IOException { org.xbill.DNS.jmhbench.MutationSwitch.tick(16);
+     int arg;
+ 
+     if (argv.length < 1) {
+@@ -202,7 +202,7 @@ public class dig {
+         xfrin.run(
+             new ZoneTransferIn.ZoneTransferHandler() {
+               @Override
+-              public void startAXFR() {}
++              public void startAXFR() { org.xbill.DNS.jmhbench.MutationSwitch.tick(23);}
+ 
+               @Override
+               public void startIXFR() {}
+diff --git a/org/xbill/DNS/tools/jnamed.java b/org/xbill/DNS/tools/jnamed.java
+index b111ce3..2499c60 100644
+--- a/org/xbill/DNS/tools/jnamed.java
++++ b/org/xbill/DNS/tools/jnamed.java
+@@ -153,7 +153,7 @@ public class jnamed {
+     }
+   }
+ 
+-  public void addPrimaryZone(String zname, String zonefile) throws IOException {
++  public void addPrimaryZone(String zname, String zonefile) throws IOException { org.xbill.DNS.jmhbench.MutationSwitch.tick(29);
+     Name origin = null;
+     if (zname != null) {
+       origin = Name.fromString(zname, Name.root);
+@@ -163,7 +163,7 @@ public class jnamed {
+   }
+ 
+   public void addSecondaryZone(String zone, String remote)
+-      throws IOException, ZoneTransferException {
++      throws IOException, ZoneTransferException { org.xbill.DNS.jmhbench.MutationSwitch.tick(34);
+     Name zname = Name.fromString(zone, Name.root);
+     Zone newzone = new Zone(zname, DClass.IN, remote);
+     znames.put(zname, newzone);
+diff --git a/org/xbill/DNS/tools/lookup.java b/org/xbill/DNS/tools/lookup.java
+index f5f8e51..b004951 100644
+--- a/org/xbill/DNS/tools/lookup.java
++++ b/org/xbill/DNS/tools/lookup.java
+@@ -15,7 +15,7 @@ import org.xbill.DNS.Type;
+  */
+ public class lookup {
+ 
+-  public static void printAnswer(String name, Lookup lookup) {
++  public static void printAnswer(String name, Lookup lookup) { org.xbill.DNS.jmhbench.MutationSwitch.tick(39);
+     System.out.print(name + ":");
+     int result = lookup.getResult();
+     if (result != Lookup.SUCCESSFUL) {
+@@ -41,7 +41,7 @@ public class lookup {
+     }
+   }
+ 
+-  public static void main(String[] args) throws Exception {
++  public static void main(String[] args) throws Exception { org.xbill.DNS.jmhbench.MutationSwitch.tick(44);
+     int type = Type.A;
+     int start = 0;
+     if (args.length > 2 && args[0].equals("-t")) {
+diff --git a/org/xbill/DNS/tools/primary.java b/org/xbill/DNS/tools/primary.java
+index f36fb78..630caa4 100644
+--- a/org/xbill/DNS/tools/primary.java
++++ b/org/xbill/DNS/tools/primary.java
+@@ -15,7 +15,7 @@ public class primary {
+     System.exit(1);
+   }
+ 
+-  public static void main(String[] args) throws Exception {
++  public static void main(String[] args) throws Exception { org.xbill.DNS.jmhbench.MutationSwitch.tick(48);
+     boolean time = false;
+     boolean axfr = false;
+     boolean iterator = false;
+diff --git a/org/xbill/DNS/utils/base16.java b/org/xbill/DNS/utils/base16.java
+index e6d9750..6d162a1 100644
+--- a/org/xbill/DNS/utils/base16.java
++++ b/org/xbill/DNS/utils/base16.java
+@@ -63,7 +63,7 @@ public class base16 {
+    * @param str A String containing the encoded data.
+    * @return An array containing the binary data, or null if the string is invalid.
+    */
+-  public static byte[] fromString(String str) {
++  public static byte[] fromString(String str) { org.xbill.DNS.jmhbench.MutationSwitch.tick(9);
+     if (str == null) {
+       return null;
+     }
+diff --git a/org/xbill/DNS/utils/base32.java b/org/xbill/DNS/utils/base32.java
+index 563e232..4980287 100644
+--- a/org/xbill/DNS/utils/base32.java
++++ b/org/xbill/DNS/utils/base32.java
+@@ -143,7 +143,7 @@ public class base32 {
+    * @param str A String containing the encoded data
+    * @return An array containing the binary data, or null if the string is invalid
+    */
+-  public byte[] fromString(String str) {
++  public byte[] fromString(String str) { org.xbill.DNS.jmhbench.MutationSwitch.tick(17);
+     ByteArrayOutputStream bs = new ByteArrayOutputStream();
+     byte[] raw = str.getBytes();
+     for (byte b : raw) {
+diff --git a/org/xbill/DNS/utils/base64.java b/org/xbill/DNS/utils/base64.java
+index a69b57e..1d0fce3 100644
+--- a/org/xbill/DNS/utils/base64.java
++++ b/org/xbill/DNS/utils/base64.java
+@@ -86,7 +86,7 @@ public class base64 {
+    * @param addClose Whether to add a close parenthesis or not
+    * @return A String representing the formatted output
+    */
+-  public static String formatString(byte[] b, int lineLength, String prefix, boolean addClose) {
++  public static String formatString(byte[] b, int lineLength, String prefix, boolean addClose) { org.xbill.DNS.jmhbench.MutationSwitch.tick(24);
+     return BaseUtils.wrapLines(toString(b), lineLength, prefix, addClose);
+   }
+ 
+@@ -96,7 +96,7 @@ public class base64 {
+    * @param str A String containing the encoded data
+    * @return An array containing the binary data, or null if the string is invalid
+    */
+-  public static byte[] fromString(String str) {
++  public static byte[] fromString(String str) { org.xbill.DNS.jmhbench.MutationSwitch.tick(30);
+     ByteArrayOutputStream bs = new ByteArrayOutputStream();
+     byte[] raw = str.getBytes();
+     for (byte b : raw) {
+diff --git a/org/xbill/DNS/utils/hexdump.java b/org/xbill/DNS/utils/hexdump.java
+index 2ddde8a..9dd0e5d 100644
+--- a/org/xbill/DNS/utils/hexdump.java
++++ b/org/xbill/DNS/utils/hexdump.java
+@@ -20,7 +20,7 @@ public class hexdump {
+    * @param offset The start of the data in the array.
+    * @param length The length of the data in the array.
+    */
+-  public static String dump(String description, byte[] b, int offset, int length) {
++  public static String dump(String description, byte[] b, int offset, int length) { org.xbill.DNS.jmhbench.MutationSwitch.tick(35);
+     StringBuilder sb = new StringBuilder();
+ 
+     sb.append(length).append("b");
+@@ -50,7 +50,7 @@ public class hexdump {
+     return sb.toString();
+   }
+ 
+-  public static String dump(String s, byte[] b) {
++  public static String dump(String s, byte[] b) { org.xbill.DNS.jmhbench.MutationSwitch.tick(40);
+     return dump(s, b, 0, b.length);
+   }
+ }

@@ -1,0 +1,593 @@
+diff --git a/gnu/trove/Version.java b/gnu/trove/Version.java
+index 7bf94c4..dd76d77 100644
+--- a/gnu/trove/Version.java
++++ b/gnu/trove/Version.java
+@@ -35,7 +35,7 @@ package gnu.trove;
+  * Time: 22:10
+  */
+ public class Version {
+-    public static void main(String[] args) {
++    public static void main(String[] args) { gnu.trove.jmhbench.MutationSwitch.tick(1);
+         System.out.println(getVersion());
+     }
+ 
+@@ -48,7 +48,7 @@ public class Version {
+      *
+      * @return
+      */
+-    public static String getVersion() {
++    public static String getVersion() { gnu.trove.jmhbench.MutationSwitch.tick(9);
+         String version = Version.class.getPackage().getImplementationVersion();
+         //
+         if (version != null) {
+diff --git a/gnu/trove/impl/HashFunctions.java b/gnu/trove/impl/HashFunctions.java
+index a7be443..e159a15 100644
+--- a/gnu/trove/impl/HashFunctions.java
++++ b/gnu/trove/impl/HashFunctions.java
+@@ -22,7 +22,7 @@ public final class HashFunctions {
+      *
+      * @return  a hash code value for the specified value.
+      */
+-    public static int hash(double value) {
++    public static int hash(double value) { gnu.trove.jmhbench.MutationSwitch.tick(2);
+         assert !Double.isNaN(value) : "Values of NaN are not supported.";
+ 
+         long bits = Double.doubleToLongBits(value);
+@@ -37,7 +37,7 @@ public final class HashFunctions {
+      *
+      * @return  a hash code value for the specified value.
+      */
+-    public static int hash(float value) {
++    public static int hash(float value) { gnu.trove.jmhbench.MutationSwitch.tick(10);
+         assert !Float.isNaN(value) : "Values of NaN are not supported.";
+ 
+         return Float.floatToIntBits(value*663608941.737f);
+@@ -50,7 +50,7 @@ public final class HashFunctions {
+      *
+      * @return  a hash code value for the specified value.
+      */
+-    public static int hash(int value) {
++    public static int hash(int value) { gnu.trove.jmhbench.MutationSwitch.tick(14);
+ 		return value;
+     }
+ 
+@@ -59,7 +59,7 @@ public final class HashFunctions {
+      *
+      * @return  a hash code value for the specified value.
+      */
+-    public static int hash(long value) {
++    public static int hash(long value) { gnu.trove.jmhbench.MutationSwitch.tick(18);
+         return ((int)(value ^ (value >>> 32)));
+     }
+ 
+diff --git a/gnu/trove/impl/PrimeFinder.java b/gnu/trove/impl/PrimeFinder.java
+index 11abe57..3f01446 100644
+--- a/gnu/trove/impl/PrimeFinder.java
++++ b/gnu/trove/impl/PrimeFinder.java
+@@ -146,7 +146,7 @@ public final class PrimeFinder {
+      * @param desiredCapacity the capacity desired by the user.
+      * @return the capacity which should be used for a hashtable.
+      */
+-    public static final int nextPrime(int desiredCapacity) {
++    public static final int nextPrime(int desiredCapacity) { gnu.trove.jmhbench.MutationSwitch.tick(22);
+         int i = Arrays.binarySearch(primeCapacities, desiredCapacity);
+         if (i<0) {
+             // desired capacity not found, choose next prime greater
+diff --git a/gnu/trove/impl/hash/TCustomObjectHash.java b/gnu/trove/impl/hash/TCustomObjectHash.java
+index 44bd4ef..c838581 100644
+--- a/gnu/trove/impl/hash/TCustomObjectHash.java
++++ b/gnu/trove/impl/hash/TCustomObjectHash.java
+@@ -88,7 +88,7 @@ abstract public class TCustomObjectHash<T> extends TObjectHash<T> {
+ 
+ 
+ 	@Override
+-	protected int hash( Object obj ) {
++	protected int hash( Object obj ) { gnu.trove.jmhbench.MutationSwitch.tick(25);
+ 		//noinspection unchecked
+ 		return strategy.computeHashCode( ( T ) obj );
+ 	}
+@@ -101,7 +101,7 @@ abstract public class TCustomObjectHash<T> extends TObjectHash<T> {
+ 
+ 
+ 	@Override
+-    public void writeExternal( ObjectOutput out ) throws IOException {
++    public void writeExternal( ObjectOutput out ) throws IOException { gnu.trove.jmhbench.MutationSwitch.tick(28);
+ 
+         // VERSION
+         out.writeByte( 0 );
+diff --git a/gnu/trove/impl/hash/THash.java b/gnu/trove/impl/hash/THash.java
+index 59e81b4..0737079 100644
+--- a/gnu/trove/impl/hash/THash.java
++++ b/gnu/trove/impl/hash/THash.java
+@@ -142,7 +142,7 @@ abstract public class THash implements Externalizable {
+      *
+      * @return a <code>boolean</code> value
+      */
+-    public boolean isEmpty() {
++    public boolean isEmpty() { gnu.trove.jmhbench.MutationSwitch.tick(31);
+         return 0 == _size;
+     }
+ 
+@@ -152,7 +152,7 @@ abstract public class THash implements Externalizable {
+      *
+      * @return an <code>int</code> value
+      */
+-    public int size() {
++    public int size() { gnu.trove.jmhbench.MutationSwitch.tick(34);
+         return _size;
+     }
+ 
+@@ -169,7 +169,7 @@ abstract public class THash implements Externalizable {
+      *
+      * @param desiredCapacity an <code>int</code> value
+      */
+-    public void ensureCapacity( int desiredCapacity ) {
++    public void ensureCapacity( int desiredCapacity ) { gnu.trove.jmhbench.MutationSwitch.tick(36);
+         if ( desiredCapacity > ( _maxSize - size() ) ) {
+ 			rehash( PrimeFinder.nextPrime( Math.max( size() + 1,
+ 				HashFunctions.fastCeil( ( desiredCapacity + size() ) / _loadFactor ) + 1 ) ) );
+@@ -195,7 +195,7 @@ abstract public class THash implements Externalizable {
+      * over when probing for indices in the table.</li>
+      * </ol>
+      */
+-    public void compact() {
++    public void compact() { gnu.trove.jmhbench.MutationSwitch.tick(38);
+         // need at least one free spot for open addressing
+         rehash( PrimeFinder.nextPrime( Math.max( _size + 1,
+ 	        HashFunctions.fastCeil( size() / _loadFactor ) + 1 ) ) );
+diff --git a/gnu/trove/impl/hash/TObjectHash.java b/gnu/trove/impl/hash/TObjectHash.java
+index 2f5bb83..ececba0 100644
+--- a/gnu/trove/impl/hash/TObjectHash.java
++++ b/gnu/trove/impl/hash/TObjectHash.java
+@@ -94,13 +94,13 @@ abstract public class TObjectHash<T> extends THash {
+ 
+ 
+     @Override
+-    public int capacity() {
++    public int capacity() { gnu.trove.jmhbench.MutationSwitch.tick(40);
+         return _set.length;
+     }
+ 
+ 
+     @Override
+-    protected void removeAt(int index) {
++    protected void removeAt(int index) { gnu.trove.jmhbench.MutationSwitch.tick(42);
+         _set[index] = REMOVED;
+         super.removeAt(index);
+     }
+@@ -113,7 +113,7 @@ abstract public class TObjectHash<T> extends THash {
+      * @return an <code>int</code> value
+      */
+     @Override
+-    public int setUp(int initialCapacity) {
++    public int setUp(int initialCapacity) { gnu.trove.jmhbench.MutationSwitch.tick(43);
+         int capacity;
+ 
+         capacity = super.setUp(initialCapacity);
+@@ -131,7 +131,7 @@ abstract public class TObjectHash<T> extends THash {
+      *         the procedure returned false for some value.
+      */
+     @SuppressWarnings({"unchecked"})
+-    public boolean forEach(TObjectProcedure<? super T> procedure) {
++    public boolean forEach(TObjectProcedure<? super T> procedure) { gnu.trove.jmhbench.MutationSwitch.tick(44);
+         Object[] set = _set;
+         for (int i = set.length; i-- > 0;) {
+             if (set[i] != FREE
+diff --git a/gnu/trove/impl/hash/TPrimitiveHash.java b/gnu/trove/impl/hash/TPrimitiveHash.java
+index d5b1c29..7dec9d7 100644
+--- a/gnu/trove/impl/hash/TPrimitiveHash.java
++++ b/gnu/trove/impl/hash/TPrimitiveHash.java
+@@ -105,7 +105,7 @@ abstract public class TPrimitiveHash extends THash {
+      * @return the physical capacity of the hash table.
+      */
+     @Override
+-    public int capacity() {
++    public int capacity() { gnu.trove.jmhbench.MutationSwitch.tick(45);
+         return _states.length;
+     }
+ 
+@@ -116,7 +116,7 @@ abstract public class TPrimitiveHash extends THash {
+      * @param index an <code>int</code> value
+      */
+     @Override
+-    protected void removeAt( int index ) {
++    protected void removeAt( int index ) { gnu.trove.jmhbench.MutationSwitch.tick(46);
+         _states[index] = REMOVED;
+         super.removeAt( index );
+     }
+@@ -130,7 +130,7 @@ abstract public class TPrimitiveHash extends THash {
+      * @return the actual capacity chosen
+      */
+     @Override
+-    protected int setUp( int initialCapacity ) {
++    protected int setUp( int initialCapacity ) { gnu.trove.jmhbench.MutationSwitch.tick(47);
+         int capacity;
+ 
+         capacity = super.setUp( initialCapacity );
+diff --git a/gnu/trove/impl/hash/TPrimitiveOffheapHash.java b/gnu/trove/impl/hash/TPrimitiveOffheapHash.java
+index de3a8eb..90ca099 100644
+--- a/gnu/trove/impl/hash/TPrimitiveOffheapHash.java
++++ b/gnu/trove/impl/hash/TPrimitiveOffheapHash.java
+@@ -104,7 +104,7 @@ abstract public class TPrimitiveOffheapHash extends THash {
+      * @return the physical capacity of the hash table.
+      */
+     @Override
+-    public int capacity() {
++    public int capacity() { gnu.trove.jmhbench.MutationSwitch.tick(48);
+         return (int)_states.capacity();
+     }
+ 
+@@ -115,7 +115,7 @@ abstract public class TPrimitiveOffheapHash extends THash {
+      * @param index an <code>int</code> value
+      */
+     @Override
+-    protected void removeAt( int index ) {
++    protected void removeAt( int index ) { gnu.trove.jmhbench.MutationSwitch.tick(49);
+         _states.put(index, REMOVED);
+         super.removeAt( index );
+     }
+@@ -129,7 +129,7 @@ abstract public class TPrimitiveOffheapHash extends THash {
+      * @return the actual capacity chosen
+      */
+     @Override
+-    protected int setUp( int initialCapacity ) {
++    protected int setUp( int initialCapacity ) { gnu.trove.jmhbench.MutationSwitch.tick(50);
+         int capacity;
+ 
+         capacity = super.setUp( initialCapacity );
+diff --git a/gnu/trove/iterator/hash/TObjectHashIterator.java b/gnu/trove/iterator/hash/TObjectHashIterator.java
+index 60a928b..3ac0224 100644
+--- a/gnu/trove/iterator/hash/TObjectHashIterator.java
++++ b/gnu/trove/iterator/hash/TObjectHashIterator.java
+@@ -47,7 +47,7 @@ public class TObjectHashIterator<E> extends THashIterator<E> {
+ 
+     @Override
+     @SuppressWarnings("unchecked")
+-    protected E objectAtIndex( int index ) {
++    protected E objectAtIndex( int index ) { gnu.trove.jmhbench.MutationSwitch.tick(3);
+         Object obj = _objectHash._set[index];
+         if ( obj == TObjectHash.FREE || obj == TObjectHash.REMOVED ) {
+             return null;
+diff --git a/gnu/trove/jmhbench/MutationSwitch.java b/gnu/trove/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..2e0eb0e
+--- /dev/null
++++ b/gnu/trove/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package gnu.trove.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/gnu/trove/list/linked/TLinkedList.java b/gnu/trove/list/linked/TLinkedList.java
+index ba3c347..200b17c 100644
+--- a/gnu/trove/list/linked/TLinkedList.java
++++ b/gnu/trove/list/linked/TLinkedList.java
+@@ -97,7 +97,7 @@ public class TLinkedList<T extends TLinkable<T>> extends AbstractSequentialList<
+      * @return a <code>ListIterator</code> value
+      */
+     @Override
+-    public ListIterator<T> listIterator( int index ) {
++    public ListIterator<T> listIterator( int index ) { gnu.trove.jmhbench.MutationSwitch.tick(4);
+         return new IteratorImpl( index );
+     }
+ 
+@@ -108,7 +108,7 @@ public class TLinkedList<T extends TLinkable<T>> extends AbstractSequentialList<
+      * @return an <code>int</code> value
+      */
+     @Override
+-    public int size() {
++    public int size() { gnu.trove.jmhbench.MutationSwitch.tick(11);
+         return _size;
+     }
+ 
+@@ -148,7 +148,7 @@ public class TLinkedList<T extends TLinkable<T>> extends AbstractSequentialList<
+      *
+      * @param linkable an object of type TLinkable
+      */
+-    public void addFirst( T linkable ) {
++    public void addFirst( T linkable ) { gnu.trove.jmhbench.MutationSwitch.tick(15);
+         insert( 0, linkable );
+     }
+ 
+@@ -158,7 +158,7 @@ public class TLinkedList<T extends TLinkable<T>> extends AbstractSequentialList<
+      *
+      * @param linkable an object of type TLinkable
+      */
+-    public void addLast( T linkable ) {
++    public void addLast( T linkable ) { gnu.trove.jmhbench.MutationSwitch.tick(19);
+         insert( size(), linkable );
+     }
+ 
+diff --git a/gnu/trove/map/hash/TCustomHashMap.java b/gnu/trove/map/hash/TCustomHashMap.java
+index c775f45..eb2ee9e 100644
+--- a/gnu/trove/map/hash/TCustomHashMap.java
++++ b/gnu/trove/map/hash/TCustomHashMap.java
+@@ -127,7 +127,7 @@ public class TCustomHashMap<K, V> extends TCustomObjectHash<K>
+      */
+     @Override
+     @SuppressWarnings("unchecked")
+-    public int setUp( int initialCapacity ) {
++    public int setUp( int initialCapacity ) { gnu.trove.jmhbench.MutationSwitch.tick(5);
+         int capacity;
+ 
+         capacity = super.setUp( initialCapacity );
+@@ -162,7 +162,7 @@ public class TCustomHashMap<K, V> extends TCustomObjectHash<K>
+      *         or {@code null} if none was found.
+      */
+     @Override
+-    public V putIfAbsent( K key, V value ) {
++    public V putIfAbsent( K key, V value ) { gnu.trove.jmhbench.MutationSwitch.tick(12);
+         int index = insertKey( key );
+         if ( index < 0 ) {
+             return _values[-index - 1];
+@@ -227,7 +227,7 @@ public class TCustomHashMap<K, V> extends TCustomObjectHash<K>
+ 
+ 
+             @Override
+-            public boolean execute( K key, V value ) {
++            public boolean execute( K key, V value ) { gnu.trove.jmhbench.MutationSwitch.tick(16);
+                 if ( first ) {
+                     first = false;
+                 } else {
+@@ -248,7 +248,7 @@ public class TCustomHashMap<K, V> extends TCustomObjectHash<K>
+     private final class HashProcedure implements TObjectObjectProcedure<K, V> {
+         private int h = 0;
+ 
+-        public int getHashCode() {
++        public int getHashCode() { gnu.trove.jmhbench.MutationSwitch.tick(20);
+             return h;
+         }
+ 
+diff --git a/gnu/trove/map/hash/THashMap.java b/gnu/trove/map/hash/THashMap.java
+index 2ea0a05..fd4e246 100644
+--- a/gnu/trove/map/hash/THashMap.java
++++ b/gnu/trove/map/hash/THashMap.java
+@@ -123,7 +123,7 @@ public class THashMap<K, V> extends TObjectHash<K> implements TMap<K, V>, Extern
+      */
+     @Override
+     @SuppressWarnings({"unchecked"})
+-    public int setUp(int initialCapacity) {
++    public int setUp(int initialCapacity) { gnu.trove.jmhbench.MutationSwitch.tick(23);
+         int capacity;
+ 
+         capacity = super.setUp(initialCapacity);
+@@ -159,7 +159,7 @@ public class THashMap<K, V> extends TObjectHash<K> implements TMap<K, V>, Extern
+      *         or {@code null} if none was found.
+      */
+     @Override
+-    public V putIfAbsent(K key, V value) {
++    public V putIfAbsent(K key, V value) { gnu.trove.jmhbench.MutationSwitch.tick(26);
+         // insertKey() inserts the key if a slot if found and returns the index
+         int index = insertKey(key);
+         if (index < 0) {
+@@ -223,7 +223,7 @@ public class THashMap<K, V> extends TObjectHash<K> implements TMap<K, V>, Extern
+ 
+ 
+             @Override
+-            public boolean execute(K key, V value) {
++            public boolean execute(K key, V value) { gnu.trove.jmhbench.MutationSwitch.tick(29);
+                 if (first) {
+                     first = false;
+                 } else {
+@@ -244,7 +244,7 @@ public class THashMap<K, V> extends TObjectHash<K> implements TMap<K, V>, Extern
+     private final class HashProcedure implements TObjectObjectProcedure<K, V> {
+         private int h = 0;
+ 
+-        public int getHashCode() {
++        public int getHashCode() { gnu.trove.jmhbench.MutationSwitch.tick(32);
+             return h;
+         }
+ 
+diff --git a/gnu/trove/procedure/array/ToObjectArrayProceedure.java b/gnu/trove/procedure/array/ToObjectArrayProceedure.java
+index 4f1cee7..32eec2e 100644
+--- a/gnu/trove/procedure/array/ToObjectArrayProceedure.java
++++ b/gnu/trove/procedure/array/ToObjectArrayProceedure.java
+@@ -43,7 +43,7 @@ public final class ToObjectArrayProceedure<T> implements TObjectProcedure<T> {
+ 
+ 
+     @Override
+-    public final boolean execute( T value ) {
++    public final boolean execute( T value ) { gnu.trove.jmhbench.MutationSwitch.tick(6);
+         target[pos++] = value;
+         return true;
+     }
+diff --git a/gnu/trove/set/hash/TCustomHashSet.java b/gnu/trove/set/hash/TCustomHashSet.java
+index d751a7b..024a128 100644
+--- a/gnu/trove/set/hash/TCustomHashSet.java
++++ b/gnu/trove/set/hash/TCustomHashSet.java
+@@ -148,12 +148,12 @@ public class TCustomHashSet<E> extends TCustomObjectHash<E>
+     private final class HashProcedure implements TObjectProcedure<E> {
+         private int h = 0;
+ 
+-        public int getHashCode() {
++        public int getHashCode() { gnu.trove.jmhbench.MutationSwitch.tick(7);
+             return h;
+         }
+ 
+         @Override
+-        public final boolean execute( E key ) {
++        public final boolean execute( E key ) { gnu.trove.jmhbench.MutationSwitch.tick(13);
+             h += HashFunctions.hash( key );
+             return true;
+         }
+@@ -167,7 +167,7 @@ public class TCustomHashSet<E> extends TCustomObjectHash<E>
+      */
+     @SuppressWarnings({"unchecked"})
+     @Override
+-    protected void rehash( int newCapacity ) {
++    protected void rehash( int newCapacity ) { gnu.trove.jmhbench.MutationSwitch.tick(17);
+         int oldCapacity = _set.length;
+         int oldSize = size();
+         Object oldSet[] = _set;
+@@ -194,7 +194,7 @@ public class TCustomHashSet<E> extends TCustomObjectHash<E>
+      */
+     @Override
+     @SuppressWarnings({"unchecked", "rawtypes"})
+-    public Object[] toArray() {
++    public Object[] toArray() { gnu.trove.jmhbench.MutationSwitch.tick(21);
+         Object[] result = new Object[size()];
+         forEach( new ToObjectArrayProceedure( result ) );
+         return result;
+diff --git a/gnu/trove/set/hash/THashSet.java b/gnu/trove/set/hash/THashSet.java
+index c10dc72..8efe248 100644
+--- a/gnu/trove/set/hash/THashSet.java
++++ b/gnu/trove/set/hash/THashSet.java
+@@ -140,12 +140,12 @@ public class THashSet<E> extends TObjectHash<E>
+     private final class HashProcedure implements TObjectProcedure<E> {
+         private int h = 0;
+ 
+-        public int getHashCode() {
++        public int getHashCode() { gnu.trove.jmhbench.MutationSwitch.tick(24);
+             return h;
+         }
+ 
+         @Override
+-        public final boolean execute(E key) {
++        public final boolean execute(E key) { gnu.trove.jmhbench.MutationSwitch.tick(27);
+             h += HashFunctions.hash(key);
+             return true;
+         }
+@@ -159,7 +159,7 @@ public class THashSet<E> extends TObjectHash<E>
+      */
+     @Override
+     @SuppressWarnings({"unchecked"})
+-    protected void rehash(int newCapacity) {
++    protected void rehash(int newCapacity) { gnu.trove.jmhbench.MutationSwitch.tick(30);
+         int oldCapacity = _set.length;
+ 
+         int oldSize = size();
+@@ -191,7 +191,7 @@ public class THashSet<E> extends TObjectHash<E>
+      */
+     @Override
+     @SuppressWarnings({"unchecked"})
+-    public Object[] toArray() {
++    public Object[] toArray() { gnu.trove.jmhbench.MutationSwitch.tick(33);
+         Object[] result = new Object[size()];
+         forEach(new ToObjectArrayProceedure(result));
+         return result;
+diff --git a/gnu/trove/set/hash/TLinkedHashSet.java b/gnu/trove/set/hash/TLinkedHashSet.java
+index 9af1b68..97eb435 100644
+--- a/gnu/trove/set/hash/TLinkedHashSet.java
++++ b/gnu/trove/set/hash/TLinkedHashSet.java
+@@ -71,7 +71,7 @@ public class TLinkedHashSet<E> extends THashSet<E> {
+      * @return an <code>int</code> value
+      */
+     @Override
+-    public int setUp(int initialCapacity) {
++    public int setUp(int initialCapacity) { gnu.trove.jmhbench.MutationSwitch.tick(35);
+         order = new TIntArrayList(initialCapacity) {
+             /**
+              * Grow the internal array as needed to accommodate the specified number of elements.
+@@ -79,7 +79,7 @@ public class TLinkedHashSet<E> extends THashSet<E> {
+              * the current capacity.
+              */
+             @Override
+-            public void ensureCapacity(int capacity) {
++            public void ensureCapacity(int capacity) { gnu.trove.jmhbench.MutationSwitch.tick(37);
+                 if (capacity > _data.length) {
+                     int newCap = Math.max(_set.length, capacity);
+                     int[] tmp = new int[newCap];
+@@ -96,7 +96,7 @@ public class TLinkedHashSet<E> extends THashSet<E> {
+      * Empties the set.
+      */
+     @Override
+-    public void clear() {
++    public void clear() { gnu.trove.jmhbench.MutationSwitch.tick(39);
+         super.clear();
+         order.clear();
+     }
+@@ -142,7 +142,7 @@ public class TLinkedHashSet<E> extends THashSet<E> {
+     }
+ 
+     @Override
+-    protected void removeAt(int index) {
++    protected void removeAt(int index) { gnu.trove.jmhbench.MutationSwitch.tick(41);
+         // Remove from order first since super.removeAt can trigger compaction
+         // making the index invalid afterwards
+         order.remove(index);
+diff --git a/gnu/trove/strategy/IdentityHashingStrategy.java b/gnu/trove/strategy/IdentityHashingStrategy.java
+index 8718ce7..cbc7f65 100644
+--- a/gnu/trove/strategy/IdentityHashingStrategy.java
++++ b/gnu/trove/strategy/IdentityHashingStrategy.java
+@@ -17,7 +17,7 @@ public class IdentityHashingStrategy<K> implements HashingStrategy<K> {
+ 
+ 
+     @Override
+-	public int computeHashCode( K object ) {
++	public int computeHashCode( K object ) { gnu.trove.jmhbench.MutationSwitch.tick(8);
+ 		return System.identityHashCode( object );
+ 	}
+ 

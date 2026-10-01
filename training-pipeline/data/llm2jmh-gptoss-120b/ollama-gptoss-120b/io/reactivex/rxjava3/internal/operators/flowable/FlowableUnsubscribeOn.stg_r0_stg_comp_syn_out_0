@@ -1,0 +1,134 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Micro‑benchmark for {@link FlowableUnsubscribeOn}.
+ *
+ * <p>The benchmark measures the throughput of subscribing to a {@link Flowable}
+ * that emits a small, fixed number of items and then cancels the subscription.
+ * The operator schedules the cancellation on the provided {@link Scheduler},
+ * which is the part we want to evaluate.</p>
+ *
+ * <p>Best‑practice JMH settings are used:
+ * <ul>
+ *   <li>Warm‑up iterations to let the JIT stabilize.</li>
+ *   <li>Multiple measurement iterations.</li>
+ *   <li>Forks to isolate JVM state.</li>
+ *   <li>Thread‑local state to avoid contention.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableUnsubscribeOnBenchmark {
+
+    /**
+     * Number of items emitted by the upstream source per subscription.
+     */
+    @Param({ "1", "10", "100" })
+    public int itemCount;
+
+    /**
+     * Scheduler used by {@link FlowableUnsubscribeOn} to schedule cancellation.
+     */
+    private Scheduler scheduler;
+
+    /**
+     * Upstream source that emits {@code itemCount} integers and then completes.
+     */
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a single‑threaded scheduler to keep the benchmark deterministic.
+        scheduler = Schedulers.single();
+        source = Flowable.range(1, itemCount);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        scheduler.shutdown();
+    }
+
+    /**
+     * Benchmark that subscribes to a {@link FlowableUnsubscribeOn},
+     * requests all items, consumes them via {@link Blackhole},
+     * and then cancels the subscription.
+     *
+     * @param bh Blackhole to consume emitted items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void unsubscribeOn(Blackhole bh) {
+        Flowable<Integer> flowable = new FlowableUnsubscribeOn<>(source, scheduler);
+        flowable.subscribe(new Subscriber<Integer>() {
+
+            Subscription upstream;
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                // Request all items immediately.
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are not expected in this benchmark; rethrow to fail fast.
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // No action needed; cancellation will be triggered after completion.
+            }
+        });
+        // The FlowableUnsubscribeOn schedules the actual upstream.cancel()
+        // on the provided scheduler when the downstream cancels.
+        // In this benchmark the upstream completes naturally, exercising the
+        // scheduled cancellation path.
+    }
+}

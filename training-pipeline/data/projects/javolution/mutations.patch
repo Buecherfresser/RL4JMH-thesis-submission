@@ -1,0 +1,638 @@
+diff --git a/org/javolution/util/FastBitSet.java b/org/javolution/util/FastBitSet.java
+index 4a584e7..5a5e25c 100644
+--- a/org/javolution/util/FastBitSet.java
++++ b/org/javolution/util/FastBitSet.java
+@@ -60,7 +60,7 @@ public class FastBitSet extends AbstractSet<Index> {
+      * @param that the second bit set.
+      */
+     @Realtime(limit = LINEAR)
+-    public final void and(FastBitSet that) {
++    public final void and(FastBitSet that) { org.javolution.util.jmhbench.MutationSwitch.tick(1);
+         long[] thatBits = that.toLongArray();
+         int n = MathLib.min(this.bits.length, thatBits.length);
+         for (int i = 0; i < n; i++) {
+@@ -80,7 +80,7 @@ public class FastBitSet extends AbstractSet<Index> {
+      * @param that the second bit set
+      */
+     @Realtime(limit = LINEAR)
+-    public final void andNot(FastBitSet that) {
++    public final void andNot(FastBitSet that) { org.javolution.util.jmhbench.MutationSwitch.tick(3);
+         long[] thatBits = that.toLongArray();
+         int n = MathLib.min(this.bits.length, thatBits.length);
+         for (int i = 0; i < n; i++) {
+diff --git a/org/javolution/util/FastMap.java b/org/javolution/util/FastMap.java
+index b9085f6..2a4679a 100644
+--- a/org/javolution/util/FastMap.java
++++ b/org/javolution/util/FastMap.java
+@@ -121,7 +121,7 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
+             super(keyOrder, valuesEquality, entries);
+         }
+  
+-        public V updateValue(Entry<K, V> entry, V newValue) {  
++        public V updateValue(Entry<K, V> entry, V newValue) { org.javolution.util.jmhbench.MutationSwitch.tick(5);  
+             throw new UnsupportedOperationException("Immutable map");
+         }
+ 
+@@ -156,7 +156,7 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
+             private static final long serialVersionUID = FastMap.serialVersionUID;
+ 
+             @Override
+-            public boolean areEqual(Entry<K, V> left, Entry<K, V> right) {
++            public boolean areEqual(Entry<K, V> left, Entry<K, V> right) { org.javolution.util.jmhbench.MutationSwitch.tick(7);
+             	if (left == right) return true;
+             	if ((left == null) || (right == null)) return false;
+                 return FastMap.this.keyOrder.areEqual(left.getKey(), right.getKey()) && 
+diff --git a/org/javolution/util/FastSet.java b/org/javolution/util/FastSet.java
+index d6bbee6..c55bd11 100644
+--- a/org/javolution/util/FastSet.java
++++ b/org/javolution/util/FastSet.java
+@@ -97,7 +97,7 @@ public class FastSet<E> extends AbstractSet<E> {
+         }
+         
+         @Override
+-        public void clear() {
++        public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(9);
+             throw new UnsupportedOperationException("Immutable");
+         }
+     }
+@@ -137,7 +137,7 @@ public class FastSet<E> extends AbstractSet<E> {
+     }
+ 
+     /** Freezes this set and returns the corresponding {@link Immutable} instance (cannot be reversed). */
+-    public final Immutable<E> freeze() {
++    public final Immutable<E> freeze() { org.javolution.util.jmhbench.MutationSwitch.tick(11);
+         singles = singles.unmodifiable();
+         for (FractalArray.Iterator<AbstractSet<E>> itr = multiples.iterator(); itr.hasNext();) {
+             long index = itr.nextIndex();
+diff --git a/org/javolution/util/FastTable.java b/org/javolution/util/FastTable.java
+index 2c670a9..376aa86 100644
+--- a/org/javolution/util/FastTable.java
++++ b/org/javolution/util/FastTable.java
+@@ -73,7 +73,7 @@ public class FastTable<E> extends AbstractTable<E> {
+         }
+         
+         @Override
+-        public void clear() {
++        public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(13);
+             throw new UnsupportedOperationException("Immutable");
+         }
+  
+@@ -96,7 +96,7 @@ public class FastTable<E> extends AbstractTable<E> {
+     }
+ 
+     /** Freezes this table and returns the corresponding {@link Immutable} instance (cannot be reversed). */
+-    public final Immutable<E> freeze() {
++    public final Immutable<E> freeze() { org.javolution.util.jmhbench.MutationSwitch.tick(15);
+         array = array.unmodifiable();
+         return new Immutable<E>(array, length);
+     }
+diff --git a/org/javolution/util/TestFractal.java b/org/javolution/util/TestFractal.java
+index d38b374..2e631bb 100644
+--- a/org/javolution/util/TestFractal.java
++++ b/org/javolution/util/TestFractal.java
+@@ -4,7 +4,7 @@ import java.util.ArrayList;
+ 
+ public class TestFractal {
+ 
+-    public static void main(String[] args) {
++    public static void main(String[] args) { org.javolution.util.jmhbench.MutationSwitch.tick(17);
+         java.util.Random random = new java.util.Random(11111);
+         ArrayList<Integer> aa = new ArrayList<Integer>();
+         FastTable<Integer> ff = new FastTable<Integer>();
+diff --git a/org/javolution/util/internal/ReadWriteLockImpl.java b/org/javolution/util/internal/ReadWriteLockImpl.java
+index ae87510..7f3a7ce 100644
+--- a/org/javolution/util/internal/ReadWriteLockImpl.java
++++ b/org/javolution/util/internal/ReadWriteLockImpl.java
+@@ -27,7 +27,7 @@ public final class ReadWriteLockImpl implements ReadWriteLock, Serializable {
+         private static final long serialVersionUID = 0x600L; // Version.
+ 
+         @Override
+-        public void lock() {
++        public void lock() { org.javolution.util.jmhbench.MutationSwitch.tick(45);
+             try {
+                 lockInterruptibly();
+             } catch (java.lang.InterruptedException e) {
+@@ -35,7 +35,7 @@ public final class ReadWriteLockImpl implements ReadWriteLock, Serializable {
+         }
+ 
+         @Override
+-        public void lockInterruptibly() throws InterruptedException {
++        public void lockInterruptibly() throws InterruptedException { org.javolution.util.jmhbench.MutationSwitch.tick(46);
+             synchronized (ReadWriteLockImpl.this) {
+                 if (writerThread == Thread.currentThread())
+                     return; // Current thread has the writer lock.
+diff --git a/org/javolution/util/internal/collection/AtomicCollectionImpl.java b/org/javolution/util/internal/collection/AtomicCollectionImpl.java
+index 4da6bc4..bc11c28 100644
+--- a/org/javolution/util/internal/collection/AtomicCollectionImpl.java
++++ b/org/javolution/util/internal/collection/AtomicCollectionImpl.java
+@@ -41,7 +41,7 @@ public final class AtomicCollectionImpl<E> // implements AbstractCollectionMetho
+     }
+ 
+     @Override
+-    public synchronized boolean addAll(Collection<? extends E> that) {
++    public synchronized boolean addAll(Collection<? extends E> that) { org.javolution.util.jmhbench.MutationSwitch.tick(47);
+         boolean changed = inner.addAll(that);
+         if (changed)
+             innerConst = inner.clone();
+@@ -49,7 +49,7 @@ public final class AtomicCollectionImpl<E> // implements AbstractCollectionMetho
+     }
+ 
+     @Override
+-    public synchronized boolean addAll(@SuppressWarnings("unchecked") E... elements) {
++    public synchronized boolean addAll(@SuppressWarnings("unchecked") E... elements) { org.javolution.util.jmhbench.MutationSwitch.tick(48);
+         boolean changed = inner.addAll(elements);
+         if (changed)
+             innerConst = inner.clone();
+diff --git a/org/javolution/util/internal/collection/ConcatCollectionImpl.java b/org/javolution/util/internal/collection/ConcatCollectionImpl.java
+index 9dd5913..fcc7a63 100644
+--- a/org/javolution/util/internal/collection/ConcatCollectionImpl.java
++++ b/org/javolution/util/internal/collection/ConcatCollectionImpl.java
+@@ -29,12 +29,12 @@ public final class ConcatCollectionImpl<E> extends AbstractCollection<E> {
+     }
+ 
+     @Override
+-    public boolean removeIf(Predicate<? super E> filter) {
++    public boolean removeIf(Predicate<? super E> filter) { org.javolution.util.jmhbench.MutationSwitch.tick(49);
+         return first.removeIf(filter) | second.removeIf(filter);
+     }
+ 
+     @Override
+-    public FastIterator<E> iterator() {
++    public FastIterator<E> iterator() { org.javolution.util.jmhbench.MutationSwitch.tick(50);
+         return new FastIterator<E>() {
+             FastIterator<E> firstItr = first.iterator();
+             FastIterator<? extends E> secondItr = second.iterator();
+diff --git a/org/javolution/util/internal/collection/MappedCollectionImpl.java b/org/javolution/util/internal/collection/MappedCollectionImpl.java
+index 5d5705a..2c4884a 100644
+--- a/org/javolution/util/internal/collection/MappedCollectionImpl.java
++++ b/org/javolution/util/internal/collection/MappedCollectionImpl.java
+@@ -34,7 +34,7 @@ public final class MappedCollectionImpl<E, R> extends AbstractCollection<R> {
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(2);
+         inner.clear();
+ 
+     }
+@@ -45,7 +45,7 @@ public final class MappedCollectionImpl<E, R> extends AbstractCollection<R> {
+     }
+ 
+     @Override
+-    public Equality<? super R> equality() {
++    public Equality<? super R> equality() { org.javolution.util.jmhbench.MutationSwitch.tick(4);
+         return Equality.standard();
+     }
+ 
+diff --git a/org/javolution/util/internal/function/ArrayEqualityImpl.java b/org/javolution/util/internal/function/ArrayEqualityImpl.java
+index 822a0fb..22f2de5 100644
+--- a/org/javolution/util/internal/function/ArrayEqualityImpl.java
++++ b/org/javolution/util/internal/function/ArrayEqualityImpl.java
+@@ -20,7 +20,7 @@ public final class ArrayEqualityImpl implements Equality<Object> {
+     private static final long serialVersionUID = 0x700L; // Version.
+ 
+     @Override
+-    public boolean areEqual(@Nullable Object left, @Nullable Object right) {
++    public boolean areEqual(@Nullable Object left, @Nullable Object right) { org.javolution.util.jmhbench.MutationSwitch.tick(6);
+         if (left == right)
+             return true;
+         if ((left == null) || (right == null))
+diff --git a/org/javolution/util/internal/map/AtomicMapImpl.java b/org/javolution/util/internal/map/AtomicMapImpl.java
+index 1f2e4d9..034c2ae 100644
+--- a/org/javolution/util/internal/map/AtomicMapImpl.java
++++ b/org/javolution/util/internal/map/AtomicMapImpl.java
+@@ -31,7 +31,7 @@ public final class AtomicMapImpl<K, V> extends AbstractMap<K, V> {
+     }
+ 
+     @Override
+-    public synchronized void clear() {
++    public synchronized void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(8);
+         inner.clear();
+         innerConst = inner.clone();
+     }
+@@ -42,7 +42,7 @@ public final class AtomicMapImpl<K, V> extends AbstractMap<K, V> {
+     }
+ 
+     @Override
+-    public boolean containsKey(Object key) {
++    public boolean containsKey(Object key) { org.javolution.util.jmhbench.MutationSwitch.tick(10);
+         return innerConst.containsKey(key);
+     }
+ 
+diff --git a/org/javolution/util/internal/map/KeySetImpl.java b/org/javolution/util/internal/map/KeySetImpl.java
+index e64e3ac..2786670 100644
+--- a/org/javolution/util/internal/map/KeySetImpl.java
++++ b/org/javolution/util/internal/map/KeySetImpl.java
+@@ -48,7 +48,7 @@ public final class KeySetImpl<K, V> extends AbstractSet<K> {
+             return mapItr.hasNext(new Predicate<Entry<K,V>>() {
+ 
+                 @Override
+-                public boolean test(Entry<K, V> param) {
++                public boolean test(Entry<K, V> param) { org.javolution.util.jmhbench.MutationSwitch.tick(12);
+                     return matching.test(param.getKey());
+                 }});
+         }
+@@ -62,7 +62,7 @@ public final class KeySetImpl<K, V> extends AbstractSet<K> {
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(14);
+         map.clear();
+     }
+ 
+diff --git a/org/javolution/util/internal/map/LinkedMapImpl.java b/org/javolution/util/internal/map/LinkedMapImpl.java
+index 10b29cc..be02ce6 100644
+--- a/org/javolution/util/internal/map/LinkedMapImpl.java
++++ b/org/javolution/util/internal/map/LinkedMapImpl.java
+@@ -31,12 +31,12 @@ public final class LinkedMapImpl<K, V> extends AbstractMap<K, V> {
+     }
+ 
+     @Override
+-    public AbstractSet<Entry<K, V>> entries() {
++    public AbstractSet<Entry<K, V>> entries() { org.javolution.util.jmhbench.MutationSwitch.tick(16);
+         return new LinkedSetImpl<Entry<K,V>>(inner.entries(), insertionTable);
+     }
+ 
+     @Override
+-    public Entry<K, V> getEntry(K key) {
++    public Entry<K, V> getEntry(K key) { org.javolution.util.jmhbench.MutationSwitch.tick(18);
+         return inner.getEntry(key);
+     }
+ 
+diff --git a/org/javolution/util/internal/map/MultiMapImpl.java b/org/javolution/util/internal/map/MultiMapImpl.java
+index f3ec81f..2c24929 100644
+--- a/org/javolution/util/internal/map/MultiMapImpl.java
++++ b/org/javolution/util/internal/map/MultiMapImpl.java
+@@ -27,12 +27,12 @@ public final class MultiMapImpl<K, V> extends AbstractMap<K, V> {
+     }
+ 
+     @Override
+-    public AbstractSet<Entry<K, V>> entries() {
++    public AbstractSet<Entry<K, V>> entries() { org.javolution.util.jmhbench.MutationSwitch.tick(19);
+         return inner.entries();
+     }
+ 
+     @Override
+-    public Entry<K, V> getEntry(K key) {
++    public Entry<K, V> getEntry(K key) { org.javolution.util.jmhbench.MutationSwitch.tick(20);
+         return inner.getEntry(key);
+     }
+ 
+diff --git a/org/javolution/util/internal/map/SharedMapImpl.java b/org/javolution/util/internal/map/SharedMapImpl.java
+index 99726ad..2eba8a0 100644
+--- a/org/javolution/util/internal/map/SharedMapImpl.java
++++ b/org/javolution/util/internal/map/SharedMapImpl.java
+@@ -40,7 +40,7 @@ public final class SharedMapImpl<K, V> extends AbstractMap<K, V> {
+ 
+  
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(21);
+         lock.writeLock.lock();
+         try {
+             inner.clear();
+@@ -60,7 +60,7 @@ public final class SharedMapImpl<K, V> extends AbstractMap<K, V> {
+     }
+ 
+     @Override
+-    public Order<? super K> keyOrder() {
++    public Order<? super K> keyOrder() { org.javolution.util.jmhbench.MutationSwitch.tick(22);
+         return inner.keyOrder(); // Immutable.
+     }
+ 
+diff --git a/org/javolution/util/internal/map/SubMapImpl.java b/org/javolution/util/internal/map/SubMapImpl.java
+index 037fc15..dd744a0 100644
+--- a/org/javolution/util/internal/map/SubMapImpl.java
++++ b/org/javolution/util/internal/map/SubMapImpl.java
+@@ -37,13 +37,13 @@ public final class SubMapImpl<K, V> extends AbstractMap<K, V> {
+     }
+ 
+     @Override
+-    public SubSetImpl<Entry<K, V>> entries() {
++    public SubSetImpl<Entry<K, V>> entries() { org.javolution.util.jmhbench.MutationSwitch.tick(23);
+         return new SubSetImpl<Entry<K, V>>(inner.entries(), new Entry<K,V>(fromKey, null), fromInclusive, 
+                 new Entry<K,V>(toKey, null), toInclusive);
+     }
+ 
+     @Override
+-    public Entry<K, V> getEntry(K key) {
++    public Entry<K, V> getEntry(K key) { org.javolution.util.jmhbench.MutationSwitch.tick(24);
+         if (!inRange(key)) 
+             throw new UnsupportedOperationException("key out of sub-map range");
+         return inner.getEntry(key);
+diff --git a/org/javolution/util/internal/map/UnmodifiableMapImpl.java b/org/javolution/util/internal/map/UnmodifiableMapImpl.java
+index bae97bb..19fad4e 100644
+--- a/org/javolution/util/internal/map/UnmodifiableMapImpl.java
++++ b/org/javolution/util/internal/map/UnmodifiableMapImpl.java
+@@ -27,12 +27,12 @@ public final class UnmodifiableMapImpl<K, V> extends AbstractMap<K, V> {
+     }
+ 
+     @Override
+-    public AbstractSet<Entry<K, V>> entries() {
++    public AbstractSet<Entry<K, V>> entries() { org.javolution.util.jmhbench.MutationSwitch.tick(25);
+         return inner.entries().unmodifiable();
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(26);
+         throw new UnsupportedOperationException(ERROR_MSG);
+     }
+ 
+diff --git a/org/javolution/util/internal/set/AtomicSetImpl.java b/org/javolution/util/internal/set/AtomicSetImpl.java
+index ddcdea9..7596133 100644
+--- a/org/javolution/util/internal/set/AtomicSetImpl.java
++++ b/org/javolution/util/internal/set/AtomicSetImpl.java
+@@ -53,7 +53,7 @@ public final class AtomicSetImpl<E>  // implements AbstractSetMethods<E> {
+     }
+ 
+     @Override
+-    public synchronized boolean addAll(Collection<? extends E> that) {
++    public synchronized boolean addAll(Collection<? extends E> that) { org.javolution.util.jmhbench.MutationSwitch.tick(27);
+         boolean changed = inner.addAll(that);
+         if (changed)
+             innerConst = inner.clone();
+@@ -61,7 +61,7 @@ public final class AtomicSetImpl<E>  // implements AbstractSetMethods<E> {
+     }
+ 
+     @Override
+-    public synchronized boolean addAll(@SuppressWarnings("unchecked") E... elements) {
++    public synchronized boolean addAll(@SuppressWarnings("unchecked") E... elements) { org.javolution.util.jmhbench.MutationSwitch.tick(28);
+         boolean changed = inner.addAll(elements);
+         if (changed)
+             innerConst = inner.clone();
+diff --git a/org/javolution/util/internal/set/FilteredSetImpl.java b/org/javolution/util/internal/set/FilteredSetImpl.java
+index c7f10e3..8070a64 100644
+--- a/org/javolution/util/internal/set/FilteredSetImpl.java
++++ b/org/javolution/util/internal/set/FilteredSetImpl.java
+@@ -37,7 +37,7 @@ public final class FilteredSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(29);
+         inner.removeIf(filter);
+     }
+ 
+@@ -47,7 +47,7 @@ public final class FilteredSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public boolean isEmpty() {
++    public boolean isEmpty() { org.javolution.util.jmhbench.MutationSwitch.tick(30);
+         return !iterator().hasNext();
+     }
+ 
+diff --git a/org/javolution/util/internal/set/LinkedSetImpl.java b/org/javolution/util/internal/set/LinkedSetImpl.java
+index 6d5085b..b641527 100644
+--- a/org/javolution/util/internal/set/LinkedSetImpl.java
++++ b/org/javolution/util/internal/set/LinkedSetImpl.java
+@@ -42,7 +42,7 @@ public final class LinkedSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(31);
+         inner.clear();
+         insertionTable.clear();
+     }
+@@ -53,7 +53,7 @@ public final class LinkedSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public FastIterator<E> iterator() {
++    public FastIterator<E> iterator() { org.javolution.util.jmhbench.MutationSwitch.tick(32);
+         return insertionTable.iterator();
+     }
+ 
+diff --git a/org/javolution/util/internal/set/MultiSetImpl.java b/org/javolution/util/internal/set/MultiSetImpl.java
+index 05b9574..a71d21f 100644
+--- a/org/javolution/util/internal/set/MultiSetImpl.java
++++ b/org/javolution/util/internal/set/MultiSetImpl.java
+@@ -36,7 +36,7 @@ public final class MultiSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(33);
+         inner.clear();
+     }
+ 
+@@ -46,7 +46,7 @@ public final class MultiSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public int size() {
++    public int size() { org.javolution.util.jmhbench.MutationSwitch.tick(34);
+         return inner.size();
+     }
+ 
+diff --git a/org/javolution/util/internal/set/SharedSetImpl.java b/org/javolution/util/internal/set/SharedSetImpl.java
+index e23693c..8a38382 100644
+--- a/org/javolution/util/internal/set/SharedSetImpl.java
++++ b/org/javolution/util/internal/set/SharedSetImpl.java
+@@ -62,7 +62,7 @@ public final class SharedSetImpl<E> // implements AbstractSetMethods<E> {
+     }
+ 
+     @Override
+-    public boolean addAll(Collection<? extends E> that) {
++    public boolean addAll(Collection<? extends E> that) { org.javolution.util.jmhbench.MutationSwitch.tick(35);
+         lock.writeLock.lock();
+         try {
+             return inner.addAll(that);
+@@ -72,7 +72,7 @@ public final class SharedSetImpl<E> // implements AbstractSetMethods<E> {
+     }
+ 
+     @Override
+-    public boolean addAll(@SuppressWarnings("unchecked") E... elements) {
++    public boolean addAll(@SuppressWarnings("unchecked") E... elements) { org.javolution.util.jmhbench.MutationSwitch.tick(36);
+         lock.writeLock.lock();
+         try {
+             return inner.addAll(elements);
+diff --git a/org/javolution/util/internal/set/SortedSetImpl.java b/org/javolution/util/internal/set/SortedSetImpl.java
+index a905723..408601c 100644
+--- a/org/javolution/util/internal/set/SortedSetImpl.java
++++ b/org/javolution/util/internal/set/SortedSetImpl.java
+@@ -39,7 +39,7 @@ public final class SortedSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public boolean removeIf(Predicate<? super E> filter) {
++    public boolean removeIf(Predicate<? super E> filter) { org.javolution.util.jmhbench.MutationSwitch.tick(37);
+         int initialSize = size;
+         for (FractalArray.Iterator<E> itr = sorted.iterator(); itr.hasNext(filter);) {
+             sorted.set(itr.nextIndex(), null);
+@@ -49,7 +49,7 @@ public final class SortedSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public E findAny() {
++    public E findAny() { org.javolution.util.jmhbench.MutationSwitch.tick(38);
+         return sorted.get(0);
+     }
+ 
+diff --git a/org/javolution/util/internal/set/SubSetImpl.java b/org/javolution/util/internal/set/SubSetImpl.java
+index 487b373..5233839 100644
+--- a/org/javolution/util/internal/set/SubSetImpl.java
++++ b/org/javolution/util/internal/set/SubSetImpl.java
+@@ -49,7 +49,7 @@ public final class SubSetImpl<E> extends AbstractSet<E> {
+ 
+     @Parallel
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(39);
+         removeIf(Predicate.TRUE);
+     }
+ 
+@@ -59,7 +59,7 @@ public final class SubSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public FastIterator<E> descendingIterator(@Nullable E from) {
++    public FastIterator<E> descendingIterator(@Nullable E from) { org.javolution.util.jmhbench.MutationSwitch.tick(40);
+         if ((from == null) || tooHigh(from))  // Starts from subset higher bound.
+             from = toInclusive ? toElement : lower(toElement);
+         if (fromElement == null) return inner.descendingIterator(from); // No lower bound.
+diff --git a/org/javolution/util/internal/set/UnmodifiableSetImpl.java b/org/javolution/util/internal/set/UnmodifiableSetImpl.java
+index 6551bca..a1db822 100644
+--- a/org/javolution/util/internal/set/UnmodifiableSetImpl.java
++++ b/org/javolution/util/internal/set/UnmodifiableSetImpl.java
+@@ -32,7 +32,7 @@ public final class UnmodifiableSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(41);
+         throw new UnsupportedOperationException(ERROR_MSG);
+     }
+ 
+@@ -42,7 +42,7 @@ public final class UnmodifiableSetImpl<E> extends AbstractSet<E> {
+     }
+ 
+     @Override
+-    public int size() {
++    public int size() { org.javolution.util.jmhbench.MutationSwitch.tick(42);
+         return inner.size();
+     }
+ 
+diff --git a/org/javolution/util/internal/table/MappedTableImpl.java b/org/javolution/util/internal/table/MappedTableImpl.java
+index 9abcb0a..f8a6a3a 100644
+--- a/org/javolution/util/internal/table/MappedTableImpl.java
++++ b/org/javolution/util/internal/table/MappedTableImpl.java
+@@ -39,7 +39,7 @@ public final class MappedTableImpl<E, R> extends AbstractTable<R> {
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.javolution.util.jmhbench.MutationSwitch.tick(43);
+         inner.clear();
+     }
+ 
+@@ -49,7 +49,7 @@ public final class MappedTableImpl<E, R> extends AbstractTable<R> {
+     }
+ 
+     @Override
+-    public Equality<? super R> equality() {
++    public Equality<? super R> equality() { org.javolution.util.jmhbench.MutationSwitch.tick(44);
+         return Equality.standard();
+     }
+ 
+diff --git a/org/javolution/util/jmhbench/MutationSwitch.java b/org/javolution/util/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..8597f4d
+--- /dev/null
++++ b/org/javolution/util/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.javolution.util.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

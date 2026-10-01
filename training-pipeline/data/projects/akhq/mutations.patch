@@ -1,0 +1,521 @@
+diff --git a/org/akhq/models/AccessControl.java b/org/akhq/models/AccessControl.java
+index bc5d076..e7dc7f2 100644
+--- a/org/akhq/models/AccessControl.java
++++ b/org/akhq/models/AccessControl.java
+@@ -24,11 +24,11 @@ public class AccessControl {
+     @JsonIgnore
+     private String encodedPrincipal;
+ 
+-    public static String encodePrincipal(String principal) {
++    public static String encodePrincipal(String principal) { org.akhq.models.jmhbench.MutationSwitch.tick(1);
+         return Base64.getEncoder().encodeToString(principal.getBytes());
+     }
+ 
+-    public static String decodePrincipal(String encodedPrincipal) {
++    public static String decodePrincipal(String encodedPrincipal) { org.akhq.models.jmhbench.MutationSwitch.tick(4);
+         return new String(Base64.getDecoder().decode(encodedPrincipal));
+     }
+ 
+@@ -43,11 +43,11 @@ public class AccessControl {
+         }
+     }
+ 
+-    public List<Acl> findByRessourceType(String resourceType) {
++    public List<Acl> findByRessourceType(String resourceType) { org.akhq.models.jmhbench.MutationSwitch.tick(6);
+         return findByRessourceType(ResourceType.valueOf(resourceType.toUpperCase()));
+     }
+ 
+-    public List<Acl> findByRessourceType(ResourceType resourceType) {
++    public List<Acl> findByRessourceType(ResourceType resourceType) { org.akhq.models.jmhbench.MutationSwitch.tick(8);
+         return this.acls
+             .stream()
+             .filter(acl -> acl.getResource().getResourceType() == resourceType)
+diff --git a/org/akhq/models/Config.java b/org/akhq/models/Config.java
+index fc1e661..e49856c 100644
+--- a/org/akhq/models/Config.java
++++ b/org/akhq/models/Config.java
+@@ -46,7 +46,7 @@ public class Config {
+         }
+     }
+ 
+-    public boolean shouldResetToDefault() {
++    public boolean shouldResetToDefault() { org.akhq.models.jmhbench.MutationSwitch.tick(10);
+         return this.getValue().isBlank();
+     }
+ 
+diff --git a/org/akhq/models/ConnectDefinition.java b/org/akhq/models/ConnectDefinition.java
+index a0a5c59..628e1cb 100644
+--- a/org/akhq/models/ConnectDefinition.java
++++ b/org/akhq/models/ConnectDefinition.java
+@@ -44,7 +44,7 @@ public class ConnectDefinition {
+         }
+     }
+ 
+-    public String getShortClassName() {
++    public String getShortClassName() { org.akhq.models.jmhbench.MutationSwitch.tick(12);
+         String[] split = this.getConfigs()
+             .entrySet()
+             .stream()
+@@ -58,12 +58,12 @@ public class ConnectDefinition {
+     }
+ 
+     @JsonIgnore
+-    public String getConfigsAsJson() {
++    public String getConfigsAsJson() { org.akhq.models.jmhbench.MutationSwitch.tick(14);
+         return GSON.toJson(this.getConfigs());
+     }
+ 
+     @JsonIgnore
+-    public String getTransformConfigsAsJson() {
++    public String getTransformConfigsAsJson() { org.akhq.models.jmhbench.MutationSwitch.tick(16);
+         return GSON.toJson(this.getConfigs()
+             .entrySet()
+             .stream()
+@@ -72,11 +72,11 @@ public class ConnectDefinition {
+         );
+     }
+ 
+-    public Optional<String> getConfig(String config) {
++    public Optional<String> getConfig(String config) { org.akhq.models.jmhbench.MutationSwitch.tick(18);
+         return this.configs.containsKey(config) ? Optional.of(this.configs.get(config)) : Optional.empty();
+     }
+ 
+-    public boolean isPaused() {
++    public boolean isPaused() { org.akhq.models.jmhbench.MutationSwitch.tick(20);
+         return this.getTasks().stream().anyMatch(taskDefinition -> taskDefinition.getState().equals("PAUSED"));
+     }
+ 
+diff --git a/org/akhq/models/ConnectPlugin.java b/org/akhq/models/ConnectPlugin.java
+index 93a9b17..3d75d66 100644
+--- a/org/akhq/models/ConnectPlugin.java
++++ b/org/akhq/models/ConnectPlugin.java
+@@ -43,7 +43,7 @@ public class ConnectPlugin {
+         }
+     }
+ 
+-    public Stream<Definition> registryDefinition() {
++    public Stream<Definition> registryDefinition() { org.akhq.models.jmhbench.MutationSwitch.tick(22);
+         return Stream.of(
+             Definition.builder()
+                 .name("schema.registry.url")
+@@ -114,7 +114,7 @@ public class ConnectPlugin {
+         );
+     }
+ 
+-    public String getShortClassName() {
++    public String getShortClassName() { org.akhq.models.jmhbench.MutationSwitch.tick(24);
+         String[] split = className.split("\\.");
+ 
+         return split[split.length - 1];
+@@ -160,7 +160,7 @@ public class ConnectPlugin {
+         }
+ 
+         @JsonIgnore
+-        public String getDependentsAsString() {
++        public String getDependentsAsString() { org.akhq.models.jmhbench.MutationSwitch.tick(26);
+             return String.join(", ", this.getDependents());
+         }
+     }
+diff --git a/org/akhq/models/Consumer.java b/org/akhq/models/Consumer.java
+index 1c414ef..0cfff4f 100644
+--- a/org/akhq/models/Consumer.java
++++ b/org/akhq/models/Consumer.java
+@@ -39,7 +39,7 @@ public class Consumer {
+     }
+ 
+     @JsonIgnore
+-    public ArrayList<GroupedAssignement> getGroupedAssignments() {
++    public ArrayList<GroupedAssignement> getGroupedAssignments() { org.akhq.models.jmhbench.MutationSwitch.tick(28);
+         Map<String, List<TopicPartition>> collect = this.assignments
+             .stream()
+             .collect(Collectors.groupingBy(TopicPartition::getTopic))
+diff --git a/org/akhq/models/ConsumerGroup.java b/org/akhq/models/ConsumerGroup.java
+index 003d56f..c89f6fe 100644
+--- a/org/akhq/models/ConsumerGroup.java
++++ b/org/akhq/models/ConsumerGroup.java
+@@ -79,7 +79,7 @@ public class ConsumerGroup {
+         );
+     }
+ 
+-    public List<String> getActiveTopics() {
++    public List<String> getActiveTopics() { org.akhq.models.jmhbench.MutationSwitch.tick(30);
+         return this.getMembers()
+             .stream()
+             .flatMap(consumer -> consumer.getAssignments().stream().map(TopicPartition::getTopic))
+@@ -88,7 +88,7 @@ public class ConsumerGroup {
+             .collect(Collectors.toList());
+     }
+ 
+-    public List<String> getTopics() {
++    public List<String> getTopics() { org.akhq.models.jmhbench.MutationSwitch.tick(32);
+         List<String> list = this.getOffsets()
+             .stream()
+             .map(TopicPartition::getTopic)
+@@ -104,11 +104,11 @@ public class ConsumerGroup {
+             .collect(Collectors.toList());
+     }
+ 
+-    public boolean isActiveTopic(String topic) {
++    public boolean isActiveTopic(String topic) { org.akhq.models.jmhbench.MutationSwitch.tick(34);
+         return this.getActiveTopics().contains(topic);
+     }
+ 
+-    public long getOffsetLag(String topic) {
++    public long getOffsetLag(String topic) { org.akhq.models.jmhbench.MutationSwitch.tick(36);
+         return this.offsets.stream()
+             .filter(consumerGroupOffset -> consumerGroupOffset.getTopic().equals(topic))
+             .map(TopicPartition.ConsumerGroupOffset::getOffsetLag)
+diff --git a/org/akhq/models/Partition.java b/org/akhq/models/Partition.java
+index 9e32b1b..3dee3fc 100644
+--- a/org/akhq/models/Partition.java
++++ b/org/akhq/models/Partition.java
+@@ -55,11 +55,11 @@ public class Partition {
+         }
+     }
+ 
+-    public Node.Partition getLeader() {
++    public Node.Partition getLeader() { org.akhq.models.jmhbench.MutationSwitch.tick(38);
+         return this.leader;
+     }
+ 
+-    public long getLogDirSize() {
++    public long getLogDirSize() { org.akhq.models.jmhbench.MutationSwitch.tick(40);
+         return this.getLogDir().stream()
+             .filter(logDir -> this.leader != null && logDir.getBrokerId() == this.leader.getId())
+             .map(LogDir::getSize)
+diff --git a/org/akhq/models/Record.java b/org/akhq/models/Record.java
+index 6d9a53f..154bb3c 100644
+--- a/org/akhq/models/Record.java
++++ b/org/akhq/models/Record.java
+@@ -155,7 +155,7 @@ public class Record {
+         this.truncated = false;
+     }
+ 
+-    public String getKey() {
++    public String getKey() { org.akhq.models.jmhbench.MutationSwitch.tick(41);
+         if (this.key == null) {
+             this.key = convertToString(bytesKey, keySchemaId, true);
+         }
+@@ -164,7 +164,7 @@ public class Record {
+     }
+ 
+     @JsonIgnore
+-    public String getKeyAsBase64() {
++    public String getKeyAsBase64() { org.akhq.models.jmhbench.MutationSwitch.tick(42);
+         if (bytesKey == null) {
+             return null;
+         } else {
+@@ -172,7 +172,7 @@ public class Record {
+         }
+     }
+ 
+-    public String getValue() {
++    public String getValue() { org.akhq.models.jmhbench.MutationSwitch.tick(43);
+         if (this.value == null) {
+             this.value = convertToString(bytesValue, valueSchemaId, false);
+         }
+@@ -180,15 +180,15 @@ public class Record {
+         return this.value;
+     }
+ 
+-    public void setValue(String value) {
++    public void setValue(String value) { org.akhq.models.jmhbench.MutationSwitch.tick(44);
+         this.value = value;
+     }
+ 
+-    public void setKey(String key) {
++    public void setKey(String key) { org.akhq.models.jmhbench.MutationSwitch.tick(45);
+         this.key = key;
+     }
+ 
+-    public void setTruncated(Boolean truncated) {
++    public void setTruncated(Boolean truncated) { org.akhq.models.jmhbench.MutationSwitch.tick(46);
+         this.truncated = truncated;
+     }
+ 
+diff --git a/org/akhq/models/Schema.java b/org/akhq/models/Schema.java
+index 84c4afa..a721964 100644
+--- a/org/akhq/models/Schema.java
++++ b/org/akhq/models/Schema.java
+@@ -107,7 +107,7 @@ public class Schema {
+             FULL_TRANSITIVE
+         }
+ 
+-        public static List<String> getCompatibilityLevelConfigList() {
++        public static List<String> getCompatibilityLevelConfigList() { org.akhq.models.jmhbench.MutationSwitch.tick(47);
+             return new ArrayList<>(Arrays.asList(Schema.Config.CompatibilityLevelConfig
+                 .values()))
+                 .stream()
+diff --git a/org/akhq/models/Topic.java b/org/akhq/models/Topic.java
+index 5526863..a8a9fb0 100644
+--- a/org/akhq/models/Topic.java
++++ b/org/akhq/models/Topic.java
+@@ -63,15 +63,15 @@ public class Topic {
+         }
+     }
+ 
+-    public boolean isInternalTopic() {
++    public boolean isInternalTopic() { org.akhq.models.jmhbench.MutationSwitch.tick(48);
+         return this.internal || this.configInternal;
+     }
+ 
+-    public boolean isStreamTopic() {
++    public boolean isStreamTopic() { org.akhq.models.jmhbench.MutationSwitch.tick(49);
+         return this.configStream;
+     }
+ 
+-    public long getReplicaCount() {
++    public long getReplicaCount() { org.akhq.models.jmhbench.MutationSwitch.tick(50);
+         return this.getPartitions().stream()
+             .mapToLong(partitions -> partitions.getNodes().size())
+             .max()
+diff --git a/org/akhq/models/audit/ConnectAuditEvent.java b/org/akhq/models/audit/ConnectAuditEvent.java
+index 516853c..c279f29 100644
+--- a/org/akhq/models/audit/ConnectAuditEvent.java
++++ b/org/akhq/models/audit/ConnectAuditEvent.java
+@@ -17,27 +17,27 @@ public class ConnectAuditEvent extends AuditEvent {
+     private ActionType actionType;
+     private Integer taskId;
+ 
+-    public static ConnectAuditEvent newConnector(String kafkaClusterId, String connectClusterId, String connectorName) {
++    public static ConnectAuditEvent newConnector(String kafkaClusterId, String connectClusterId, String connectorName) { org.akhq.models.jmhbench.MutationSwitch.tick(2);
+         return new ConnectAuditEvent(kafkaClusterId, connectClusterId, connectorName, ActionType.CONNECT_CREATE, null);
+     }
+ 
+-    public static ConnectAuditEvent updateConnector(String kafkaClusterId, String connectClusterId, String connectorName) {
++    public static ConnectAuditEvent updateConnector(String kafkaClusterId, String connectClusterId, String connectorName) { org.akhq.models.jmhbench.MutationSwitch.tick(5);
+         return new ConnectAuditEvent(kafkaClusterId, connectClusterId, connectorName, ActionType.CONNECT_UPDATE, null);
+     }
+ 
+-    public static ConnectAuditEvent deleteConnector(String kafkaClusterId, String connectClusterId, String connectorName) {
++    public static ConnectAuditEvent deleteConnector(String kafkaClusterId, String connectClusterId, String connectorName) { org.akhq.models.jmhbench.MutationSwitch.tick(7);
+         return new ConnectAuditEvent(kafkaClusterId, connectClusterId, connectorName, ActionType.CONNECT_DELETE, null);
+     }
+ 
+-    public static ConnectAuditEvent pauseConnector(String kafkaClusterId, String connectClusterId, String connectorName) {
++    public static ConnectAuditEvent pauseConnector(String kafkaClusterId, String connectClusterId, String connectorName) { org.akhq.models.jmhbench.MutationSwitch.tick(9);
+         return new ConnectAuditEvent(kafkaClusterId, connectClusterId, connectorName, ActionType.CONNECT_PAUSE, null);
+     }
+ 
+-    public static ConnectAuditEvent resumeConnector(String kafkaClusterId, String connectClusterId, String connectorName) {
++    public static ConnectAuditEvent resumeConnector(String kafkaClusterId, String connectClusterId, String connectorName) { org.akhq.models.jmhbench.MutationSwitch.tick(11);
+         return new ConnectAuditEvent(kafkaClusterId, connectClusterId, connectorName, ActionType.CONNECT_RESUME, null);
+     }
+ 
+-    public static ConnectAuditEvent restartConnector(String kafkaClusterId, String connectClusterId, String connectorName) {
++    public static ConnectAuditEvent restartConnector(String kafkaClusterId, String connectClusterId, String connectorName) { org.akhq.models.jmhbench.MutationSwitch.tick(13);
+         return new ConnectAuditEvent(kafkaClusterId, connectClusterId, connectorName, ActionType.CONNECT_RESTART, null);
+     }
+ 
+diff --git a/org/akhq/models/audit/ConsumerGroupAuditEvent.java b/org/akhq/models/audit/ConsumerGroupAuditEvent.java
+index 2642a66..bf75f51 100644
+--- a/org/akhq/models/audit/ConsumerGroupAuditEvent.java
++++ b/org/akhq/models/audit/ConsumerGroupAuditEvent.java
+@@ -16,15 +16,15 @@ public class ConsumerGroupAuditEvent extends AuditEvent {
+     private String consumerGroupName;
+     private String topic;
+ 
+-    public static ConsumerGroupAuditEvent updateOffsets(String clusterId, String topicName, String consumerGroupName) {
++    public static ConsumerGroupAuditEvent updateOffsets(String clusterId, String topicName, String consumerGroupName) { org.akhq.models.jmhbench.MutationSwitch.tick(15);
+         return new ConsumerGroupAuditEvent(ActionType.CONSUMER_GROUP_UPDATE_OFFSETS, clusterId, consumerGroupName, topicName);
+     }
+ 
+-    public static ConsumerGroupAuditEvent deleteGroup(String clusterId, String consumerGroupName) {
++    public static ConsumerGroupAuditEvent deleteGroup(String clusterId, String consumerGroupName) { org.akhq.models.jmhbench.MutationSwitch.tick(17);
+         return new ConsumerGroupAuditEvent(ActionType.CONSUMER_GROUP_DELETE, clusterId, consumerGroupName, null);
+     }
+ 
+-    public static ConsumerGroupAuditEvent deleteGroupOffsets(String clusterId, String consumerGroupName, String topicName) {
++    public static ConsumerGroupAuditEvent deleteGroupOffsets(String clusterId, String consumerGroupName, String topicName) { org.akhq.models.jmhbench.MutationSwitch.tick(19);
+         return new ConsumerGroupAuditEvent(ActionType.CONSUMER_GROUP_DELETE_OFFSETS, clusterId, consumerGroupName, topicName);
+     }
+ 
+diff --git a/org/akhq/models/audit/RecordAuditEvent.java b/org/akhq/models/audit/RecordAuditEvent.java
+index a64a30c..7f204c0 100644
+--- a/org/akhq/models/audit/RecordAuditEvent.java
++++ b/org/akhq/models/audit/RecordAuditEvent.java
+@@ -17,15 +17,15 @@ public class RecordAuditEvent extends AuditEvent {
+     private Integer partition;
+     private Integer recordCount;
+ 
+-    public static RecordAuditEvent produce(String clusterId, String topicName, Integer recordCount) {
++    public static RecordAuditEvent produce(String clusterId, String topicName, Integer recordCount) { org.akhq.models.jmhbench.MutationSwitch.tick(21);
+         return new RecordAuditEvent(ActionType.RECORD_PRODUCE, clusterId, topicName, null, recordCount);
+     }
+ 
+-    public static RecordAuditEvent delete(String clusterId, String topicName, Integer partition) {
++    public static RecordAuditEvent delete(String clusterId, String topicName, Integer partition) { org.akhq.models.jmhbench.MutationSwitch.tick(23);
+         return new RecordAuditEvent(ActionType.RECORD_DELETE, clusterId, topicName, partition, null);
+     }
+ 
+-    public static RecordAuditEvent empty(String clusterId, String topicName) {
++    public static RecordAuditEvent empty(String clusterId, String topicName) { org.akhq.models.jmhbench.MutationSwitch.tick(25);
+         return new RecordAuditEvent(ActionType.RECORD_EMPTY, clusterId, topicName, null, null);
+     }
+ 
+diff --git a/org/akhq/models/audit/SchemaAuditEvent.java b/org/akhq/models/audit/SchemaAuditEvent.java
+index 0b1e1a5..06ed4ea 100644
+--- a/org/akhq/models/audit/SchemaAuditEvent.java
++++ b/org/akhq/models/audit/SchemaAuditEvent.java
+@@ -18,7 +18,7 @@ public class SchemaAuditEvent extends AuditEvent {
+     private ActionType actionType;
+     private String newCompatibility;
+ 
+-    public static SchemaAuditEvent createOrUpdateSchema(String clusterId, String subject, Integer schemaId, Integer version) {
++    public static SchemaAuditEvent createOrUpdateSchema(String clusterId, String subject, Integer schemaId, Integer version) { org.akhq.models.jmhbench.MutationSwitch.tick(27);
+         ActionType type;
+ 
+         System.out.println("Schema: " + subject + " version:" + version);
+@@ -36,11 +36,11 @@ public class SchemaAuditEvent extends AuditEvent {
+         return new SchemaAuditEvent(clusterId, subject, schemaId, version, type, null);
+     }
+ 
+-    public static SchemaAuditEvent deleteSchema(String clusterId, String subject, Integer schemaId) {
++    public static SchemaAuditEvent deleteSchema(String clusterId, String subject, Integer schemaId) { org.akhq.models.jmhbench.MutationSwitch.tick(29);
+         return new SchemaAuditEvent(clusterId, subject, schemaId, null, ActionType.SCHEMA_DELETE, null);
+     }
+ 
+-    public static SchemaAuditEvent updateSchemaCompatibility(String clusterId, String subject, Integer schemaId, String newCompatibility) {
++    public static SchemaAuditEvent updateSchemaCompatibility(String clusterId, String subject, Integer schemaId, String newCompatibility) { org.akhq.models.jmhbench.MutationSwitch.tick(31);
+         return new SchemaAuditEvent(clusterId, subject, schemaId, null, ActionType.SCHEMA_COMPATIBILITY_UPDATE, newCompatibility);
+     }
+ 
+diff --git a/org/akhq/models/audit/TopicAuditEvent.java b/org/akhq/models/audit/TopicAuditEvent.java
+index e87f3c9..754d4b4 100644
+--- a/org/akhq/models/audit/TopicAuditEvent.java
++++ b/org/akhq/models/audit/TopicAuditEvent.java
+@@ -19,19 +19,19 @@ public class TopicAuditEvent extends AuditEvent {
+     private Integer partitions;
+     private Map<String, String> config;
+ 
+-    public static TopicAuditEvent newTopic(String clusterId, String topicName, int partitions, Map<String, String> config) {
++    public static TopicAuditEvent newTopic(String clusterId, String topicName, int partitions, Map<String, String> config) { org.akhq.models.jmhbench.MutationSwitch.tick(33);
+         return new TopicAuditEvent(ActionType.TOPIC_CREATE, clusterId, topicName, partitions, config);
+     }
+ 
+-    public static TopicAuditEvent deleteTopic(String clusterId, String topicName) {
++    public static TopicAuditEvent deleteTopic(String clusterId, String topicName) { org.akhq.models.jmhbench.MutationSwitch.tick(35);
+         return new TopicAuditEvent(ActionType.TOPIC_DELETE, clusterId, topicName, 0, null);
+     }
+ 
+-    public static TopicAuditEvent configChange(String clusterId, String topicName, Map<String, String> config) {
++    public static TopicAuditEvent configChange(String clusterId, String topicName, Map<String, String> config) { org.akhq.models.jmhbench.MutationSwitch.tick(37);
+         return new TopicAuditEvent(ActionType.TOPIC_CONFIG_CHANGE, clusterId, topicName, null, config);
+     }
+ 
+-    public static TopicAuditEvent increasePartitions(String clusterId, String topicName, int partitions) {
++    public static TopicAuditEvent increasePartitions(String clusterId, String topicName, int partitions) { org.akhq.models.jmhbench.MutationSwitch.tick(39);
+         return new TopicAuditEvent(ActionType.TOPIC_INCREASE_PARTITION, clusterId, topicName, partitions, null);
+     }
+ 
+diff --git a/org/akhq/models/jmhbench/MutationSwitch.java b/org/akhq/models/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..a920369
+--- /dev/null
++++ b/org/akhq/models/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.akhq.models.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/akhq/models/security/GithubClaims.java b/org/akhq/models/security/GithubClaims.java
+index 52965fb..7750960 100644
+--- a/org/akhq/models/security/GithubClaims.java
++++ b/org/akhq/models/security/GithubClaims.java
+@@ -12,7 +12,7 @@ public class GithubClaims extends HashMap<String, Object> implements Claims {
+     }
+ 
+     @Override
+-    public Set<String> names() {
++    public Set<String> names() { org.akhq.models.jmhbench.MutationSwitch.tick(3);
+         return super.keySet();
+     }
+ 

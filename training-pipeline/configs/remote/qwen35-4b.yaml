@@ -1,0 +1,36 @@
+# Fill in the SSH connection fields for a CUDA-12.8 host with at least two GPU allocations:
+# one visible to this trainer and one reserved for scripts/remote/start-vllm.sh.
+host: gpu.example
+user: root
+port: 22
+identity_file: null
+remote_volume: /workspace
+remote_scratch: /root/jmhgen-scratch
+remote_dir: /workspace/jmhgen-rft
+
+stage: grpo
+stage_config: configs/grpo/qwen35-4b.yaml
+model_profile: qwen
+env_passthrough: [HF_TOKEN]
+pull_outputs: true
+
+bootstrap_cmd: >-
+  command -v rsync >/dev/null 2>&1 ||
+  (apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y rsync);
+  (command -v javac >/dev/null 2>&1 && command -v mvn >/dev/null 2>&1) ||
+  (apt-get update &&
+  DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-17-jdk-headless maven)
+setup_cmd: curl -LsSf https://astral.sh/uv/install.sh | sh
+rsync_excludes:
+  - .git
+  - .venv
+  - outputs
+  - __pycache__
+  - .mypy_cache
+  - .pytest_cache
+  - .ruff_cache
+  - data/external-src
+  - data/llm2jmh-*
+  - data/rxjava-src
+  - data/rft-*
+  - "*.pyc"

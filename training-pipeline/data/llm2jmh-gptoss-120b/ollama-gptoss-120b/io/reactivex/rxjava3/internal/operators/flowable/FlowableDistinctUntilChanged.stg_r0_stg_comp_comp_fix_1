@@ -1,0 +1,38 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@code Flowable.distinctUntilChanged} which internally uses
+ * {@code FlowableDistinctUntilChanged}. The benchmark measures the throughput
+ * (items processed per second) under different source sizes.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableDistinctUntilChangedBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    private Flowable<Integer> source;
+
+    private static final Function<Integer, Integer> IDENTITY = i -> i;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Flowable.range(0, size);
+    }
+
+    @Benchmark
+    public void distinctUntilChanged(Blackhole bh) {
+        source.distinctUntilChanged(IDENTITY)
+              .subscribe(bh::consume, bh::consume, () -> {});
+    }
+}
+```

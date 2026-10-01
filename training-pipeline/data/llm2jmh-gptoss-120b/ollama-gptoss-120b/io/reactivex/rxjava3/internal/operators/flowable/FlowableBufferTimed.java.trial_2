@@ -1,0 +1,84 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.functions.Supplier;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableBufferTimed}.
+ *
+ * The benchmark measures the throughput (operations per second) of the bufferTimed operator
+ * under a typical use‑case: a hot source emitting a large number of items that are buffered
+ * with a time‑based window.
+ *
+ * Best practices applied:
+ * • @State(Scope.Thread) isolates benchmark state per thread.
+ * • @Setup prepares immutable Flowable instances once per iteration.
+ * • Blackhole is used to consume the final result and prevent dead‑code elimination.
+ * • Warm‑up and measurement iterations are configured via JMH defaults (can be overridden on CLI).
+ * • The benchmark runs in Mode.Throughput with results expressed per second.
+ */
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableBufferTimedBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({ "1000000" })
+    private int itemCount;
+
+    /**
+     * Timespan for the buffer window (in milliseconds).
+     */
+    @Param({ "10" })
+    private long timespanMs;
+
+    /**
+     * Supplier for the buffer collection.
+     */
+    private Supplier<List<Integer>> bufferSupplier = () -> new ArrayList<>();
+
+    /**
+     * The Flowable under test.
+     */
+    private Flowable<List<Integer>> bufferedFlowable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Source Flowable emitting a fixed number of integers as fast as possible.
+        Flowable<Integer> source = Flowable.range(0, itemCount);
+
+        // Apply the time‑based buffer operator.
+        bufferedFlowable = source.buffer(
+                timespanMs,
+                TimeUnit.MILLISECONDS,
+                Schedulers.computation(),
+                Integer.MAX_VALUE,
+                bufferSupplier,
+                false);
+    }
+
+    /**
+     * Benchmark method that subscribes to the buffered Flowable and blocks until completion.
+     * The emitted buffers are consumed by a Blackhole to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void bufferTimedThroughput(Blackhole bh) {
+        // blockingSubscribe ensures the benchmark measures the full processing of the stream.
+        bufferedFlowable.blockingSubscribe(bh::consume);
+    }
+}
+```

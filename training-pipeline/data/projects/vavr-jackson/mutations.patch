@@ -1,0 +1,592 @@
+diff --git a/io/vavr/jackson/datatype/VavrModule.java b/io/vavr/jackson/datatype/VavrModule.java
+index 5fe84c8..2f9b5bb 100644
+--- a/io/vavr/jackson/datatype/VavrModule.java
++++ b/io/vavr/jackson/datatype/VavrModule.java
+@@ -80,21 +80,21 @@ public class VavrModule extends SimpleModule {
+         private boolean plainOption = true;
+         private boolean deserializeNullAsEmptyCollection = false;
+ 
+-        public Settings useOptionInPlainFormat(boolean value) {
++        public Settings useOptionInPlainFormat(boolean value) { io.vavr.jackson.jmhbench.MutationSwitch.tick(8);
+             plainOption = value;
+             return this;
+         }
+ 
+-        public Settings deserializeNullAsEmptyCollection(boolean value) {
++        public Settings deserializeNullAsEmptyCollection(boolean value) { io.vavr.jackson.jmhbench.MutationSwitch.tick(9);
+             deserializeNullAsEmptyCollection = value;
+             return this;
+         }
+ 
+-        public boolean useOptionInPlainFormat() {
++        public boolean useOptionInPlainFormat() { io.vavr.jackson.jmhbench.MutationSwitch.tick(10);
+             return plainOption;
+         }
+ 
+-        public boolean deserializeNullAsEmptyCollection() {
++        public boolean deserializeNullAsEmptyCollection() { io.vavr.jackson.jmhbench.MutationSwitch.tick(11);
+             return deserializeNullAsEmptyCollection;
+         }
+     }
+diff --git a/io/vavr/jackson/datatype/VavrTypeModifier.java b/io/vavr/jackson/datatype/VavrTypeModifier.java
+index ade3cdc..6c49bd7 100644
+--- a/io/vavr/jackson/datatype/VavrTypeModifier.java
++++ b/io/vavr/jackson/datatype/VavrTypeModifier.java
+@@ -39,7 +39,7 @@ import tools.jackson.databind.type.TypeModifier;
+ public class VavrTypeModifier extends TypeModifier {
+ 
+     @Override
+-    public JavaType modifyType(JavaType type, Type jdkType, TypeBindings bindings, TypeFactory typeFactory) {
++    public JavaType modifyType(JavaType type, Type jdkType, TypeBindings bindings, TypeFactory typeFactory) { io.vavr.jackson.jmhbench.MutationSwitch.tick(12);
+         final Class<?> raw = type.getRawClass();
+         if (Seq.class.isAssignableFrom(raw) && CharSeq.class != raw) {
+             return CollectionLikeType.upgradeFrom(type, type.containedTypeOrUnknown(0));
+diff --git a/io/vavr/jackson/datatype/deserialize/CharSeqDeserializer.java b/io/vavr/jackson/datatype/deserialize/CharSeqDeserializer.java
+index 8aee1ac..0ea7644 100644
+--- a/io/vavr/jackson/datatype/deserialize/CharSeqDeserializer.java
++++ b/io/vavr/jackson/datatype/deserialize/CharSeqDeserializer.java
+@@ -38,7 +38,7 @@ class CharSeqDeserializer extends StdDeserializer<CharSeq> {
+     }
+ 
+     @Override
+-    public CharSeq deserialize(JsonParser p, DeserializationContext ctxt) {
++    public CharSeq deserialize(JsonParser p, DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(13);
+         Object obj = deserializer.deserialize(p, ctxt);
+         if (obj instanceof String) {
+             return CharSeq.of((String) obj);
+@@ -48,7 +48,7 @@ class CharSeqDeserializer extends StdDeserializer<CharSeq> {
+     }
+ 
+     @Override
+-    public void resolve(DeserializationContext ctxt) throws DatabindException {
++    public void resolve(DeserializationContext ctxt) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(14);
+         deserializer = ctxt.findContextualValueDeserializer(TypeFactory.unknownType(), null);
+     }
+ }
+diff --git a/io/vavr/jackson/datatype/deserialize/EitherDeserializer.java b/io/vavr/jackson/datatype/deserialize/EitherDeserializer.java
+index 56d5c8c..aa3000b 100644
+--- a/io/vavr/jackson/datatype/deserialize/EitherDeserializer.java
++++ b/io/vavr/jackson/datatype/deserialize/EitherDeserializer.java
+@@ -44,7 +44,7 @@ class EitherDeserializer extends VavrValueDeserializer<Either<?, ?>> {
+     }
+ 
+     @Override
+-    public Either<?, ?> deserialize(JsonParser p, DeserializationContext ctxt) {
++    public Either<?, ?> deserialize(JsonParser p, DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(15);
+         final JsonToken nextToken = p.currentToken();
+ 
+         if (nextToken == START_ARRAY) {
+@@ -93,7 +93,7 @@ class EitherDeserializer extends VavrValueDeserializer<Either<?, ?>> {
+ 
+ 
+     @Override
+-    public void resolve(DeserializationContext ctxt) throws DatabindException {
++    public void resolve(DeserializationContext ctxt) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(16);
+         super.resolve(ctxt);
+         stringDeserializer = ctxt.findContextualValueDeserializer(ctxt.constructType(String.class), null);
+     }
+diff --git a/io/vavr/jackson/datatype/deserialize/LazyDeserializer.java b/io/vavr/jackson/datatype/deserialize/LazyDeserializer.java
+index 677d34e..1b7328b 100644
+--- a/io/vavr/jackson/datatype/deserialize/LazyDeserializer.java
++++ b/io/vavr/jackson/datatype/deserialize/LazyDeserializer.java
+@@ -48,7 +48,7 @@ class LazyDeserializer extends VavrValueDeserializer<Lazy<?>> {
+     }
+ 
+     @Override
+-    public Lazy<?> deserialize(JsonParser p, DeserializationContext ctxt) {
++    public Lazy<?> deserialize(JsonParser p, DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(17);
+         Object value = valueTypeDeserializer == null
+             ? valueDeserializer.deserialize(p, ctxt)
+             : valueDeserializer.deserializeWithType(p, ctxt, valueTypeDeserializer);
+@@ -56,12 +56,12 @@ class LazyDeserializer extends VavrValueDeserializer<Lazy<?>> {
+     }
+ 
+     @Override
+-    public Lazy<?> getNullValue(DeserializationContext ctxt) {
++    public Lazy<?> getNullValue(DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(18);
+         return Lazy.of(() -> null);
+     }
+ 
+     @Override
+-    public ValueDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws DatabindException {
++    public ValueDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(19);
+         TypeDeserializer typeDeser = valueTypeDeserializer != null ? valueTypeDeserializer.forProperty(property) : null;
+         ValueDeserializer<?> deser = valueDeserializer == null
+             ? ctxt.findContextualValueDeserializer(valueType, property)
+diff --git a/io/vavr/jackson/datatype/deserialize/MapDeserializer.java b/io/vavr/jackson/datatype/deserialize/MapDeserializer.java
+index 3193dbb..03b401f 100644
+--- a/io/vavr/jackson/datatype/deserialize/MapDeserializer.java
++++ b/io/vavr/jackson/datatype/deserialize/MapDeserializer.java
+@@ -51,7 +51,7 @@ class MapDeserializer extends MaplikeDeserializer<Map<?, ?>> {
+     }
+ 
+     @Override
+-    public Map<?, ?> deserialize(JsonParser p, DeserializationContext ctxt, Map<?, ?> intoValue) {
++    public Map<?, ?> deserialize(JsonParser p, DeserializationContext ctxt, Map<?, ?> intoValue) { io.vavr.jackson.jmhbench.MutationSwitch.tick(1);
+         final java.util.LinkedHashMap<Object, Object> result = new java.util.LinkedHashMap<>();
+         if (intoValue != null) {
+             result.putAll(intoValue.toJavaMap());
+@@ -96,7 +96,7 @@ class MapDeserializer extends MaplikeDeserializer<Map<?, ?>> {
+     }
+ 
+     @Override
+-    public Map<?, ?> deserialize(JsonParser p, DeserializationContext ctxt) {
++    public Map<?, ?> deserialize(JsonParser p, DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(2);
+         return deserialize(p, ctxt, null);
+     }
+ 
+diff --git a/io/vavr/jackson/datatype/deserialize/MultimapDeserializer.java b/io/vavr/jackson/datatype/deserialize/MultimapDeserializer.java
+index d917e2d..aa94ca3 100644
+--- a/io/vavr/jackson/datatype/deserialize/MultimapDeserializer.java
++++ b/io/vavr/jackson/datatype/deserialize/MultimapDeserializer.java
+@@ -58,14 +58,14 @@ class MultimapDeserializer extends MaplikeDeserializer<Multimap<?, ?>> {
+     }
+ 
+     @Override
+-    public void resolve(DeserializationContext ctxt) throws DatabindException {
++    public void resolve(DeserializationContext ctxt) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(20);
+         JavaType containerType = ctxt.getTypeFactory()
+             .constructCollectionType(ArrayList.class, mapType.getContentType());
+         containerDeserializer = ctxt.findContextualValueDeserializer(containerType, null);
+     }
+ 
+     @Override
+-    public Multimap<?, ?> deserialize(JsonParser p, DeserializationContext ctxt) {
++    public Multimap<?, ?> deserialize(JsonParser p, DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(21);
+         final java.util.List<Tuple2<Object, Object>> result = new java.util.ArrayList<>();
+         while (p.nextToken() != JsonToken.END_OBJECT) {
+             String name = p.currentName();
+diff --git a/io/vavr/jackson/datatype/deserialize/OptionDeserializer.java b/io/vavr/jackson/datatype/deserialize/OptionDeserializer.java
+index af16269..ff3738d 100644
+--- a/io/vavr/jackson/datatype/deserialize/OptionDeserializer.java
++++ b/io/vavr/jackson/datatype/deserialize/OptionDeserializer.java
+@@ -53,7 +53,7 @@ class OptionDeserializer<T> extends VavrValueDeserializer<Option<T>> {
+     }
+ 
+     @Override
+-    public Option<T> deserialize(JsonParser p, DeserializationContext ctxt, Option<T> intoValue) {
++    public Option<T> deserialize(JsonParser p, DeserializationContext ctxt, Option<T> intoValue) { io.vavr.jackson.jmhbench.MutationSwitch.tick(22);
+         if (plainMode) {
+             if (valueTypeDeserializer == null) {
+                 return Boolean.TRUE.equals(valueDeserializer.supportsUpdate(ctxt.getConfig())) && intoValue != null
+@@ -109,18 +109,18 @@ class OptionDeserializer<T> extends VavrValueDeserializer<Option<T>> {
+     }
+ 
+     @Override
+-    public Option<T> deserialize(JsonParser p, DeserializationContext ctxt) {
++    public Option<T> deserialize(JsonParser p, DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(23);
+         return deserialize(p, ctxt, null);
+     }
+ 
+     @Override
+-    public void resolve(DeserializationContext ctxt) throws DatabindException {
++    public void resolve(DeserializationContext ctxt) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(24);
+         super.resolve(ctxt);
+         stringDeserializer = ctxt.findContextualValueDeserializer(ctxt.constructType(String.class), null);
+     }
+ 
+     @Override
+-    public Option<T> getNullValue(DeserializationContext ctxt) {
++    public Option<T> getNullValue(DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(25);
+         return Option.none();
+     }
+ 
+diff --git a/io/vavr/jackson/datatype/deserialize/SerializableDeserializer.java b/io/vavr/jackson/datatype/deserialize/SerializableDeserializer.java
+index 07e3105..ce788b8 100644
+--- a/io/vavr/jackson/datatype/deserialize/SerializableDeserializer.java
++++ b/io/vavr/jackson/datatype/deserialize/SerializableDeserializer.java
+@@ -34,7 +34,7 @@ class SerializableDeserializer<T> extends StdDeserializer<T> {
+     }
+ 
+     @Override
+-    public T deserialize(JsonParser p, DeserializationContext ctxt) {
++    public T deserialize(JsonParser p, DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(26);
+         ValueDeserializer<Object> deserializer = ctxt.findRootValueDeserializer(ctxt.constructType(byte[].class));
+         byte[] bytes = (byte[]) deserializer.deserialize(p, ctxt);
+         return deserialize(bytes);
+diff --git a/io/vavr/jackson/datatype/deserialize/TupleDeserializer.java b/io/vavr/jackson/datatype/deserialize/TupleDeserializer.java
+index 7cd0217..e444b55 100644
+--- a/io/vavr/jackson/datatype/deserialize/TupleDeserializer.java
++++ b/io/vavr/jackson/datatype/deserialize/TupleDeserializer.java
+@@ -49,7 +49,7 @@ class TupleDeserializer extends VavrValueDeserializer<Tuple> {
+     }
+ 
+     @Override
+-    public Tuple deserialize(JsonParser p, DeserializationContext ctxt) {
++    public Tuple deserialize(JsonParser p, DeserializationContext ctxt) { io.vavr.jackson.jmhbench.MutationSwitch.tick(27);
+         List<Object> list = new ArrayList<>();
+         int ptr = 0;
+ 
+diff --git a/io/vavr/jackson/datatype/deserialize/VavrDeserializers.java b/io/vavr/jackson/datatype/deserialize/VavrDeserializers.java
+index 883c499..64d3379 100644
+--- a/io/vavr/jackson/datatype/deserialize/VavrDeserializers.java
++++ b/io/vavr/jackson/datatype/deserialize/VavrDeserializers.java
+@@ -53,7 +53,7 @@ public class VavrDeserializers extends Deserializers.Base {
+     @Override
+     public ValueDeserializer<?> findBeanDeserializer(JavaType type,
+                                                      DeserializationConfig config,
+-                                                     BeanDescription.Supplier beanDesc) throws DatabindException {
++                                                     BeanDescription.Supplier beanDesc) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(28);
+         Class<?> raw = type.getRawClass();
+         if (Either.class.isAssignableFrom(raw)) {
+             return new EitherDeserializer(type);
+@@ -74,7 +74,7 @@ public class VavrDeserializers extends Deserializers.Base {
+     public ValueDeserializer<?> findReferenceDeserializer(ReferenceType type,
+                                                          DeserializationConfig config, BeanDescription.Supplier beanDesc,
+                                                          TypeDeserializer contentTypeDeserializer, ValueDeserializer<?> contentDeserializer)
+-        throws DatabindException {
++        throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(29);
+         Class<?> raw = type.getRawClass();
+         if (raw == Lazy.class) {
+             return new LazyDeserializer(type, type.getContentType(), contentTypeDeserializer, contentDeserializer);
+@@ -89,7 +89,7 @@ public class VavrDeserializers extends Deserializers.Base {
+     public ValueDeserializer<?> findCollectionLikeDeserializer(CollectionLikeType collectionType,
+                                                               DeserializationConfig config, BeanDescription.Supplier beanDesc,
+                                                               TypeDeserializer elementTypeDeserializer, ValueDeserializer<?> elementDeserializer)
+-        throws DatabindException {
++        throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(30);
+         Class<?> raw = collectionType.getRawClass();
+         if (raw == CharSeq.class) {
+             return new CharSeqDeserializer(collectionType);
+@@ -114,7 +114,7 @@ public class VavrDeserializers extends Deserializers.Base {
+                                                        DeserializationConfig config, BeanDescription.Supplier beanDesc,
+                                                        KeyDeserializer keyDeserializer,
+                                                        TypeDeserializer elementTypeDeserializer, ValueDeserializer<?> elementDeserializer)
+-        throws DatabindException {
++        throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(31);
+         Class<?> raw = type.getRawClass();
+         if (Map.class.isAssignableFrom(raw)) {
+             return new MapDeserializer(type, keyDeserializer, elementTypeDeserializer, elementDeserializer);
+diff --git a/io/vavr/jackson/datatype/serialize/ArraySerializer.java b/io/vavr/jackson/datatype/serialize/ArraySerializer.java
+index 394dc30..cd52a74 100644
+--- a/io/vavr/jackson/datatype/serialize/ArraySerializer.java
++++ b/io/vavr/jackson/datatype/serialize/ArraySerializer.java
+@@ -68,7 +68,7 @@ class ArraySerializer<T extends Value<?>> extends VavrValueSerializer<T> {
+ 
+     @Override
+     public void serializeWithType(T value, JsonGenerator gen, SerializationContext context,
+-                                  TypeSerializer typeSer) {
++                                  TypeSerializer typeSer) { io.vavr.jackson.jmhbench.MutationSwitch.tick(3);
+         typeSer.writeTypePrefix(gen, context, typeSer.typeId(value, JsonToken.START_ARRAY));
+         List<?> list = value.toJavaList();
+         JavaType contentType = collectionType.getContentType();
+@@ -89,13 +89,13 @@ class ArraySerializer<T extends Value<?>> extends VavrValueSerializer<T> {
+     }
+ 
+     @Override
+-    public boolean isEmpty(SerializationContext context, T value) {
++    public boolean isEmpty(SerializationContext context, T value) { io.vavr.jackson.jmhbench.MutationSwitch.tick(4);
+         return value.isEmpty();
+     }
+ 
+     @Override
+     public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property)
+-        throws DatabindException {
++        throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(5);
+         if (property == beanProperty) {
+             return this;
+         }
+diff --git a/io/vavr/jackson/datatype/serialize/CharSeqSerializer.java b/io/vavr/jackson/datatype/serialize/CharSeqSerializer.java
+index 67295ba..57f2b20 100644
+--- a/io/vavr/jackson/datatype/serialize/CharSeqSerializer.java
++++ b/io/vavr/jackson/datatype/serialize/CharSeqSerializer.java
+@@ -42,7 +42,7 @@ class CharSeqSerializer extends VavrValueSerializer<CharSeq> {
+     }
+ 
+     @Override
+-    public boolean isEmpty(SerializationContext context, CharSeq value) {
++    public boolean isEmpty(SerializationContext context, CharSeq value) { io.vavr.jackson.jmhbench.MutationSwitch.tick(32);
+         return value.isEmpty();
+     }
+ }
+diff --git a/io/vavr/jackson/datatype/serialize/EitherSerializer.java b/io/vavr/jackson/datatype/serialize/EitherSerializer.java
+index f766a20..ac82ef7 100644
+--- a/io/vavr/jackson/datatype/serialize/EitherSerializer.java
++++ b/io/vavr/jackson/datatype/serialize/EitherSerializer.java
+@@ -33,7 +33,7 @@ class EitherSerializer extends HListSerializer<Either<?, ?>> {
+     }
+ 
+     @Override
+-    public void serialize(Either<?, ?> value, JsonGenerator gen, SerializationContext context) {
++    public void serialize(Either<?, ?> value, JsonGenerator gen, SerializationContext context) { io.vavr.jackson.jmhbench.MutationSwitch.tick(33);
+         gen.writeStartArray();
+         serializeContents(value, gen, context);
+         gen.writeEndArray();
+@@ -41,7 +41,7 @@ class EitherSerializer extends HListSerializer<Either<?, ?>> {
+ 
+     @Override
+     public void serializeWithType(Either<?, ?> value, JsonGenerator gen, SerializationContext context,
+-                                  TypeSerializer typeSer) {
++                                  TypeSerializer typeSer) { io.vavr.jackson.jmhbench.MutationSwitch.tick(34);
+         typeSer.writeTypePrefix(gen, context, typeSer.typeId(value, JsonToken.START_ARRAY));
+         serializeContents(value, gen, context);
+         typeSer.writeTypeSuffix(gen, context, typeSer.typeId(value, JsonToken.START_ARRAY));
+@@ -58,7 +58,7 @@ class EitherSerializer extends HListSerializer<Either<?, ?>> {
+     }
+ 
+     @Override
+-    public boolean isEmpty(SerializationContext context, Either<?, ?> value) {
++    public boolean isEmpty(SerializationContext context, Either<?, ?> value) { io.vavr.jackson.jmhbench.MutationSwitch.tick(35);
+         return value.isEmpty();
+     }
+ }
+diff --git a/io/vavr/jackson/datatype/serialize/LazySerializer.java b/io/vavr/jackson/datatype/serialize/LazySerializer.java
+index 9d21175..92207b4 100644
+--- a/io/vavr/jackson/datatype/serialize/LazySerializer.java
++++ b/io/vavr/jackson/datatype/serialize/LazySerializer.java
+@@ -49,7 +49,7 @@ class LazySerializer extends HListSerializer<Lazy<?>> {
+     }
+ 
+     @Override
+-    public void serialize(Lazy<?> value, JsonGenerator gen, SerializationContext context) {
++    public void serialize(Lazy<?> value, JsonGenerator gen, SerializationContext context) { io.vavr.jackson.jmhbench.MutationSwitch.tick(36);
+         if (valueSerializer != null) {
+             if (valueTypeSerializer != null) {
+                 valueSerializer.serializeWithType(value.get(), gen, context, valueTypeSerializer);
+@@ -63,7 +63,7 @@ class LazySerializer extends HListSerializer<Lazy<?>> {
+ 
+     @Override
+     public void serializeWithType(Lazy<?> value, JsonGenerator gen, SerializationContext context,
+-                                  TypeSerializer typeSer) {
++                                  TypeSerializer typeSer) { io.vavr.jackson.jmhbench.MutationSwitch.tick(37);
+         Object inner = value.get();
+         if (valueSerializer != null) {
+             valueSerializer.serializeWithType(inner, gen, context, typeSer);
+@@ -74,7 +74,7 @@ class LazySerializer extends HListSerializer<Lazy<?>> {
+     }
+ 
+     @Override
+-    public ValueSerializer<?> createContextual(SerializationContext provider, BeanProperty property) throws DatabindException {
++    public ValueSerializer<?> createContextual(SerializationContext provider, BeanProperty property) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(38);
+         TypeSerializer vts = valueTypeSerializer;
+         if (vts != null) {
+             vts = vts.forProperty(provider, property);
+diff --git a/io/vavr/jackson/datatype/serialize/MapSerializer.java b/io/vavr/jackson/datatype/serialize/MapSerializer.java
+index 088ea41..c8e37d5 100644
+--- a/io/vavr/jackson/datatype/serialize/MapSerializer.java
++++ b/io/vavr/jackson/datatype/serialize/MapSerializer.java
+@@ -53,12 +53,12 @@ class MapSerializer extends VavrValueSerializer<Map<?, ?>> {
+     }
+ 
+     @Override
+-    public boolean isEmpty(SerializationContext context, Map<?, ?> value) {
++    public boolean isEmpty(SerializationContext context, Map<?, ?> value) { io.vavr.jackson.jmhbench.MutationSwitch.tick(6);
+         return value.isEmpty();
+     }
+ 
+     @Override
+-    public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) throws DatabindException {
++    public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(7);
+         if (property == beanProperty) {
+             return this;
+         }
+diff --git a/io/vavr/jackson/datatype/serialize/MultimapSerializer.java b/io/vavr/jackson/datatype/serialize/MultimapSerializer.java
+index dee564d..bd8c934 100644
+--- a/io/vavr/jackson/datatype/serialize/MultimapSerializer.java
++++ b/io/vavr/jackson/datatype/serialize/MultimapSerializer.java
+@@ -58,12 +58,12 @@ class MultimapSerializer extends VavrValueSerializer<Multimap<?, ?>> {
+     }
+ 
+     @Override
+-    public boolean isEmpty(SerializationContext context, Multimap<?, ?> value) {
++    public boolean isEmpty(SerializationContext context, Multimap<?, ?> value) { io.vavr.jackson.jmhbench.MutationSwitch.tick(39);
+         return value.isEmpty();
+     }
+ 
+     @Override
+-    public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) throws DatabindException {
++    public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(40);
+         if (property == beanProperty) {
+             return this;
+         }
+diff --git a/io/vavr/jackson/datatype/serialize/OptionSerializer.java b/io/vavr/jackson/datatype/serialize/OptionSerializer.java
+index 5aba77a..f79b792 100644
+--- a/io/vavr/jackson/datatype/serialize/OptionSerializer.java
++++ b/io/vavr/jackson/datatype/serialize/OptionSerializer.java
+@@ -61,7 +61,7 @@ class OptionSerializer extends HListSerializer<Option<?>> {
+     }
+ 
+     @Override
+-    public void serialize(Option<?> value, JsonGenerator gen, SerializationContext context) {
++    public void serialize(Option<?> value, JsonGenerator gen, SerializationContext context) { io.vavr.jackson.jmhbench.MutationSwitch.tick(41);
+         if (plainMode) {
+             if (value.isDefined()) {
+                 if (valueSerializer != null) {
+@@ -90,7 +90,7 @@ class OptionSerializer extends HListSerializer<Option<?>> {
+ 
+     @Override
+     public void serializeWithType(Option<?> value, JsonGenerator gen, SerializationContext context,
+-                                  TypeSerializer typeSer) {
++                                  TypeSerializer typeSer) { io.vavr.jackson.jmhbench.MutationSwitch.tick(42);
+         if (plainMode) {
+             if (value.isDefined()) {
+                 Object inner = value.get();
+@@ -116,12 +116,12 @@ class OptionSerializer extends HListSerializer<Option<?>> {
+     }
+ 
+     @Override
+-    public boolean isEmpty(SerializationContext provider, Option<?> value) {
++    public boolean isEmpty(SerializationContext provider, Option<?> value) { io.vavr.jackson.jmhbench.MutationSwitch.tick(43);
+         return value.isEmpty();
+     }
+ 
+     @Override
+-    public ValueSerializer<?> createContextual(SerializationContext provider, BeanProperty property) throws DatabindException {
++    public ValueSerializer<?> createContextual(SerializationContext provider, BeanProperty property) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(44);
+         TypeSerializer vts = valueTypeSerializer;
+         if (vts != null) {
+             vts = vts.forProperty(provider, property);
+diff --git a/io/vavr/jackson/datatype/serialize/TupleSerializer.java b/io/vavr/jackson/datatype/serialize/TupleSerializer.java
+index 8313624..f925ccc 100644
+--- a/io/vavr/jackson/datatype/serialize/TupleSerializer.java
++++ b/io/vavr/jackson/datatype/serialize/TupleSerializer.java
+@@ -34,7 +34,7 @@ class TupleSerializer extends HListSerializer<Tuple> {
+     }
+ 
+     @Override
+-    public void serialize(Tuple value, JsonGenerator gen, SerializationContext context) {
++    public void serialize(Tuple value, JsonGenerator gen, SerializationContext context) { io.vavr.jackson.jmhbench.MutationSwitch.tick(45);
+         gen.writeStartArray();
+         serializeContents(value, gen, context);
+         gen.writeEndArray();
+@@ -42,7 +42,7 @@ class TupleSerializer extends HListSerializer<Tuple> {
+ 
+     @Override
+     public void serializeWithType(Tuple value, JsonGenerator gen, SerializationContext context,
+-                                  TypeSerializer typeSer) {
++                                  TypeSerializer typeSer) { io.vavr.jackson.jmhbench.MutationSwitch.tick(46);
+         typeSer.writeTypePrefix(gen, context, typeSer.typeId(value, JsonToken.START_ARRAY));
+         serializeContents(value, gen, context);
+         typeSer.writeTypeSuffix(gen, context, typeSer.typeId(value, JsonToken.START_ARRAY));
+diff --git a/io/vavr/jackson/datatype/serialize/UnwrappingOptionSerializer.java b/io/vavr/jackson/datatype/serialize/UnwrappingOptionSerializer.java
+index 1050881..49951a2 100644
+--- a/io/vavr/jackson/datatype/serialize/UnwrappingOptionSerializer.java
++++ b/io/vavr/jackson/datatype/serialize/UnwrappingOptionSerializer.java
+@@ -68,7 +68,7 @@ class UnwrappingOptionSerializer extends StdSerializer<Option<?>> {
+      * @throws StreamWriteException if the option value is not a bean
+      */
+     @Override
+-    public void serialize(Option<?> value, JsonGenerator gen, SerializationContext context) {
++    public void serialize(Option<?> value, JsonGenerator gen, SerializationContext context) { io.vavr.jackson.jmhbench.MutationSwitch.tick(47);
+             if (value.isDefined()) {
+                 JavaType containedType = optionSerializer.getValueType();
+                 ValueSerializer<?> ser = containedType != null && containedType.hasGenericTypes()
+@@ -86,17 +86,17 @@ class UnwrappingOptionSerializer extends StdSerializer<Option<?>> {
+     }
+ 
+     @Override
+-    public boolean isUnwrappingSerializer() {
++    public boolean isUnwrappingSerializer() { io.vavr.jackson.jmhbench.MutationSwitch.tick(48);
+         return true;
+     }
+ 
+     @Override
+-    public boolean isEmpty(SerializationContext context, Option<?> value) {
++    public boolean isEmpty(SerializationContext context, Option<?> value) { io.vavr.jackson.jmhbench.MutationSwitch.tick(49);
+         return value.isEmpty();
+     }
+ 
+     @Override
+-    public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) throws DatabindException {
++    public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) throws DatabindException { io.vavr.jackson.jmhbench.MutationSwitch.tick(50);
+         ValueSerializer<?> contextualized = optionSerializer.createContextual(context, property);
+         if (contextualized instanceof OptionSerializer contextualizedOption) {
+             return new UnwrappingOptionSerializer(contextualizedOption, unwrapper);
+diff --git a/io/vavr/jackson/jmhbench/MutationSwitch.java b/io/vavr/jackson/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..f2a494e
+--- /dev/null
++++ b/io/vavr/jackson/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.vavr.jackson.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

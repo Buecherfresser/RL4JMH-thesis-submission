@@ -1,0 +1,92 @@
+# Rejection fine-tuning on fastutil, scored with the performance-mutation reward.
+# See configs/rft/commons-lang-mutation.yaml for the annotated sibling; this only swaps the
+# corpus, the patched SUT classpath, and the mutant registry.
+#
+# Setup (once):
+#   # fastutil ships its per-type classes as generated code, so vendor the EXPANDED sources
+#   # from the Maven Central sources jar (see data/projects/fastutil/project.yaml for the
+#   # exact commands), then:
+#   jmh-make-mutants fastutil --source data/external-src/fastutil \
+#       --sites data/projects/fastutil/mutation_sites.yaml
+#   jmh-provision-mutants fastutil
+#   jmh-train-rft --config configs/rft/fastutil-mutation.yaml
+
+base_model: google/gemma-4-E2B-it
+output_dir: outputs/rft-fastutil-mutation
+dataset_path: data/projects/fastutil/snippets.jsonl
+seed: 42
+
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+loss_type: chunked_nll
+activation_offloading: false
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: [vision_tower, audio_tower, multi_modal_projector]
+  bias: none
+
+max_seq_len: 16384
+learning_rate: 1.0e-5
+per_device_batch_size: 1
+gradient_accumulation_steps: 8
+num_epochs: 1.0
+completion_only_loss: true
+
+# --- sampling (E-step) ---
+samples_per_prompt: 16
+sampling_temperature: 1.0
+limit_prompts: 0
+max_source_chars: 90000
+inference:
+  base_url: http://localhost:8000/v1
+  model: google/gemma-4-E2B-it
+  api_key_env: VLLM_API_KEY
+  timeout_s: 600.0
+  max_concurrency: 8
+  top_p: 0.95
+  top_k: 64
+  max_tokens: 8192
+  enable_thinking: true
+
+# --- verification / acceptance ---
+accept_threshold: 0.6
+need_run: true
+reward_weights:
+  compile: 0.2
+  runtime: 0.2
+  anti_pattern: 0.2
+  rsd: 0.1
+  mutation: 0.3
+rsd_good: 0.05
+rsd_bad: 0.25
+mutation:
+  alpha: 0.05
+  min_slowdown: 1.10
+  arm_property: jmhbench.mutant
+  max_mutants_per_candidate: 8
+  # graded = coverage fraction (killed / in-class mutants); gate = binary any-kill.
+  mode: graded
+runner:
+  jmh_version: "1.37"
+  java_release: 17
+  jmh:
+    warmup_iterations: 3
+    measurement_iterations: 5
+    forks: 1
+    per_iteration_timeout_s: 60
+project_classpaths:
+  fastutil: data/classpaths/fastutil-mutants.cp
+project_mutants:
+  fastutil: data/projects/fastutil/mutants.yaml
+
+# --- dataset construction ---
+work_dir: data/rft-fastutil-mutation
+max_keep_per_prompt: 4
+dedup: true
+drop_all_pass: false
+val_fraction: 0.05

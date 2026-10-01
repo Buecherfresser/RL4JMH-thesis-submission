@@ -1,0 +1,637 @@
+diff --git a/org/jboss/classfilewriter/AccessFlag.java b/org/jboss/classfilewriter/AccessFlag.java
+index 680dc55..53076db 100644
+--- a/org/jboss/classfilewriter/AccessFlag.java
++++ b/org/jboss/classfilewriter/AccessFlag.java
+@@ -38,7 +38,7 @@ public class AccessFlag {
+ 
+     public static final int SUPER     = 0x0020;
+ 
+-    public static int of(int... modifiers) {
++    public static int of(int... modifiers) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(1);
+         int val = 0;
+         for (int m : modifiers) {
+             val |= m;
+diff --git a/org/jboss/classfilewriter/ClassField.java b/org/jboss/classfilewriter/ClassField.java
+index 80361be..84ca91c 100644
+--- a/org/jboss/classfilewriter/ClassField.java
++++ b/org/jboss/classfilewriter/ClassField.java
+@@ -75,11 +75,11 @@ public class ClassField implements WritableEntry {
+         }
+     }
+ 
+-    public int getAccessFlags() {
++    public int getAccessFlags() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(7);
+         return accessFlags;
+     }
+ 
+-    public String getName() {
++    public String getName() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(13);
+         return name;
+     }
+ 
+diff --git a/org/jboss/classfilewriter/ClassFile.java b/org/jboss/classfilewriter/ClassFile.java
+index 03fda2e..15a30a8 100644
+--- a/org/jboss/classfilewriter/ClassFile.java
++++ b/org/jboss/classfilewriter/ClassFile.java
+@@ -120,7 +120,7 @@ public class ClassFile implements WritableEntry {
+         this.attributes.add(runtimeVisibleAnnotationsAttribute);
+     }
+ 
+-    public void addInterface(String iface) {
++    public void addInterface(String iface) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(19);
+         this.interfaces.add(iface);
+     }
+ 
+@@ -129,7 +129,7 @@ public class ClassFile implements WritableEntry {
+      * Adds a field with the given name and descriptor.
+      *
+      */
+-    public ClassField addField(int accessFlags, String name, String descriptor) {
++    public ClassField addField(int accessFlags, String name, String descriptor) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(25);
+         return addField(accessFlags, name, descriptor, null);
+     }
+ 
+diff --git a/org/jboss/classfilewriter/ClassMethod.java b/org/jboss/classfilewriter/ClassMethod.java
+index 6964d34..b22fdce 100644
+--- a/org/jboss/classfilewriter/ClassMethod.java
++++ b/org/jboss/classfilewriter/ClassMethod.java
+@@ -98,13 +98,13 @@ public class ClassMethod implements WritableEntry {
+         this.attributes.add(runtimeVisibleParameterAnnotationsAttribute);
+     }
+ 
+-    public void addCheckedExceptions(Class<? extends Exception>... exceptions) {
++    public void addCheckedExceptions(Class<? extends Exception>... exceptions) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(30);
+         for (Class<? extends Exception> exception : exceptions) {
+             exceptionsAttribute.addExceptionClass(exception.getName());
+         }
+     }
+ 
+-    public void addCheckedExceptions(String... exceptions) {
++    public void addCheckedExceptions(String... exceptions) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(35);
+         for (String exception : exceptions) {
+             exceptionsAttribute.addExceptionClass(exception);
+         }
+diff --git a/org/jboss/classfilewriter/DefaultClassFactory.java b/org/jboss/classfilewriter/DefaultClassFactory.java
+index 758415b..017a54f 100644
+--- a/org/jboss/classfilewriter/DefaultClassFactory.java
++++ b/org/jboss/classfilewriter/DefaultClassFactory.java
+@@ -39,7 +39,7 @@ final class DefaultClassFactory implements ClassFactory {
+         try {
+             MethodHandles.Lookup LOOKUP = MethodHandles.privateLookupIn(ClassLoader.class, MethodHandles.lookup());
+             defineClassMethods = AccessController.doPrivileged(new PrivilegedExceptionAction<>() {
+-                public MethodHandle[] run() throws Exception {
++                public MethodHandle[] run() throws Exception { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(40);
+                     MethodHandle defineClass1 = LOOKUP.findVirtual(ClassLoader.class, DEFINE_CLASS_METHOD_NAME,
+                             MethodType.methodType(Class.class, String.class, byte[].class, int.class, int.class));
+                     MethodHandle defineClass2 = LOOKUP.findVirtual(ClassLoader.class, DEFINE_CLASS_METHOD_NAME,
+@@ -63,7 +63,7 @@ final class DefaultClassFactory implements ClassFactory {
+     @Override
+     public Class<?> defineClass(final ClassLoader loader, final String name,
+                                 final byte[] b, final int off, final int len,
+-                                final ProtectionDomain domain) throws ClassFormatError {
++                                final ProtectionDomain domain) throws ClassFormatError { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(44);
+         try {
+             SecurityManager sm = System.getSecurityManager();
+             if (sm != null) {
+diff --git a/org/jboss/classfilewriter/annotations/AnnotationAnnotationValue.java b/org/jboss/classfilewriter/annotations/AnnotationAnnotationValue.java
+index f5fcc2c..408d98a 100644
+--- a/org/jboss/classfilewriter/annotations/AnnotationAnnotationValue.java
++++ b/org/jboss/classfilewriter/annotations/AnnotationAnnotationValue.java
+@@ -39,12 +39,12 @@ public class AnnotationAnnotationValue extends AnnotationValue {
+     }
+ 
+     @Override
+-    public char getTag() {
++    public char getTag() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(36);
+         return '@';
+     }
+ 
+     @Override
+-    public void writeData(ByteArrayDataOutputStream stream) throws IOException {
++    public void writeData(ByteArrayDataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(41);
+         value.write(stream);
+     }
+ 
+diff --git a/org/jboss/classfilewriter/annotations/AnnotationBuilder.java b/org/jboss/classfilewriter/annotations/AnnotationBuilder.java
+index 367e13d..83d4983 100644
+--- a/org/jboss/classfilewriter/annotations/AnnotationBuilder.java
++++ b/org/jboss/classfilewriter/annotations/AnnotationBuilder.java
+@@ -36,14 +36,14 @@ import org.jboss.classfilewriter.constpool.ConstPool;
+  */
+ public class AnnotationBuilder {
+ 
+-    public static ClassAnnotation createAnnotation(ConstPool constPool, final Annotation annotation) {
++    public static ClassAnnotation createAnnotation(ConstPool constPool, final Annotation annotation) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(2);
+         Class<? extends Annotation> annotationType = annotation.annotationType();
+         List<AnnotationValue> values = new ArrayList<AnnotationValue>();
+         try {
+             for (final Method m : annotationType.getDeclaredMethods()) {
+                 Object value = AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                     @Override
+-                    public Object run() throws InvocationTargetException, IllegalAccessException {
++                    public Object run() throws InvocationTargetException, IllegalAccessException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(8);
+                         m.setAccessible(true);
+                         return m.invoke(annotation);
+                     }
+diff --git a/org/jboss/classfilewriter/annotations/AnnotationsAttribute.java b/org/jboss/classfilewriter/annotations/AnnotationsAttribute.java
+index 32bdce4..d7db34d 100644
+--- a/org/jboss/classfilewriter/annotations/AnnotationsAttribute.java
++++ b/org/jboss/classfilewriter/annotations/AnnotationsAttribute.java
+@@ -44,7 +44,7 @@ public class AnnotationsAttribute extends Attribute {
+ 
+         private final String tag;
+ 
+-        public String getTag() {
++        public String getTag() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(45);
+             return tag;
+         }
+     }
+@@ -58,7 +58,7 @@ public class AnnotationsAttribute extends Attribute {
+ 
+ 
+     @Override
+-    public void writeData(ByteArrayDataOutputStream stream) throws IOException {
++    public void writeData(ByteArrayDataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(48);
+         LazySize sizeMarker = stream.writeSize();
+         stream.writeShort(annotations.size());
+         for (ClassAnnotation annotation : annotations) {
+diff --git a/org/jboss/classfilewriter/annotations/ArrayAnnotationValue.java b/org/jboss/classfilewriter/annotations/ArrayAnnotationValue.java
+index e941024..fe92a3e 100644
+--- a/org/jboss/classfilewriter/annotations/ArrayAnnotationValue.java
++++ b/org/jboss/classfilewriter/annotations/ArrayAnnotationValue.java
+@@ -40,12 +40,12 @@ public class ArrayAnnotationValue extends AnnotationValue {
+     }
+ 
+     @Override
+-    public char getTag() {
++    public char getTag() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(14);
+         return '[';
+     }
+ 
+     @Override
+-    public void writeData(ByteArrayDataOutputStream stream) throws IOException {
++    public void writeData(ByteArrayDataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(20);
+         stream.writeShort(value.size());
+         for (AnnotationValue v : value) {
+             v.write(stream);
+diff --git a/org/jboss/classfilewriter/annotations/StringAnnotationValue.java b/org/jboss/classfilewriter/annotations/StringAnnotationValue.java
+index dd76502..8aae476 100644
+--- a/org/jboss/classfilewriter/annotations/StringAnnotationValue.java
++++ b/org/jboss/classfilewriter/annotations/StringAnnotationValue.java
+@@ -38,12 +38,12 @@ public class StringAnnotationValue extends AnnotationValue {
+     }
+ 
+     @Override
+-    public char getTag() {
++    public char getTag() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(26);
+         return 's';
+     }
+ 
+     @Override
+-    public void writeData(ByteArrayDataOutputStream stream) throws IOException {
++    public void writeData(ByteArrayDataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(31);
+         stream.writeShort(valueIndex);
+     }
+ 
+diff --git a/org/jboss/classfilewriter/attributes/ExceptionsAttribute.java b/org/jboss/classfilewriter/attributes/ExceptionsAttribute.java
+index 9e59fc0..4ee14a7 100644
+--- a/org/jboss/classfilewriter/attributes/ExceptionsAttribute.java
++++ b/org/jboss/classfilewriter/attributes/ExceptionsAttribute.java
+@@ -45,13 +45,13 @@ public class ExceptionsAttribute extends Attribute {
+         this.constPool = constPool;
+     }
+ 
+-    public void addExceptionClass(String exception) {
++    public void addExceptionClass(String exception) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(9);
+         exceptionClasses.add(exception);
+         exceptionClassIndexes.add(constPool.addClassEntry(exception));
+     }
+ 
+     @Override
+-    public void writeData(ByteArrayDataOutputStream stream) throws IOException {
++    public void writeData(ByteArrayDataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(15);
+         stream.writeInt(2 + exceptionClassIndexes.size() * 2);
+         stream.writeShort(exceptionClassIndexes.size());
+         for (int i : exceptionClassIndexes) {
+diff --git a/org/jboss/classfilewriter/attributes/SignatureAttribute.java b/org/jboss/classfilewriter/attributes/SignatureAttribute.java
+index 3e136bd..6c7c658 100644
+--- a/org/jboss/classfilewriter/attributes/SignatureAttribute.java
++++ b/org/jboss/classfilewriter/attributes/SignatureAttribute.java
+@@ -37,7 +37,7 @@ public class SignatureAttribute extends Attribute {
+     }
+ 
+     @Override
+-    public void writeData(ByteArrayDataOutputStream stream) throws IOException {
++    public void writeData(ByteArrayDataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(21);
+         stream.writeInt(2); // data length
+         stream.writeShort(signatureIndex);
+     }
+diff --git a/org/jboss/classfilewriter/attributes/StackMapTableAttribute.java b/org/jboss/classfilewriter/attributes/StackMapTableAttribute.java
+index ee692ad..5e77948 100644
+--- a/org/jboss/classfilewriter/attributes/StackMapTableAttribute.java
++++ b/org/jboss/classfilewriter/attributes/StackMapTableAttribute.java
+@@ -57,7 +57,7 @@ public class StackMapTableAttribute extends Attribute {
+     }
+ 
+     @Override
+-    public void writeData(ByteArrayDataOutputStream stream) throws IOException {
++    public void writeData(ByteArrayDataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(3);
+         // as we don't know the size yet we write everything to a byte stream first
+         // TODO: make this better
+         final CodeAttribute ca = method.getCodeAttribute();
+diff --git a/org/jboss/classfilewriter/code/CodeAttribute.java b/org/jboss/classfilewriter/code/CodeAttribute.java
+index 1337af6..aec3851 100644
+--- a/org/jboss/classfilewriter/code/CodeAttribute.java
++++ b/org/jboss/classfilewriter/code/CodeAttribute.java
+@@ -112,11 +112,11 @@ public class CodeAttribute extends Attribute {
+         stackMapTableAttribute = new StackMapTableAttribute(method, constPool);
+     }
+ 
+-    public StackFrameTypeResolver getStackFrameTypeResolver() {
++    public StackFrameTypeResolver getStackFrameTypeResolver() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(27);
+         return stackFrameTypeResolver;
+     }
+ 
+-    public void setStackFrameTypeResolver(StackFrameTypeResolver stackFrameTypeResolver) {
++    public void setStackFrameTypeResolver(StackFrameTypeResolver stackFrameTypeResolver) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(32);
+         this.stackFrameTypeResolver = stackFrameTypeResolver;
+     }
+ 
+diff --git a/org/jboss/classfilewriter/code/ExceptionHandler.java b/org/jboss/classfilewriter/code/ExceptionHandler.java
+index 89321bd..35348f8 100644
+--- a/org/jboss/classfilewriter/code/ExceptionHandler.java
++++ b/org/jboss/classfilewriter/code/ExceptionHandler.java
+@@ -66,7 +66,7 @@ public class ExceptionHandler {
+         return frame;
+     }
+ 
+-    public String getExceptionType() {
++    public String getExceptionType() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(37);
+         return exceptionType;
+     }
+ }
+diff --git a/org/jboss/classfilewriter/code/LocalVariableState.java b/org/jboss/classfilewriter/code/LocalVariableState.java
+index 8e248b0..9503e84 100644
+--- a/org/jboss/classfilewriter/code/LocalVariableState.java
++++ b/org/jboss/classfilewriter/code/LocalVariableState.java
+@@ -80,7 +80,7 @@ public class LocalVariableState {
+         this.constPool = constPool;
+     }
+ 
+-    public List<StackEntry> getContents() {
++    public List<StackEntry> getContents() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(42);
+         return Collections.unmodifiableList(contents);
+     }
+ 
+@@ -88,7 +88,7 @@ public class LocalVariableState {
+         return contents.get(index);
+     }
+ 
+-    public LocalVariableState storeWide(int index, StackEntry entry) {
++    public LocalVariableState storeWide(int index, StackEntry entry) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(46);
+         ArrayList<StackEntry> newContents = new ArrayList<StackEntry>(contents.size());
+         for (int i = 0; i <= index || i < contents.size(); ++i) {
+             if (index == i) {
+diff --git a/org/jboss/classfilewriter/code/LookupSwitchBuilder.java b/org/jboss/classfilewriter/code/LookupSwitchBuilder.java
+index 6ec7366..dd8effc 100644
+--- a/org/jboss/classfilewriter/code/LookupSwitchBuilder.java
++++ b/org/jboss/classfilewriter/code/LookupSwitchBuilder.java
+@@ -80,11 +80,11 @@ public class LookupSwitchBuilder {
+         return this;
+     }
+ 
+-    public CodeLocation getDefaultLocation() {
++    public CodeLocation getDefaultLocation() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(4);
+         return defaultLocation;
+     }
+ 
+-    public AtomicReference<BranchEnd> getDefaultBranchEnd() {
++    public AtomicReference<BranchEnd> getDefaultBranchEnd() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(10);
+         return defaultBranchEnd;
+     }
+ 
+diff --git a/org/jboss/classfilewriter/code/StackEntry.java b/org/jboss/classfilewriter/code/StackEntry.java
+index eb15274..63f0301 100644
+--- a/org/jboss/classfilewriter/code/StackEntry.java
++++ b/org/jboss/classfilewriter/code/StackEntry.java
+@@ -89,7 +89,7 @@ public class StackEntry {
+         }
+     }
+ 
+-    public String getDescriptor() {
++    public String getDescriptor() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(49);
+         return descriptor;
+     }
+ 
+diff --git a/org/jboss/classfilewriter/code/TableSwitchBuilder.java b/org/jboss/classfilewriter/code/TableSwitchBuilder.java
+index 2c5ccc2..d13ccaf 100644
+--- a/org/jboss/classfilewriter/code/TableSwitchBuilder.java
++++ b/org/jboss/classfilewriter/code/TableSwitchBuilder.java
+@@ -88,11 +88,11 @@ public class TableSwitchBuilder {
+         return this;
+     }
+ 
+-    public CodeLocation getDefaultLocation() {
++    public CodeLocation getDefaultLocation() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(16);
+         return defaultLocation;
+     }
+ 
+-    public AtomicReference<BranchEnd> getDefaultBranchEnd() {
++    public AtomicReference<BranchEnd> getDefaultBranchEnd() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(22);
+         return defaultBranchEnd;
+     }
+ 
+diff --git a/org/jboss/classfilewriter/constpool/ClassEntry.java b/org/jboss/classfilewriter/constpool/ClassEntry.java
+index 223f193..2e02468 100644
+--- a/org/jboss/classfilewriter/constpool/ClassEntry.java
++++ b/org/jboss/classfilewriter/constpool/ClassEntry.java
+@@ -32,7 +32,7 @@ public class ClassEntry extends ConstPoolEntry {
+         return ConstPoolEntryType.CLASS;
+     }
+ 
+-    public void writeData(DataOutputStream stream) throws IOException {
++    public void writeData(DataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(11);
+         stream.writeShort(utf8Location);
+     }
+ 
+diff --git a/org/jboss/classfilewriter/constpool/ConstPool.java b/org/jboss/classfilewriter/constpool/ConstPool.java
+index bca0623..8193d93 100644
+--- a/org/jboss/classfilewriter/constpool/ConstPool.java
++++ b/org/jboss/classfilewriter/constpool/ConstPool.java
+@@ -51,7 +51,7 @@ public class ConstPool implements WritableEntry {
+      */
+     private Integer constPoolSize = 1;
+ 
+-    public Integer addUtf8Entry(String entry) {
++    public Integer addUtf8Entry(String entry) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(17);
+         if (utf8Locations.containsKey(entry)) {
+             return utf8Locations.get(entry);
+         }
+@@ -65,7 +65,7 @@ public class ConstPool implements WritableEntry {
+     /**
+      * Adds a CONSTANT_Class_info to the const pool. This must be in internal form
+      */
+-    public Integer addClassEntry(String className) {
++    public Integer addClassEntry(String className) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(23);
+         className = className.replace('.', '/');
+         if (classLocations.containsKey(className)) {
+             return classLocations.get(className);
+diff --git a/org/jboss/classfilewriter/constpool/ConstPoolEntryType.java b/org/jboss/classfilewriter/constpool/ConstPoolEntryType.java
+index 8353095..d78f702 100644
+--- a/org/jboss/classfilewriter/constpool/ConstPoolEntryType.java
++++ b/org/jboss/classfilewriter/constpool/ConstPoolEntryType.java
+@@ -38,14 +38,14 @@ public enum ConstPoolEntryType {
+         this.slots = slots;
+     }
+ 
+-    public int getTag() {
++    public int getTag() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(28);
+         return tag;
+     }
+ 
+     /**
+      * The number of spaces this takes up in the const pool
+      */
+-    public int getSlots() {
++    public int getSlots() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(33);
+         return slots;
+     }
+ }
+diff --git a/org/jboss/classfilewriter/constpool/DoubleEntry.java b/org/jboss/classfilewriter/constpool/DoubleEntry.java
+index 5599019..75baf07 100644
+--- a/org/jboss/classfilewriter/constpool/DoubleEntry.java
++++ b/org/jboss/classfilewriter/constpool/DoubleEntry.java
+@@ -34,7 +34,7 @@ public class DoubleEntry extends ConstPoolEntry {
+     }
+ 
+     @Override
+-    public void writeData(DataOutputStream stream) throws IOException {
++    public void writeData(DataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(38);
+         stream.writeDouble(value);
+     }
+ 
+diff --git a/org/jboss/classfilewriter/constpool/FieldRefEntry.java b/org/jboss/classfilewriter/constpool/FieldRefEntry.java
+index 7b5159b..d391220 100644
+--- a/org/jboss/classfilewriter/constpool/FieldRefEntry.java
++++ b/org/jboss/classfilewriter/constpool/FieldRefEntry.java
+@@ -36,7 +36,7 @@ public class FieldRefEntry extends ConstPoolEntry {
+     }
+ 
+     @Override
+-    public void writeData(DataOutputStream stream) throws IOException {
++    public void writeData(DataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(43);
+         stream.writeShort(classIndex);
+         stream.writeShort(nameAndTypeIndex);
+     }
+diff --git a/org/jboss/classfilewriter/constpool/FloatEntry.java b/org/jboss/classfilewriter/constpool/FloatEntry.java
+index 97e9210..21b1839 100644
+--- a/org/jboss/classfilewriter/constpool/FloatEntry.java
++++ b/org/jboss/classfilewriter/constpool/FloatEntry.java
+@@ -34,7 +34,7 @@ public class FloatEntry extends ConstPoolEntry {
+     }
+ 
+     @Override
+-    public void writeData(DataOutputStream stream) throws IOException {
++    public void writeData(DataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(47);
+         stream.writeFloat(value);
+     }
+ 
+diff --git a/org/jboss/classfilewriter/constpool/IntegerEntry.java b/org/jboss/classfilewriter/constpool/IntegerEntry.java
+index 502ba63..7d34a33 100644
+--- a/org/jboss/classfilewriter/constpool/IntegerEntry.java
++++ b/org/jboss/classfilewriter/constpool/IntegerEntry.java
+@@ -34,7 +34,7 @@ public class IntegerEntry extends ConstPoolEntry {
+     }
+ 
+     @Override
+-    public void writeData(DataOutputStream stream) throws IOException {
++    public void writeData(DataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(50);
+         stream.writeInt(value);
+     }
+ 
+diff --git a/org/jboss/classfilewriter/constpool/StringEntry.java b/org/jboss/classfilewriter/constpool/StringEntry.java
+index bf1f721..7a3a990 100644
+--- a/org/jboss/classfilewriter/constpool/StringEntry.java
++++ b/org/jboss/classfilewriter/constpool/StringEntry.java
+@@ -34,7 +34,7 @@ public class StringEntry extends ConstPoolEntry {
+     }
+ 
+     @Override
+-    public void writeData(DataOutputStream stream) throws IOException {
++    public void writeData(DataOutputStream stream) throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(5);
+         stream.writeShort(utf8Index);
+     }
+ 
+diff --git a/org/jboss/classfilewriter/jmhbench/MutationSwitch.java b/org/jboss/classfilewriter/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..44fb4c8
+--- /dev/null
++++ b/org/jboss/classfilewriter/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.jboss.classfilewriter.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/jboss/classfilewriter/util/ByteArrayDataOutputStream.java b/org/jboss/classfilewriter/util/ByteArrayDataOutputStream.java
+index 801cf11..4c5730a 100644
+--- a/org/jboss/classfilewriter/util/ByteArrayDataOutputStream.java
++++ b/org/jboss/classfilewriter/util/ByteArrayDataOutputStream.java
+@@ -43,14 +43,14 @@ public class ByteArrayDataOutputStream extends DataOutputStream {
+         this(new ByteArrayOutputStream());
+     }
+ 
+-    public LazySize writeSize() throws IOException {
++    public LazySize writeSize() throws IOException { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(6);
+         LazySizeImpl sv = new LazySizeImpl(this.written);
+         sizes.add(sv);
+         writeInt(0);
+         return sv;
+     }
+ 
+-    public byte[] getBytes() {
++    public byte[] getBytes() { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(12);
+         byte[] data = bytes.toByteArray();
+         for (final LazySizeImpl i : sizes) {
+             overwriteInt(data, i.position, i.value);
+diff --git a/org/jboss/classfilewriter/util/DescriptorUtils.java b/org/jboss/classfilewriter/util/DescriptorUtils.java
+index 948d7f7..4fdfab5 100644
+--- a/org/jboss/classfilewriter/util/DescriptorUtils.java
++++ b/org/jboss/classfilewriter/util/DescriptorUtils.java
+@@ -44,12 +44,12 @@ public class DescriptorUtils {
+      * <p/>
+      * e.g. java.lang.String => Ljava/lang/String;
+      */
+-    public static String makeDescriptor(String className) {
++    public static String makeDescriptor(String className) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(18);
+         String repl = className.replace('.', '/');
+         return 'L' + repl + ';';
+     }
+ 
+-    public static String makeDescriptor(Class<?> c) {
++    public static String makeDescriptor(Class<?> c) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(24);
+         if (void.class.equals(c)) {
+             return VOID_CLASS_DESCRIPTOR;
+         } else if (byte.class.equals(c)) {
+diff --git a/org/jboss/classfilewriter/util/SignatureBuilder.java b/org/jboss/classfilewriter/util/SignatureBuilder.java
+index 727a22f..d041828 100644
+--- a/org/jboss/classfilewriter/util/SignatureBuilder.java
++++ b/org/jboss/classfilewriter/util/SignatureBuilder.java
+@@ -37,7 +37,7 @@ public class SignatureBuilder {
+      * @param type
+      * @return the signiture, or null if no signure is required (e.g. for Class types)
+      */
+-    public static String fieldAttribute(Type type) {
++    public static String fieldAttribute(Type type) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(29);
+         StringBuilder builder = new StringBuilder();
+         fieldAttribute(type, builder);
+         return builder.toString();
+@@ -61,7 +61,7 @@ public class SignatureBuilder {
+         builder.append('*');
+     }
+ 
+-    public static void parametizedType(ParameterizedType type, StringBuilder builder) {
++    public static void parametizedType(ParameterizedType type, StringBuilder builder) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(34);
+         fieldAttribute(type.getRawType(), builder); //write the owner type
+         //now write the type arguments
+         builder.append('<');
+diff --git a/org/jboss/classfilewriter/util/Signatures.java b/org/jboss/classfilewriter/util/Signatures.java
+index fad6e2f..e032ef1 100644
+--- a/org/jboss/classfilewriter/util/Signatures.java
++++ b/org/jboss/classfilewriter/util/Signatures.java
+@@ -60,7 +60,7 @@ public final class Signatures {
+      * @param method
+      * @return the JVM method signature
+      */
+-    public static String methodSignature(Method method) {
++    public static String methodSignature(Method method) { org.jboss.classfilewriter.jmhbench.MutationSwitch.tick(39);
+ 
+         StringBuilder builder = new StringBuilder();
+ 

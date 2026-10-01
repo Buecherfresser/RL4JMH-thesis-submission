@@ -1,0 +1,576 @@
+diff --git a/com/twitter/nodes/AndNode.java b/com/twitter/nodes/AndNode.java
+index fca5bba..ca7817b 100644
+--- a/com/twitter/nodes/AndNode.java
++++ b/com/twitter/nodes/AndNode.java
+@@ -38,7 +38,7 @@ public final class AndNode extends BooleanOperationNode {
+   }
+ 
+   @Override
+-  protected Future<Boolean> evaluate() {
++  protected Future<Boolean> evaluate() { com.twitter.nodes.jmhbench.MutationSwitch.tick(5);
+     return evaluate(operands);
+   }
+ 
+@@ -60,7 +60,7 @@ public final class AndNode extends BooleanOperationNode {
+    * evaluating them left-to-right as they complete.
+    */
+   @Override
+-  protected Future<Boolean> evaluate(final List<Node<Boolean>> operands) {
++  protected Future<Boolean> evaluate(final List<Node<Boolean>> operands) { com.twitter.nodes.jmhbench.MutationSwitch.tick(7);
+     if (operands.size() == 1) {
+       return operands.get(0).apply();
+     }
+@@ -68,7 +68,7 @@ public final class AndNode extends BooleanOperationNode {
+     return operands.get(0).apply().flatMap(
+         new com.twitter.util.Function<Boolean, Future<Boolean>>() {
+           @Override
+-          public Future<Boolean> apply(Boolean value) {
++          public Future<Boolean> apply(Boolean value) { com.twitter.nodes.jmhbench.MutationSwitch.tick(9);
+             return value
+                 ? evaluate(operands.subList(1, operands.size()))
+                 : FALSE_FUTURE;
+diff --git a/com/twitter/nodes/EqualsNode.java b/com/twitter/nodes/EqualsNode.java
+index c132cea..9f19db9 100644
+--- a/com/twitter/nodes/EqualsNode.java
++++ b/com/twitter/nodes/EqualsNode.java
+@@ -34,11 +34,11 @@ public final class EqualsNode<T> extends Node<Boolean> {
+   }
+ 
+   @Override
+-  protected Future<Boolean> evaluate() throws Exception {
++  protected Future<Boolean> evaluate() throws Exception { com.twitter.nodes.jmhbench.MutationSwitch.tick(11);
+     return Future.value(Objects.equals(nodeA.emit(), nodeB.emit()));
+   }
+ 
+-  public static <T> EqualsNode<T> create(Node<T> nodeA, Node<T> nodeB) {
++  public static <T> EqualsNode<T> create(Node<T> nodeA, Node<T> nodeB) { com.twitter.nodes.jmhbench.MutationSwitch.tick(13);
+     return new EqualsNode<>(nodeA, nodeB);
+   }
+ }
+diff --git a/com/twitter/nodes/FlatMapTransformNode.java b/com/twitter/nodes/FlatMapTransformNode.java
+index dbf312a..eeac6dd 100644
+--- a/com/twitter/nodes/FlatMapTransformNode.java
++++ b/com/twitter/nodes/FlatMapTransformNode.java
+@@ -41,12 +41,12 @@ public class FlatMapTransformNode<SourceType, Resp> extends BaseTransformNode<So
+   }
+ 
+   @Override
+-  public String getResponseClassName() {
++  public String getResponseClassName() { com.twitter.nodes.jmhbench.MutationSwitch.tick(1);
+     return getLastTemplateType(this.transform.getClass());
+   }
+ 
+   @Override
+-  protected Future<Resp> transform(SourceType source) {
++  protected Future<Resp> transform(SourceType source) { com.twitter.nodes.jmhbench.MutationSwitch.tick(3);
+     return transform.apply(source);
+   }
+ 
+diff --git a/com/twitter/nodes/IfSuccessfulNode.java b/com/twitter/nodes/IfSuccessfulNode.java
+index 5c45cac..27ff789 100644
+--- a/com/twitter/nodes/IfSuccessfulNode.java
++++ b/com/twitter/nodes/IfSuccessfulNode.java
+@@ -31,7 +31,7 @@ public class IfSuccessfulNode extends Node<Boolean> {
+   }
+ 
+   @Override
+-  protected Future<Boolean> evaluate() throws Exception {
++  protected Future<Boolean> evaluate() throws Exception { com.twitter.nodes.jmhbench.MutationSwitch.tick(15);
+     Optional optional = (Optional) node.emit();
+     return Future.value(optional.isPresent());
+   }
+@@ -39,7 +39,7 @@ public class IfSuccessfulNode extends Node<Boolean> {
+   /**
+    * Create an IfSuccessNode based any give node.
+    */
+-  public static <T> IfSuccessfulNode create(Node<T> node) {
++  public static <T> IfSuccessfulNode create(Node<T> node) { com.twitter.nodes.jmhbench.MutationSwitch.tick(17);
+     return new IfSuccessfulNode(Node.optional(node));
+   }
+ }
+diff --git a/com/twitter/nodes/LightDarkSwitchNode.java b/com/twitter/nodes/LightDarkSwitchNode.java
+index cb9d3ae..c518475 100644
+--- a/com/twitter/nodes/LightDarkSwitchNode.java
++++ b/com/twitter/nodes/LightDarkSwitchNode.java
+@@ -46,7 +46,7 @@ public final class LightDarkSwitchNode<T> extends Node<T> {
+   }
+ 
+   @Override
+-  protected Future<T> evaluate() throws Exception {
++  protected Future<T> evaluate() throws Exception { com.twitter.nodes.jmhbench.MutationSwitch.tick(19);
+     boolean shouldDarkRead = shouldDarkReadNode.emit();
+     Future<T> darkResultFuture = darkNode != null
+         ? darkNode.apply() : Future.<T>value(null);
+@@ -69,7 +69,7 @@ public final class LightDarkSwitchNode<T> extends Node<T> {
+   }
+ 
+   @Override
+-  public String getResponseClassName() {
++  public String getResponseClassName() { com.twitter.nodes.jmhbench.MutationSwitch.tick(21);
+     return darkNode != null
+         ? darkNode.getResponseClassName()
+         : (lightNode != null
+@@ -83,7 +83,7 @@ public final class LightDarkSwitchNode<T> extends Node<T> {
+    * be returned.
+    */
+   public static <T> Node<T> create(
+-      Node<Boolean> shouldDarkReadNode, Node<T> responseNode) {
++      Node<Boolean> shouldDarkReadNode, Node<T> responseNode) { com.twitter.nodes.jmhbench.MutationSwitch.tick(23);
+     return new LightDarkSwitchNode<>(shouldDarkReadNode, null, responseNode);
+   }
+ 
+diff --git a/com/twitter/nodes/NodeDotGraphGenerator.java b/com/twitter/nodes/NodeDotGraphGenerator.java
+index 7ef3d12..565a457 100644
+--- a/com/twitter/nodes/NodeDotGraphGenerator.java
++++ b/com/twitter/nodes/NodeDotGraphGenerator.java
+@@ -60,7 +60,7 @@ public final class NodeDotGraphGenerator {
+       this.renderingStyle = renderingStyle;
+     }
+ 
+-    public String getRenderingStyle() {
++    public String getRenderingStyle() { com.twitter.nodes.jmhbench.MutationSwitch.tick(25);
+       return renderingStyle;
+     }
+   }
+@@ -107,7 +107,7 @@ public final class NodeDotGraphGenerator {
+     /**
+      * Generate the DOT node string for this node
+      */
+-    public String getDOTString() {
++    public String getDOTString() { com.twitter.nodes.jmhbench.MutationSwitch.tick(27);
+       String label;
+       String returnType = getReturnTypeForDisplay(node);
+       if (returnType != null && !"Resp".equals(returnType)) {
+@@ -123,7 +123,7 @@ public final class NodeDotGraphGenerator {
+     /**
+      * Generate DOT edge string for all incoming edges for this node
+      */
+-    public List<String> getEdgeStrings() {
++    public List<String> getEdgeStrings() { com.twitter.nodes.jmhbench.MutationSwitch.tick(29);
+       List<String> edges = Lists.newArrayList();
+       Set<Pair<String, String>> seenPairs = Sets.newHashSet();
+       for (Map.Entry<String, Pair<NodeInfo, EdgeInfo>> entry : depInfo.entrySet()) {
+diff --git a/com/twitter/nodes/NotNode.java b/com/twitter/nodes/NotNode.java
+index dc280b8..d6430e5 100644
+--- a/com/twitter/nodes/NotNode.java
++++ b/com/twitter/nodes/NotNode.java
+@@ -35,11 +35,11 @@ public class NotNode extends Node<Boolean> {
+   }
+ 
+   @Override
+-  protected final Future<Boolean> evaluate() {
++  protected final Future<Boolean> evaluate() { com.twitter.nodes.jmhbench.MutationSwitch.tick(31);
+     return Future.value(!node.emit());
+   }
+ 
+-  public static final NotNode of(Node<Boolean> node) {
++  public static final NotNode of(Node<Boolean> node) { com.twitter.nodes.jmhbench.MutationSwitch.tick(33);
+     return new NotNode(node);
+   }
+ }
+diff --git a/com/twitter/nodes/OrNode.java b/com/twitter/nodes/OrNode.java
+index 741077a..78acecb 100644
+--- a/com/twitter/nodes/OrNode.java
++++ b/com/twitter/nodes/OrNode.java
+@@ -55,7 +55,7 @@ public final class OrNode extends BooleanOperationNode {
+    * evaluating them left-to-right as they complete.
+    */
+   @Override
+-  protected Future<Boolean> evaluate(final List<Node<Boolean>> operands) {
++  protected Future<Boolean> evaluate(final List<Node<Boolean>> operands) { com.twitter.nodes.jmhbench.MutationSwitch.tick(35);
+     if (operands.size() == 1) {
+       return operands.get(0).apply();
+     }
+@@ -63,7 +63,7 @@ public final class OrNode extends BooleanOperationNode {
+     return operands.get(0).apply().flatMap(
+         new com.twitter.util.Function<Boolean, Future<Boolean>>() {
+           @Override
+-          public Future<Boolean> apply(Boolean value) {
++          public Future<Boolean> apply(Boolean value) { com.twitter.nodes.jmhbench.MutationSwitch.tick(37);
+             return value
+                 ? TRUE_FUTURE
+                 : evaluate(operands.subList(1, operands.size()));
+@@ -75,7 +75,7 @@ public final class OrNode extends BooleanOperationNode {
+    * Creates an eagerly evaluated disjunction where after all dependencies complete successfully,
+    * the disjunction is evaluated left to right.
+    */
+-  public static OrNode create(Node<Boolean>... disjunctionNodes) {
++  public static OrNode create(Node<Boolean>... disjunctionNodes) { com.twitter.nodes.jmhbench.MutationSwitch.tick(39);
+     return create("Or", disjunctionNodes);
+   }
+ 
+diff --git a/com/twitter/nodes/PredicateNode.java b/com/twitter/nodes/PredicateNode.java
+index 9a3544e..a86adfc 100644
+--- a/com/twitter/nodes/PredicateNode.java
++++ b/com/twitter/nodes/PredicateNode.java
+@@ -52,7 +52,7 @@ public class PredicateNode<SourceType> extends Node<Boolean> {
+   }
+ 
+   @Override
+-  protected Future<Boolean> evaluate() throws Exception {
++  protected Future<Boolean> evaluate() throws Exception { com.twitter.nodes.jmhbench.MutationSwitch.tick(40);
+     SourceType sourceValue = sourceNode.emit();
+ 
+     try {
+@@ -65,13 +65,13 @@ public class PredicateNode<SourceType> extends Node<Boolean> {
+   }
+ 
+   public static <SourceType> PredicateNode<SourceType> create(Node<SourceType> node,
+-                                                              Predicate<SourceType> predicate) {
++                                                              Predicate<SourceType> predicate) { com.twitter.nodes.jmhbench.MutationSwitch.tick(41);
+     return create(node, predicate, null);
+   }
+ 
+   public static <SourceType> PredicateNode<SourceType> create(Node<SourceType> node,
+                                                               Predicate<SourceType> predicate,
+-                                                              @Nullable String name) {
++                                                              @Nullable String name) { com.twitter.nodes.jmhbench.MutationSwitch.tick(42);
+     return new PredicateNode<>(node, predicate, name);
+   }
+ }
+diff --git a/com/twitter/nodes/PredicateSwitchNode.java b/com/twitter/nodes/PredicateSwitchNode.java
+index cf1e780..a527488 100644
+--- a/com/twitter/nodes/PredicateSwitchNode.java
++++ b/com/twitter/nodes/PredicateSwitchNode.java
+@@ -53,18 +53,18 @@ public class PredicateSwitchNode<Resp> extends Node<Resp> {
+   }
+ 
+   @Override
+-  protected void logEnd() {
++  protected void logEnd() { com.twitter.nodes.jmhbench.MutationSwitch.tick(43);
+     super.logEnd();
+     debugDetailed("predicate value from [%s] = %s", predicateNode.getName(), predicateNode.emit());
+   }
+ 
+   @Override
+-  public String getResponseClassName() {
++  public String getResponseClassName() { com.twitter.nodes.jmhbench.MutationSwitch.tick(44);
+     return this.trueNode.getResponseClassName();
+   }
+ 
+   @Override
+-  protected final Future<Resp> evaluate() throws Exception {
++  protected final Future<Resp> evaluate() throws Exception { com.twitter.nodes.jmhbench.MutationSwitch.tick(45);
+     return predicateNode.emit()
+         ? trueNode.apply()
+         : falseNode.apply();
+diff --git a/com/twitter/nodes/SupplierValueNode.java b/com/twitter/nodes/SupplierValueNode.java
+index 3b68cf2..bed05f6 100644
+--- a/com/twitter/nodes/SupplierValueNode.java
++++ b/com/twitter/nodes/SupplierValueNode.java
+@@ -38,18 +38,18 @@ public class SupplierValueNode<Resp> extends ValueNode<Resp> {
+   }
+ 
+   @Override
+-  protected Future<Resp> evaluate() {
++  protected Future<Resp> evaluate() { com.twitter.nodes.jmhbench.MutationSwitch.tick(46);
+     return Future.value(getValue());
+   }
+ 
+   @Override
+-  public String getResponseClassName() {
++  public String getResponseClassName() { com.twitter.nodes.jmhbench.MutationSwitch.tick(47);
+     Resp value = getValue();
+     return value == null ? "" : value.getClass().getSimpleName();
+   }
+ 
+   @Override
+-  public Resp emit() {
++  public Resp emit() { com.twitter.nodes.jmhbench.MutationSwitch.tick(48);
+     return getValue();
+   }
+ 
+diff --git a/com/twitter/nodes/TransformNode.java b/com/twitter/nodes/TransformNode.java
+index c617e68..6f402a8 100644
+--- a/com/twitter/nodes/TransformNode.java
++++ b/com/twitter/nodes/TransformNode.java
+@@ -51,12 +51,12 @@ public class TransformNode<SourceType, Resp> extends BaseTransformNode<SourceTyp
+   }
+ 
+   @Override
+-  public String getResponseClassName() {
++  public String getResponseClassName() { com.twitter.nodes.jmhbench.MutationSwitch.tick(49);
+     return getLastTemplateType(this.transform.getClass());
+   }
+ 
+   @Override
+-  protected Future<Resp> transform(SourceType source) {
++  protected Future<Resp> transform(SourceType source) { com.twitter.nodes.jmhbench.MutationSwitch.tick(50);
+     Resp resp = transform.apply(source);
+     if (resp == null && !canEmitNull()) {
+       TransformNodeNullException exception =
+diff --git a/com/twitter/nodes/jmhbench/MutationSwitch.java b/com/twitter/nodes/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..23a3117
+--- /dev/null
++++ b/com/twitter/nodes/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.twitter.nodes.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/twitter/nodes/utils/DebugLevel.java b/com/twitter/nodes/utils/DebugLevel.java
+index 6c41fcf..d0b0c1d 100644
+--- a/com/twitter/nodes/utils/DebugLevel.java
++++ b/com/twitter/nodes/utils/DebugLevel.java
+@@ -34,7 +34,7 @@ public enum DebugLevel {
+     this.level = level;
+   }
+ 
+-  public int getLevel() {
++  public int getLevel() { com.twitter.nodes.jmhbench.MutationSwitch.tick(20);
+     return level;
+   }
+ }
+diff --git a/com/twitter/nodes/utils/DebugManager.java b/com/twitter/nodes/utils/DebugManager.java
+index 46b88dd..d041916 100644
+--- a/com/twitter/nodes/utils/DebugManager.java
++++ b/com/twitter/nodes/utils/DebugManager.java
+@@ -43,7 +43,7 @@ public final class DebugManager {
+   /**
+    * Clear all request specific thread locals. This should be called after the request is complete.
+    */
+-  public static void clearLocals() {
++  public static void clearLocals() { com.twitter.nodes.jmhbench.MutationSwitch.tick(22);
+     if (DEBUG_MSG_BUILDER.apply().isDefined()) {
+       DEBUG_MSG_BUILDER.apply().get().reset();
+     }
+@@ -55,12 +55,12 @@ public final class DebugManager {
+    *
+    * @return the {@code DebugMessageBuilder} for the current thread.
+    */
+-  public static DebugMessageBuilder getDebugMessageBuilder() {
++  public static DebugMessageBuilder getDebugMessageBuilder() { com.twitter.nodes.jmhbench.MutationSwitch.tick(24);
+     return DEBUG_MSG_BUILDER.apply().get();
+   }
+ 
+   // Some helpers for convenience
+-  public static  DebugMessageBuilder basic(final String message, Object... args) {
++  public static  DebugMessageBuilder basic(final String message, Object... args) { com.twitter.nodes.jmhbench.MutationSwitch.tick(26);
+     return getDebugMessageBuilder().basic(message, args);
+   }
+ 
+diff --git a/com/twitter/nodes/utils/DebugMessageBuilder.java b/com/twitter/nodes/utils/DebugMessageBuilder.java
+index 7b0b9e3..81a39e4 100644
+--- a/com/twitter/nodes/utils/DebugMessageBuilder.java
++++ b/com/twitter/nodes/utils/DebugMessageBuilder.java
+@@ -72,7 +72,7 @@ public class DebugMessageBuilder {
+   private static final Logger LOG = Logger.get(DebugMessageBuilder.class);
+ 
+   /** Returns the Level corresponding to the given integer. */
+-  public static DebugLevel getDebugLevel(int level) {
++  public static DebugLevel getDebugLevel(int level) { com.twitter.nodes.jmhbench.MutationSwitch.tick(2);
+     for (DebugLevel l : DebugLevel.values()) {
+       if (level <= l.getLevel()) {
+         return l;
+@@ -141,12 +141,12 @@ public class DebugMessageBuilder {
+   }
+ 
+   /** Returns the integer associated with the debug level. */
+-  public int getDebugLevel() {
++  public int getDebugLevel() { com.twitter.nodes.jmhbench.MutationSwitch.tick(4);
+     return level.getLevel();
+   }
+ 
+   /** Returns the current debug level. */
+-  public DebugLevel getLevel() {
++  public DebugLevel getLevel() { com.twitter.nodes.jmhbench.MutationSwitch.tick(6);
+     return level;
+   }
+ 
+diff --git a/com/twitter/nodes/utils/DebugNoneMessageBuilder.java b/com/twitter/nodes/utils/DebugNoneMessageBuilder.java
+index ee86888..9a1d4c2 100644
+--- a/com/twitter/nodes/utils/DebugNoneMessageBuilder.java
++++ b/com/twitter/nodes/utils/DebugNoneMessageBuilder.java
+@@ -21,7 +21,7 @@ package com.twitter.nodes.utils;
+ public final class DebugNoneMessageBuilder extends DebugMessageBuilder {
+   public static final DebugNoneMessageBuilder SINGLETON = new DebugNoneMessageBuilder();
+ 
+-  public static DebugMessageBuilder getInstance() {
++  public static DebugMessageBuilder getInstance() { com.twitter.nodes.jmhbench.MutationSwitch.tick(8);
+     return SINGLETON;
+   }
+ 
+@@ -30,11 +30,11 @@ public final class DebugNoneMessageBuilder extends DebugMessageBuilder {
+   }
+ 
+   @Override
+-  public void reset() {
++  public void reset() { com.twitter.nodes.jmhbench.MutationSwitch.tick(10);
+   }
+ 
+   @Override
+-  public DebugMessageBuilder basic(String message, Object... args) {
++  public DebugMessageBuilder basic(String message, Object... args) { com.twitter.nodes.jmhbench.MutationSwitch.tick(12);
+     return this;
+   }
+ 
+diff --git a/com/twitter/nodes/utils/Futures.java b/com/twitter/nodes/utils/Futures.java
+index 9c1d97d..1d27f98 100644
+--- a/com/twitter/nodes/utils/Futures.java
++++ b/com/twitter/nodes/utils/Futures.java
+@@ -41,7 +41,7 @@ public final class Futures {
+   /**
+    * Check if a future has completed with success
+    */
+-  public static boolean completedWithSuccess(Future<?> future) {
++  public static boolean completedWithSuccess(Future<?> future) { com.twitter.nodes.jmhbench.MutationSwitch.tick(28);
+     try {
+       return future.isDefined() && Await.result(future.liftToTry()).isReturn();
+     } catch (Exception e) {
+@@ -52,7 +52,7 @@ public final class Futures {
+   /**
+    * Check if a future has completed with failure
+    */
+-  public static boolean completedWithFailure(Future<?> future) {
++  public static boolean completedWithFailure(Future<?> future) { com.twitter.nodes.jmhbench.MutationSwitch.tick(30);
+     try {
+       return future.isDefined() && Await.result(future.liftToTry()).isThrow();
+     } catch (Exception e) {
+@@ -60,7 +60,7 @@ public final class Futures {
+     }
+   }
+ 
+-  public static Throwable getException(Future future) {
++  public static Throwable getException(Future future) { com.twitter.nodes.jmhbench.MutationSwitch.tick(32);
+     Preconditions.checkState(completedWithFailure(future));
+     return ((Throw) future.poll().get()).e();
+   }
+diff --git a/com/twitter/nodes/utils/NodeUtils.java b/com/twitter/nodes/utils/NodeUtils.java
+index 8b0287e..3c47dd6 100644
+--- a/com/twitter/nodes/utils/NodeUtils.java
++++ b/com/twitter/nodes/utils/NodeUtils.java
+@@ -37,11 +37,11 @@ import com.twitter.util.Future;
+ public final class NodeUtils {
+   private NodeUtils() { }
+ 
+-  public static <T> NamedFunction<T, List<T>> asList() {
++  public static <T> NamedFunction<T, List<T>> asList() { com.twitter.nodes.jmhbench.MutationSwitch.tick(14);
+     return NamedFunction.create("asList", ImmutableList::of);
+   }
+ 
+-  public static <T> TransformNode<T, List<T>> asList(Node<T> node) {
++  public static <T> TransformNode<T, List<T>> asList(Node<T> node) { com.twitter.nodes.jmhbench.MutationSwitch.tick(16);
+     return TransformNode.create(node, NodeUtils.<T>asList());
+   }
+ 
+@@ -56,7 +56,7 @@ public final class NodeUtils {
+     }
+ 
+     @Override
+-    protected Future<Pair<S, T>> evaluate() throws Exception {
++    protected Future<Pair<S, T>> evaluate() throws Exception { com.twitter.nodes.jmhbench.MutationSwitch.tick(18);
+       return Future.value(Pair.of(node1.emit(), node2.emit()));
+     }
+   }
+diff --git a/com/twitter/nodes/utils/Pair.java b/com/twitter/nodes/utils/Pair.java
+index 7245601..31ffc4a 100644
+--- a/com/twitter/nodes/utils/Pair.java
++++ b/com/twitter/nodes/utils/Pair.java
+@@ -27,15 +27,15 @@ public class Pair<A, B> {
+     this.b = b;
+   }
+ 
+-  public static <A, B> Pair<A, B> of(A a, B b) {
++  public static <A, B> Pair<A, B> of(A a, B b) { com.twitter.nodes.jmhbench.MutationSwitch.tick(34);
+     return new Pair<>(a, b);
+   }
+ 
+-  public A getFirst() {
++  public A getFirst() { com.twitter.nodes.jmhbench.MutationSwitch.tick(36);
+     return a;
+   }
+ 
+-  public B getSecond() {
++  public B getSecond() { com.twitter.nodes.jmhbench.MutationSwitch.tick(38);
+     return b;
+   }
+ }

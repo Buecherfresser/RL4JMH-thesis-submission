@@ -1,0 +1,630 @@
+diff --git a/org/ehcache/build/util/ConfigurationBucketSet.java b/org/ehcache/build/util/ConfigurationBucketSet.java
+index 565f7e8..04934e3 100644
+--- a/org/ehcache/build/util/ConfigurationBucketSet.java
++++ b/org/ehcache/build/util/ConfigurationBucketSet.java
+@@ -27,11 +27,11 @@ public class ConfigurationBucketSet {
+     this.buckets = unmodifiableMap(buckets);
+   }
+ 
+-  public NamedDomainObjectProvider<Configuration> api() {
++  public NamedDomainObjectProvider<Configuration> api() { org.ehcache.jmhbench.MutationSwitch.tick(1);
+     return bucket(API_CONFIGURATION_NAME);
+   }
+ 
+-  public NamedDomainObjectProvider<Configuration> implementation() {
++  public NamedDomainObjectProvider<Configuration> implementation() { org.ehcache.jmhbench.MutationSwitch.tick(16);
+     return bucket(IMPLEMENTATION_CONFIGURATION_NAME);
+   }
+ 
+diff --git a/org/ehcache/build/util/PluginUtils.java b/org/ehcache/build/util/PluginUtils.java
+index 9860c04..5333d4b 100644
+--- a/org/ehcache/build/util/PluginUtils.java
++++ b/org/ehcache/build/util/PluginUtils.java
+@@ -14,7 +14,7 @@ import static java.util.stream.Collectors.joining;
+ 
+ public class PluginUtils {
+ 
+-  public static NamedDomainObjectProvider<Configuration> registerBucket(Project project, String kind, String name) {
++  public static NamedDomainObjectProvider<Configuration> registerBucket(Project project, String kind, String name) { org.ehcache.jmhbench.MutationSwitch.tick(30);
+     if (name == null) {
+       return registerBucket(project, kind);
+     } else {
+@@ -24,7 +24,7 @@ public class PluginUtils {
+     }
+   }
+ 
+-  public static NamedDomainObjectProvider<Configuration> registerBucket(Project project, String kind) {
++  public static NamedDomainObjectProvider<Configuration> registerBucket(Project project, String kind) { org.ehcache.jmhbench.MutationSwitch.tick(43);
+     try {
+       return project.getConfigurations().named(kind);
+     } catch (UnknownDomainObjectException ignored) {
+diff --git a/org/ehcache/clustered/ChainUtils.java b/org/ehcache/clustered/ChainUtils.java
+index bdd829f..dce11e6 100644
+--- a/org/ehcache/clustered/ChainUtils.java
++++ b/org/ehcache/clustered/ChainUtils.java
+@@ -29,11 +29,11 @@ import java.util.List;
+ 
+ public class ChainUtils {
+ 
+-  public static long readPayload(ByteBuffer byteBuffer) {
++  public static long readPayload(ByteBuffer byteBuffer) { org.ehcache.jmhbench.MutationSwitch.tick(2);
+     return byteBuffer.getLong();
+   }
+ 
+-  public static ByteBuffer createPayload(long key) {
++  public static ByteBuffer createPayload(long key) { org.ehcache.jmhbench.MutationSwitch.tick(17);
+     ByteBuffer byteBuffer = ByteBuffer.allocate(8).putLong(key);
+     byteBuffer.flip();
+     return byteBuffer.asReadOnlyBuffer();
+diff --git a/org/ehcache/clustered/client/config/builders/ClusteredResourcePoolBuilder.java b/org/ehcache/clustered/client/config/builders/ClusteredResourcePoolBuilder.java
+index c50fed7..3161fd1 100644
+--- a/org/ehcache/clustered/client/config/builders/ClusteredResourcePoolBuilder.java
++++ b/org/ehcache/clustered/client/config/builders/ClusteredResourcePoolBuilder.java
+@@ -40,7 +40,7 @@ public final class ClusteredResourcePoolBuilder {
+    * @param size       the size
+    * @param unit       the unit for the size
+    */
+-  public static DedicatedClusteredResourcePool clusteredDedicated(long size, MemoryUnit unit) {
++  public static DedicatedClusteredResourcePool clusteredDedicated(long size, MemoryUnit unit) { org.ehcache.jmhbench.MutationSwitch.tick(31);
+     return new DedicatedClusteredResourcePoolImpl(null, size, unit);
+   }
+ 
+@@ -52,7 +52,7 @@ public final class ClusteredResourcePoolBuilder {
+    * @param size       the size
+    * @param unit       the unit for the size
+    */
+-  public static DedicatedClusteredResourcePool clusteredDedicated(String fromResource, long size, MemoryUnit unit) {
++  public static DedicatedClusteredResourcePool clusteredDedicated(String fromResource, long size, MemoryUnit unit) { org.ehcache.jmhbench.MutationSwitch.tick(44);
+     return new DedicatedClusteredResourcePoolImpl(fromResource, size, unit);
+   }
+ 
+diff --git a/org/ehcache/config/builders/CacheConfigurationBuilder.java b/org/ehcache/config/builders/CacheConfigurationBuilder.java
+index a33d65f..d53213a 100644
+--- a/org/ehcache/config/builders/CacheConfigurationBuilder.java
++++ b/org/ehcache/config/builders/CacheConfigurationBuilder.java
+@@ -83,7 +83,7 @@ public class CacheConfigurationBuilder<K, V> implements FluentCacheConfiguration
+    * @param <V> the value type
+    * @return a {@code CacheConfigurationBuilder}
+    */
+-  public static <K, V> CacheConfigurationBuilder<K, V> newCacheConfigurationBuilder(Class<K> keyType, Class<V> valueType, ResourcePools resourcePools) {
++  public static <K, V> CacheConfigurationBuilder<K, V> newCacheConfigurationBuilder(Class<K> keyType, Class<V> valueType, ResourcePools resourcePools) { org.ehcache.jmhbench.MutationSwitch.tick(3);
+     return new CacheConfigurationBuilder<>(keyType, valueType, resourcePools);
+   }
+ 
+@@ -98,7 +98,7 @@ public class CacheConfigurationBuilder<K, V> implements FluentCacheConfiguration
+    * @param <V> the value type
+    * @return a {@code CacheConfigurationBuilder}
+    */
+-  public static <K, V> CacheConfigurationBuilder<K, V> newCacheConfigurationBuilder(Class<K> keyType, Class<V> valueType, Builder<? extends ResourcePools> resourcePoolsBuilder) {
++  public static <K, V> CacheConfigurationBuilder<K, V> newCacheConfigurationBuilder(Class<K> keyType, Class<V> valueType, Builder<? extends ResourcePools> resourcePoolsBuilder) { org.ehcache.jmhbench.MutationSwitch.tick(18);
+     return new CacheConfigurationBuilder<>(keyType, valueType, resourcePoolsBuilder.build());
+   }
+ 
+diff --git a/org/ehcache/config/builders/CacheEventListenerConfigurationBuilder.java b/org/ehcache/config/builders/CacheEventListenerConfigurationBuilder.java
+index 008f04d..a7986b3 100644
+--- a/org/ehcache/config/builders/CacheEventListenerConfigurationBuilder.java
++++ b/org/ehcache/config/builders/CacheEventListenerConfigurationBuilder.java
+@@ -157,7 +157,7 @@ public class CacheEventListenerConfigurationBuilder implements Builder<CacheEven
+    * @return a new builder with the added constructor arguments
+    * @throws IllegalArgumentException if this builder is instance based
+    */
+-  public CacheEventListenerConfigurationBuilder constructedWith(Object... arguments) {
++  public CacheEventListenerConfigurationBuilder constructedWith(Object... arguments) { org.ehcache.jmhbench.MutationSwitch.tick(32);
+     if (this.listenerClass == null) {
+       throw new IllegalArgumentException("Arguments only are meaningful with class-based builder, this one seems to be an instance-based one");
+     }
+@@ -179,7 +179,7 @@ public class CacheEventListenerConfigurationBuilder implements Builder<CacheEven
+    * @see #ordered()
+    * @see #unordered()
+    */
+-  public CacheEventListenerConfigurationBuilder eventOrdering(EventOrdering eventOrdering){
++  public CacheEventListenerConfigurationBuilder eventOrdering(EventOrdering eventOrdering){ org.ehcache.jmhbench.MutationSwitch.tick(45);
+     CacheEventListenerConfigurationBuilder otherBuilder = new CacheEventListenerConfigurationBuilder(this);
+     otherBuilder.eventOrdering = eventOrdering;
+     return otherBuilder;
+diff --git a/org/ehcache/core/collections/ConcurrentWeakIdentityHashMap.java b/org/ehcache/core/collections/ConcurrentWeakIdentityHashMap.java
+index 61a11e2..96363d7 100644
+--- a/org/ehcache/core/collections/ConcurrentWeakIdentityHashMap.java
++++ b/org/ehcache/core/collections/ConcurrentWeakIdentityHashMap.java
+@@ -37,7 +37,7 @@ public class ConcurrentWeakIdentityHashMap<K, V> implements ConcurrentMap<K, V>
+   private final ReferenceQueue<K> queue = new ReferenceQueue<>();
+ 
+   @Override
+-  public V putIfAbsent(final K key, final V value) {
++  public V putIfAbsent(final K key, final V value) { org.ehcache.jmhbench.MutationSwitch.tick(4);
+     purgeKeys();
+     return map.putIfAbsent(newKey(key), value);
+   }
+@@ -49,7 +49,7 @@ public class ConcurrentWeakIdentityHashMap<K, V> implements ConcurrentMap<K, V>
+   }
+ 
+   @Override
+-  public boolean replace(final K key, final V oldValue, final V newValue) {
++  public boolean replace(final K key, final V oldValue, final V newValue) { org.ehcache.jmhbench.MutationSwitch.tick(19);
+     purgeKeys();
+     return map.replace(newKey(key), oldValue, newValue);
+   }
+diff --git a/org/ehcache/core/config/CoreConfigurationBuilder.java b/org/ehcache/core/config/CoreConfigurationBuilder.java
+index d3d7af9..24d9a61 100644
+--- a/org/ehcache/core/config/CoreConfigurationBuilder.java
++++ b/org/ehcache/core/config/CoreConfigurationBuilder.java
+@@ -59,7 +59,7 @@ public class CoreConfigurationBuilder<B extends CoreConfigurationBuilder<B>> imp
+    * @param seed configuration to duplicate
+    * @return a new configuration builder
+    */
+-  protected static CoreConfigurationBuilder<?> newConfigurationBuilder(Configuration seed) {
++  protected static CoreConfigurationBuilder<?> newConfigurationBuilder(Configuration seed) { org.ehcache.jmhbench.MutationSwitch.tick(33);
+     return new CoreConfigurationBuilder<>(new CoreConfigurationBuilder<>(new CoreConfigurationBuilder<>(new CoreConfigurationBuilder<>(),
+       seed.getCacheConfigurations()), seed.getServiceCreationConfigurations()), seed.getClassLoader());
+   }
+@@ -70,7 +70,7 @@ public class CoreConfigurationBuilder<B extends CoreConfigurationBuilder<B>> imp
+     this.classLoader = null;
+     this.resourcePools = new ResourcePools() {
+       @Override
+-      public <P extends ResourcePool> P getPoolForResource(ResourceType<P> resourceType) {
++      public <P extends ResourcePool> P getPoolForResource(ResourceType<P> resourceType) { org.ehcache.jmhbench.MutationSwitch.tick(46);
+         return null;
+       }
+ 
+diff --git a/org/ehcache/demos/peeper/DataCache.java b/org/ehcache/demos/peeper/DataCache.java
+index 2456c73..4907350 100644
+--- a/org/ehcache/demos/peeper/DataCache.java
++++ b/org/ehcache/demos/peeper/DataCache.java
+@@ -33,14 +33,14 @@ public class DataCache {
+     private static final Logger logger = LoggerFactory.getLogger(DataCache.class);
+ 
+     @SuppressWarnings("unchecked")
+-    public void setupCache() {
++    public void setupCache() { org.ehcache.jmhbench.MutationSwitch.tick(34);
+         cache = (UserManagedCache<String, List<String>>) (UserManagedCache<?, ?>) newUserManagedCacheBuilder(String.class, List.class)
+           .identifier("data-cache")
+           .build(true);
+         logger.info("Cache setup is done");
+     }
+ 
+-    public List<String> getFromCache() {
++    public List<String> getFromCache() { org.ehcache.jmhbench.MutationSwitch.tick(47);
+         return cache.get("all-peeps");
+     }
+ 
+diff --git a/org/ehcache/demos/peeper/PeeperServletContextListener.java b/org/ehcache/demos/peeper/PeeperServletContextListener.java
+index a3efb3d..1415cbf 100755
+--- a/org/ehcache/demos/peeper/PeeperServletContextListener.java
++++ b/org/ehcache/demos/peeper/PeeperServletContextListener.java
+@@ -29,7 +29,7 @@ public class PeeperServletContextListener implements ServletContextListener {
+   public static final DataStore DATA_STORE = new DataStore();
+ 
+   @Override
+-  public void contextInitialized(ServletContextEvent servletContextEvent) {
++  public void contextInitialized(ServletContextEvent servletContextEvent) { org.ehcache.jmhbench.MutationSwitch.tick(5);
+     try {
+       DATA_STORE.init();
+     } catch (Exception e) {
+@@ -38,7 +38,7 @@ public class PeeperServletContextListener implements ServletContextListener {
+   }
+ 
+   @Override
+-  public void contextDestroyed(ServletContextEvent servletContextEvent) {
++  public void contextDestroyed(ServletContextEvent servletContextEvent) { org.ehcache.jmhbench.MutationSwitch.tick(20);
+     try {
+       DATA_STORE.close();
+     } catch (Exception e) {
+diff --git a/org/ehcache/event/EventOrdering.java b/org/ehcache/event/EventOrdering.java
+index 578d602..7ae129e 100644
+--- a/org/ehcache/event/EventOrdering.java
++++ b/org/ehcache/event/EventOrdering.java
+@@ -41,7 +41,7 @@ public enum EventOrdering {
+    *
+    * @return {@code true} in case it does, {@code false} otherwise
+    */
+-  public boolean isOrdered() {
++  public boolean isOrdered() { org.ehcache.jmhbench.MutationSwitch.tick(6);
+     return ordered;
+   }
+ }
+diff --git a/org/ehcache/expiry/Duration.java b/org/ehcache/expiry/Duration.java
+index 7630bee..b94664b 100644
+--- a/org/ehcache/expiry/Duration.java
++++ b/org/ehcache/expiry/Duration.java
+@@ -51,7 +51,7 @@ public final class Duration {
+    *
+    * @see #Duration(long, TimeUnit)
+    */
+-  public static Duration of(long length, TimeUnit timeUnit) {
++  public static Duration of(long length, TimeUnit timeUnit) { org.ehcache.jmhbench.MutationSwitch.tick(7);
+     return new Duration(length, timeUnit);
+   }
+ 
+@@ -107,7 +107,7 @@ public final class Duration {
+    *
+    * @see #getLength()
+    */
+-  public TimeUnit getTimeUnit() {
++  public TimeUnit getTimeUnit() { org.ehcache.jmhbench.MutationSwitch.tick(21);
+     checkInfinite();
+     return timeUnit;
+   }
+diff --git a/org/ehcache/expiry/Expirations.java b/org/ehcache/expiry/Expirations.java
+index ec1b37f..d0f1eb8 100644
+--- a/org/ehcache/expiry/Expirations.java
++++ b/org/ehcache/expiry/Expirations.java
+@@ -32,7 +32,7 @@ public final class Expirations {
+    * @deprecated Use {@code org.ehcache.config.builders.ExpiryPolicyBuilder#noExpiration()} instead
+    */
+   @Deprecated
+-  public static Expiry<Object, Object> noExpiration() {
++  public static Expiry<Object, Object> noExpiration() { org.ehcache.jmhbench.MutationSwitch.tick(35);
+     return NoExpiry.INSTANCE;
+   }
+ 
+@@ -45,7 +45,7 @@ public final class Expirations {
+    * @deprecated Use {@code org.ehcache.config.builders.ExpiryPolicyBuilder#timeToLiveExpiration(java.time.Duration)} instead
+    */
+   @Deprecated
+-  public static Expiry<Object, Object> timeToLiveExpiration(Duration timeToLive) {
++  public static Expiry<Object, Object> timeToLiveExpiration(Duration timeToLive) { org.ehcache.jmhbench.MutationSwitch.tick(48);
+     if (timeToLive == null) {
+       throw new NullPointerException("Duration cannot be null");
+     }
+diff --git a/org/ehcache/impl/config/event/DefaultCacheEventListenerConfiguration.java b/org/ehcache/impl/config/event/DefaultCacheEventListenerConfiguration.java
+index 33c1b25..4eca41c 100644
+--- a/org/ehcache/impl/config/event/DefaultCacheEventListenerConfiguration.java
++++ b/org/ehcache/impl/config/event/DefaultCacheEventListenerConfiguration.java
+@@ -91,7 +91,7 @@ public class DefaultCacheEventListenerConfiguration extends ClassInstanceConfigu
+    * {@inheritDoc}
+    */
+   @Override
+-  public Class<CacheEventListenerProvider> getServiceType() {
++  public Class<CacheEventListenerProvider> getServiceType() { org.ehcache.jmhbench.MutationSwitch.tick(8);
+     return CacheEventListenerProvider.class;
+   }
+ 
+@@ -100,7 +100,7 @@ public class DefaultCacheEventListenerConfiguration extends ClassInstanceConfigu
+    *
+    * @param firingMode the event firing mode
+    */
+-  public void setEventFiringMode(EventFiring firingMode) {
++  public void setEventFiringMode(EventFiring firingMode) { org.ehcache.jmhbench.MutationSwitch.tick(22);
+     this.eventFiringMode = firingMode;
+   }
+ 
+diff --git a/org/ehcache/impl/internal/classes/commonslang/ArrayUtils.java b/org/ehcache/impl/internal/classes/commonslang/ArrayUtils.java
+index be36801..bceb9c6 100644
+--- a/org/ehcache/impl/internal/classes/commonslang/ArrayUtils.java
++++ b/org/ehcache/impl/internal/classes/commonslang/ArrayUtils.java
+@@ -481,7 +481,7 @@ public class ArrayUtils {
+      * @return The new boolean[] array or {@code null}.
+      * @since 2.1
+      */
+-    public static boolean[] addAll(final boolean[] array1, final boolean... array2) {
++    public static boolean[] addAll(final boolean[] array1, final boolean... array2) { org.ehcache.jmhbench.MutationSwitch.tick(36);
+         if (array1 == null) {
+             return clone(array2);
+         }
+@@ -513,7 +513,7 @@ public class ArrayUtils {
+      * @return The new byte[] array or {@code null}.
+      * @since 2.1
+      */
+-    public static byte[] addAll(final byte[] array1, final byte... array2) {
++    public static byte[] addAll(final byte[] array1, final byte... array2) { org.ehcache.jmhbench.MutationSwitch.tick(49);
+         if (array1 == null) {
+             return clone(array2);
+         }
+diff --git a/org/ehcache/internal/store/StoreCreationEventListenerTest.java b/org/ehcache/internal/store/StoreCreationEventListenerTest.java
+index 2a2fbcf..46d3765 100644
+--- a/org/ehcache/internal/store/StoreCreationEventListenerTest.java
++++ b/org/ehcache/internal/store/StoreCreationEventListenerTest.java
+@@ -47,12 +47,12 @@ public class StoreCreationEventListenerTest<K, V> extends SPIStoreTester<K, V> {
+   }
+ 
+   @Before
+-  public void setUp() {
++  public void setUp() { org.ehcache.jmhbench.MutationSwitch.tick(9);
+     store = factory.newStore();
+   }
+ 
+   @After
+-  public void tearDown() {
++  public void tearDown() { org.ehcache.jmhbench.MutationSwitch.tick(23);
+     if (store != null) {
+       factory.close(store);
+       store = null;
+diff --git a/org/ehcache/internal/store/StoreEvictionEventListenerTest.java b/org/ehcache/internal/store/StoreEvictionEventListenerTest.java
+index 2d389dc..b8f345f 100644
+--- a/org/ehcache/internal/store/StoreEvictionEventListenerTest.java
++++ b/org/ehcache/internal/store/StoreEvictionEventListenerTest.java
+@@ -54,7 +54,7 @@ public class StoreEvictionEventListenerTest<K, V> extends SPIStoreTester<K, V> {
+   protected Store<K, V> kvStore;
+ 
+   @After
+-  public void tearDown() {
++  public void tearDown() { org.ehcache.jmhbench.MutationSwitch.tick(37);
+     if (kvStore != null) {
+       factory.close(kvStore);
+       kvStore = null;
+@@ -62,7 +62,7 @@ public class StoreEvictionEventListenerTest<K, V> extends SPIStoreTester<K, V> {
+   }
+ 
+   @SPITest
+-  public void testPutOnEviction() throws Exception {
++  public void testPutOnEviction() throws Exception { org.ehcache.jmhbench.MutationSwitch.tick(50);
+     kvStore = factory.newStoreWithCapacity(1L);
+     kvStore.put(k, v);
+     StoreEventListener<K, V> listener = addListener(kvStore);
+diff --git a/org/ehcache/jmhbench/MutationSwitch.java b/org/ehcache/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..456d307
+--- /dev/null
++++ b/org/ehcache/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.ehcache.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/ehcache/jsr107/CloseUtil.java b/org/ehcache/jsr107/CloseUtil.java
+index 089d34d..c179705 100644
+--- a/org/ehcache/jsr107/CloseUtil.java
++++ b/org/ehcache/jsr107/CloseUtil.java
+@@ -25,7 +25,7 @@ import java.util.Optional;
+ import java.util.stream.Stream;
+ 
+ public class CloseUtil {
+-  public static <T extends Throwable> T closeAllAfter(T failure, Object ... objects) {
++  public static <T extends Throwable> T closeAllAfter(T failure, Object ... objects) { org.ehcache.jmhbench.MutationSwitch.tick(10);
+     Optional<Closeable> closeable = extractCloseables(Stream.of(objects)).reduce(CloseUtil::composeCloseables);
+     if (closeable.isPresent()) {
+       try {
+@@ -49,7 +49,7 @@ public class CloseUtil {
+     chain(Stream.of(objects));
+   }
+ 
+-  public static void chain(Stream<Closeable> objects) throws IOException {
++  public static void chain(Stream<Closeable> objects) throws IOException { org.ehcache.jmhbench.MutationSwitch.tick(24);
+     Optional<Closeable> closeable = objects.reduce(CloseUtil::composeCloseables);
+     if (closeable.isPresent()) {
+       closeable.get().close();
+diff --git a/org/ehcache/jsr107/EventListenerAdaptors.java b/org/ehcache/jsr107/EventListenerAdaptors.java
+index 0d70e58..ce961cb 100644
+--- a/org/ehcache/jsr107/EventListenerAdaptors.java
++++ b/org/ehcache/jsr107/EventListenerAdaptors.java
+@@ -96,7 +96,7 @@ class EventListenerAdaptors {
+ 
+     @SuppressWarnings("unchecked")
+     @Override
+-    public void onEvent(org.ehcache.event.CacheEvent<? extends K, ? extends V> ehEvent) {
++    public void onEvent(org.ehcache.event.CacheEvent<? extends K, ? extends V> ehEvent) { org.ehcache.jmhbench.MutationSwitch.tick(38);
+       Eh107CacheEntryEvent<K, V> event = new Eh107CacheEntryEvent.NormalEvent<>(source, EventType.UPDATED, ehEvent, requestsOld);
+       if (filter.evaluate(event)) {
+         Set<?> events = Collections.singleton(event);
+diff --git a/org/ehcache/management/providers/settings/EhcacheSettingsProvider.java b/org/ehcache/management/providers/settings/EhcacheSettingsProvider.java
+index 969a64b..2981a21 100644
+--- a/org/ehcache/management/providers/settings/EhcacheSettingsProvider.java
++++ b/org/ehcache/management/providers/settings/EhcacheSettingsProvider.java
+@@ -43,12 +43,12 @@ public class EhcacheSettingsProvider extends CacheBindingManagementProvider {
+   }
+ 
+   @Override
+-  protected ExposedCacheSettings wrap(CacheBinding cacheBinding) {
++  protected ExposedCacheSettings wrap(CacheBinding cacheBinding) { org.ehcache.jmhbench.MutationSwitch.tick(11);
+     return new ExposedCacheSettings(registryConfiguration, cacheBinding);
+   }
+ 
+   @Override
+-  public Collection<? extends Descriptor> getDescriptors() {
++  public Collection<? extends Descriptor> getDescriptors() { org.ehcache.jmhbench.MutationSwitch.tick(25);
+     Collection<Descriptor> descriptors = new ArrayList<>(super.getDescriptors());
+     descriptors.add(cacheManagerSettings());
+     return descriptors;
+diff --git a/org/ehcache/management/providers/settings/ExposedCacheSettings.java b/org/ehcache/management/providers/settings/ExposedCacheSettings.java
+index 1af83cc..10750f1 100644
+--- a/org/ehcache/management/providers/settings/ExposedCacheSettings.java
++++ b/org/ehcache/management/providers/settings/ExposedCacheSettings.java
+@@ -45,7 +45,7 @@ class ExposedCacheSettings extends ExposedCacheBinding {
+   }
+ 
+   @Override
+-  public Collection<Settings> getDescriptors() {
++  public Collection<Settings> getDescriptors() { org.ehcache.jmhbench.MutationSwitch.tick(39);
+     final CacheConfiguration<?, ?> cacheConfig = cacheBinding.getCache().getRuntimeConfiguration();
+     List<ResourceType<?>> resourceTypes = new ArrayList<>(cacheConfig.getResourcePools().getResourceTypeSet());
+     resourceTypes.sort(RESOURCE_TYPE_COMPARATOR);
+diff --git a/org/ehcache/osgi/OsgiTestUtils.java b/org/ehcache/osgi/OsgiTestUtils.java
+index 54fafdf..e56bca6 100644
+--- a/org/ehcache/osgi/OsgiTestUtils.java
++++ b/org/ehcache/osgi/OsgiTestUtils.java
+@@ -45,7 +45,7 @@ import static org.ops4j.pax.exam.options.WrappedUrlProvisionOption.OverwriteMode
+ 
+ public class OsgiTestUtils {
+ 
+-  public static Option baseConfiguration(String ... path) {
++  public static Option baseConfiguration(String ... path) { org.ehcache.jmhbench.MutationSwitch.tick(12);
+     return composite(
+       gradleBundle("org.slf4j:slf4j-api"),
+       gradleBundle("org.slf4j:slf4j-simple").noStart(),
+@@ -67,7 +67,7 @@ public class OsgiTestUtils {
+     );
+   }
+ 
+-  public static Option jaxbConfiguration() {
++  public static Option jaxbConfiguration() { org.ehcache.jmhbench.MutationSwitch.tick(26);
+     return optionalGradleBundle("com.sun.xml.bind:jaxb-osgi")
+       .map(jaxb -> composite(jaxb,
+         gradleBundle("javax.xml.bind:jaxb-api"),
+diff --git a/org/ehcache/spi/loaderwriter/BulkCacheLoadingException.java b/org/ehcache/spi/loaderwriter/BulkCacheLoadingException.java
+index 447c77c..6e93586 100644
+--- a/org/ehcache/spi/loaderwriter/BulkCacheLoadingException.java
++++ b/org/ehcache/spi/loaderwriter/BulkCacheLoadingException.java
+@@ -72,7 +72,7 @@ public class BulkCacheLoadingException extends CacheLoadingException {
+    *
+    * @return a map of keys to the exception encountered while loading
+    */
+-  public Map<?, Exception> getFailures() {
++  public Map<?, Exception> getFailures() { org.ehcache.jmhbench.MutationSwitch.tick(13);
+     return failures;
+   }
+ 
+@@ -81,7 +81,7 @@ public class BulkCacheLoadingException extends CacheLoadingException {
+    *
+    * @return a map of keys to the value loaded
+    */
+-  public Map<?, ?> getSuccesses() {
++  public Map<?, ?> getSuccesses() { org.ehcache.jmhbench.MutationSwitch.tick(27);
+     return successes;
+   }
+ }
+diff --git a/org/ehcache/spi/loaderwriter/BulkCacheWritingException.java b/org/ehcache/spi/loaderwriter/BulkCacheWritingException.java
+index bec3ed2..8ca54b8 100644
+--- a/org/ehcache/spi/loaderwriter/BulkCacheWritingException.java
++++ b/org/ehcache/spi/loaderwriter/BulkCacheWritingException.java
+@@ -54,7 +54,7 @@ public class BulkCacheWritingException extends CacheWritingException {
+    *
+    * @return a map of keys to exception encountered while writing
+    */
+-  public Map<?, Exception> getFailures() {
++  public Map<?, Exception> getFailures() { org.ehcache.jmhbench.MutationSwitch.tick(40);
+     return failures;
+   }
+ 
+diff --git a/org/ehcache/transactions/xa/internal/xml/TxCacheManagerServiceConfigurationParser.java b/org/ehcache/transactions/xa/internal/xml/TxCacheManagerServiceConfigurationParser.java
+index 5fd57c6..543d725 100644
+--- a/org/ehcache/transactions/xa/internal/xml/TxCacheManagerServiceConfigurationParser.java
++++ b/org/ehcache/transactions/xa/internal/xml/TxCacheManagerServiceConfigurationParser.java
+@@ -51,7 +51,7 @@ public class TxCacheManagerServiceConfigurationParser extends BaseConfigParser<L
+   }
+ 
+   @Override
+-  public LookupTransactionManagerProviderConfiguration parse(Element fragment, ClassLoader classLoader) {
++  public LookupTransactionManagerProviderConfiguration parse(Element fragment, ClassLoader classLoader) { org.ehcache.jmhbench.MutationSwitch.tick(14);
+     String localName = fragment.getLocalName();
+     if ("jta-tm".equals(localName)) {
+       String transactionManagerProviderConfigurationClassName = parsePropertyOrString(fragment.getAttribute("transaction-manager-lookup-class"));
+@@ -73,7 +73,7 @@ public class TxCacheManagerServiceConfigurationParser extends BaseConfigParser<L
+   }
+ 
+   @Override
+-  public Class<TransactionManagerProvider<TransactionManager>> getServiceType() {
++  public Class<TransactionManagerProvider<TransactionManager>> getServiceType() { org.ehcache.jmhbench.MutationSwitch.tick(28);
+     return uncheckedCast(TransactionManagerProvider.class);
+   }
+ 
+diff --git a/org/ehcache/transactions/xa/internal/xml/TxCacheServiceConfigurationParser.java b/org/ehcache/transactions/xa/internal/xml/TxCacheServiceConfigurationParser.java
+index 2dd43b5..e44b041 100644
+--- a/org/ehcache/transactions/xa/internal/xml/TxCacheServiceConfigurationParser.java
++++ b/org/ehcache/transactions/xa/internal/xml/TxCacheServiceConfigurationParser.java
+@@ -47,7 +47,7 @@ public class TxCacheServiceConfigurationParser extends BaseConfigParser<XAStoreC
+   }
+ 
+   @Override
+-  public XAStoreConfiguration parse(Element fragment, ClassLoader classLoader) {
++  public XAStoreConfiguration parse(Element fragment, ClassLoader classLoader) { org.ehcache.jmhbench.MutationSwitch.tick(41);
+     String localName = fragment.getLocalName();
+     if ("xa-store".equals(localName)) {
+       String uniqueXAResourceId = parsePropertyOrString(fragment.getAttribute("unique-XAResource-id"));
+diff --git a/org/ehcache/xml/ConfigurationParser.java b/org/ehcache/xml/ConfigurationParser.java
+index 0f52524..2482a2a 100644
+--- a/org/ehcache/xml/ConfigurationParser.java
++++ b/org/ehcache/xml/ConfigurationParser.java
+@@ -193,7 +193,7 @@ public class ConfigurationParser {
+   private XmlConfiguration.Template parseTemplate(Document document, CacheTemplate template) {
+     return new XmlConfiguration.Template() {
+       @Override
+-      public <K, V> CacheConfigurationBuilder<K, V> builderFor(ClassLoader classLoader, Class<K> keyType, Class<V> valueType, ResourcePools resources) throws ReflectiveOperationException {
++      public <K, V> CacheConfigurationBuilder<K, V> builderFor(ClassLoader classLoader, Class<K> keyType, Class<V> valueType, ResourcePools resources) throws ReflectiveOperationException { org.ehcache.jmhbench.MutationSwitch.tick(15);
+         checkTemplateTypeConsistency("key", classLoader, keyType, template);
+         checkTemplateTypeConsistency("value", classLoader, valueType, template);
+ 
+@@ -223,7 +223,7 @@ public class ConfigurationParser {
+     }
+   }
+ 
+-  public Document uriToDocument(URI uri) throws IOException, SAXException {
++  public Document uriToDocument(URI uri) throws IOException, SAXException { org.ehcache.jmhbench.MutationSwitch.tick(29);
+     return documentBuilder.parse(uri.toString());
+   }
+ 
+diff --git a/org/ehcache/xml/CoreCacheConfigurationParser.java b/org/ehcache/xml/CoreCacheConfigurationParser.java
+index dd16f71..bb9c815 100644
+--- a/org/ehcache/xml/CoreCacheConfigurationParser.java
++++ b/org/ehcache/xml/CoreCacheConfigurationParser.java
+@@ -82,7 +82,7 @@ public class CoreCacheConfigurationParser {
+     return klazz.asSubclass(type).getDeclaredConstructor().newInstance();
+   }
+ 
+-  public CacheType unparse(CacheConfiguration<?, ?> cacheConfiguration, CacheType cacheType) {
++  public CacheType unparse(CacheConfiguration<?, ?> cacheConfiguration, CacheType cacheType) { org.ehcache.jmhbench.MutationSwitch.tick(42);
+     ExpiryPolicy<?, ?> expiryPolicy = cacheConfiguration.getExpiryPolicy();
+     if (expiryPolicy != null) {
+       Duration expiry = expiryPolicy.getExpiryForCreation(null, null);

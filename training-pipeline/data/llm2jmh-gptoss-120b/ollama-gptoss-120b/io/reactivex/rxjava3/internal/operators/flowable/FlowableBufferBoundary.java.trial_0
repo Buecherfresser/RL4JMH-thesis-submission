@@ -1,0 +1,97 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for the {@code Flowable.buffer(open, close, bufferSupplier)} operator,
+ * which internally uses {@code FlowableBufferBoundary}.
+ *
+ * The benchmark measures throughput (operations per second) of processing a
+ * stream of integers with a boundary that opens a new buffer for each item
+ * and closes it immediately (i.e., buffers of size 1). This creates a high
+ * rate of open/close events, stressing the operator's concurrency and
+ * back‑pressure handling.
+ *
+ * Best‑practice JMH settings are used:
+ * - Warm‑up iterations to let the JIT stabilize.
+ * - Measurement iterations for reliable results.
+ * - Single fork to keep the benchmark lightweight.
+ * - Blackhole consumption to avoid dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableBufferBoundaryBenchmark {
+
+    /** Number of items emitted by the source Flowable per benchmark iteration. */
+    @Param({"100000"})
+    public int itemCount;
+
+    /** Number of buffer openings (and thus buffers) per iteration. */
+    @Param({"100000"})
+    public int openCount;
+
+    /** The source Flowable emitting a range of integers. */
+    private Flowable<Integer> source;
+
+    /** Publisher that emits a token for each buffer opening. */
+    private Flowable<Integer> openPublisher;
+
+    /** Function that maps an opening token to a closing Publisher. */
+    private Function<Integer, Flowable<Integer>> closeFunction;
+
+    /** Supplier for the buffer collection. */
+    private Function<Void, List<Integer>> bufferSupplier;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Source emits a deterministic range of integers.
+        source = Flowable.range(1, itemCount)
+                // Use a synchronous scheduler to keep the benchmark single‑threaded.
+                .subscribeOn(Schedulers.trampoline());
+
+        // Open publisher emits a token for each buffer we want to create.
+        openPublisher = Flowable.range(1, openCount)
+                .subscribeOn(Schedulers.trampoline());
+
+        // Each buffer closes immediately after it is opened (size 1 buffer).
+        closeFunction = token -> Flowable.just(token)
+                .subscribeOn(Schedulers.trampoline());
+
+        // Buffer supplier creates a new ArrayList for each buffer.
+        bufferSupplier = v -> new ArrayList<>();
+    }
+
+    @Benchmark
+    public void bufferBoundaryThroughput(Blackhole bh) throws InterruptedException {
+        // Build the buffered Flowable using the public API (which delegates to FlowableBufferBoundary).
+        Flowable<List<Integer>> buffered = source.buffer(openPublisher, closeFunction, bufferSupplier);
+
+        // Use a CountDownLatch to wait for completion without blocking the JMH thread.
+        CountDownLatch latch = new CountDownLatch(1);
+
+        buffered.subscribe(
+                bh::consume,          // onNext: feed each buffer to Blackhole
+                bh::consume,          // onError: also feed to Blackhole
+                latch::countDown      // onComplete: release the latch
+        );
+
+        // Wait for the stream to finish before ending the benchmark iteration.
+        latch.await();
+    }
+}
+```

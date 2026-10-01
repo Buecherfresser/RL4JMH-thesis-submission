@@ -1,0 +1,127 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SingleZipArray}.
+ *
+ * Measures the throughput of zipping a configurable number of {@link Single} sources.
+ * The benchmark runs in {@link Mode#Throughput} mode, reporting operations per second.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Param allows easy variation of the number of sources.
+ * - @Setup prepares immutable data structures outside the timed section.
+ * - Blackhole consumes the result to prevent dead‑code elimination.
+ * - The benchmark runs on a dedicated scheduler to avoid interference from the JMH harness.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class SingleZipArrayBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of Single sources to zip.
+         */
+        @Param({ "2", "4", "8", "16", "32" })
+        public int sourceCount;
+
+        /**
+         * Array of Single sources used in the benchmark.
+         */
+        public SingleSource<Integer>[] sources;
+
+        /**
+         * Zipper function that sums the integer values.
+         */
+        public Function<Object[], Integer> zipper;
+
+        /**
+         * Scheduler used to subscribe the Singles (avoids using the default computation scheduler).
+         */
+        public io.reactivex.rxjava3.core.Scheduler scheduler;
+
+        @SuppressWarnings("unchecked")
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Prepare an array of Single.just(i) sources.
+            sources = new SingleSource[sourceCount];
+            for (int i = 0; i < sourceCount; i++) {
+                final int value = i;
+                sources[i] = Single.just(value);
+            }
+            // Simple zipper that sums all integer values.
+            zipper = objects -> {
+                int sum = 0;
+                for (Object o : objects) {
+                    sum += (Integer) o;
+                }
+                return sum;
+            };
+            // Use a single‑threaded scheduler to keep the benchmark deterministic.
+            scheduler = Schedulers.single();
+        }
+
+        /**
+         * Helper that creates a {@link SingleZipArray} instance with the prepared sources and zipper.
+         */
+        public Single<Integer> createZipSingle() {
+            // The operator expects the sources array to be of type SingleSource<? extends T>[].
+            // The generic type is inferred as Integer.
+            return new SingleZipArray<>(sources, zipper);
+        }
+    }
+
+    @Benchmark
+    public void zipSingleThroughput(BenchmarkState state, Blackhole bh) {
+        // Create the zip operator.
+        Single<Integer> zipSingle = state.createZipSingle();
+        // Subscribe and block to obtain the result.
+        // The blocking call is part of the measured operation because it represents the
+        // end‑to‑end latency of the zip operator.
+        Integer result = zipSingle.subscribeOn(// ensure subscription happens on the dedicated scheduler
+        state.scheduler).blockingGet();
+        // Consume the result to prevent dead‑code elimination.
+        bh.consume(result);
+    }
+}

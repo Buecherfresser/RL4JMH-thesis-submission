@@ -1,0 +1,616 @@
+diff --git a/net/openhft/chronicle/map/ChronicleHashCorruptionImpl.java b/net/openhft/chronicle/map/ChronicleHashCorruptionImpl.java
+index a652759..34c0915 100644
+--- a/net/openhft/chronicle/map/ChronicleHashCorruptionImpl.java
++++ b/net/openhft/chronicle/map/ChronicleHashCorruptionImpl.java
+@@ -32,7 +32,7 @@ public class ChronicleHashCorruptionImpl implements ChronicleHashCorruption {
+         corruptionListener.onCorruption(corruption);
+     }
+ 
+-    public static String format(String message, Object... args) {
++    public static String format(String message, Object... args) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(36);
+         return MessageFormatter.arrayFormat(message, args).getMessage();
+     }
+ 
+@@ -44,7 +44,7 @@ public class ChronicleHashCorruptionImpl implements ChronicleHashCorruption {
+     }
+ 
+     @Override
+-    public String message() {
++    public String message() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(38);
+         if (message == null) {
+             message = messageSupplier.get();
+         }
+diff --git a/net/openhft/chronicle/map/ChronicleMapBuilder.java b/net/openhft/chronicle/map/ChronicleMapBuilder.java
+index 0102436..b92f9f6 100644
+--- a/net/openhft/chronicle/map/ChronicleMapBuilder.java
++++ b/net/openhft/chronicle/map/ChronicleMapBuilder.java
+@@ -533,7 +533,7 @@ public final class ChronicleMapBuilder<K, V> implements
+      * @see #actualChunkSize(int)
+      */
+     @Override
+-    public ChronicleMapBuilder<K, V> averageKeySize(final double averageKeySize) {
++    public ChronicleMapBuilder<K, V> averageKeySize(final double averageKeySize) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(1);
+         checkSizeIsStaticallyKnown(keyBuilder, "Key");
+         checkAverageSize(averageKeySize, "key");
+         this.averageKeySize = averageKeySize;
+@@ -616,7 +616,7 @@ public final class ChronicleMapBuilder<K, V> implements
+      * @see #averageKeySize(double)
+      * @see #actualChunkSize(int)
+      */
+-    public ChronicleMapBuilder<K, V> averageValueSize(final double averageValueSize) {
++    public ChronicleMapBuilder<K, V> averageValueSize(final double averageValueSize) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(5);
+         checkSizeIsStaticallyKnown(valueBuilder, "Value");
+         checkAverageSize(averageValueSize, "value");
+         this.averageValueSize = averageValueSize;
+diff --git a/net/openhft/chronicle/map/ChronicleMapBuilderPrivateAPI.java b/net/openhft/chronicle/map/ChronicleMapBuilderPrivateAPI.java
+index b1eebb6..20fe655 100644
+--- a/net/openhft/chronicle/map/ChronicleMapBuilderPrivateAPI.java
++++ b/net/openhft/chronicle/map/ChronicleMapBuilderPrivateAPI.java
+@@ -19,12 +19,12 @@ class ChronicleMapBuilderPrivateAPI<K, V>
+     }
+ 
+     @Override
+-    public String name() {
++    public String name() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(9);
+         return b.name();
+     }
+ 
+     @Override
+-    public SerializationBuilder<K> keyBuilder() {
++    public SerializationBuilder<K> keyBuilder() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(12);
+         return b.keyBuilder();
+     }
+ 
+diff --git a/net/openhft/chronicle/map/ChronicleMapEntrySet.java b/net/openhft/chronicle/map/ChronicleMapEntrySet.java
+index 359de47..60df724 100644
+--- a/net/openhft/chronicle/map/ChronicleMapEntrySet.java
++++ b/net/openhft/chronicle/map/ChronicleMapEntrySet.java
+@@ -18,7 +18,7 @@ class ChronicleMapEntrySet<K, V> extends AbstractSet<Map.Entry<K, V>> {
+     }
+ 
+     @NotNull
+-    public Iterator<Map.Entry<K, V>> iterator() {
++    public Iterator<Map.Entry<K, V>> iterator() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(14);
+         return new ChronicleMapIterator.OfEntries<>(map);
+     }
+ 
+@@ -47,7 +47,7 @@ class ChronicleMapEntrySet<K, V> extends AbstractSet<Map.Entry<K, V>> {
+         }
+     }
+ 
+-    public final int size() {
++    public final int size() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(16);
+         return map.size();
+     }
+ 
+diff --git a/net/openhft/chronicle/map/MapDiagnostics.java b/net/openhft/chronicle/map/MapDiagnostics.java
+index 3d0a125..aff709e 100644
+--- a/net/openhft/chronicle/map/MapDiagnostics.java
++++ b/net/openhft/chronicle/map/MapDiagnostics.java
+@@ -12,7 +12,7 @@ public final class MapDiagnostics {
+     private MapDiagnostics() {
+     }
+ 
+-    public static void main(String[] args) throws IOException {
++    public static void main(String[] args) throws IOException { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(18);
+         String mapFile = args[0];
+         try (ChronicleMap map = ChronicleMap.of(Object.class, Object.class)
+                 .createPersistedTo(new File(mapFile))) {
+@@ -20,7 +20,7 @@ public final class MapDiagnostics {
+         }
+     }
+ 
+-    public static <K, V> void printMapStats(ChronicleMap<K, V> map) {
++    public static <K, V> void printMapStats(ChronicleMap<K, V> map) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(20);
+         for (int i = 0; i < map.segments(); i++) {
+             try (MapSegmentContext<K, V, ?> c = map.segmentContext(i)) {
+                 System.out.printf("segment %d contains %d entries\n", i, c.size());
+diff --git a/net/openhft/chronicle/map/MapFileAnalyzer.java b/net/openhft/chronicle/map/MapFileAnalyzer.java
+index 3896fc2..021afbc 100644
+--- a/net/openhft/chronicle/map/MapFileAnalyzer.java
++++ b/net/openhft/chronicle/map/MapFileAnalyzer.java
+@@ -9,7 +9,7 @@ import java.io.IOException;
+ 
+ public final class MapFileAnalyzer {
+ 
+-    public static void main(String[] args) throws IOException {
++    public static void main(String[] args) throws IOException { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(22);
+         InternalMapFileAnalyzer.main(args);
+     }
+ 
+diff --git a/net/openhft/chronicle/map/OldDeletedEntriesCleanupThread.java b/net/openhft/chronicle/map/OldDeletedEntriesCleanupThread.java
+index 263ea9e..c0ee3f8 100644
+--- a/net/openhft/chronicle/map/OldDeletedEntriesCleanupThread.java
++++ b/net/openhft/chronicle/map/OldDeletedEntriesCleanupThread.java
+@@ -98,7 +98,7 @@ class OldDeletedEntriesCleanupThread extends Thread
+     }
+ 
+     @Override
+-    public void run() {
++    public void run() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(40);
+         throwExceptionIfClosed();
+ 
+         if (System.currentTimeMillis() - startTime < 1_000)
+@@ -162,7 +162,7 @@ class OldDeletedEntriesCleanupThread extends Thread
+     }
+ 
+     @Override
+-    public boolean test(ReplicableEntry e) {
++    public boolean test(ReplicableEntry e) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(42);
+         throwExceptionIfClosed();
+ 
+         if (shutdown)
+diff --git a/net/openhft/chronicle/map/ReplicatedChronicleMap.java b/net/openhft/chronicle/map/ReplicatedChronicleMap.java
+index fd04b30..d689087 100644
+--- a/net/openhft/chronicle/map/ReplicatedChronicleMap.java
++++ b/net/openhft/chronicle/map/ReplicatedChronicleMap.java
+@@ -167,7 +167,7 @@ public class ReplicatedChronicleMap<K, V, R> extends VanillaChronicleMap<K, V, R
+     }
+ 
+     @Override
+-    protected VanillaGlobalMutableState createGlobalMutableState() {
++    protected VanillaGlobalMutableState createGlobalMutableState() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(24);
+         if (createdOrInMemory) {
+             final Class<ReplicatedGlobalMutableStateV2> defaultClass = ReplicatedGlobalMutableStateV2.class;
+ 
+@@ -185,7 +185,7 @@ public class ReplicatedChronicleMap<K, V, R> extends VanillaChronicleMap<K, V, R
+     }
+ 
+     @Override
+-    public ReplicatedGlobalMutableStateV2 globalMutableState() {
++    public ReplicatedGlobalMutableStateV2 globalMutableState() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(26);
+         throwExceptionIfClosed();
+ 
+         return (ReplicatedGlobalMutableStateV2) super.globalMutableState();
+diff --git a/net/openhft/chronicle/map/SelectedSelectionKeySet.java b/net/openhft/chronicle/map/SelectedSelectionKeySet.java
+index 39a6ed4..231749b 100644
+--- a/net/openhft/chronicle/map/SelectedSelectionKeySet.java
++++ b/net/openhft/chronicle/map/SelectedSelectionKeySet.java
+@@ -74,7 +74,7 @@ final class SelectedSelectionKeySet extends AbstractSet<SelectionKey> {
+     }
+ 
+     @Override
+-    public int size() {
++    public int size() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(28);
+         if (isA) {
+             return keysASize;
+         } else {
+@@ -94,7 +94,7 @@ final class SelectedSelectionKeySet extends AbstractSet<SelectionKey> {
+ 
+     @NotNull
+     @Override
+-    public Iterator<SelectionKey> iterator() {
++    public Iterator<SelectionKey> iterator() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(30);
+         throw new UnsupportedOperationException();
+     }
+ }
+diff --git a/net/openhft/chronicle/map/VanillaChronicleMap.java b/net/openhft/chronicle/map/VanillaChronicleMap.java
+index 955b0e6..167d203 100644
+--- a/net/openhft/chronicle/map/VanillaChronicleMap.java
++++ b/net/openhft/chronicle/map/VanillaChronicleMap.java
+@@ -120,7 +120,7 @@ public class VanillaChronicleMap<K, V, R>
+         AnalyticsHolder.instance().sendEvent("started", additionalEventParameters);
+     }
+ 
+-    public static long alignAddr(final long addr, final long alignment) {
++    public static long alignAddr(final long addr, final long alignment) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(32);
+         return (addr + alignment - 1) & ~(alignment - 1L);
+     }
+ 
+@@ -170,7 +170,7 @@ public class VanillaChronicleMap<K, V, R>
+     }
+ 
+     @Override
+-    public void initTransients() {
++    public void initTransients() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(34);
+         throwExceptionIfClosed();
+ 
+         super.initTransients();
+diff --git a/net/openhft/chronicle/map/WriteThroughEntry.java b/net/openhft/chronicle/map/WriteThroughEntry.java
+index 6e45238..228df95 100644
+--- a/net/openhft/chronicle/map/WriteThroughEntry.java
++++ b/net/openhft/chronicle/map/WriteThroughEntry.java
+@@ -17,7 +17,7 @@ class WriteThroughEntry<K, V> extends AbstractMap.SimpleEntry<K, V> {
+     }
+ 
+     @Override
+-    public V setValue(V value) {
++    public V setValue(V value) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(44);
+         map.put(getKey(), value);
+         return super.setValue(value);
+     }
+diff --git a/net/openhft/chronicle/map/impl/CompiledMapIterationContext.java b/net/openhft/chronicle/map/impl/CompiledMapIterationContext.java
+index e00138e..09c2f34 100644
+--- a/net/openhft/chronicle/map/impl/CompiledMapIterationContext.java
++++ b/net/openhft/chronicle/map/impl/CompiledMapIterationContext.java
+@@ -41,14 +41,14 @@ import static net.openhft.chronicle.hash.impl.LocalLockState.UNLOCKED;
+  */
+ @SuppressWarnings({"rawtypes", "unchecked", "this-escape"})
+ public class CompiledMapIterationContext<K, V, R> extends ChainingInterface implements AutoCloseable, ChecksumEntry, HashEntry<K>, HashSegmentContext<K, MapEntry<K, V>>, SegmentLock, Alloc, KeyHashCode, LocksInterface, MapContext<K, V, R>, MapEntry<K, V>, IterationContext<K, V, R>, VanillaChronicleMapHolder<K, V, R>, SetContext<K, R> {
+-    public boolean readZeroGuarded() {
++    public boolean readZeroGuarded() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(2);
+         if (!(this.locksInit()))
+             this.initLocks();
+ 
+         return readZero();
+     }
+ 
+-    public boolean reallocGuarded(long fromPos, int oldChunks, int newChunks) {
++    public boolean reallocGuarded(long fromPos, int oldChunks, int newChunks) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(6);
+         if (!(this.segmentInit()))
+             this.initSegment();
+ 
+diff --git a/net/openhft/chronicle/map/impl/CompiledMapQueryContext.java b/net/openhft/chronicle/map/impl/CompiledMapQueryContext.java
+index 966cf9f..127e367 100644
+--- a/net/openhft/chronicle/map/impl/CompiledMapQueryContext.java
++++ b/net/openhft/chronicle/map/impl/CompiledMapQueryContext.java
+@@ -44,14 +44,14 @@ import static net.openhft.chronicle.hash.impl.LocalLockState.UNLOCKED;
+  */
+ @SuppressWarnings({"rawtypes", "unchecked", "this-escape"})
+ public class CompiledMapQueryContext<K, V, R> extends ChainingInterface implements AutoCloseable , ChecksumEntry , HashEntry<K> , SegmentLock , Alloc , KeyHashCode , LocksInterface , ExternalMapQueryContext<K, V, R> , MapContext<K, V, R> , MapEntry<K, V> , QueryContextInterface<K, V, R> , VanillaChronicleMapHolder<K, V, R> , Absent<K, V> , MapAndSetContext<K, V, R> , ExternalSetQueryContext<K, R> , SetContext<K, R> , SetEntry<K> {
+-    public boolean readZeroGuarded() {
++    public boolean readZeroGuarded() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(10);
+         if (!(this.locksInit()))
+             this.initLocks();
+ 
+         return readZero();
+     }
+ 
+-    public boolean reallocGuarded(long fromPos, int oldChunks, int newChunks) {
++    public boolean reallocGuarded(long fromPos, int oldChunks, int newChunks) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(13);
+         if (!(this.segmentInit()))
+             this.initSegment();
+ 
+diff --git a/net/openhft/chronicle/map/impl/CompiledReplicatedMapIterationContext.java b/net/openhft/chronicle/map/impl/CompiledReplicatedMapIterationContext.java
+index 7dbcd15..39aa5f6 100644
+--- a/net/openhft/chronicle/map/impl/CompiledReplicatedMapIterationContext.java
++++ b/net/openhft/chronicle/map/impl/CompiledReplicatedMapIterationContext.java
+@@ -48,14 +48,14 @@ import static net.openhft.chronicle.hash.impl.LocalLockState.UNLOCKED;
+  */
+ @SuppressWarnings({"rawtypes", "unchecked", "this-escape"})
+ public class CompiledReplicatedMapIterationContext<K, V, R> extends ChainingInterface implements AutoCloseable , ChecksumEntry , HashEntry<K> , HashSegmentContext<K, MapEntry<K, V>> , ReplicatedHashSegmentContext<K, MapEntry<K, V>> , SegmentLock , Alloc , KeyHashCode , LocksInterface , RemoteOperationContext<K> , ReplicableEntry , MapContext<K, V, R> , MapEntry<K, V> , IterationContext<K, V, R> , ReplicatedChronicleMapHolder<K, V, R> , ReplicatedIterationContext<K, V, R> , MapReplicableEntry<K, V> , SetContext<K, R> {
+-    public boolean readZeroGuarded() {
++    public boolean readZeroGuarded() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(15);
+         if (!(this.locksInit()))
+             this.initLocks();
+ 
+         return readZero();
+     }
+ 
+-    public boolean reallocGuarded(long fromPos, int oldChunks, int newChunks) {
++    public boolean reallocGuarded(long fromPos, int oldChunks, int newChunks) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(17);
+         if (!(this.segmentInit()))
+             this.initSegment();
+ 
+diff --git a/net/openhft/chronicle/map/impl/CompiledReplicatedMapQueryContext.java b/net/openhft/chronicle/map/impl/CompiledReplicatedMapQueryContext.java
+index 7e117c6..149be38 100644
+--- a/net/openhft/chronicle/map/impl/CompiledReplicatedMapQueryContext.java
++++ b/net/openhft/chronicle/map/impl/CompiledReplicatedMapQueryContext.java
+@@ -51,14 +51,14 @@ import static net.openhft.chronicle.hash.impl.LocalLockState.UNLOCKED;
+  */
+ @SuppressWarnings({"rawtypes", "unchecked", "this-escape"})
+ public class CompiledReplicatedMapQueryContext<K, V, R> extends ChainingInterface implements AutoCloseable , ChecksumEntry , HashEntry<K> , SegmentLock , Alloc , KeyHashCode , LocksInterface , RemoteOperationContext<K> , ReplicableEntry , ExternalMapQueryContext<K, V, R> , MapContext<K, V, R> , MapEntry<K, V> , Replica.QueryContext<K, V> , QueryContextInterface<K, V, R> , ReplicatedChronicleMapHolder<K, V, R> , Absent<K, V> , MapAndSetContext<K, V, R> , MapRemoteQueryContext<K, V, R> , MapReplicableEntry<K, V> , ExternalSetQueryContext<K, R> , SetContext<K, R> , SetEntry<K> , SetRemoteQueryContext<K, R> , SetReplicableEntry<K> {
+-    public boolean readZeroGuarded() {
++    public boolean readZeroGuarded() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(19);
+         if (!(this.locksInit()))
+             this.initLocks();
+ 
+         return readZero();
+     }
+ 
+-    public boolean reallocGuarded(long fromPos, int oldChunks, int newChunks) {
++    public boolean reallocGuarded(long fromPos, int oldChunks, int newChunks) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(21);
+         if (!(this.segmentInit()))
+             this.initSegment();
+ 
+diff --git a/net/openhft/chronicle/map/impl/NullReturnValue.java b/net/openhft/chronicle/map/impl/NullReturnValue.java
+index 1e4c199..cb8513b 100644
+--- a/net/openhft/chronicle/map/impl/NullReturnValue.java
++++ b/net/openhft/chronicle/map/impl/NullReturnValue.java
+@@ -20,7 +20,7 @@ public final class NullReturnValue<V> implements InstanceReturnValue<V> {
+     }
+ 
+     @Override
+-    public V returnValue() {
++    public V returnValue() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(35);
+         return null;
+     }
+ 
+diff --git a/net/openhft/chronicle/map/impl/stage/data/DummyValueZeroData.java b/net/openhft/chronicle/map/impl/stage/data/DummyValueZeroData.java
+index 99a5111..a6600a0 100644
+--- a/net/openhft/chronicle/map/impl/stage/data/DummyValueZeroData.java
++++ b/net/openhft/chronicle/map/impl/stage/data/DummyValueZeroData.java
+@@ -39,13 +39,13 @@ public class DummyValueZeroData<V> extends AbstractData<V> {
+     CheckOnEachPublicOperation checkOnEachPublicOperation;
+ 
+     @Override
+-    public RandomDataInput bytes() {
++    public RandomDataInput bytes() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(37);
+         checkOnEachPublicOperation.checkOnEachPublicOperation();
+         return ZeroBytesStore.INSTANCE;
+     }
+ 
+     @Override
+-    public long offset() {
++    public long offset() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(39);
+         checkOnEachPublicOperation.checkOnEachPublicOperation();
+         return 0;
+     }
+diff --git a/net/openhft/chronicle/map/impl/stage/data/ZeroBytesStore.java b/net/openhft/chronicle/map/impl/stage/data/ZeroBytesStore.java
+index 2a02b37..4d632a1 100644
+--- a/net/openhft/chronicle/map/impl/stage/data/ZeroBytesStore.java
++++ b/net/openhft/chronicle/map/impl/stage/data/ZeroBytesStore.java
+@@ -34,12 +34,12 @@ public enum ZeroBytesStore implements BytesStore<ZeroBytesStore, Void> {
+     INSTANCE;
+ 
+     @Override
+-    public long addressForWrite(long offset) throws UnsupportedOperationException, BufferOverflowException {
++    public long addressForWrite(long offset) throws UnsupportedOperationException, BufferOverflowException { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(41);
+         throw new UnsupportedOperationException("Cannot get the address of nothing");
+     }
+ 
+     @Override
+-    public long addressForWritePosition() throws UnsupportedOperationException, BufferOverflowException {
++    public long addressForWritePosition() throws UnsupportedOperationException, BufferOverflowException { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(43);
+         throw new UnsupportedOperationException("Cannot get the address of nothing");
+     }
+ 
+diff --git a/net/openhft/chronicle/map/impl/stage/data/bytes/EntryValueBytesData.java b/net/openhft/chronicle/map/impl/stage/data/bytes/EntryValueBytesData.java
+index 517c2e4..5c0981f 100644
+--- a/net/openhft/chronicle/map/impl/stage/data/bytes/EntryValueBytesData.java
++++ b/net/openhft/chronicle/map/impl/stage/data/bytes/EntryValueBytesData.java
+@@ -56,11 +56,11 @@ public class EntryValueBytesData<V> extends AbstractData<V> {
+         cachedEntryValueRead = true;
+     }
+ 
+-    public boolean cachedEntryValueInit() {
++    public boolean cachedEntryValueInit() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(45);
+         return cachedEntryValueRead;
+     }
+ 
+-    public void closeCachedEntryValue() {
++    public void closeCachedEntryValue() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(46);
+         cachedEntryValueRead = false;
+     }
+ 
+diff --git a/net/openhft/chronicle/map/impl/stage/data/bytes/WrappedValueBytesData.java b/net/openhft/chronicle/map/impl/stage/data/bytes/WrappedValueBytesData.java
+index d34cca8..37e22dd 100644
+--- a/net/openhft/chronicle/map/impl/stage/data/bytes/WrappedValueBytesData.java
++++ b/net/openhft/chronicle/map/impl/stage/data/bytes/WrappedValueBytesData.java
+@@ -60,7 +60,7 @@ public class WrappedValueBytesData<V> extends AbstractData<V> {
+     }
+ 
+     @Stage("Next")
+-    public WrappedValueBytesData<V> getUnusedWrappedValueBytesData() {
++    public WrappedValueBytesData<V> getUnusedWrappedValueBytesData() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(47);
+         if (!wrappedValueBytesStoreInit())
+             return this;
+         if (next == null)
+@@ -72,7 +72,7 @@ public class WrappedValueBytesData<V> extends AbstractData<V> {
+         return wrappedValueBytesStore != null;
+     }
+ 
+-    public void initWrappedValueBytesStore(BytesStore<?, ?> bytesStore, long offset, long size) {
++    public void initWrappedValueBytesStore(BytesStore<?, ?> bytesStore, long offset, long size) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(48);
+         wrappedValueBytesStore = bytesStore;
+         wrappedValueBytesOffset = offset;
+         wrappedValueBytesSize = size;
+diff --git a/net/openhft/chronicle/map/impl/stage/data/instance/WrappedValueInstanceDataHolder.java b/net/openhft/chronicle/map/impl/stage/data/instance/WrappedValueInstanceDataHolder.java
+index e26d266..ea40c3e 100644
+--- a/net/openhft/chronicle/map/impl/stage/data/instance/WrappedValueInstanceDataHolder.java
++++ b/net/openhft/chronicle/map/impl/stage/data/instance/WrappedValueInstanceDataHolder.java
+@@ -44,7 +44,7 @@ public class WrappedValueInstanceDataHolder<V> {
+     }
+ 
+     @Stage("Next")
+-    public WrappedValueInstanceDataHolder<V> getUnusedWrappedValueHolder() {
++    public WrappedValueInstanceDataHolder<V> getUnusedWrappedValueHolder() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(49);
+         if (!valueInit())
+             return this;
+         if (next == null)
+@@ -52,7 +52,7 @@ public class WrappedValueInstanceDataHolder<V> {
+         return next.getUnusedWrappedValueHolder();
+     }
+ 
+-    public boolean valueInit() {
++    public boolean valueInit() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(50);
+         return value != null;
+     }
+ 
+diff --git a/net/openhft/chronicle/map/impl/stage/iter/ReplicatedMapAbsentDelegatingForIteration.java b/net/openhft/chronicle/map/impl/stage/iter/ReplicatedMapAbsentDelegatingForIteration.java
+index 7b7faba..b7d9d46 100644
+--- a/net/openhft/chronicle/map/impl/stage/iter/ReplicatedMapAbsentDelegatingForIteration.java
++++ b/net/openhft/chronicle/map/impl/stage/iter/ReplicatedMapAbsentDelegatingForIteration.java
+@@ -31,12 +31,12 @@ public class ReplicatedMapAbsentDelegatingForIteration<K, V>
+ 
+     @NotNull
+     @Override
+-    public WrappedValueInstanceDataHolderAccess<K, V, ?> context() {
++    public WrappedValueInstanceDataHolderAccess<K, V, ?> context() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(23);
+         return delegate.context();
+     }
+ 
+     @Override
+-    public void doInsert(Data<V> value) {
++    public void doInsert(Data<V> value) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(25);
+         delegate.doInsert(value);
+     }
+ 
+diff --git a/net/openhft/chronicle/map/impl/stage/iter/ReplicatedMapEntryDelegating.java b/net/openhft/chronicle/map/impl/stage/iter/ReplicatedMapEntryDelegating.java
+index a0ef119..f5c8400 100644
+--- a/net/openhft/chronicle/map/impl/stage/iter/ReplicatedMapEntryDelegating.java
++++ b/net/openhft/chronicle/map/impl/stage/iter/ReplicatedMapEntryDelegating.java
+@@ -24,13 +24,13 @@ public class ReplicatedMapEntryDelegating<K, V>
+ 
+     @NotNull
+     @Override
+-    public MapContext<K, V, ?> context() {
++    public MapContext<K, V, ?> context() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(27);
+         return delegate.context();
+     }
+ 
+     @NotNull
+     @Override
+-    public Data<K> key() {
++    public Data<K> key() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(29);
+         return delegate.key();
+     }
+ 
+diff --git a/net/openhft/chronicle/map/impl/stage/query/ReplicatedMapAbsentDelegating.java b/net/openhft/chronicle/map/impl/stage/query/ReplicatedMapAbsentDelegating.java
+index c77cc65..04611a4 100644
+--- a/net/openhft/chronicle/map/impl/stage/query/ReplicatedMapAbsentDelegating.java
++++ b/net/openhft/chronicle/map/impl/stage/query/ReplicatedMapAbsentDelegating.java
+@@ -22,12 +22,12 @@ public class ReplicatedMapAbsentDelegating<K, V> implements Absent<K, V> {
+ 
+     @NotNull
+     @Override
+-    public MapQuery<K, V, ?> context() {
++    public MapQuery<K, V, ?> context() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(31);
+         return delegate.context();
+     }
+ 
+     @Override
+-    public void doInsert() {
++    public void doInsert() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(33);
+         delegate.doInsert();
+     }
+ 
+diff --git a/net/openhft/chronicle/map/internal/AnalyticsHolder.java b/net/openhft/chronicle/map/internal/AnalyticsHolder.java
+index ca66dd3..25f7f0d 100644
+--- a/net/openhft/chronicle/map/internal/AnalyticsHolder.java
++++ b/net/openhft/chronicle/map/internal/AnalyticsHolder.java
+@@ -18,7 +18,7 @@ public enum AnalyticsHolder {
+             //.withUrl("https://www.google-analytics.com/debug/mp/collect")
+             .build();
+ 
+-    public static AnalyticsFacade instance() {
++    public static AnalyticsFacade instance() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(11);
+         return ANALYTICS;
+     }
+ }
+diff --git a/net/openhft/chronicle/map/internal/InternalAssertUtil.java b/net/openhft/chronicle/map/internal/InternalAssertUtil.java
+index 8ad4048..de3b29e 100644
+--- a/net/openhft/chronicle/map/internal/InternalAssertUtil.java
++++ b/net/openhft/chronicle/map/internal/InternalAssertUtil.java
+@@ -13,7 +13,7 @@ public final class InternalAssertUtil {
+     private InternalAssertUtil() {
+     }
+ 
+-    public static boolean assertAddress(final long address) {
++    public static boolean assertAddress(final long address) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(3);
+         if (Jvm.is64bit()) {
+             // It is highly unlikely that we would ever address farther than 2^63
+             assert address > 0 : "address is non positive: " + address;
+@@ -24,7 +24,7 @@ public final class InternalAssertUtil {
+         return true;
+     }
+ 
+-    public static boolean assertPosition(final long position) {
++    public static boolean assertPosition(final long position) { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(7);
+         assert position >= 0 : "position is negative: " + position;
+         return true;
+     }
+diff --git a/net/openhft/chronicle/map/jmhbench/MutationSwitch.java b/net/openhft/chronicle/map/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..1c89ded
+--- /dev/null
++++ b/net/openhft/chronicle/map/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.openhft.chronicle.map.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/net/openhft/chronicle/map/locks/ChronicleStampedLock.java b/net/openhft/chronicle/map/locks/ChronicleStampedLock.java
+index 87b68ec..eb8da0c 100644
+--- a/net/openhft/chronicle/map/locks/ChronicleStampedLock.java
++++ b/net/openhft/chronicle/map/locks/ChronicleStampedLock.java
+@@ -92,14 +92,14 @@ public class ChronicleStampedLock extends StampedLock {
+                 );
+     }
+ 
+-    public void closeChronicle() {
++    public void closeChronicle() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(4);
+         //chm.close();
+         //chmR.close();
+         //chmW.close();
+     }
+ 
+     @Override
+-    public long tryOptimisticRead() {
++    public long tryOptimisticRead() { net.openhft.chronicle.map.jmhbench.MutationSwitch.tick(8);
+         (offHeapLock = chm.get("Stamp ")).setEntryLockState(0L);
+         long t = System.currentTimeMillis();
+         chm.put("Stamp ", offHeapLock);

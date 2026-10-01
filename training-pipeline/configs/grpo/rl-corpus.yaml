@@ -1,0 +1,142 @@
+# GRPO RL subject-library corpus.
+#
+# Each entry is a GitHub repo used for prompt snippets + planted performance mutants.
+# Existing six keep their pinned refs; new libraries resolve a shallow default-branch tip
+# at bootstrap time (recorded into data/projects/<id>/project.yaml provenance.tag).
+#
+# Bootstrap / plant 50 sites:
+#   uv run python scripts/bootstrap_rl_corpus.py
+#   uv run python scripts/bootstrap_rl_corpus.py --only guava,gson
+#
+# Then provision classpaths + patched jars:
+#   ./scripts/provision_rl_projects.sh
+#   ./scripts/provision_rl_mutants.sh
+
+mutants_per_project: 50
+
+# Already in the GRPO corpus (hand-curated sites; skip re-bootstrap by default).
+existing:
+  - id: commons-numbers
+    github: apache/commons-numbers
+    ref: rel/commons-numbers-1.3
+    package_root: org.apache.commons.numbers
+    merge_modules: true
+  - id: commons-statistics
+    github: apache/commons-statistics
+    ref: rel/commons-statistics-1.3
+    package_root: org.apache.commons.statistics
+    merge_modules: true
+  - id: commons-codec
+    github: apache/commons-codec
+    ref: rel/commons-codec-1.17.1
+    package_root: org.apache.commons.codec
+  - id: commons-text
+    github: apache/commons-text
+    ref: rel/commons-text-1.12.0
+    package_root: org.apache.commons.text
+  - id: jackson-core
+    github: FasterXML/jackson-core
+    ref: jackson-core-2.18.2
+    package_root: com.fasterxml.jackson.core
+  - id: roaringbitmap
+    github: RoaringBitmap/RoaringBitmap
+    ref: "1.6.13"
+    package_root: org.roaringbitmap
+    source_subdir: RoaringBitmap
+    build: gradle
+
+# Extended corpus (image list minus the six above).
+projects:
+  - {id: agrona, github: real-logic/agrona, package_root: org.agrona, build: gradle}
+  - {id: trove, github: palantir/trove, package_root: gnu.trove, build: gradle}
+  - {id: parallelcolt, github: rwl/ParallelColt, package_root: cern.colt}
+  - {id: chronicle-bytes, github: OpenHFT/Chronicle-Bytes, package_root: net.openhft.chronicle.bytes}
+  - {id: chronicle-map, github: OpenHFT/Chronicle-Map, package_root: net.openhft.chronicle.map}
+  - {id: chronicle-wire, github: OpenHFT/Chronicle-Wire, package_root: net.openhft.chronicle.wire}
+  - {id: objectlayout, github: ObjectLayout/ObjectLayout, package_root: org.ObjectLayout, source_subdir: ObjectLayout}
+  - {id: jheaps, github: d-michail/jheaps, package_root: org.jheaps}
+  - {id: streamex, github: amaembo/streamex, package_root: one.util.streamex}
+  - {id: vavr, github: vavr-io/vavr, package_root: io.vavr}
+  - {id: jool, github: JOOQ/jOOL, package_root: org.jooq.lambda}
+  - {id: concurrentlinkedhashmap, github: ben-manes/concurrentlinkedhashmap, package_root: com.googlecode.concurrentlinkedhashmap}
+  - {id: cache2k, github: cache2k/cache2k, package_root: org.cache2k, merge_modules: true}
+  - {id: ehcache3, github: ehcache/ehcache3, package_root: org.ehcache, merge_modules: true}
+  - {id: datasketches-java, github: apache/datasketches-java, package_root: org.apache.datasketches}
+  - {id: stream-lib, github: addthis/stream-lib, package_root: com.clearspring.analytics}
+  - {id: java-hll, github: aggregateknowledge/java-hll, package_root: net.agkn.hll}
+  - {id: sparsebitset, github: brettwooldridge/SparseBitSet, package_root: com.zaxxer.sparsebits}
+  - {id: orestes-bloomfilter, github: Baqend/Orestes-Bloomfilter, package_root: orestes.bloomfilter}
+  - {id: hash4j, github: dynatrace-oss/hash4j, package_root: com.dynatrace.hash4j}
+  - {id: zero-allocation-hashing, github: OpenHFT/Zero-Allocation-Hashing, package_root: net.openhft.hashing}
+  - {id: guava, github: google/guava, package_root: com.google.common, source_subdir: guava, source_style: src_root}
+  - {id: lz4-java, github: lz4/lz4-java, package_root: net.jpountz.lz4}
+  - {id: snappy-java, github: xerial/snappy-java, package_root: org.xerial.snappy}
+  - {id: zstd-jni, github: luben/zstd-jni, package_root: com.github.luben.zstd}
+  - {id: xz-java, github: tukaani-project/xz-java, package_root: org.tukaani.xz}
+  - {id: brotli, github: google/brotli, package_root: org.brotli, source_subdir: java}
+  - {id: commons-crypto, github: apache/commons-crypto, package_root: org.apache.commons.crypto}
+  - {id: apfloat, github: mtommila/apfloat, package_root: org.apfloat, merge_modules: true}
+  - {id: big-math, github: eobermuhlner/big-math, package_root: ch.obermuhlner.math.big}
+  - {id: hipparchus, github: Hipparchus-Math/hipparchus, package_root: org.hipparchus, merge_modules: true}
+  - {id: ejml, github: lessthanoptimal/ejml, package_root: org.ejml, source_style: ejml}
+  - {id: ojalgo, github: optimatika/ojAlgo, package_root: org.ojalgo}
+  - {id: la4j, github: vkostyukov/la4j, package_root: org.la4j}
+  - {id: jafama, github: jeffhain/jafama, package_root: net.jafama}
+  - {id: commons-math, github: apache/commons-math, package_root: org.apache.commons.math4, merge_modules: true}
+  - {id: commons-rng, github: apache/commons-rng, package_root: org.apache.commons.rng, merge_modules: true}
+  - {id: commons-geometry, github: apache/commons-geometry, package_root: org.apache.commons.geometry, merge_modules: true}
+  - {id: jackson-databind, github: FasterXML/jackson-databind, package_root: tools.jackson.databind}
+  - {id: gson, github: google/gson, package_root: com.google.gson, merge_modules: true}
+  - {id: fastjson2, github: alibaba/fastjson2, package_root: com.alibaba.fastjson2, merge_modules: true}
+  - {id: dsl-json, github: ngs-doo/dsl-json, package_root: com.dslplatform.json}
+  - {id: minimal-json, github: ralfstx/minimal-json, package_root: com.eclipsesource.json}
+  - {id: moshi, github: square/moshi, package_root: com.squareup.moshi, ref: "1.15.1"}
+  - {id: jsoniter, github: json-iterator/java, package_root: com.jsoniter}
+  - {id: json-java, github: stleary/JSON-java, package_root: org.json}
+  - {id: json-simple, github: fangyidong/json-simple, package_root: org.json.simple}
+  - {id: fast-serialization, github: RuedigerMoeller/fast-serialization, package_root: org.nustaq.serialization}
+  - {id: msgpack-java, github: msgpack/msgpack-java, package_root: org.msgpack, merge_modules: true}
+  - {id: flatbuffers, github: google/flatbuffers, package_root: com.google.flatbuffers, source_subdir: java}
+  - {id: avro, github: apache/avro, package_root: org.apache.avro, merge_modules: true}
+  - {id: protostuff, github: protostuff/protostuff, package_root: io.protostuff, merge_modules: true}
+  - {id: wire, github: square/wire, package_root: com.squareup.wire, merge_modules: true}
+  - {id: jackson-dataformats-binary, github: FasterXML/jackson-dataformats-binary, package_root: tools.jackson.dataformat, merge_modules: true}
+  - {id: univocity-parsers, github: uniVocity/univocity-parsers, package_root: com.univocity.parsers}
+  - {id: commons-csv, github: apache/commons-csv, package_root: org.apache.commons.csv}
+  - {id: fastcsv, github: osiegmar/FastCSV, package_root: de.siegmar.fastcsv}
+  - {id: jsoup, github: jhy/jsoup, package_root: org.jsoup}
+  - {id: commons-io, github: apache/commons-io, package_root: org.apache.commons.io}
+  - {id: okio, github: square/okio, package_root: okio, ref: "parent-2.10.0"}
+  - {id: re2j, github: google/re2j, package_root: com.google.re2j}
+  - {id: brics-automaton, github: cs-au-dk/dk.brics.automaton, package_root: dk.brics.automaton}
+  - {id: joda-time, github: JodaOrg/joda-time, package_root: org.joda.time}
+  - {id: threeten-extra, github: ThreeTen/threeten-extra, package_root: org.threeten.extra}
+  - {id: conversant-disruptor, github: conversant/disruptor, package_root: com.conversantmedia.util.concurrent}
+  - {id: hdrhistogram, github: HdrHistogram/HdrHistogram, package_root: org.HdrHistogram}
+  - {id: latencyutils, github: LatencyUtils/LatencyUtils, package_root: org.LatencyUtils}
+  - {id: micrometer, github: micrometer-metrics/micrometer, package_root: io.micrometer, merge_modules: true}
+  - {id: commons-pool, github: apache/commons-pool, package_root: org.apache.commons.pool3}
+  - {id: jsr166, github: openjdk/jdk, package_root: java.util.concurrent, source_style: jdk_srczip, note: "stephenc/jsr166 gone; plant from local JDK src.zip java.util.concurrent"}
+  - {id: reactor-core, github: reactor/reactor-core, package_root: reactor.core}
+  - {id: netty, github: netty/netty, package_root: io.netty, merge_modules: true}
+  - {id: vertx, github: eclipse-vertx/vert.x, package_root: io.vertx, merge_modules: true}
+  - {id: jts, github: locationtech/jts, package_root: org.locationtech.jts, merge_modules: true}
+  - {id: spatial4j, github: locationtech/spatial4j, package_root: org.locationtech.spatial4j}
+  - {id: h3-java, github: uber/h3-java, package_root: com.uber.h3core}
+  - {id: jgraphx, github: jgraph/jgraphx, package_root: com.mxgraph, source_style: src_root}
+  - {id: zxing, github: zxing/zxing, package_root: com.google.zxing, merge_modules: true}
+  - {id: commons-imaging, github: apache/commons-imaging, package_root: org.apache.commons.imaging}
+  - {id: jimfs, github: google/jimfs, package_root: com.google.common.jimfs}
+  - {id: tablesaw, github: jtablesaw/tablesaw, package_root: tech.tablesaw, merge_modules: true}
+  - {id: mapdb, github: jankotek/mapdb, package_root: org.mapdb}
+  - {id: byte-buddy, github: raphw/byte-buddy, package_root: net.bytebuddy, merge_modules: true}
+  - {id: ow2-asm, github: llbit/ow2-asm, package_root: org.objectweb.asm}
+  - {id: bigqueue, github: bulldog2011/bigqueue, package_root: com.leansoft.bigqueue}
+  - {id: sux4j, github: vigna/Sux4J, package_root: it.unimi.dsi.sux4j}
+  - {id: webgraph, github: vigna/webgraph, package_root: it.unimi.dsi.webgraph}
+  - {id: dsiutils, github: vigna/dsiutils, package_root: it.unimi.dsi, source_style: src_root}
+  - {id: hppcrt, github: vsonnier/hppcrt, package_root: com.carrotsearch.hppcrt}
+  - {id: commons-configuration, github: apache/commons-configuration, package_root: org.apache.commons.configuration2}
+  - {id: commons-validator, github: apache/commons-validator, package_root: org.apache.commons.validator}
+  - {id: commons-beanutils, github: apache/commons-beanutils, package_root: org.apache.commons.beanutils2}
+  - {id: javatuples, github: javatuples/javatuples, package_root: org.javatuples}

@@ -1,0 +1,679 @@
+diff --git a/neureka/backend/main/algorithms/Util.java b/neureka/backend/main/algorithms/Util.java
+index 43cdd2c..19ffbf1 100644
+--- a/neureka/backend/main/algorithms/Util.java
++++ b/neureka/backend/main/algorithms/Util.java
+@@ -6,7 +6,7 @@ import neureka.math.Function;
+ 
+ public class Util {
+ 
+-    public static <T> Tensor<T> transpose(Tensor<T> t ) {
++    public static <T> Tensor<T> transpose(Tensor<T> t ) { neureka.backend.main.jmhbench.MutationSwitch.tick(1);
+         if ( t.rank() == 1 ) return t;
+         if ( t.rank() == 2 ) {
+             boolean wasIntermediate = t.isIntermediate();
+diff --git a/neureka/backend/main/implementations/CPUImplementation.java b/neureka/backend/main/implementations/CPUImplementation.java
+index 220e099..f8d24c2 100644
+--- a/neureka/backend/main/implementations/CPUImplementation.java
++++ b/neureka/backend/main/implementations/CPUImplementation.java
+@@ -15,7 +15,7 @@ import neureka.devices.host.CPU;
+  */
+ public final class CPUImplementation extends AbstractImplementationFor<CPU>
+ {
+-    public static AndImplementation withArity( int arity ) { return lambda -> new CPUImplementation( lambda, arity ); }
++    public static AndImplementation withArity( int arity ) { neureka.backend.main.jmhbench.MutationSwitch.tick(18); return lambda -> new CPUImplementation( lambda, arity ); }
+ 
+     private CPUImplementation( ImplementationFor<CPU> creator, int arity ) { super( creator, arity ); }
+ 
+diff --git a/neureka/backend/main/implementations/ParsedCLImplementation.java b/neureka/backend/main/implementations/ParsedCLImplementation.java
+index 9063a46..52e6daf 100644
+--- a/neureka/backend/main/implementations/ParsedCLImplementation.java
++++ b/neureka/backend/main/implementations/ParsedCLImplementation.java
+@@ -114,7 +114,7 @@ public class ParsedCLImplementation extends CLImplementation
+     }
+ 
+     @Override
+-    public KernelCode getKernelFor( ExecutionCall<OpenCLDevice> call ) {
++    public KernelCode getKernelFor( ExecutionCall<OpenCLDevice> call ) { neureka.backend.main.jmhbench.MutationSwitch.tick(20);
+         DataType<?> callType = call.input(0 ).getDataType();
+         return Arrays.stream(_kernels)
+                         .filter( k -> k.getDataType().equals( callType ) )
+@@ -123,7 +123,7 @@ public class ParsedCLImplementation extends CLImplementation
+     }
+ 
+     @Override
+-    public KernelCode[] getKernelCode() {
++    public KernelCode[] getKernelCode() { neureka.backend.main.jmhbench.MutationSwitch.tick(22);
+         return _kernels;
+     }
+ 
+diff --git a/neureka/backend/main/implementations/SimpleCLImplementation.java b/neureka/backend/main/implementations/SimpleCLImplementation.java
+index 7eed653..adbb746 100644
+--- a/neureka/backend/main/implementations/SimpleCLImplementation.java
++++ b/neureka/backend/main/implementations/SimpleCLImplementation.java
+@@ -20,12 +20,12 @@ public class SimpleCLImplementation extends CLImplementation
+     }
+ 
+     @Override
+-    public KernelCode getKernelFor( ExecutionCall<OpenCLDevice> call ) {
++    public KernelCode getKernelFor( ExecutionCall<OpenCLDevice> call ) { neureka.backend.main.jmhbench.MutationSwitch.tick(24);
+         return _kernel;
+     }
+ 
+     @Override
+-    public KernelCode[] getKernelCode() {
++    public KernelCode[] getKernelCode() { neureka.backend.main.jmhbench.MutationSwitch.tick(26);
+         return new KernelCode[]{ _kernel };
+     }
+ }
+diff --git a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastAddition.java b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastAddition.java
+index 521975e..e944f4c 100644
+--- a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastAddition.java
++++ b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastAddition.java
+@@ -12,7 +12,7 @@ public class CLScalarBroadcastAddition extends CLScalarBroadcast
+     }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) {
++    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(28);
+         assert call.arity() == 3;
+         if ( call.getDerivativeIndex() == 0 )
+             return Tensor.of( call.input(1).shape(), 1d ).mut().setIsIntermediate( true );
+diff --git a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastDivision.java b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastDivision.java
+index 3c29c64..d7c1dc8 100644
+--- a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastDivision.java
++++ b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastDivision.java
+@@ -20,7 +20,7 @@ public class CLScalarBroadcastDivision extends CLScalarBroadcast
+     }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) {
++    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(30);
+         int offset = (call.input( Number.class, 2 ).isVirtual() || call.input( Number.class, 2 ).size() == 1)?1:0;
+         int gwz = call.input( Number.class, 0 ).size();
+         call.getDevice().getKernel(call)
+diff --git a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastIdentity.java b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastIdentity.java
+index 60dde59..b6a680e 100644
+--- a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastIdentity.java
++++ b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastIdentity.java
+@@ -16,7 +16,7 @@ public class CLScalarBroadcastIdentity extends CLScalarBroadcast
+     }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) {
++    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(32);
+         Tensor<Number> t = call.input( Number.class, 0 );
+         int gwz = t.size();
+         call.getDevice()
+diff --git a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastModulo.java b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastModulo.java
+index f2a8fd8..2385ddc 100644
+--- a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastModulo.java
++++ b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastModulo.java
+@@ -20,7 +20,7 @@ public class CLScalarBroadcastModulo extends CLScalarBroadcast
+     }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) {
++    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(34);
+         int offset = (call.input( Number.class, 2 ).isVirtual() || call.input( Number.class, 2 ).size() == 1)?1:0;
+         int gwz = call.input( Number.class, 0 ).size();
+         call.getDevice()
+diff --git a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastMultiplication.java b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastMultiplication.java
+index 1c64589..f740926 100644
+--- a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastMultiplication.java
++++ b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastMultiplication.java
+@@ -12,7 +12,7 @@ public class CLScalarBroadcastMultiplication extends CLScalarBroadcast
+     }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) {
++    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(36);
+         if ( call.getDerivativeIndex() == 0 )
+             return call.input( 2 ).shallowCopy().mut().setIsIntermediate( true );
+         else if ( call.getDerivativeIndex() == 1 )
+diff --git a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastPower.java b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastPower.java
+index 0970962..be2bfba 100644
+--- a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastPower.java
++++ b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastPower.java
+@@ -18,7 +18,7 @@ public class CLScalarBroadcastPower extends CLScalarBroadcast
+         );
+     }
+     @Override
+-    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) {
++    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(38);
+         int offset = (call.input( Number.class, 2 ).isVirtual() || call.input( Number.class, 2 ).size() == 1)?1:0;
+         int gwz = call.input( Number.class, 0 ).size();
+         call.getDevice()
+diff --git a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastSubtraction.java b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastSubtraction.java
+index 1c1928b..4be2f83 100644
+--- a/neureka/backend/main/implementations/broadcast/CLScalarBroadcastSubtraction.java
++++ b/neureka/backend/main/implementations/broadcast/CLScalarBroadcastSubtraction.java
+@@ -12,7 +12,7 @@ public class CLScalarBroadcastSubtraction extends CLScalarBroadcast
+     }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) {
++    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(40);
+         int offset = (call.input( Number.class, 2 ).isVirtual() || call.input( Number.class, 2 ).size() == 1)?1:0;
+         int gwz = call.input( Number.class, 0 ).size();
+         call.getDevice()
+diff --git a/neureka/backend/main/implementations/broadcast/CPUBroadcastAddition.java b/neureka/backend/main/implementations/broadcast/CPUBroadcastAddition.java
+index 2f5f6ff..cc6a206 100644
+--- a/neureka/backend/main/implementations/broadcast/CPUBroadcastAddition.java
++++ b/neureka/backend/main/implementations/broadcast/CPUBroadcastAddition.java
+@@ -7,7 +7,7 @@ public class CPUBroadcastAddition extends CPUBroadcast
+     public CPUBroadcastAddition() {}
+ 
+     @Override
+-    protected CPUBiFun _getFun() {
++    protected CPUBiFun _getFun() { neureka.backend.main.jmhbench.MutationSwitch.tick(42);
+         return new CPUBiFun() {
+             @Override public double invoke(double a, double b) { return a + b; }
+             @Override public float invoke(float a, float b) { return a + b; }
+diff --git a/neureka/backend/main/implementations/broadcast/CPUBroadcastDivision.java b/neureka/backend/main/implementations/broadcast/CPUBroadcastDivision.java
+index c9e8ce1..5394c2e 100644
+--- a/neureka/backend/main/implementations/broadcast/CPUBroadcastDivision.java
++++ b/neureka/backend/main/implementations/broadcast/CPUBroadcastDivision.java
+@@ -7,7 +7,7 @@ public class CPUBroadcastDivision extends CPUBroadcast
+     public CPUBroadcastDivision() {}
+ 
+     @Override
+-    protected CPUBiFun _getFun() {
++    protected CPUBiFun _getFun() { neureka.backend.main.jmhbench.MutationSwitch.tick(44);
+         return new CPUBiFun() {
+             @Override public double invoke(double a, double b) { return a / b; }
+             @Override public float invoke(float a, float b) { return a / b; }
+@@ -15,7 +15,7 @@ public class CPUBroadcastDivision extends CPUBroadcast
+     }
+ 
+     @Override
+-    protected CPUBiFun _getDeriveAt0() {
++    protected CPUBiFun _getDeriveAt0() { neureka.backend.main.jmhbench.MutationSwitch.tick(46);
+         return new CPUBiFun() {
+             @Override public double invoke(double a, double b) { return 1 / b; }
+             @Override public float invoke(float a, float b) { return 1 / b; }
+diff --git a/neureka/backend/main/implementations/broadcast/CPUBroadcastModulo.java b/neureka/backend/main/implementations/broadcast/CPUBroadcastModulo.java
+index 01c1e51..3a7c5f6 100644
+--- a/neureka/backend/main/implementations/broadcast/CPUBroadcastModulo.java
++++ b/neureka/backend/main/implementations/broadcast/CPUBroadcastModulo.java
+@@ -7,7 +7,7 @@ public class CPUBroadcastModulo extends CPUBroadcast
+     public CPUBroadcastModulo() {}
+ 
+     @Override
+-    protected CPUBiFun _getFun() {
++    protected CPUBiFun _getFun() { neureka.backend.main.jmhbench.MutationSwitch.tick(48);
+         return new CPUBiFun() {
+             @Override public double invoke(double a, double b) { return a % b; }
+             @Override public float invoke(float a, float b) { return a % b; }
+@@ -15,7 +15,7 @@ public class CPUBroadcastModulo extends CPUBroadcast
+     }
+ 
+     @Override
+-    protected CPUBiFun _getDeriveAt0() {
++    protected CPUBiFun _getDeriveAt0() { neureka.backend.main.jmhbench.MutationSwitch.tick(50);
+         return new CPUBiFun() {
+             @Override public double invoke(double a, double b) { return 1 / b; }
+             @Override public float invoke(float a, float b) { return 1 / b; }
+diff --git a/neureka/backend/main/implementations/elementwise/CPUElementwiseFunction.java b/neureka/backend/main/implementations/elementwise/CPUElementwiseFunction.java
+index 7b43b54..e0b3107 100644
+--- a/neureka/backend/main/implementations/elementwise/CPUElementwiseFunction.java
++++ b/neureka/backend/main/implementations/elementwise/CPUElementwiseFunction.java
+@@ -16,7 +16,7 @@ public class CPUElementwiseFunction implements ImplementationFor<CPU>
+     public CPUElementwiseFunction( ScalarFun fun ) { _fun = fun; }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<CPU> call ) {
++    public Tensor<?> run(ExecutionCall<CPU> call ) { neureka.backend.main.jmhbench.MutationSwitch.tick(2);
+         call.getDevice()
+             .getExecutor()
+             .threaded(
+diff --git a/neureka/backend/main/implementations/fun/FunUtil.java b/neureka/backend/main/implementations/fun/FunUtil.java
+index 0accc9d..f164821 100644
+--- a/neureka/backend/main/implementations/fun/FunUtil.java
++++ b/neureka/backend/main/implementations/fun/FunUtil.java
+@@ -5,7 +5,7 @@ class FunUtil
+     /**
+      *  This is extremely fast and has virtually the same accuracy as {@code 1 / Math.pow(x, 0.5)}.
+      */
+-    public static double invSqrt(double x) {
++    public static double invSqrt(double x) { neureka.backend.main.jmhbench.MutationSwitch.tick(5);
+         double xhalf = 0.5d * x;
+         long i = Double.doubleToLongBits(x);
+         i = 0x5fe6ec85e7de30daL - (i >> 1);
+@@ -17,7 +17,7 @@ class FunUtil
+         return x;
+     }
+ 
+-    public static float invSqrt( float x ) {
++    public static float invSqrt( float x ) { neureka.backend.main.jmhbench.MutationSwitch.tick(8);
+         float xhalf = 0.5f * x;
+         int i = Float.floatToIntBits(x);
+         i = 0x5f3759df - (i >> 1);
+diff --git a/neureka/backend/main/implementations/scalar/CLScalarFunction.java b/neureka/backend/main/implementations/scalar/CLScalarFunction.java
+index d978918..41eeae7 100644
+--- a/neureka/backend/main/implementations/scalar/CLScalarFunction.java
++++ b/neureka/backend/main/implementations/scalar/CLScalarFunction.java
+@@ -17,7 +17,7 @@ public class CLScalarFunction implements ImplementationFor<OpenCLDevice>
+     }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) {
++    public Tensor<?> run(ExecutionCall<OpenCLDevice> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(11);
+         int d = call.getValOf(Arg.DerivIdx.class);
+         CPUFun f = d < 0 ? _fun.getActivation() : _fun.getDerivative();
+         Number value =  f.invoke(call.input( Number.class, 1 ).item(0).doubleValue());
+diff --git a/neureka/backend/main/implementations/scalar/CPUScalarBroadcastFunction.java b/neureka/backend/main/implementations/scalar/CPUScalarBroadcastFunction.java
+index eaa0611..7928258 100644
+--- a/neureka/backend/main/implementations/scalar/CPUScalarBroadcastFunction.java
++++ b/neureka/backend/main/implementations/scalar/CPUScalarBroadcastFunction.java
+@@ -16,7 +16,7 @@ public class CPUScalarBroadcastFunction implements ImplementationFor<CPU>
+     public CPUScalarBroadcastFunction(ScalarFun fun ) { _fun = fun; }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<CPU> call) {
++    public Tensor<?> run(ExecutionCall<CPU> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(14);
+         call.getDevice()
+             .getExecutor()
+             .threaded(
+diff --git a/neureka/backend/main/implementations/scalar/CPUScalarFunction.java b/neureka/backend/main/implementations/scalar/CPUScalarFunction.java
+index 8458872..5c73c7c 100644
+--- a/neureka/backend/main/implementations/scalar/CPUScalarFunction.java
++++ b/neureka/backend/main/implementations/scalar/CPUScalarFunction.java
+@@ -15,7 +15,7 @@ public class CPUScalarFunction implements ImplementationFor<CPU>
+     public CPUScalarFunction(ScalarFun fun ) { _fun = fun; }
+ 
+     @Override
+-    public Tensor<?> run(ExecutionCall<CPU> call) {
++    public Tensor<?> run(ExecutionCall<CPU> call) { neureka.backend.main.jmhbench.MutationSwitch.tick(16);
+         int d = call.getValOf(Arg.DerivIdx.class);
+         CPUFun f = d < 0 ? _fun.getActivation() : _fun.getDerivative();
+         double      in  = call.input( Number.class, 1 ).item(0).doubleValue();
+diff --git a/neureka/backend/main/jmhbench/MutationSwitch.java b/neureka/backend/main/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..f58d135
+--- /dev/null
++++ b/neureka/backend/main/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package neureka.backend.main.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/neureka/backend/main/memory/MemUtil.java b/neureka/backend/main/memory/MemUtil.java
+index 92bc2fc..6a24f72 100644
+--- a/neureka/backend/main/memory/MemUtil.java
++++ b/neureka/backend/main/memory/MemUtil.java
+@@ -28,7 +28,7 @@ public class MemUtil {
+      *
+      * @param tensors The tensors which should be deleted if possible.
+      */
+-    public static void autoDelete( Tensor<?>... tensors ) {
++    public static void autoDelete( Tensor<?>... tensors ) { neureka.backend.main.jmhbench.MutationSwitch.tick(3);
+         /*
+              When we are purely in the JVM world, then the garbage
+              collector will take care of freeing our memory,
+@@ -67,7 +67,7 @@ public class MemUtil {
+      * @param <T> The type of the result produced by the provided lambda.
+      * @return The result produced by the provided lambda.
+      */
+-    public static <T> T keep(Tensor<?>[] tensors, Supplier<T> during ) {
++    public static <T> T keep(Tensor<?>[] tensors, Supplier<T> during ) { neureka.backend.main.jmhbench.MutationSwitch.tick(6);
+         List<Tensor<?>> doNotDelete = Arrays.stream(tensors).filter(Tensor::isIntermediate).collect(Collectors.toList());
+         doNotDelete.forEach( t -> t.mut().setIsIntermediate( false ) );
+         T result = during.get();
+diff --git a/neureka/backend/main/memory/MemValidator.java b/neureka/backend/main/memory/MemValidator.java
+index e12ec79..cd32645 100644
+--- a/neureka/backend/main/memory/MemValidator.java
++++ b/neureka/backend/main/memory/MemValidator.java
+@@ -28,7 +28,7 @@ public class MemValidator {
+      * @param resultProvider The callback providing the result which ought to be validated.
+      * @return The {@link MemValidator} which ought to validate the provided result.
+      */
+-    public static MemValidator forInputs(Tensor<?>[] inputs, Supplier<Result> resultProvider ) {
++    public static MemValidator forInputs(Tensor<?>[] inputs, Supplier<Result> resultProvider ) { neureka.backend.main.jmhbench.MutationSwitch.tick(9);
+         return new MemValidator( inputs, resultProvider );
+     }
+ 
+@@ -100,7 +100,7 @@ public class MemValidator {
+     /**
+      * @return Is {@code true} if the result tensor is wrongfully flagged as intermediate (see {@link Tensor#isIntermediate()}).
+      */
+-    public boolean isWronglyIntermediate() { return _wronglyIntermediate; }
++    public boolean isWronglyIntermediate() { neureka.backend.main.jmhbench.MutationSwitch.tick(12); return _wronglyIntermediate; }
+ 
+     /**
+      * @return Is {@code true} if the result tensor is wrongfully flagged as non-intermediate (see {@link Tensor#isIntermediate()}).
+diff --git a/neureka/backend/main/operations/ConvUtil.java b/neureka/backend/main/operations/ConvUtil.java
+index d19d4ff..ae28fd1 100644
+--- a/neureka/backend/main/operations/ConvUtil.java
++++ b/neureka/backend/main/operations/ConvUtil.java
+@@ -14,7 +14,7 @@ import neureka.devices.Device;
+ 
+ public class ConvUtil
+ {
+-    public static NDConvolution createDeconvolutionFor(String op ) {
++    public static NDConvolution createDeconvolutionFor(String op ) { neureka.backend.main.jmhbench.MutationSwitch.tick(4);
+         return new NDConvolution()
+                 .setAutogradModeFor( call -> {
+                     if ( call.getOperation().supports( NDConvolution.class ) ) return AutoDiffMode.BACKWARD_ONLY;
+@@ -58,7 +58,7 @@ public class ConvUtil
+                 .buildFunAlgorithm();
+     }
+ 
+-    public static Shape shapeOfCon(int[] shape1, int[] shape2 ) {
++    public static Shape shapeOfCon(int[] shape1, int[] shape2 ) { neureka.backend.main.jmhbench.MutationSwitch.tick(7);
+         int[] shape = new int[ ( shape1.length + shape2.length ) / 2 ];
+         for ( int i = 0; i < shape1.length && i < shape2.length; i++ )
+             shape[ i ] = Math.abs( shape1[ i ] - shape2[ i ] ) + 1;
+diff --git a/neureka/backend/main/operations/ElemWiseUtil.java b/neureka/backend/main/operations/ElemWiseUtil.java
+index 75b1a70..653af14 100644
+--- a/neureka/backend/main/operations/ElemWiseUtil.java
++++ b/neureka/backend/main/operations/ElemWiseUtil.java
+@@ -16,7 +16,7 @@ public class ElemWiseUtil
+ {
+     private static final Logger _LOG = LoggerFactory.getLogger( ElemWiseUtil.class );
+ 
+-    public static <V> Tensor<V> newTensorLike( Tensor<V> template, double value ) {
++    public static <V> Tensor<V> newTensorLike( Tensor<V> template, double value ) { neureka.backend.main.jmhbench.MutationSwitch.tick(10);
+         return newTensorLike(
+             template.itemType(),
+             template.shape(),
+@@ -28,7 +28,7 @@ public class ElemWiseUtil
+ 
+     public static <V> Tensor<V> newTensorLike(
+         Class<V> type, Shape shape, boolean isOutsourced, Device<Object> device, double value
+-    ) {
++    ) { neureka.backend.main.jmhbench.MutationSwitch.tick(13);
+         Tensor<V> t = Tensor.of( type, shape, value ).mut().setIsIntermediate( true );
+         t.mut().setIsVirtual( false );
+         t.mut().setItems( value );
+diff --git a/neureka/backend/main/operations/functions/Logarithm.java b/neureka/backend/main/operations/functions/Logarithm.java
+index 7c76a74..8b2f025 100644
+--- a/neureka/backend/main/operations/functions/Logarithm.java
++++ b/neureka/backend/main/operations/functions/Logarithm.java
+@@ -9,7 +9,7 @@ public final class Logarithm extends AbstractActivationOperation
+         super(ScalarFun.LOGARITHM);
+     }
+     @Override
+-    public String asDerivative( Function[] children, int derivationIndex) {
++    public String asDerivative( Function[] children, int derivationIndex) { neureka.backend.main.jmhbench.MutationSwitch.tick(15);
+         if ( children.length != 1 ) throw new IllegalStateException("Natual logarithm does not support more than 1 argument.");
+         return children[0].getDerivative(derivationIndex)+" / "+children[0].toString();
+     }
+diff --git a/neureka/backend/main/operations/indexer/Product.java b/neureka/backend/main/operations/indexer/Product.java
+index b4726f0..2de833a 100644
+--- a/neureka/backend/main/operations/indexer/Product.java
++++ b/neureka/backend/main/operations/indexer/Product.java
+@@ -45,7 +45,7 @@ public final class Product extends AbstractOperation
+ 
+     @Override
+     public Result execute( final Function caller, final ExecutionCall<?> call )
+-    {
++    { neureka.backend.main.jmhbench.MutationSwitch.tick(17);
+         if ( call.getDerivativeIndex() >= 0 )
+         {
+             if ( !call.validate().allNotNullHaveSame(NDimensional::shape).isValid() )
+@@ -89,7 +89,7 @@ public final class Product extends AbstractOperation
+ 
+     @Override
+     public double calculate( double[] inputs, int j, int d, Function[] src )
+-    {
++    { neureka.backend.main.jmhbench.MutationSwitch.tick(19);
+         if ( j < 0 ) return calculate( inputs, d, src );
+         if ( d < 0 ) {
+             double prod = 1;
+diff --git a/neureka/backend/main/operations/indexer/Summation.java b/neureka/backend/main/operations/indexer/Summation.java
+index c888c7b..5567eb3 100644
+--- a/neureka/backend/main/operations/indexer/Summation.java
++++ b/neureka/backend/main/operations/indexer/Summation.java
+@@ -42,7 +42,7 @@ public final class Summation extends AbstractOperation
+ 
+     @Override
+     public Result execute( final Function caller, final ExecutionCall<?> call )
+-    {
++    { neureka.backend.main.jmhbench.MutationSwitch.tick(21);
+         Tensor<?>[] inputs = new Tensor[ call.arity() ];
+         for ( int i = 0; i < inputs.length; i++ ) {
+             ExecutionCall<?> flatCall = AbstractDeviceAlgorithm.flattenForIndexer( caller, call.withArgs(Arg.VarIdx.of(i)) );
+@@ -56,7 +56,7 @@ public final class Summation extends AbstractOperation
+     }
+ 
+     @Override
+-    public double calculate( double[] inputs, int j, int d, Function[] src ) {
++    public double calculate( double[] inputs, int j, int d, Function[] src ) { neureka.backend.main.jmhbench.MutationSwitch.tick(23);
+         if ( j < 0 ) return calculate( inputs, d, src );
+         if ( d < 0 ) return _calculate( inputs, src );
+         else return src[ 0 ].derive( inputs, d, j );
+diff --git a/neureka/backend/main/operations/linear/Convolution.java b/neureka/backend/main/operations/linear/Convolution.java
+index 06b5a99..c6d1e94 100644
+--- a/neureka/backend/main/operations/linear/Convolution.java
++++ b/neureka/backend/main/operations/linear/Convolution.java
+@@ -109,7 +109,7 @@ public class Convolution extends AbstractOperation
+ 
+     @Override
+     public Result execute( final Function caller, final ExecutionCall<?> call )
+-    {
++    { neureka.backend.main.jmhbench.MutationSwitch.tick(25);
+         if ( !caller.isFlat() ) {
+             Function reducedCaller = reducePairwise(caller);
+             ExecutionCall<?> flatCall = AbstractDeviceAlgorithm.flatten( reducedCaller, call.withArgs(Arg.DerivIdx.of(-1)) );
+@@ -151,5 +151,5 @@ public class Convolution extends AbstractOperation
+     }
+ 
+     @Override
+-    public double calculate( double[] inputs, int j, int d, Function[] src ) { return src[ 0 ].call( inputs, j ); }
++    public double calculate( double[] inputs, int j, int d, Function[] src ) { neureka.backend.main.jmhbench.MutationSwitch.tick(27); return src[ 0 ].call( inputs, j ); }
+ }
+diff --git a/neureka/backend/main/operations/linear/DotProduct.java b/neureka/backend/main/operations/linear/DotProduct.java
+index 5c41230..c8ee832 100644
+--- a/neureka/backend/main/operations/linear/DotProduct.java
++++ b/neureka/backend/main/operations/linear/DotProduct.java
+@@ -24,7 +24,7 @@ public class DotProduct extends AbstractOperation
+     }
+ 
+     @Override
+-    public double calculate(double[] inputs, int j, int d, Function[] src) {
++    public double calculate(double[] inputs, int j, int d, Function[] src) { neureka.backend.main.jmhbench.MutationSwitch.tick(29);
+         throw new UnsupportedOperationException();
+     }
+ }
+diff --git a/neureka/backend/main/operations/linear/MatMul.java b/neureka/backend/main/operations/linear/MatMul.java
+index 02075fc..41b0110 100644
+--- a/neureka/backend/main/operations/linear/MatMul.java
++++ b/neureka/backend/main/operations/linear/MatMul.java
+@@ -33,7 +33,7 @@ public class MatMul extends AbstractOperation
+ 
+     @Override
+     public Result execute( final Function caller, final ExecutionCall<?> call )
+-    {
++    { neureka.backend.main.jmhbench.MutationSwitch.tick(31);
+         if ( !caller.isFlat() ) {
+             Function reducedCaller = reducePairwise(caller);
+             ExecutionCall<?> flatCall = AbstractDeviceAlgorithm.flatten( reducedCaller, call.withArgs(Arg.DerivIdx.of(-1)) );
+@@ -61,7 +61,7 @@ public class MatMul extends AbstractOperation
+     }
+ 
+     @Override
+-    public double calculate( double[] inputs, int j, int d, Function[] src ) {
++    public double calculate( double[] inputs, int j, int d, Function[] src ) { neureka.backend.main.jmhbench.MutationSwitch.tick(33);
+         return src[ 0 ].call( inputs, j );
+     }
+ }
+diff --git a/neureka/backend/main/operations/linear/XConvLeft.java b/neureka/backend/main/operations/linear/XConvLeft.java
+index 23ee8eb..105f95c 100644
+--- a/neureka/backend/main/operations/linear/XConvLeft.java
++++ b/neureka/backend/main/operations/linear/XConvLeft.java
+@@ -25,7 +25,7 @@ public class XConvLeft extends AbstractOperation {
+     }
+ 
+     @Override
+-    public String stringify(String[] children) {
++    public String stringify(String[] children) { neureka.backend.main.jmhbench.MutationSwitch.tick(35);
+         StringBuilder reconstructed = new StringBuilder();
+         for ( int i = 0; i < children.length; ++i ) {
+             reconstructed.append( children[ i ] );
+@@ -37,7 +37,7 @@ public class XConvLeft extends AbstractOperation {
+     }
+ 
+     @Override
+-    public double calculate( double[] inputs, int j, int d, Function[] src ) {
++    public double calculate( double[] inputs, int j, int d, Function[] src ) { neureka.backend.main.jmhbench.MutationSwitch.tick(37);
+         return src[ 0 ].call( inputs, j );
+     }
+ 
+diff --git a/neureka/backend/main/operations/linear/XConvRight.java b/neureka/backend/main/operations/linear/XConvRight.java
+index cd2be93..bf102b1 100644
+--- a/neureka/backend/main/operations/linear/XConvRight.java
++++ b/neureka/backend/main/operations/linear/XConvRight.java
+@@ -25,7 +25,7 @@ public class XConvRight extends AbstractOperation {
+     }
+ 
+     @Override
+-    public String stringify( String[] children ) {
++    public String stringify( String[] children ) { neureka.backend.main.jmhbench.MutationSwitch.tick(39);
+         StringBuilder reconstructed = new StringBuilder();
+         for ( int i = 0; i < children.length; ++i ) {
+             reconstructed.append( children[ i ] );
+@@ -37,7 +37,7 @@ public class XConvRight extends AbstractOperation {
+     }
+ 
+     @Override
+-    public double calculate( double[] inputs, int j, int d, Function[] src ) {
++    public double calculate( double[] inputs, int j, int d, Function[] src ) { neureka.backend.main.jmhbench.MutationSwitch.tick(41);
+         return 0;
+     }
+ 
+diff --git a/neureka/backend/main/operations/linear/internal/blas/AXPY.java b/neureka/backend/main/operations/linear/internal/blas/AXPY.java
+index a1dbe4a..a96c74b 100644
+--- a/neureka/backend/main/operations/linear/internal/blas/AXPY.java
++++ b/neureka/backend/main/operations/linear/internal/blas/AXPY.java
+@@ -38,7 +38,7 @@ public final class AXPY {
+             final int xOffset,
+             final int start,
+             final int limit
+-    ) {
++    ) { neureka.backend.main.jmhbench.MutationSwitch.tick(43);
+         for (int i = start; i < limit; i++) {
+             y[yOffset + i] += multiplier * x[xOffset + i];
+         }
+@@ -52,7 +52,7 @@ public final class AXPY {
+             final int basex,
+             final int first,
+             final int limit
+-    ) {
++    ) { neureka.backend.main.jmhbench.MutationSwitch.tick(45);
+         for (int i = first; i < limit; i++) {
+             y[basey + i] += a * x[basex + i];
+         }
+diff --git a/neureka/backend/main/operations/linear/internal/blas/COPY.java b/neureka/backend/main/operations/linear/internal/blas/COPY.java
+index 2e1ec27..22a8cb8 100644
+--- a/neureka/backend/main/operations/linear/internal/blas/COPY.java
++++ b/neureka/backend/main/operations/linear/internal/blas/COPY.java
+@@ -31,7 +31,7 @@ import java.lang.reflect.Array;
+ public final class COPY {
+ 
+     @SuppressWarnings("unchecked")
+-    public static <T> T[] copyOf(final T[] original) {
++    public static <T> T[] copyOf(final T[] original) { neureka.backend.main.jmhbench.MutationSwitch.tick(47);
+         final int tmpLength = original.length;
+         final T[] retVal = (T[]) Array.newInstance(original.getClass().getComponentType(), tmpLength);
+         System.arraycopy(original, 0, retVal, 0, tmpLength);
+diff --git a/neureka/backend/main/operations/linear/internal/blas/DOT.java b/neureka/backend/main/operations/linear/internal/blas/DOT.java
+index e3e2435..73b5cd9 100644
+--- a/neureka/backend/main/operations/linear/internal/blas/DOT.java
++++ b/neureka/backend/main/operations/linear/internal/blas/DOT.java
+@@ -30,7 +30,7 @@ package neureka.backend.main.operations.linear.internal.blas;
+  */
+ public final class DOT
+ {
+-    public static double invoke(final double[] array1, final int offset1, final double[] array2, final int offset2, final int first, final int limit) {
++    public static double invoke(final double[] array1, final int offset1, final double[] array2, final int offset2, final int first, final int limit) { neureka.backend.main.jmhbench.MutationSwitch.tick(49);
+         return DOT.unrolled04(array1, offset1, array2, offset2, first, limit);
+     }
+ 

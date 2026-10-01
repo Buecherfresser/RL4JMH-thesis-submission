@@ -1,0 +1,59 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link ObservableElementAtMaybe}.
+ *
+ * Measures the throughput of retrieving the element at a given index from an {@link Observable}
+ * using the {@code elementAtMaybe} operator.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Param to explore different source sizes and target indices.
+ * - @Setup to create the source Observable once per benchmark iteration.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableElementAtMaybeBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({ "10", "1000", "100000" })
+    public int sourceSize;
+
+    /** Zero‑based index of the element to retrieve. Must be less than {@code sourceSize}. */
+    @Param({ "0", "1", "10", "100", "500" })
+    public int index;
+
+    private Observable<Integer> source;
+
+    /** Prepare the source Observable before each benchmark invocation. */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Clamp index to a valid range.
+        int safeIndex = Math.min(index, sourceSize - 1);
+        this.index = safeIndex;
+        this.source = Observable.range(0, sourceSize);
+    }
+
+    /** Benchmark the throughput of the {@code elementAtMaybe} operator. */
+    @Benchmark
+    public void elementAtMaybe(Blackhole bh) {
+        // Create the Maybe that will emit the element at the requested index.
+        Maybe<Integer> maybe = new ObservableElementAtMaybe<>(source, index);
+        // Force execution and obtain the result.
+        Integer result = maybe.blockingGet();
+        // Consume the result to avoid dead‑code elimination.
+        bh.consume(result);
+    }
+}
+```

@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+
+/**
+ * Benchmark for {@code Flowable.materialize()} operator.
+ *
+ * <p>This benchmark measures the throughput (operations per second) of the
+ * materialize operator when applied to a synchronous {@link Flowable} that
+ * emits a configurable number of integer items. The benchmark follows JMH
+ * best practices:
+ *
+ * <ul>
+ *   <li>Uses {@code @State(Scope.Thread)} to avoid sharing mutable state across threads.</li>
+ *   <li>Provides a {@code @Param} to vary the size of the source sequence.</li>
+ *   <li>Executes a warm‑up phase before measurement.</li>
+ *   <li>Consumes the resulting {@link io.reactivex.rxjava3.core.Notification} objects via {@link Blackhole}
+ *       to prevent dead‑code elimination.</li>
+ *   <li>Runs in {@code Mode.Throughput} with results reported per second.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableMaterializeBenchmark {
+
+    /**
+     * Number of items emitted by the source {@link Flowable}.
+     * Typical values: 1_000, 10_000, 100_000.
+     */
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    /**
+     * Source Flowable that emits a range of integers.
+     */
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Synchronous, non‑backpressured source.
+        source = Flowable.range(1, size);
+    }
+
+    /**
+     * Executes the materialize operator and consumes all notifications.
+     *
+     * @param bh Blackhole to consume the notifications and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void materialize(Blackhole bh) {
+        // materialize() converts each onNext/onError/onComplete into a Notification.
+        // blockingForEach forces the Flowable to run to completion synchronously.
+        source
+            .materialize()
+            .blockingForEach(bh::consume);
+    }
+}
+```

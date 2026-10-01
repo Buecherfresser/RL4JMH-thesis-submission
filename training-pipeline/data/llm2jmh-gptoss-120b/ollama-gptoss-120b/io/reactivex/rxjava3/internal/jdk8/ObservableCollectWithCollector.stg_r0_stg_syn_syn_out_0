@@ -1,0 +1,97 @@
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link ObservableCollectWithCollector}.
+ *
+ * Measures how many collections can be performed per second (throughput)
+ * for a given number of upstream items.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * - @State is scoped to a thread to avoid sharing mutable state.
+ * - @Setup prepares immutable source Observable and Collector.
+ * - @Benchmark returns the result via Blackhole to prevent dead‑code elimination.
+ * - Warm‑up, measurement, and fork parameters are chosen to give stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ObservableCollectWithCollectorBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * Source Observable that emits a range of integers.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * Collector that accumulates items into a {@link List}.
+     */
+    private java.util.stream.Collector<? super Integer, ?, List<Integer>> collector;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Observable.range is cheap and deterministic; it will be reused across iterations.
+        source = Observable.range(1, itemCount);
+        collector = Collectors.toList();
+    }
+
+    /**
+     * Executes the collect operation using {@link ObservableCollectWithCollector}.
+     *
+     * The result is consumed by {@link Blackhole} to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void collect(Blackhole bh) {
+        ObservableCollectWithCollector<Integer, ?, List<Integer>> op = new ObservableCollectWithCollector<>(source, collector);
+        // blockingFirst() blocks until the upstream completes and the collector emits the final list.
+        List<Integer> result = op.blockingFirst();
+        // Consume the result so the JIT cannot optimize the whole pipeline away.
+        bh.consume(result);
+    }
+}

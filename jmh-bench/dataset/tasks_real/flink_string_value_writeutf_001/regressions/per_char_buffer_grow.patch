@@ -1,0 +1,45 @@
+--- a/bench/StringEncoder.java
++++ b/bench/StringEncoder.java
+@@ -1,28 +1,31 @@
+ package bench;
++
++import java.util.Arrays;
+ 
+ public final class StringEncoder {
+ 
+     private StringEncoder() {}
+ 
++    // Regressed: grow the output buffer one byte at a time via copyOf.
+     public static byte[] encode(String s) {
+         int n = s.length();
+-        byte[] out = new byte[n * 3];
+-        int p = 0;
++        byte[] out = new byte[0];
+         for (int i = 0; i < n; i++) {
+             char c = s.charAt(i);
+             if (c < 0x80) {
+-                out[p++] = (byte) c;
++                out = Arrays.copyOf(out, out.length + 1);
++                out[out.length - 1] = (byte) c;
+             } else if (c < 0x800) {
+-                out[p++] = (byte) (0xC0 | (c >> 6));
+-                out[p++] = (byte) (0x80 | (c & 0x3F));
++                out = Arrays.copyOf(out, out.length + 2);
++                out[out.length - 2] = (byte) (0xC0 | (c >> 6));
++                out[out.length - 1] = (byte) (0x80 | (c & 0x3F));
+             } else {
+-                out[p++] = (byte) (0xE0 | (c >> 12));
+-                out[p++] = (byte) (0x80 | ((c >> 6) & 0x3F));
+-                out[p++] = (byte) (0x80 | (c & 0x3F));
++                out = Arrays.copyOf(out, out.length + 3);
++                out[out.length - 3] = (byte) (0xE0 | (c >> 12));
++                out[out.length - 2] = (byte) (0x80 | ((c >> 6) & 0x3F));
++                out[out.length - 1] = (byte) (0x80 | (c & 0x3F));
+             }
+         }
+-        byte[] result = new byte[p];
+-        System.arraycopy(out, 0, result, 0, p);
+-        return result;
++        return out;
+     }
+ }

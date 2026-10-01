@@ -1,0 +1,88 @@
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.completable.CompletableObserveOn}.
+ *
+ * Measures the throughput of a simple {@code Completable.complete()} that is
+ * observed on a computation scheduler. The benchmark uses {@code blockingAwait()}
+ * to ensure the scheduled work has finished before the next iteration.
+ *
+ * Best practices applied:
+ * - Warm‑up and measurement phases are defined.
+ * - Multiple forks to reduce JVM warm‑up effects.
+ * - State scoped to a thread to avoid contention.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class CompletableObserveOnBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        Scheduler scheduler;
+
+        Completable completable;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Use a scheduler that actually schedules work on a different thread.
+            scheduler = Schedulers.computation();
+            // A Completable that completes immediately.
+            completable = Completable.complete();
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            // Shut down the scheduler to avoid thread leaks between forks.
+            scheduler.shutdown();
+        }
+    }
+
+    @Benchmark
+    public void observeOnThroughput(BenchmarkState state, Blackhole bh) {
+        // Apply observeOn and wait for completion; this forces the scheduling path.
+        state.completable.observeOn(state.scheduler).blockingAwait();
+        // Consume a dummy value to keep the JIT from optimizing away the call.
+        bh.consume(1);
+    }
+}

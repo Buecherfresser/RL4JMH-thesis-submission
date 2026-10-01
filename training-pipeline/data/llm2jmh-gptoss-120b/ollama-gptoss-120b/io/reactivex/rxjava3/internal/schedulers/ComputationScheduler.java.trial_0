@@ -1,0 +1,83 @@
+```
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.internal.schedulers.ComputationScheduler;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link ComputationScheduler}.
+ *
+ * The benchmarks focus on the most common operations:
+ *   - creating a worker,
+ *   - scheduling a runnable (immediate and delayed),
+ *   - using the direct scheduling API,
+ *   - scheduling a periodic task (and cancelling it immediately).
+ *
+ * Throughput mode measures how many operations can be performed per time unit,
+ * which is the most relevant metric for a scheduler that is expected to handle
+ * a high volume of tasks.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(4)
+public class ComputationSchedulerBenchmark {
+
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+        ComputationScheduler scheduler;
+        Scheduler.Worker worker;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            scheduler = new ComputationScheduler();
+            worker = scheduler.createWorker();
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            worker.dispose();
+            scheduler.shutdown();
+        }
+    }
+
+    /** Benchmark for scheduling a runnable with zero delay via a Worker. */
+    @Benchmark
+    public Disposable scheduleImmediate(BenchmarkState state, Blackhole bh) {
+        return state.worker.schedule(() -> bh.consume(1));
+    }
+
+    /** Benchmark for scheduling a runnable with a tiny delay via a Worker. */
+    @Benchmark
+    public Disposable scheduleDelayed(BenchmarkState state, Blackhole bh) {
+        return state.worker.schedule(() -> bh.consume(1), 1, TimeUnit.MICROSECONDS);
+    }
+
+    /** Benchmark for creating and immediately disposing a Worker. */
+    @Benchmark
+    public Scheduler.Worker createAndDisposeWorker(BenchmarkState state) {
+        Scheduler.Worker w = state.scheduler.createWorker();
+        w.dispose();
+        return w;
+    }
+
+    /** Benchmark for direct scheduling (no Worker) with zero delay. */
+    @Benchmark
+    public Disposable scheduleDirect(BenchmarkState state, Blackhole bh) {
+        return state.scheduler.scheduleDirect(() -> bh.consume(1));
+    }
+
+    /** Benchmark for direct periodic scheduling; the task is cancelled immediately to avoid long‑running interference. */
+    @Benchmark
+    public Disposable schedulePeriodicallyDirect(BenchmarkState state, Blackhole bh) {
+        Disposable d = state.scheduler.schedulePeriodicallyDirect(() -> bh.consume(1), 0, 1, TimeUnit.MICROSECONDS);
+        d.dispose();
+        return d;
+    }
+}
+```

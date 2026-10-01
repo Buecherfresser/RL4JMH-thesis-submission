@@ -1,0 +1,126 @@
+```
+package io.reactivex.rxjava3.internal.subscriptions;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * JMH benchmarks for {@link DeferredScalarSubscription}.
+ *
+ * The benchmarks focus on the two most critical public methods:
+ * {@link DeferredScalarSubscription#request(long)} and {@link DeferredScalarSubscription#complete(Object)}.
+ *
+ * The dummy {@link Subscriber} implementation does the minimal amount of work
+ * (no allocation, no synchronization) to avoid contaminating the measurements.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class DeferredScalarSubscriptionBenchmark {
+
+    /** Simple no‑op subscriber that forwards signals to a {@link Blackhole}. */
+    static final class BlackholeSubscriber<T> implements Subscriber<T> {
+        private final Blackhole bh;
+
+        BlackholeSubscriber(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override public void onSubscribe(Subscription s) { /* no‑op */ }
+        @Override public void onNext(T t) { bh.consume(t); }
+        @Override public void onError(Throwable t) { bh.consume(t); }
+        @Override public void onComplete() { bh.consume(true); }
+    }
+
+    /** The subscription under test. */
+    DeferredScalarSubscription<Integer> subscription;
+
+    /** A reusable value for {@code complete}. */
+    final Integer value = 42;
+
+    /** Blackhole instance injected by JMH. */
+    @Setup(Level.Invocation)
+    public void setUp(Blackhole bh) {
+        // Create a fresh subscription for each invocation to avoid state leakage.
+        subscription = new DeferredScalarSubscription<>(new BlackholeSubscriber<>(bh));
+    }
+
+    /**
+     * Benchmark the {@code request} path when the value has already been set
+     * (i.e. {@code complete} was called before {@code request}).
+     *
+     * This simulates the hot path where a downstream requests after the upstream
+     * has already produced the scalar value.
+     */
+    @Benchmark
+    public void requestAfterComplete() {
+        // First, complete the subscription with a value.
+        subscription.complete(value);
+        // Then, request the value.
+        subscription.request(1);
+    }
+
+    /**
+     * Benchmark the {@code complete} path when the downstream has already
+     * requested the value (i.e. {@code request} was called before {@code complete}).
+     *
+     * This simulates the hot path where the upstream produces the scalar after
+     * the downstream has signaled demand.
+     */
+    @Benchmark
+    public void completeAfterRequest() {
+        // First, request the value.
+        subscription.request(1);
+        // Then, complete the subscription with a value.
+        subscription.complete(value);
+    }
+
+    /**
+     * Benchmark the {@code request} path when there is no value yet.
+     *
+     * This measures the CAS loop that transitions from {@code NO_REQUEST_NO_VALUE}
+     * to {@code HAS_REQUEST_NO_VALUE}.
+     */
+    @Benchmark
+    public void requestBeforeComplete() {
+        subscription.request(1);
+    }
+
+    /**
+     * Benchmark the {@code complete} path when there is no prior request.
+     *
+     * This measures the CAS loop that transitions from {@code NO_REQUEST_NO_VALUE}
+     * to {@code NO_REQUEST_HAS_VALUE}.
+     */
+    @Benchmark
+    public void completeBeforeRequest() {
+        subscription.complete(value);
+    }
+
+    /**
+     * Benchmark the fused async mode (queue‑style) where the downstream
+     * pulls the value via {@link #poll()} after a request.
+     *
+     * This exercises the {@code requestFusion}, {@code poll}, and state
+     * transitions specific to the fused path.
+     */
+    @Benchmark
+    public void fusedAsyncPoll(Blackhole bh) {
+        // Enable async fusion.
+        subscription.requestFusion(DeferredScalarSubscription.ASYNC);
+        // Complete the subscription (value will be stored in fused state).
+        subscription.complete(value);
+        // Pull the value via poll().
+        Integer v = subscription.poll();
+        bh.consume(v);
+    }
+}
+```

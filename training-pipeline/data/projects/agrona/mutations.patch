@@ -1,0 +1,646 @@
+diff --git a/org/agrona/BitUtil.java b/org/agrona/BitUtil.java
+index 33e4382..3fb8217 100644
+--- a/org/agrona/BitUtil.java
++++ b/org/agrona/BitUtil.java
+@@ -122,7 +122,7 @@ public final class BitUtil
+      * @return The next power of 2 or the value itself if it is a power of 2.
+      */
+     public static int findNextPositivePowerOfTwo(final int value)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(1);
+         return 1 << (Integer.SIZE - Integer.numberOfLeadingZeros(value - 1));
+     }
+ 
+@@ -138,7 +138,7 @@ public final class BitUtil
+      * @return The next power of 2 or the value itself if it is a power of 2.
+      */
+     public static long findNextPositivePowerOfTwo(final long value)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(12);
+         return 1L << (Long.SIZE - Long.numberOfLeadingZeros(value - 1));
+     }
+ 
+diff --git a/org/agrona/BufferUtil.java b/org/agrona/BufferUtil.java
+index 7193b30..abc9269 100644
+--- a/org/agrona/BufferUtil.java
++++ b/org/agrona/BufferUtil.java
+@@ -88,7 +88,7 @@ public final class BufferUtil
+      * @param length of the range accessed. The value should not be negative.
+      */
+     public static void boundsCheck(final byte[] buffer, final long index, final int length)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(21);
+         Objects.checkFromIndexSize(index, length, buffer.length);
+     }
+ 
+@@ -100,7 +100,7 @@ public final class BufferUtil
+      * @param length of the range accessed. The value should not be negative.
+      */
+     public static void boundsCheck(final ByteBuffer buffer, final long index, final int length)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(28);
+         Objects.checkFromIndexSize(index, length, buffer.capacity());
+     }
+ 
+diff --git a/org/agrona/ExpandableArrayBuffer.java b/org/agrona/ExpandableArrayBuffer.java
+index 4462a2b..a5351fc 100644
+--- a/org/agrona/ExpandableArrayBuffer.java
++++ b/org/agrona/ExpandableArrayBuffer.java
+@@ -66,7 +66,7 @@ public class ExpandableArrayBuffer extends AbstractMutableDirectBuffer
+      * {@inheritDoc}
+      */
+     public void wrap(final byte[] buffer)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(35);
+         throw new UnsupportedOperationException();
+     }
+ 
+@@ -74,7 +74,7 @@ public class ExpandableArrayBuffer extends AbstractMutableDirectBuffer
+      * {@inheritDoc}
+      */
+     public void wrap(final byte[] buffer, final int offset, final int length)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(42);
+         throw new UnsupportedOperationException();
+     }
+ 
+diff --git a/org/agrona/ExpandableDirectByteBuffer.java b/org/agrona/ExpandableDirectByteBuffer.java
+index 0bbf97f..eea3d14 100644
+--- a/org/agrona/ExpandableDirectByteBuffer.java
++++ b/org/agrona/ExpandableDirectByteBuffer.java
+@@ -71,7 +71,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
+      * {@inheritDoc}
+      */
+     public void wrap(final byte[] buffer)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(49);
+         throw new UnsupportedOperationException();
+     }
+ 
+diff --git a/org/agrona/agent/BufferAlignmentAgent.java b/org/agrona/agent/BufferAlignmentAgent.java
+index beafe0a..a36afd4 100644
+--- a/org/agrona/agent/BufferAlignmentAgent.java
++++ b/org/agrona/agent/BufferAlignmentAgent.java
+@@ -67,7 +67,7 @@ public final class BufferAlignmentAgent
+      * @param instrumentation for adding bytecode to classes.
+      */
+     public static void premain(final String agentArgs, final Instrumentation instrumentation)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(2);
+         agent(false, instrumentation);
+     }
+ 
+@@ -78,7 +78,7 @@ public final class BufferAlignmentAgent
+      * @param instrumentation for adding bytecode to classes.
+      */
+     public static void agentmain(final String agentArgs, final Instrumentation instrumentation)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(13);
+         agent(true, instrumentation);
+     }
+ 
+diff --git a/org/agrona/agent/BufferAlignmentException.java b/org/agrona/agent/BufferAlignmentException.java
+index c92c22e..6ad8af4 100644
+--- a/org/agrona/agent/BufferAlignmentException.java
++++ b/org/agrona/agent/BufferAlignmentException.java
+@@ -52,7 +52,7 @@ public class BufferAlignmentException extends RuntimeException
+      * @return index.
+      */
+     public int index()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(22);
+         return index;
+     }
+ 
+@@ -62,7 +62,7 @@ public class BufferAlignmentException extends RuntimeException
+      * @return address of the beginning of the underlying buffer.
+      */
+     public long addressOffset()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(29);
+         return addressOffset;
+     }
+ }
+diff --git a/org/agrona/agent/BufferAlignmentInterceptor.java b/org/agrona/agent/BufferAlignmentInterceptor.java
+index 53e00b5..c21e1bf 100644
+--- a/org/agrona/agent/BufferAlignmentInterceptor.java
++++ b/org/agrona/agent/BufferAlignmentInterceptor.java
+@@ -47,7 +47,7 @@ public final class BufferAlignmentInterceptor
+          */
+         @Advice.OnMethodEnter
+         public static void verifyAlignment(final int index, final @Advice.This DirectBuffer buffer)
+-        {
++        { org.agrona.jmhbench.MutationSwitch.tick(36);
+             if (0 != ((buffer.addressOffset() + index) & (SIZE_OF_LONG - 1)))
+             {
+                 throw new BufferAlignmentException("Unaligned long access", index, buffer.addressOffset());
+@@ -72,7 +72,7 @@ public final class BufferAlignmentInterceptor
+          */
+         @Advice.OnMethodEnter
+         public static void verifyAlignment(final int index, final @Advice.This DirectBuffer buffer)
+-        {
++        { org.agrona.jmhbench.MutationSwitch.tick(43);
+             if (0 != ((buffer.addressOffset() + index) & (SIZE_OF_DOUBLE - 1)))
+             {
+                 throw new BufferAlignmentException("Unaligned double access", index, buffer.addressOffset());
+diff --git a/org/agrona/build/SonatypeCentralPortalUploadRepositoryTask.java b/org/agrona/build/SonatypeCentralPortalUploadRepositoryTask.java
+index 64bc775..792fa35 100644
+--- a/org/agrona/build/SonatypeCentralPortalUploadRepositoryTask.java
++++ b/org/agrona/build/SonatypeCentralPortalUploadRepositoryTask.java
+@@ -65,7 +65,7 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask
+      */
+     @Input
+     public Property<String> getPortalUsername()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(3);
+         return portalUsername;
+     }
+ 
+@@ -76,7 +76,7 @@ public class SonatypeCentralPortalUploadRepositoryTask extends DefaultTask
+      */
+     @Input
+     public Property<String> getPortalPassword()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(14);
+         return portalPassword;
+     }
+ 
+diff --git a/org/agrona/build/UnsafeApiBytecodeGenerator.java b/org/agrona/build/UnsafeApiBytecodeGenerator.java
+index 01a2da6..a964467 100644
+--- a/org/agrona/build/UnsafeApiBytecodeGenerator.java
++++ b/org/agrona/build/UnsafeApiBytecodeGenerator.java
+@@ -86,7 +86,7 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
+             final @NotNull MethodVisitor methodVisitor,
+             final @NotNull Implementation.Context implementationContext,
+             final @NotNull MethodDescription instrumentedMethod)
+-        {
++        { org.agrona.jmhbench.MutationSwitch.tick(23);
+             final TypeDescription.ForLoadedType classType = new TypeDescription.ForLoadedType(Class.class);
+             final TypeDescription.ForLoadedType fieldType = new TypeDescription.ForLoadedType(Field.class);
+ 
+@@ -130,7 +130,7 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
+ 
+         @Override
+         public @NotNull InstrumentedType prepare(final @NotNull InstrumentedType instrumentedType)
+-        {
++        { org.agrona.jmhbench.MutationSwitch.tick(30);
+             return instrumentedType;
+         }
+ 
+diff --git a/org/agrona/build/UnsafeApiSourceGenerator.java b/org/agrona/build/UnsafeApiSourceGenerator.java
+index 0872569..ee0289c 100644
+--- a/org/agrona/build/UnsafeApiSourceGenerator.java
++++ b/org/agrona/build/UnsafeApiSourceGenerator.java
+@@ -39,7 +39,7 @@ public class UnsafeApiSourceGenerator extends DefaultTask
+     private static final ClassValue<String> TYPE_NAME = new ClassValue<>()
+     {
+         protected String computeValue(@NotNull final Class<?> type)
+-        {
++        { org.agrona.jmhbench.MutationSwitch.tick(37);
+             final TypeVariable<? extends Class<?>>[] typeParameters = type.getTypeParameters();
+             String typeName = type.getTypeName();
+             final String prefix = "java.lang.";
+@@ -73,7 +73,7 @@ public class UnsafeApiSourceGenerator extends DefaultTask
+      */
+     @OutputDirectory
+     public File getOutputDirectory()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(44);
+         return outputDirectory;
+     }
+ 
+diff --git a/org/agrona/checksum/Crc32.java b/org/agrona/checksum/Crc32.java
+index 0602721..9b931a2 100644
+--- a/org/agrona/checksum/Crc32.java
++++ b/org/agrona/checksum/Crc32.java
+@@ -59,7 +59,7 @@ public final class Crc32 implements Checksum
+      * {@inheritDoc}
+      */
+     public int compute(final long address, final int offset, final int length)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(4);
+         try
+         {
+             return (int)UPDATE_BYTE_BUFFER.invokeExact(address, offset, length);
+diff --git a/org/agrona/checksum/Crc32c.java b/org/agrona/checksum/Crc32c.java
+index 6657efc..64bac33 100644
+--- a/org/agrona/checksum/Crc32c.java
++++ b/org/agrona/checksum/Crc32c.java
+@@ -79,7 +79,7 @@ public final class Crc32c implements Checksum
+      * {@inheritDoc}
+      */
+     public int compute(final long address, final int offset, final int length)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(15);
+         try
+         {
+             return (int)UPDATE_DIRECT_BYTE_BUFFER.invokeExact(address, offset, offset + length /* end */);
+diff --git a/org/agrona/collections/ArrayListUtil.java b/org/agrona/collections/ArrayListUtil.java
+index 731aa49..f805710 100644
+--- a/org/agrona/collections/ArrayListUtil.java
++++ b/org/agrona/collections/ArrayListUtil.java
+@@ -36,7 +36,7 @@ public final class ArrayListUtil
+      * @throws IndexOutOfBoundsException if index is out of bounds.
+      */
+     public static <T> void fastUnorderedRemove(final ArrayList<T> list, final int index)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(5);
+         final int lastIndex = list.size() - 1;
+         if (index != lastIndex)
+         {
+@@ -59,7 +59,7 @@ public final class ArrayListUtil
+      * @throws IndexOutOfBoundsException if index or lastIndex are out of bounds.
+      */
+     public static <T> void fastUnorderedRemove(final ArrayList<T> list, final int index, final int lastIndex)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(16);
+         if (index != lastIndex)
+         {
+             list.set(index, list.remove(lastIndex));
+diff --git a/org/agrona/collections/ArrayUtil.java b/org/agrona/collections/ArrayUtil.java
+index 3d3a236..8e3db29 100644
+--- a/org/agrona/collections/ArrayUtil.java
++++ b/org/agrona/collections/ArrayUtil.java
+@@ -179,7 +179,7 @@ public final class ArrayUtil
+      */
+     @SuppressWarnings("unchecked")
+     public static <T> T[] newArray(final T[] oldElements, final int length)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(24);
+         return (T[])Array.newInstance(oldElements.getClass().getComponentType(), length);
+     }
+ 
+@@ -192,7 +192,7 @@ public final class ArrayUtil
+      * @return an array of the required length.
+      */
+     public static <T> T[] ensureCapacity(final T[] oldElements, final int requiredLength)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(31);
+         T[] result = oldElements;
+ 
+         if (oldElements.length < requiredLength)
+diff --git a/org/agrona/collections/BiInt2NullableObjectMap.java b/org/agrona/collections/BiInt2NullableObjectMap.java
+index c202335..5a04a99 100644
+--- a/org/agrona/collections/BiInt2NullableObjectMap.java
++++ b/org/agrona/collections/BiInt2NullableObjectMap.java
+@@ -42,13 +42,13 @@ public class BiInt2NullableObjectMap<V> extends BiInt2ObjectMap<V>
+     }
+ 
+     protected Object mapNullValue(final Object value)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(38);
+         return null == value ? NullReference.INSTANCE : value;
+     }
+ 
+     @SuppressWarnings("unchecked")
+     protected V unmapNullValue(final Object value)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(45);
+         return NullReference.INSTANCE == value ? null : (V)value;
+     }
+ }
+diff --git a/org/agrona/collections/BiInt2ObjectMap.java b/org/agrona/collections/BiInt2ObjectMap.java
+index 29bccb4..c56aa26 100644
+--- a/org/agrona/collections/BiInt2ObjectMap.java
++++ b/org/agrona/collections/BiInt2ObjectMap.java
+@@ -128,7 +128,7 @@ public class BiInt2ObjectMap<V>
+      * @return the total capacity for the map.
+      */
+     public int capacity()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(50);
+         return values.length;
+     }
+ 
+diff --git a/org/agrona/concurrent/ManyToManyConcurrentArrayQueue.java b/org/agrona/concurrent/ManyToManyConcurrentArrayQueue.java
+index 7557a53..e052279 100644
+--- a/org/agrona/concurrent/ManyToManyConcurrentArrayQueue.java
++++ b/org/agrona/concurrent/ManyToManyConcurrentArrayQueue.java
+@@ -79,7 +79,7 @@ public class ManyToManyConcurrentArrayQueue<E> extends AbstractConcurrentArrayQu
+      * {@inheritDoc}
+      */
+     public boolean offer(final E e)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(6);
+         if (null == e)
+         {
+             throw new NullPointerException("element cannot be null");
+@@ -117,7 +117,7 @@ public class ManyToManyConcurrentArrayQueue<E> extends AbstractConcurrentArrayQu
+      */
+     @SuppressWarnings("unchecked")
+     public E poll()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(17);
+         final long[] sequences = this.sequences;
+         final E[] buffer = this.buffer;
+         final long mask = this.capacity - 1;
+diff --git a/org/agrona/concurrent/ManyToOneConcurrentArrayQueue.java b/org/agrona/concurrent/ManyToOneConcurrentArrayQueue.java
+index 2362aff..554d2fa 100644
+--- a/org/agrona/concurrent/ManyToOneConcurrentArrayQueue.java
++++ b/org/agrona/concurrent/ManyToOneConcurrentArrayQueue.java
+@@ -53,7 +53,7 @@ public class ManyToOneConcurrentArrayQueue<E> extends AbstractConcurrentArrayQue
+      * {@inheritDoc}
+      */
+     public boolean offer(final E e)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(25);
+         if (null == e)
+         {
+             throw new NullPointerException("element cannot be null");
+@@ -90,7 +90,7 @@ public class ManyToOneConcurrentArrayQueue<E> extends AbstractConcurrentArrayQue
+      */
+     @SuppressWarnings("unchecked")
+     public E poll()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(32);
+         final long currentHead = head;
+         final long elementOffset = sequenceToBufferOffset(currentHead, capacity - 1);
+         final Object[] buffer = this.buffer;
+diff --git a/org/agrona/concurrent/MutableDirectBufferParseIntAsciiBenchmark.java b/org/agrona/concurrent/MutableDirectBufferParseIntAsciiBenchmark.java
+index c0d9488..9317e1c 100644
+--- a/org/agrona/concurrent/MutableDirectBufferParseIntAsciiBenchmark.java
++++ b/org/agrona/concurrent/MutableDirectBufferParseIntAsciiBenchmark.java
+@@ -55,7 +55,7 @@ public class MutableDirectBufferParseIntAsciiBenchmark
+      */
+     @Setup
+     public void setup()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(39);
+         length = value.length();
+         unsafeBuffer.putStringWithoutLengthAscii(0, value);
+         expandableArrayBuffer.putStringWithoutLengthAscii(0, value);
+@@ -69,7 +69,7 @@ public class MutableDirectBufferParseIntAsciiBenchmark
+      */
+     @Benchmark
+     public int unsafeBuffer()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(46);
+         return unsafeBuffer.parseIntAscii(0, length);
+     }
+ 
+diff --git a/org/agrona/console/ContinueBarrier.java b/org/agrona/console/ContinueBarrier.java
+index 388d390..b28c33d 100644
+--- a/org/agrona/console/ContinueBarrier.java
++++ b/org/agrona/console/ContinueBarrier.java
+@@ -41,7 +41,7 @@ public class ContinueBarrier
+      * @return true if y otherwise false.
+      */
+     public boolean await()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(7);
+         System.out.format("%n%s (y/n): ", label).flush();
+         final Scanner in = new Scanner(System.in);
+         final String line = in.nextLine();
+diff --git a/org/agrona/generation/CharSequenceJavaFileObject.java b/org/agrona/generation/CharSequenceJavaFileObject.java
+index 4de0d10..bc9a529 100644
+--- a/org/agrona/generation/CharSequenceJavaFileObject.java
++++ b/org/agrona/generation/CharSequenceJavaFileObject.java
+@@ -41,7 +41,7 @@ public class CharSequenceJavaFileObject extends SimpleJavaFileObject
+      * {@inheritDoc}
+      */
+     public CharSequence getCharContent(final boolean ignoreEncodingErrors)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(40);
+         return sourceCode;
+     }
+ }
+diff --git a/org/agrona/generation/ClassFileManager.java b/org/agrona/generation/ClassFileManager.java
+index ae234f5..38cbdec 100644
+--- a/org/agrona/generation/ClassFileManager.java
++++ b/org/agrona/generation/ClassFileManager.java
+@@ -46,7 +46,7 @@ public class ClassFileManager<M extends JavaFileManager> extends ForwardingJavaF
+      * {@inheritDoc}
+      */
+     public ClassLoader getClassLoader(final Location location)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(47);
+         return new SecureClassLoader()
+         {
+             protected Class<?> findClass(final String name)
+diff --git a/org/agrona/generation/CompilerUtil.java b/org/agrona/generation/CompilerUtil.java
+index 6be4c5e..4882b3a 100644
+--- a/org/agrona/generation/CompilerUtil.java
++++ b/org/agrona/generation/CompilerUtil.java
+@@ -49,7 +49,7 @@ public final class CompilerUtil
+      */
+     public static Class<?> compileInMemory(final String className, final Map<String, CharSequence> sources)
+         throws ClassNotFoundException
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(8);
+         final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+         if (null == compiler)
+         {
+@@ -80,7 +80,7 @@ public final class CompilerUtil
+         final DiagnosticCollector<JavaFileObject> diagnostics,
+         final JavaFileManager fileManager,
+         final JavaCompiler.CompilationTask task) throws ClassNotFoundException
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(18);
+         if (!compile(diagnostics, task))
+         {
+             return null;
+diff --git a/org/agrona/generation/StringWriterOutputManager.java b/org/agrona/generation/StringWriterOutputManager.java
+index c2af374..f78d98f 100644
+--- a/org/agrona/generation/StringWriterOutputManager.java
++++ b/org/agrona/generation/StringWriterOutputManager.java
+@@ -42,14 +42,14 @@ public class StringWriterOutputManager implements DynamicPackageOutputManager
+      * {@inheritDoc}
+      */
+     public Writer createOutput(final String name)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(26);
+         final StringWriter stringWriter = new StringWriter();
+         sourceFileByName.put(packageName + "." + name, stringWriter);
+ 
+         return new FilterWriter(stringWriter)
+         {
+             public void close() throws IOException
+-            {
++            { org.agrona.jmhbench.MutationSwitch.tick(33);
+                 super.close();
+ 
+                 if (null != initialPackageName)
+diff --git a/org/agrona/hints/ThreadHints.java b/org/agrona/hints/ThreadHints.java
+index 65353d3..ab7a493 100644
+--- a/org/agrona/hints/ThreadHints.java
++++ b/org/agrona/hints/ThreadHints.java
+@@ -50,7 +50,7 @@ public final class ThreadHints
+      * may take action to improve the performance of invoking spin-wait loop constructions.
+      */
+     public static void onSpinWait()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(9);
+         if (ON_SPIN_WAIT_ENABLED)
+         {
+             Thread.onSpinWait();
+diff --git a/org/agrona/io/DirectBufferDataInput.java b/org/agrona/io/DirectBufferDataInput.java
+index c57c119..f280fd4 100644
+--- a/org/agrona/io/DirectBufferDataInput.java
++++ b/org/agrona/io/DirectBufferDataInput.java
+@@ -72,7 +72,7 @@ public class DirectBufferDataInput implements DataInput
+      * @param buffer to wrap.
+      */
+     public void wrap(final DirectBuffer buffer)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(10);
+         wrap(buffer, 0, buffer.capacity());
+     }
+ 
+@@ -84,7 +84,7 @@ public class DirectBufferDataInput implements DataInput
+      * @param length in bytes.
+      */
+     public void wrap(final DirectBuffer buffer, final int offset, final int length)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(19);
+         if (null == buffer)
+         {
+             throw new NullPointerException("buffer cannot be null");
+diff --git a/org/agrona/io/DirectBufferInputStream.java b/org/agrona/io/DirectBufferInputStream.java
+index ac87435..86a7e51 100755
+--- a/org/agrona/io/DirectBufferInputStream.java
++++ b/org/agrona/io/DirectBufferInputStream.java
+@@ -66,7 +66,7 @@ public class DirectBufferInputStream extends InputStream
+      * @param buffer to wrap.
+      */
+     public void wrap(final DirectBuffer buffer)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(27);
+         wrap(buffer, 0, buffer.capacity());
+     }
+ 
+@@ -78,7 +78,7 @@ public class DirectBufferInputStream extends InputStream
+      * @param length in bytes.
+      */
+     public void wrap(final DirectBuffer buffer, final int offset, final int length)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(34);
+         if (null == buffer)
+         {
+             throw new NullPointerException("buffer cannot be null");
+diff --git a/org/agrona/io/DirectBufferOutputStream.java b/org/agrona/io/DirectBufferOutputStream.java
+index 60f10c6..0ee7494 100755
+--- a/org/agrona/io/DirectBufferOutputStream.java
++++ b/org/agrona/io/DirectBufferOutputStream.java
+@@ -67,7 +67,7 @@ public class DirectBufferOutputStream extends OutputStream
+      * @param buffer to wrap.
+      */
+     public void wrap(final MutableDirectBuffer buffer)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(41);
+         wrap(buffer, 0, buffer.capacity());
+     }
+ 
+@@ -79,7 +79,7 @@ public class DirectBufferOutputStream extends OutputStream
+      * @param length size in bytes to wrap.
+      */
+     public void wrap(final MutableDirectBuffer buffer, final int offset, final int length)
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(48);
+         if (null == buffer)
+         {
+             throw new NullPointerException("buffer cannot be null");
+diff --git a/org/agrona/jmhbench/MutationSwitch.java b/org/agrona/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..ed65947
+--- /dev/null
++++ b/org/agrona/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.agrona.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/agrona/nio/TransportPoller.java b/org/agrona/nio/TransportPoller.java
+index 1f209e6..a75c41a 100644
+--- a/org/agrona/nio/TransportPoller.java
++++ b/org/agrona/nio/TransportPoller.java
+@@ -70,7 +70,7 @@ public class TransportPoller implements AutoCloseable
+      * Close NioSelector down. Returns immediately.
+      */
+     public void close()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(11);
+         selector.wakeup();
+         try
+         {
+@@ -86,7 +86,7 @@ public class TransportPoller implements AutoCloseable
+      * Explicit call to {@link Selector#selectNow()} followed by clearing out the set without processing.
+      */
+     public void selectNowWithoutProcessing()
+-    {
++    { org.agrona.jmhbench.MutationSwitch.tick(20);
+         try
+         {
+             selector.selectNow();

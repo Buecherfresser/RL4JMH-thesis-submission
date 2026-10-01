@@ -1,0 +1,100 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@code Observable.zip} (the internal {@code ObservableZip} operator).
+ * Measures the throughput of zipping multiple synchronous sources.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableZipBenchmark {
+
+    /**
+     * Number of source observables to zip together.
+     */
+    @Param({"2", "3", "5"})
+    public int sourceCount;
+
+    /**
+     * Number of items each source emits.
+     */
+    @Param({"1000", "10000"})
+    public int itemCount;
+
+    /**
+     * Buffer size used by each ZipObserver.
+     */
+    @Param({"128", "1024"})
+    public int bufferSize;
+
+    /**
+     * Whether the zip operator should delay errors.
+     */
+    @Param({"true", "false"})
+    public boolean delayError;
+
+    private Observable<Integer> zipped;
+
+    /**
+     * Prepare the zipped observable before each benchmark iteration.
+     * The observable is built once per thread state to avoid measuring construction overhead.
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Suppress undeliverable error logging that could interfere with benchmark measurements.
+        RxJavaPlugins.setErrorHandler(Throwable::ignore);
+
+        // Create the required number of source observables.
+        Observable<Integer>[] sources = new Observable[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            sources[i] = Observable.range(1, itemCount);
+        }
+
+        // Simple zipper that sums the values from each source.
+        Function<Object[], Integer> zipper = objects -> {
+            int sum = 0;
+            for (Object o : objects) {
+                sum += (Integer) o;
+            }
+            return sum;
+        };
+
+        // Build the zipped observable using the public API (which internally uses ObservableZip).
+        zipped = Observable.zipArray(
+                zipper,
+                delayError,
+                bufferSize,
+                sources
+        );
+    }
+
+    /**
+     * Benchmark method that subscribes to the zipped observable and blocks until completion.
+     * The throughput measured is the number of complete zip operations per second.
+     */
+    @Benchmark
+    public void zipAndConsume() {
+        // blockingSubscribe consumes the whole sequence and returns only after completion.
+        zipped.blockingSubscribe();
+    }
+
+    /**
+     * Clean up the RxJava error handler after the benchmark run.
+     */
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        RxJavaPlugins.reset();
+    }
+}
+```

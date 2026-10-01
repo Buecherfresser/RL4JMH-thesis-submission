@@ -1,0 +1,25 @@
+--- a/bench/MetricsCounter.java
++++ b/bench/MetricsCounter.java
+@@ -1,14 +1,16 @@
+ package bench;
+-
+-import java.util.concurrent.atomic.AtomicLong;
+ 
+ public final class MetricsCounter {
+ 
+-    private final AtomicLong value = new AtomicLong();
++    private Long value = 0L;
+ 
++    // Regressed: synchronize each increment on the instance and rebox the value.
+     public long incrementBy(int n) {
+-        long v = 0;
+-        for (int i = 0; i < n; i++) v = value.incrementAndGet();
+-        return v;
++        for (int i = 0; i < n; i++) {
++            synchronized (this) {
++                value = value + 1L;
++            }
++        }
++        return value;
+     }
+ }

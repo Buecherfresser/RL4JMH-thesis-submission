@@ -1,0 +1,117 @@
+```
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+import org.reactivestreams.Subscriber;
+
+/**
+ * Benchmark for {@link ParallelJoin} measuring throughput (items per second)
+ * under different parallelism, prefetch and error‑handling configurations.
+ *
+ * The benchmark creates a {@link ParallelFlowable} that emits a fixed number
+ * of integers, runs it on the computation scheduler and then joins the
+ * parallel streams using {@link ParallelJoin}. The emitted items are
+ * consumed by a {@link Subscriber} that forwards them to a {@link Blackhole}
+ * to avoid dead‑code elimination.
+ *
+ * Best‑practice JMH settings:
+ * - Warm‑up iterations to let the JIT stabilize.
+ * - Multiple measurement iterations.
+ * - Several forks to isolate JVM state.
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ParallelJoinBenchmark {
+
+    @Param({ "1000000" })
+    public int itemCount;
+
+    @Param({ "2", "4", "8" })
+    public int parallelism;
+
+    @Param({ "32", "128", "1024" })
+    public int prefetch;
+
+    @Param({ "true", "false" })
+    public boolean delayErrors;
+
+    private ParallelFlowable<Integer> source;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        source = Flowable.range(1, itemCount)
+                .parallel(parallelism)
+                .runOn(Schedulers.computation());
+    }
+
+    @Benchmark
+    public void joinAndConsume(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        ParallelJoin<Integer> joined = new ParallelJoin<>(source, prefetch, delayErrors);
+        joined.subscribe(new Subscriber<Integer>() {
+            @Override
+            public void onSubscribe(org.reactivestreams.Subscription s) {
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        if (!latch.await(30, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Benchmark timed out");
+        }
+    }
+}
+```

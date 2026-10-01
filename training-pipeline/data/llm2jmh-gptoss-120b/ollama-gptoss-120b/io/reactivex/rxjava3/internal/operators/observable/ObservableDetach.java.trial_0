@@ -1,0 +1,59 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableDetach;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark measuring the throughput of the {@link ObservableDetach} operator.
+ *
+ * The benchmark creates a source {@link Observable} that emits a configurable number of
+ * integer items and then applies the {@code ObservableDetach} operator. The items are
+ * consumed by a {@link Blackhole} to prevent dead‑code elimination.
+ *
+ * Best practices applied:
+ * • {@code @State(Scope.Thread)} isolates benchmark state per thread.
+ * • {@code @Param} allows testing different payload sizes.
+ * • {@code @Setup(Level.Iteration)} recreates the source observable for each iteration
+ *   to avoid cross‑iteration caching effects.
+ * • {@code Mode.Throughput} reports operations per second, which is appropriate for
+ *   measuring how many streams can be processed per time unit.
+ * • Warm‑up and measurement iterations are defined to let the JIT stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableDetachThroughputBenchmark {
+
+    /**
+     * Number of items emitted by the source observable.
+     * Typical values cover small, medium and large streams.
+     */
+    @Param({"1", "100", "10_000", "1_000_000"})
+    public int itemCount;
+
+    private Observable<Integer> source;
+
+    @Setup(Level.Iteration)
+    public void setUp() {
+        // A simple range source; using hide() prevents fusion optimizations that could
+        // mask the cost of the detach operator.
+        source = Observable.range(0, itemCount).hide();
+    }
+
+    @Benchmark
+    public void detachThroughput(Blackhole bh) {
+        // Apply the internal ObservableDetach operator and consume all items.
+        // blockingSubscribe ensures the benchmark measures the complete lifecycle.
+        new ObservableDetach<>(source)
+                .blockingSubscribe(bh::consume);
+    }
+}
+```

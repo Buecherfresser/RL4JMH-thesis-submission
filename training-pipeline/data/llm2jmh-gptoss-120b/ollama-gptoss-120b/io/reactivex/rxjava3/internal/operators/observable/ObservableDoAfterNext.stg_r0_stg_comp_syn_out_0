@@ -1,0 +1,89 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableDoAfterNext}
+ * measuring the throughput of the operator compared to a plain Observable.
+ *
+ * The benchmark runs in {@link Mode#Throughput} (operations per second) and
+ * uses {@link Blackhole} to prevent dead-code elimination.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source Observable in @Setup to exclude construction overhead.
+ * - Use blockingSubscribe to ensure the whole stream is processed within the benchmark iteration.
+ * - Parameterize the number of emitted items to explore scaling behavior.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ObservableDoAfterNextBenchmark {
+
+    @Param({ "10", "100", "1000", "10000" })
+    public int itemCount;
+
+    private Observable<Integer> source;
+
+    private Observable<Integer> withDoAfterNext;
+
+    private static final Consumer<Integer> NO_OP = v -> {
+        // intentionally empty – the operator's after‑next hook does nothing
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Plain source observable emitting a range of integers
+        source = Observable.range(1, itemCount);
+        // Observable with the doAfterNext operator applied
+        withDoAfterNext = source.doAfterNext(NO_OP);
+    }
+
+    @Benchmark
+    public void baseline(Blackhole bh) {
+        // Consume the source without the operator
+        source.blockingSubscribe(bh::consume);
+    }
+
+    @Benchmark
+    public void doAfterNext(Blackhole bh) {
+        // Consume the observable that includes the doAfterNext operator
+        withDoAfterNext.blockingSubscribe(bh::consume);
+    }
+}

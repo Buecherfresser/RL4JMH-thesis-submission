@@ -1,0 +1,48 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleSource;
+import io.reactivex.rxjava3.internal.operators.single.SingleFlatMapBiSelector;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class SingleFlatMapBiSelectorBenchmark {
+
+    private Single<String> benchmarkSingle;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple source Single emitting an Integer
+        Single<Integer> source = Single.just(1);
+
+        // Mapper: maps Integer to a Single emitting a String
+        Function<Integer, SingleSource<? extends String>> mapper = i ->
+                Single.just("mapped-" + i);
+
+        // Result selector: combines original Integer and mapped String
+        BiFunction<Integer, String, String> resultSelector = (i, s) ->
+                s + "-result-" + i;
+
+        // Create the operator under test
+        benchmarkSingle = new SingleFlatMapBiSelector<>(source, mapper, resultSelector);
+    }
+
+    @Benchmark
+    public String flatMapBiSelector() {
+        // blockingGet forces the whole chain to execute; returning the value
+        // prevents dead‑code elimination.
+        return benchmarkSingle.blockingGet();
+    }
+}
+```

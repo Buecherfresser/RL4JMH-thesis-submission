@@ -1,0 +1,109 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableWindowTimed}.
+ *
+ * The benchmark measures the throughput (operations per second) of the window operator
+ * under different configurations (exact unbounded, exact bounded, and skip).
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize the benchmark to cover a range of realistic scenarios.
+ * - Perform all setup in @Setup(Level.Iteration) to exclude one‑time costs from the measurement.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Configure warm‑up, measurement, forks and threads for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@Threads(1)
+public class ObservableWindowTimedBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the source observable per iteration. */
+        @Param({"1000", "10000", "100000"})
+        public int itemCount;
+
+        /** Timespan for the window (in milliseconds). */
+        @Param({"10", "50", "100"})
+        public long timespanMs;
+
+        /** Timeskip for the window (in milliseconds). Zero means timespan == timeskip (exact mode). */
+        @Param({"0", "20", "100"})
+        public long timeskipMs;
+
+        /** Maximum size of a window. Long.MAX_VALUE means unbounded. */
+        @Param({"9223372036854775807", "1000"})
+        public long maxSize;
+
+        /** Buffer size for each UnicastSubject used internally. */
+        @Param({"128", "1024"})
+        public int bufferSize;
+
+        /** Whether the timer should be restarted when a window reaches maxSize. */
+        @Param({"false", "true"})
+        public boolean restartTimerOnMaxSize;
+
+        /** Scheduler used for timing; computation scheduler is a good default. */
+        public Scheduler scheduler;
+
+        /** The source observable (cold) that will be reused for each benchmark iteration. */
+        public Observable<Integer> source;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            scheduler = Schedulers.computation();
+
+            // A cold source that emits a fixed number of integers synchronously.
+            source = Observable.range(0, itemCount);
+        }
+
+        /**
+         * Returns the effective timeskip value. If timeskipMs == 0 we use timespanMs,
+         * which corresponds to the exact (non‑skip) mode used by the operator.
+         */
+        public long effectiveTimeskip() {
+            return timeskipMs == 0 ? timespanMs : timeskipMs;
+        }
+    }
+
+    /**
+     * Benchmark the {@code window} operator with the current state configuration.
+     *
+     * The benchmark creates a windowed observable, flattens each window by reducing it
+     * to its last element (to force full consumption of each window), and consumes
+     * the result with a Blackhole.
+     */
+    @Benchmark
+    public void windowTimedThroughput(BenchmarkState state, Blackhole bh) {
+        Observable<Observable<Integer>> windows = state.source
+                .window(
+                        state.timespanMs,
+                        TimeUnit.MILLISECONDS,
+                        state.scheduler,
+                        state.maxSize,
+                        state.bufferSize,
+                        state.restartTimerOnMaxSize,
+                        state.effectiveTimeskip(),
+                        TimeUnit.MILLISECONDS);
+
+        // Consume each window fully. Using reduce to get the last element forces the
+        // window to be traversed without introducing additional merging overhead.
+        windows
+                .flatMapSingle(w -> w.reduce((first, second) -> second))
+                .blockingSubscribe(bh::consume);
+    }
+}
+```

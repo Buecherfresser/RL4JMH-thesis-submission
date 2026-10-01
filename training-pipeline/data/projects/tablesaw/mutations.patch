@@ -1,0 +1,644 @@
+diff --git a/tech/tablesaw/aggregate/AggregateFunctions.java b/tech/tablesaw/aggregate/AggregateFunctions.java
+index 34c2cb2..ba2f5b4 100644
+--- a/tech/tablesaw/aggregate/AggregateFunctions.java
++++ b/tech/tablesaw/aggregate/AggregateFunctions.java
+@@ -27,7 +27,7 @@ public class AggregateFunctions {
+       new DateTimeAggregateFunction("Earliest Date-Time") {
+ 
+         @Override
+-        public LocalDateTime summarize(DateTimeColumn column) {
++        public LocalDateTime summarize(DateTimeColumn column) { tech.tablesaw.jmhbench.MutationSwitch.tick(1);
+           return column.min();
+         }
+       };
+@@ -37,7 +37,7 @@ public class AggregateFunctions {
+       new DateAggregateFunction("Earliest Date") {
+ 
+         @Override
+-        public LocalDate summarize(DateColumn column) {
++        public LocalDate summarize(DateColumn column) { tech.tablesaw.jmhbench.MutationSwitch.tick(18);
+           return column.min();
+         }
+       };
+diff --git a/tech/tablesaw/aggregate/CrossTab.java b/tech/tablesaw/aggregate/CrossTab.java
+index 759c91e..732d958 100644
+--- a/tech/tablesaw/aggregate/CrossTab.java
++++ b/tech/tablesaw/aggregate/CrossTab.java
+@@ -114,7 +114,7 @@ public final class CrossTab {
+    * Returns a Table containing counts of records in the given Table grouped by the given columnName
+    * See also {@link Table#countBy(String...)}
+    */
+-  public static Table counts(Table table, String columnName) {
++  public static Table counts(Table table, String columnName) { tech.tablesaw.jmhbench.MutationSwitch.tick(35);
+     return table.countBy(table.categoricalColumn(columnName));
+   }
+ 
+@@ -122,7 +122,7 @@ public final class CrossTab {
+    * Returns a Table containing the proportion of records in the given Table grouped by the given
+    * column TODO: Consider renaming to proportions
+    */
+-  public static Table percents(Table table, String column1) {
++  public static Table percents(Table table, String column1) { tech.tablesaw.jmhbench.MutationSwitch.tick(50);
+     Table countTable = counts(table, column1);
+     Table percentTable = Table.create(countTable.name());
+     percentTable.addColumns(countTable.column(0).copy());
+diff --git a/tech/tablesaw/analytic/AggregateFunctions.java b/tech/tablesaw/analytic/AggregateFunctions.java
+index bb3663e..c63f2dc 100644
+--- a/tech/tablesaw/analytic/AggregateFunctions.java
++++ b/tech/tablesaw/analytic/AggregateFunctions.java
+@@ -58,12 +58,12 @@ enum AggregateFunctions implements FunctionMetaData {
+   }
+ 
+   @Override
+-  public String functionName() {
++  public String functionName() { tech.tablesaw.jmhbench.MutationSwitch.tick(2);
+     return name();
+   }
+ 
+   @Override
+-  public ColumnType returnType() {
++  public ColumnType returnType() { tech.tablesaw.jmhbench.MutationSwitch.tick(19);
+     return outputColumnType;
+   }
+ 
+diff --git a/tech/tablesaw/analytic/ArgumentList.java b/tech/tablesaw/analytic/ArgumentList.java
+index 58a0d0a..762e80c 100644
+--- a/tech/tablesaw/analytic/ArgumentList.java
++++ b/tech/tablesaw/analytic/ArgumentList.java
+@@ -36,7 +36,7 @@ final class ArgumentList {
+     return new Builder();
+   }
+ 
+-  public Map<String, FunctionCall<AggregateFunctions>> getAggregateFunctions() {
++  public Map<String, FunctionCall<AggregateFunctions>> getAggregateFunctions() { tech.tablesaw.jmhbench.MutationSwitch.tick(36);
+     return aggregateFunctions;
+   }
+ 
+diff --git a/tech/tablesaw/api/BooleanColumn.java b/tech/tablesaw/api/BooleanColumn.java
+index 9bfa583..7a7c913 100644
+--- a/tech/tablesaw/api/BooleanColumn.java
++++ b/tech/tablesaw/api/BooleanColumn.java
+@@ -83,7 +83,7 @@ public class BooleanColumn extends AbstractColumn<BooleanColumn, Boolean>
+   }
+ 
+   /** Returns {@code true} if b is the missing value indicator for this column type */
+-  public static boolean valueIsMissing(byte b) {
++  public static boolean valueIsMissing(byte b) { tech.tablesaw.jmhbench.MutationSwitch.tick(37);
+     return BooleanColumnType.valueIsMissing(b);
+   }
+ 
+diff --git a/tech/tablesaw/api/StringColumn.java b/tech/tablesaw/api/StringColumn.java
+index 8783f82..89ebe51 100644
+--- a/tech/tablesaw/api/StringColumn.java
++++ b/tech/tablesaw/api/StringColumn.java
+@@ -51,13 +51,13 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
+         return f1.compareTo(f2);
+       };
+ 
+-  public static boolean valueIsMissing(String string) {
++  public static boolean valueIsMissing(String string) { tech.tablesaw.jmhbench.MutationSwitch.tick(3);
+     return StringColumnType.valueIsMissing(string);
+   }
+ 
+   /** {@inheritDoc} */
+   @Override
+-  public StringColumn appendMissing() {
++  public StringColumn appendMissing() { tech.tablesaw.jmhbench.MutationSwitch.tick(20);
+     data.appendMissing();
+     return this;
+   }
+diff --git a/tech/tablesaw/beakerx/TablesawDisplayer.java b/tech/tablesaw/beakerx/TablesawDisplayer.java
+index c9561f2..805d204 100644
+--- a/tech/tablesaw/beakerx/TablesawDisplayer.java
++++ b/tech/tablesaw/beakerx/TablesawDisplayer.java
+@@ -32,13 +32,13 @@ public class TablesawDisplayer {
+    * #registerTable()} or {@link #registerColumns()} instead if you'd like to only display one or
+    * the other.
+    */
+-  public static void register() {
++  public static void register() { tech.tablesaw.jmhbench.MutationSwitch.tick(4);
+     registerTable();
+     registerColumns();
+   }
+ 
+   /** Registers {@link Table} for display in Jupyter. */
+-  public static void registerTable() {
++  public static void registerTable() { tech.tablesaw.jmhbench.MutationSwitch.tick(21);
+     Displayers.register(
+         Table.class,
+         new Displayer<Table>() {
+diff --git a/tech/tablesaw/columns/booleans/BitSetBooleanData.java b/tech/tablesaw/columns/booleans/BitSetBooleanData.java
+index 16bd3d2..7130d69 100644
+--- a/tech/tablesaw/columns/booleans/BitSetBooleanData.java
++++ b/tech/tablesaw/columns/booleans/BitSetBooleanData.java
+@@ -46,7 +46,7 @@ public class BitSetBooleanData implements BooleanData {
+ 
+   /** {@inheritDoc} */
+   @Override
+-  public int size() {
++  public int size() { tech.tablesaw.jmhbench.MutationSwitch.tick(5);
+     return Math.max(Math.max(trueValues.length(), falseValues.length()), missingValues.length());
+   }
+ 
+@@ -65,7 +65,7 @@ public class BitSetBooleanData implements BooleanData {
+ 
+   /** {@inheritDoc} */
+   @Override
+-  public void clear() {
++  public void clear() { tech.tablesaw.jmhbench.MutationSwitch.tick(22);
+     trueValues.clear();
+     falseValues.clear();
+     missingValues.clear();
+diff --git a/tech/tablesaw/columns/booleans/BooleanParser.java b/tech/tablesaw/columns/booleans/BooleanParser.java
+index 349b51f..11660c5 100644
+--- a/tech/tablesaw/columns/booleans/BooleanParser.java
++++ b/tech/tablesaw/columns/booleans/BooleanParser.java
+@@ -41,7 +41,7 @@ public class BooleanParser extends AbstractColumnParser<Boolean> {
+   }
+ 
+   @Override
+-  public boolean canParse(String s) {
++  public boolean canParse(String s) { tech.tablesaw.jmhbench.MutationSwitch.tick(38);
+     if (isMissing(s)) {
+       return true;
+     }
+diff --git a/tech/tablesaw/conversion/TableConverter.java b/tech/tablesaw/conversion/TableConverter.java
+index b8973de..0a4328d 100644
+--- a/tech/tablesaw/conversion/TableConverter.java
++++ b/tech/tablesaw/conversion/TableConverter.java
+@@ -16,11 +16,11 @@ public class TableConverter {
+     this.table = table;
+   }
+ 
+-  public double[][] doubleMatrix() {
++  public double[][] doubleMatrix() { tech.tablesaw.jmhbench.MutationSwitch.tick(6);
+     return doubleMatrix(table.numericColumns());
+   }
+ 
+-  public double[][] doubleMatrix(int... columnIndicies) {
++  public double[][] doubleMatrix(int... columnIndicies) { tech.tablesaw.jmhbench.MutationSwitch.tick(23);
+     return doubleMatrix(table.numericColumns(columnIndicies));
+   }
+ 
+diff --git a/tech/tablesaw/conversion/smile/SmileConverter.java b/tech/tablesaw/conversion/smile/SmileConverter.java
+index 2b25ed7..ef7b48a 100644
+--- a/tech/tablesaw/conversion/smile/SmileConverter.java
++++ b/tech/tablesaw/conversion/smile/SmileConverter.java
+@@ -28,7 +28,7 @@ public class SmileConverter {
+     this.table = table;
+   }
+ 
+-  public DataFrame toDataFrame() {
++  public DataFrame toDataFrame() { tech.tablesaw.jmhbench.MutationSwitch.tick(39);
+     StructType schema =
+         DataTypes.struct(
+             table.columns().stream()
+diff --git a/tech/tablesaw/docs/GettingStarted.java b/tech/tablesaw/docs/GettingStarted.java
+index 07a779e..75be688 100644
+--- a/tech/tablesaw/docs/GettingStarted.java
++++ b/tech/tablesaw/docs/GettingStarted.java
+@@ -31,7 +31,7 @@ public class GettingStarted implements DocsSourceFile {
+   public static final OutputWriter outputWriter = new OutputWriter(GettingStarted.class);
+ 
+   @Override
+-  public void run() throws IOException {
++  public void run() throws IOException { tech.tablesaw.jmhbench.MutationSwitch.tick(7);
+     firstFewDocsSections();
+     workingWithTablesColumns();
+     workingwWithRows();
+diff --git a/tech/tablesaw/docs/Main.java b/tech/tablesaw/docs/Main.java
+index 515392f..0643a2d 100644
+--- a/tech/tablesaw/docs/Main.java
++++ b/tech/tablesaw/docs/Main.java
+@@ -8,7 +8,7 @@ import tech.tablesaw.docs.userguide.CrossTabs;
+ /** Main class that will run all the docs. All Docs classes have to be registered in main. */
+ public class Main {
+ 
+-  public static void main(String[] args) throws IOException, InterruptedException {
++  public static void main(String[] args) throws IOException, InterruptedException { tech.tablesaw.jmhbench.MutationSwitch.tick(24);
+     List<DocsSourceFile> docsClasses =
+         Arrays.asList(
+             // Register new docs classes here.
+diff --git a/tech/tablesaw/docs/OutputWriter.java b/tech/tablesaw/docs/OutputWriter.java
+index a4a90d3..adace57 100644
+--- a/tech/tablesaw/docs/OutputWriter.java
++++ b/tech/tablesaw/docs/OutputWriter.java
+@@ -74,7 +74,7 @@ public class OutputWriter {
+     public static class Printer {
+       private Printer() {}
+ 
+-      public String println(Object obj) {
++      public String println(Object obj) { tech.tablesaw.jmhbench.MutationSwitch.tick(40);
+         return obj.toString();
+       }
+     }
+diff --git a/tech/tablesaw/filtering/DeferredNumberColumn.java b/tech/tablesaw/filtering/DeferredNumberColumn.java
+index a5c9739..68e7c32 100644
+--- a/tech/tablesaw/filtering/DeferredNumberColumn.java
++++ b/tech/tablesaw/filtering/DeferredNumberColumn.java
+@@ -16,12 +16,12 @@ public class DeferredNumberColumn extends DeferredColumn
+   }
+ 
+   @Override
+-  public Function<Table, Selection> isEqualTo(double other) {
++  public Function<Table, Selection> isEqualTo(double other) { tech.tablesaw.jmhbench.MutationSwitch.tick(8);
+     return table -> table.numberColumn(name()).isEqualTo(other);
+   }
+ 
+   @Override
+-  public Function<Table, Selection> isBetweenExclusive(double start, double end) {
++  public Function<Table, Selection> isBetweenExclusive(double start, double end) { tech.tablesaw.jmhbench.MutationSwitch.tick(25);
+     return table -> table.numberColumn(name()).isBetweenExclusive(start, end);
+   }
+ 
+diff --git a/tech/tablesaw/filtering/DeferredStringColumn.java b/tech/tablesaw/filtering/DeferredStringColumn.java
+index 5640db3..6b5b860 100644
+--- a/tech/tablesaw/filtering/DeferredStringColumn.java
++++ b/tech/tablesaw/filtering/DeferredStringColumn.java
+@@ -16,7 +16,7 @@ public class DeferredStringColumn extends DeferredColumn
+   }
+ 
+   @Override
+-  public Function<Table, Selection> isEmptyString() {
++  public Function<Table, Selection> isEmptyString() { tech.tablesaw.jmhbench.MutationSwitch.tick(41);
+     return table -> table.stringColumn(name()).isEmptyString();
+   }
+ 
+diff --git a/tech/tablesaw/index/ByteIndex.java b/tech/tablesaw/index/ByteIndex.java
+index 7a25f66..c63a302 100644
+--- a/tech/tablesaw/index/ByteIndex.java
++++ b/tech/tablesaw/index/ByteIndex.java
+@@ -72,7 +72,7 @@ public class ByteIndex implements Index {
+   }
+ 
+   /** Returns a {@link Selection} of all values at least as large as the given value */
+-  public Selection atLeast(byte value) {
++  public Selection atLeast(byte value) { tech.tablesaw.jmhbench.MutationSwitch.tick(9);
+     Selection selection = new BitmapBackedSelection();
+     Byte2ObjectSortedMap<IntArrayList> tail = index.tailMap(value);
+     for (IntArrayList keys : tail.values()) {
+@@ -82,7 +82,7 @@ public class ByteIndex implements Index {
+   }
+ 
+   /** Returns a {@link Selection} of all values greater than the given value */
+-  public Selection greaterThan(byte value) {
++  public Selection greaterThan(byte value) { tech.tablesaw.jmhbench.MutationSwitch.tick(26);
+     Selection selection = new BitmapBackedSelection();
+     Byte2ObjectSortedMap<IntArrayList> tail = index.tailMap((byte) (value + 1));
+     for (IntArrayList keys : tail.values()) {
+diff --git a/tech/tablesaw/index/DoubleIndex.java b/tech/tablesaw/index/DoubleIndex.java
+index 3c532a5..0dc7564 100644
+--- a/tech/tablesaw/index/DoubleIndex.java
++++ b/tech/tablesaw/index/DoubleIndex.java
+@@ -68,7 +68,7 @@ public class DoubleIndex implements Index {
+   }
+ 
+   /** Returns a {@link Selection} of all values at least as large as the given value */
+-  public Selection atLeast(double value) {
++  public Selection atLeast(double value) { tech.tablesaw.jmhbench.MutationSwitch.tick(42);
+     Selection selection = new BitmapBackedSelection();
+     Double2ObjectSortedMap<IntArrayList> tail = index.tailMap(value);
+     for (IntArrayList keys : tail.values()) {
+diff --git a/tech/tablesaw/interpolation/Interpolator.java b/tech/tablesaw/interpolation/Interpolator.java
+index df09b05..c10573b 100644
+--- a/tech/tablesaw/interpolation/Interpolator.java
++++ b/tech/tablesaw/interpolation/Interpolator.java
+@@ -17,7 +17,7 @@ public class Interpolator<T> {
+   }
+ 
+   /** Fills missing values with the next non-missing value */
+-  public Column<T> backfill() {
++  public Column<T> backfill() { tech.tablesaw.jmhbench.MutationSwitch.tick(10);
+     Column<T> result = col.copy();
+     T lastVal = null;
+     for (int i = col.size() - 1; i >= 0; i--) {
+@@ -33,7 +33,7 @@ public class Interpolator<T> {
+   }
+ 
+   /** Fills missing values with the last non-missing value */
+-  public Column<T> frontfill() {
++  public Column<T> frontfill() { tech.tablesaw.jmhbench.MutationSwitch.tick(27);
+     Column<T> result = col.copy();
+     T lastVal = null;
+     for (int i = 0; i < col.size(); i++) {
+diff --git a/tech/tablesaw/io/AddCellToColumnException.java b/tech/tablesaw/io/AddCellToColumnException.java
+index 2d80197..531b8c5 100644
+--- a/tech/tablesaw/io/AddCellToColumnException.java
++++ b/tech/tablesaw/io/AddCellToColumnException.java
+@@ -71,7 +71,7 @@ public class AddCellToColumnException extends RuntimeException {
+   }
+ 
+   /** Returns the index of the column that threw the Exception */
+-  public int getColumnIndex() {
++  public int getColumnIndex() { tech.tablesaw.jmhbench.MutationSwitch.tick(43);
+     return columnIndex;
+   }
+ 
+diff --git a/tech/tablesaw/io/jdbc/SqlResultSetReader.java b/tech/tablesaw/io/jdbc/SqlResultSetReader.java
+index 96a9f10..d462c4d 100644
+--- a/tech/tablesaw/io/jdbc/SqlResultSetReader.java
++++ b/tech/tablesaw/io/jdbc/SqlResultSetReader.java
+@@ -77,7 +77,7 @@ public class SqlResultSetReader {
+    * @param jdbc an int representing a legal value from java.sql.types;
+    * @param columnType a tablesaw column type
+    */
+-  public static void mapJdbcTypeToColumnType(Integer jdbc, ColumnType columnType) {
++  public static void mapJdbcTypeToColumnType(Integer jdbc, ColumnType columnType) { tech.tablesaw.jmhbench.MutationSwitch.tick(11);
+     SQL_TYPE_TO_TABLESAW_TYPE.put(jdbc, columnType);
+   }
+ 
+@@ -140,7 +140,7 @@ public class SqlResultSetReader {
+     }
+   }
+ 
+-  protected static ColumnType getColumnType(int columnType, int scale, int precision) {
++  protected static ColumnType getColumnType(int columnType, int scale, int precision) { tech.tablesaw.jmhbench.MutationSwitch.tick(28);
+     ColumnType type = SQL_TYPE_TO_TABLESAW_TYPE.get(columnType);
+     // Try to improve on the initial type assigned to 'type' to minimize size/space of type needed.
+     // For all generic numeric columns inspect closer, checking the precision and
+diff --git a/tech/tablesaw/jmhbench/MutationSwitch.java b/tech/tablesaw/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..1c84843
+--- /dev/null
++++ b/tech/tablesaw/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package tech.tablesaw.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/tech/tablesaw/joining/DataFrameJoiner.java b/tech/tablesaw/joining/DataFrameJoiner.java
+index 149097f..a19cddf 100644
+--- a/tech/tablesaw/joining/DataFrameJoiner.java
++++ b/tech/tablesaw/joining/DataFrameJoiner.java
+@@ -80,7 +80,7 @@ public class DataFrameJoiner extends AbstractJoiner {
+    * @param joinType The type of join to perform (INNER, LEFT_OUTER, RIGHT_OUTER, FULL_OUTER)
+    * @return This joiner object.
+    */
+-  public DataFrameJoiner type(JoinType joinType) {
++  public DataFrameJoiner type(JoinType joinType) { tech.tablesaw.jmhbench.MutationSwitch.tick(44);
+     this.joinType = joinType;
+     return this;
+   }
+diff --git a/tech/tablesaw/joining/RowComparatorChain.java b/tech/tablesaw/joining/RowComparatorChain.java
+index 808a5c2..718550f 100644
+--- a/tech/tablesaw/joining/RowComparatorChain.java
++++ b/tech/tablesaw/joining/RowComparatorChain.java
+@@ -45,12 +45,12 @@ class RowComparatorChain implements Comparator<Row> {
+   }
+ 
+   /** Appends the comparator to the end of the chain */
+-  public void addComparator(Comparator<Row> comparator) {
++  public void addComparator(Comparator<Row> comparator) { tech.tablesaw.jmhbench.MutationSwitch.tick(12);
+     this.comparatorChain.add(comparator);
+   }
+ 
+   /** Returns the number of comparators in the chain */
+-  public int size() {
++  public int size() { tech.tablesaw.jmhbench.MutationSwitch.tick(29);
+     return this.comparatorChain.size();
+   }
+ 
+diff --git a/tech/tablesaw/plotly/Utils.java b/tech/tablesaw/plotly/Utils.java
+index 951041d..66cefc7 100644
+--- a/tech/tablesaw/plotly/Utils.java
++++ b/tech/tablesaw/plotly/Utils.java
+@@ -7,14 +7,14 @@ public class Utils {
+ 
+   private Utils() {}
+ 
+-  public static String dataAsString(double[] data) {
++  public static String dataAsString(double[] data) { tech.tablesaw.jmhbench.MutationSwitch.tick(13);
+     return Arrays.toString(data);
+   }
+ 
+   /**
+    * @return un-escaped quote of argument
+    */
+-  public static String quote(String string) {
++  public static String quote(String string) { tech.tablesaw.jmhbench.MutationSwitch.tick(30);
+     return "'" + string + "'";
+   }
+ 
+diff --git a/tech/tablesaw/plotly/components/TemplateUtils.java b/tech/tablesaw/plotly/components/TemplateUtils.java
+index 058e5a1..fe7db86 100644
+--- a/tech/tablesaw/plotly/components/TemplateUtils.java
++++ b/tech/tablesaw/plotly/components/TemplateUtils.java
+@@ -17,7 +17,7 @@ public class TemplateUtils {
+ 
+   private static Collection<String> templateLocations = new ArrayList<>();
+ 
+-  public static void setTemplateLocations(String... locations) {
++  public static void setTemplateLocations(String... locations) { tech.tablesaw.jmhbench.MutationSwitch.tick(45);
+     templateLocations = Arrays.asList(locations);
+   }
+ 
+diff --git a/tech/tablesaw/selection/BitSetBackedSelection.java b/tech/tablesaw/selection/BitSetBackedSelection.java
+index ecc958f..82130a5 100644
+--- a/tech/tablesaw/selection/BitSetBackedSelection.java
++++ b/tech/tablesaw/selection/BitSetBackedSelection.java
+@@ -55,14 +55,14 @@ public class BitSetBackedSelection implements Selection {
+ 
+   /** {@inheritDoc} */
+   @Override
+-  public BitSetBackedSelection removeRange(long start, long end) {
++  public BitSetBackedSelection removeRange(long start, long end) { tech.tablesaw.jmhbench.MutationSwitch.tick(14);
+     this.bitmap.clear((int) start, (int) end);
+     return this;
+   }
+ 
+   /** {@inheritDoc} */
+   @Override
+-  public BitSetBackedSelection flip(int rangeStart, int rangeEnd) {
++  public BitSetBackedSelection flip(int rangeStart, int rangeEnd) { tech.tablesaw.jmhbench.MutationSwitch.tick(31);
+     this.bitmap.flip(rangeStart, rangeEnd);
+     return this;
+   }
+diff --git a/tech/tablesaw/selection/BitmapBackedSelection.java b/tech/tablesaw/selection/BitmapBackedSelection.java
+index 2a4ff1a..9ade72d 100644
+--- a/tech/tablesaw/selection/BitmapBackedSelection.java
++++ b/tech/tablesaw/selection/BitmapBackedSelection.java
+@@ -55,7 +55,7 @@ public class BitmapBackedSelection implements Selection {
+ 
+   /** {@inheritDoc} */
+   @Override
+-  public Selection removeRange(long start, long end) {
++  public Selection removeRange(long start, long end) { tech.tablesaw.jmhbench.MutationSwitch.tick(46);
+     this.bitmap.remove(start, end);
+     return this;
+   }
+diff --git a/tech/tablesaw/sorting/SortUtils.java b/tech/tablesaw/sorting/SortUtils.java
+index c2c50b2..7cdf4d2 100644
+--- a/tech/tablesaw/sorting/SortUtils.java
++++ b/tech/tablesaw/sorting/SortUtils.java
+@@ -14,7 +14,7 @@ public class SortUtils {
+   private SortUtils() {}
+ 
+   /** Returns a comparator chain for sorting according to the given key */
+-  public static IntComparatorChain getChain(Table table, Sort key) {
++  public static IntComparatorChain getChain(Table table, Sort key) { tech.tablesaw.jmhbench.MutationSwitch.tick(15);
+     Iterator<Map.Entry<String, Sort.Order>> entries = key.iterator();
+     Map.Entry<String, Sort.Order> sort = entries.next();
+     Column<?> column = table.column(sort.getKey());
+@@ -34,7 +34,7 @@ public class SortUtils {
+    * @param column The column to sort
+    * @param order Specifies whether the sort should be in ascending or descending order
+    */
+-  public static IntComparator rowComparator(Column<?> column, Sort.Order order) {
++  public static IntComparator rowComparator(Column<?> column, Sort.Order order) { tech.tablesaw.jmhbench.MutationSwitch.tick(32);
+     IntComparator rowComparator = column.rowComparator();
+     if (order == Sort.Order.DESCEND) {
+       return ReversingIntComparator.reverse(rowComparator);
+diff --git a/tech/tablesaw/sorting/comparators/DescendingIntComparator.java b/tech/tablesaw/sorting/comparators/DescendingIntComparator.java
+index 31a5348..29e9851 100644
+--- a/tech/tablesaw/sorting/comparators/DescendingIntComparator.java
++++ b/tech/tablesaw/sorting/comparators/DescendingIntComparator.java
+@@ -22,7 +22,7 @@ import javax.annotation.concurrent.Immutable;
+ @Immutable
+ public final class DescendingIntComparator {
+ 
+-  public static IntComparator instance() {
++  public static IntComparator instance() { tech.tablesaw.jmhbench.MutationSwitch.tick(47);
+     return IntComparators.OPPOSITE_COMPARATOR;
+   }
+ }
+diff --git a/tech/tablesaw/table/RollingColumn.java b/tech/tablesaw/table/RollingColumn.java
+index 4c24d8b..68f8dd4 100644
+--- a/tech/tablesaw/table/RollingColumn.java
++++ b/tech/tablesaw/table/RollingColumn.java
+@@ -28,13 +28,13 @@ public class RollingColumn {
+    * Generates a name for the column based on the name of the original column and the function used
+    * in the calculation
+    */
+-  protected String generateNewColumnName(AggregateFunction<?, ?> function) {
++  protected String generateNewColumnName(AggregateFunction<?, ?> function) { tech.tablesaw.jmhbench.MutationSwitch.tick(16);
+     return column.name() + " " + window + "-period" + " " + function.functionName();
+   }
+ 
+   /** Performs the calculation and returns a new column containing the results */
+   @SuppressWarnings({"unchecked"})
+-  public <INCOL extends Column<?>, OUT> Column<?> calc(AggregateFunction<INCOL, OUT> function) {
++  public <INCOL extends Column<?>, OUT> Column<?> calc(AggregateFunction<INCOL, OUT> function) { tech.tablesaw.jmhbench.MutationSwitch.tick(33);
+     // TODO: the subset operation copies the array. creating a view would likely be more efficient
+     Column<?> result = function.returnType().create(generateNewColumnName(function));
+     for (int i = 0; i < window - 1; i++) {
+diff --git a/tech/tablesaw/table/StandardTableSliceGroup.java b/tech/tablesaw/table/StandardTableSliceGroup.java
+index b0e8816..ac98828 100644
+--- a/tech/tablesaw/table/StandardTableSliceGroup.java
++++ b/tech/tablesaw/table/StandardTableSliceGroup.java
+@@ -54,7 +54,7 @@ public class StandardTableSliceGroup extends TableSliceGroup {
+    * Returns a viewGroup splitting the original table on the given columns. The named columns must
+    * be CategoricalColumns
+    */
+-  public static StandardTableSliceGroup create(Table original, String... columnsNames) {
++  public static StandardTableSliceGroup create(Table original, String... columnsNames) { tech.tablesaw.jmhbench.MutationSwitch.tick(48);
+     List<CategoricalColumn<?>> columns = original.categoricalColumns(columnsNames);
+     return new StandardTableSliceGroup(original, columns.toArray(new CategoricalColumn<?>[0]));
+   }
+diff --git a/tech/tablesaw/util/DoubleArrays.java b/tech/tablesaw/util/DoubleArrays.java
+index 4af3b82..4c4d52b 100644
+--- a/tech/tablesaw/util/DoubleArrays.java
++++ b/tech/tablesaw/util/DoubleArrays.java
+@@ -24,7 +24,7 @@ import tech.tablesaw.table.TableSliceGroup;
+ public class DoubleArrays {
+ 
+   /** Returns a double[] initialized with the values from 0 to n-1, inclusive; */
+-  public static double[] toN(int n) {
++  public static double[] toN(int n) { tech.tablesaw.jmhbench.MutationSwitch.tick(17);
+     double[] result = new double[n];
+     for (int i = 0; i < n; i++) {
+       result[i] = i;
+@@ -32,7 +32,7 @@ public class DoubleArrays {
+     return result;
+   }
+ 
+-  public static double[][] to2dArray(NumericColumn<?>... columns) {
++  public static double[][] to2dArray(NumericColumn<?>... columns) { tech.tablesaw.jmhbench.MutationSwitch.tick(34);
+     Preconditions.checkArgument(columns.length >= 1);
+     int obs = columns[0].size();
+     double[][] allVals = new double[obs][columns.length];
+diff --git a/tech/tablesaw/util/StringUtils.java b/tech/tablesaw/util/StringUtils.java
+index 4b9f310..19929e7 100644
+--- a/tech/tablesaw/util/StringUtils.java
++++ b/tech/tablesaw/util/StringUtils.java
+@@ -86,7 +86,7 @@ public class StringUtils {
+    * @return an array of parsed Strings, {@code null} if null String input
+    * @since 2.4
+    */
+-  public static String[] splitByCharacterTypeCamelCase(final String str) {
++  public static String[] splitByCharacterTypeCamelCase(final String str) { tech.tablesaw.jmhbench.MutationSwitch.tick(49);
+     if (str == null) {
+       return null;
+     }

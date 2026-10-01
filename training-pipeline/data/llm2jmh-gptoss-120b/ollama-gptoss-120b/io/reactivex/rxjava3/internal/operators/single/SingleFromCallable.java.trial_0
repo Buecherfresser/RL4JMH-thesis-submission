@@ -1,0 +1,96 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.operators.single.SingleFromCallable;
+
+/**
+ * Microbenchmark for {@link SingleFromCallable}.
+ *
+ * Measures the throughput of subscribing to a {@code SingleFromCallable}
+ * that emits a constant value. The benchmark follows JMH best practices:
+ * <ul>
+ *   <li>Uses {@code @State(Scope.Thread)} to avoid sharing mutable state.</li>
+ *   <li>Performs all allocations in {@code @Setup} to keep the measured
+ *       section focused on the subscription logic.</li>
+ *   <li>Consumes the emitted value via {@link Blackhole} to prevent dead‑code
+ *       elimination.</li>
+ *   <li>Runs with a warm‑up phase and multiple measurement iterations.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class SingleFromCallableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** The Single under test. */
+        SingleFromCallable<Integer> single;
+
+        /** A lightweight observer that forwards the received value to a Blackhole. */
+        SingleObserver<Integer> observer;
+
+        /** Blackhole used to consume the emitted value. */
+        Blackhole bh;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Callable that always returns the same constant value.
+            Callable<Integer> callable = () -> 42;
+
+            // Create the SingleFromCallable instance.
+            single = new SingleFromCallable<>(callable);
+        }
+
+        /**
+         * Creates a new observer for each iteration to avoid any hidden state
+         * between benchmark invocations.
+         */
+        @Setup(Level.Iteration)
+        public void setUpIteration(Blackhole bh) {
+            this.bh = bh;
+            this.observer = new SingleObserver<Integer>() {
+                @Override
+                public void onSubscribe(Disposable d) {
+                    // No-op; we never dispose in this benchmark.
+                }
+
+                @Override
+                public void onSuccess(Integer value) {
+                    // Consume the value so the JIT cannot eliminate the call.
+                    bh.consume(value);
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    // Propagate any unexpected error to the Blackhole.
+                    bh.consume(e);
+                }
+            };
+        }
+    }
+
+    /**
+     * Benchmark method that subscribes to the {@link SingleFromCallable}
+     * using the prepared observer.
+     *
+     * @param state the benchmark state containing the Single and observer
+     */
+    @Benchmark
+    public void subscribe(BenchmarkState state) {
+        state.single.subscribe(state.observer);
+    }
+}
+```

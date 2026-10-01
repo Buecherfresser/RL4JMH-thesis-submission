@@ -1,0 +1,116 @@
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark measuring the overhead of {@link ParallelPeek} when used with
+ * no‑op side‑effect callbacks. The benchmark runs in throughput mode,
+ * reporting how many items per second can be processed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ParallelPeekBenchmark {
+
+    /**
+     * Number of items emitted by the source per benchmark iteration.
+     */
+    @Param({ "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * Parallelism level – typically the number of CPU cores.
+     */
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    private ParallelFlowable<Integer> source;
+
+    private ParallelPeek<Integer> peekOperator;
+
+    /**
+     * No‑op callbacks required by {@link ParallelPeek}.
+     */
+    private static final Consumer<Integer> NOOP_CONSUMER = t -> {
+    };
+
+    private static final Action NOOP_ACTION = () -> {
+    };
+
+    private static final Consumer<Throwable> NOOP_ERROR = e -> {
+    };
+
+    private static final Consumer<org.reactivestreams.Subscription> NOOP_SUB = s -> {
+    };
+
+    private static final LongConsumer NOOP_LONG_CONSUMER = n -> {
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a parallel flowable that emits a fixed range of integers.
+        source = Flowable.range(1, itemCount).parallel(parallelism).runOn(Schedulers.computation());
+        // Wrap the source with ParallelPeek using no‑op side‑effects.
+        peekOperator = new ParallelPeek<>(source, // onNext
+        NOOP_CONSUMER, // onAfterNext
+        NOOP_CONSUMER, // onError
+        NOOP_ERROR, // onComplete
+        NOOP_ACTION, // onAfterTerminated
+        NOOP_ACTION, // onSubscribe
+        NOOP_SUB, // onRequest
+        NOOP_LONG_CONSUMER, // onCancel
+        NOOP_ACTION);
+    }
+
+    /**
+     * Consumes the entire stream and feeds each item into the Blackhole.
+     * The Blackhole prevents dead‑code elimination.
+     */
+    @Benchmark
+    public void peekThroughput(Blackhole bh) {
+        // Convert back to a sequential Flowable, then block and consume.
+        peekOperator.sequential().subscribe(bh::consume);
+        // Ensure the subscription has completed before returning.
+        // The sequential Flowable blocks until termination.
+        // No additional synchronization is required because the
+        // subscription runs on the computation scheduler and the
+        // main thread waits for completion.
+    }
+}

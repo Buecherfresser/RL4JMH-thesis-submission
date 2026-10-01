@@ -1,0 +1,112 @@
+# Rejection fine-tuning stage. See jmhgen.config.RFTConfig.
+#
+# Pipeline: sample candidates from the base policy (vLLM, thinking on) -> verify against the
+# JMH reward backend on the real SUT classpath -> keep the verified, on-policy traces -> SFT
+# from the base model. Provision the SUT classpath once first, e.g.:
+#   jmh-provision-classpath rxjava --source data/rxjava-src --build-cmd "./gradlew :rxjava:jar"
+# Then run all phases (cached under work_dir):
+#   jmh-train-rft --config configs/rft/default.yaml
+# Evaluate the resulting checkpoint on the external JMH-Bench (base vs RFT, with/without think)
+# for a fast comparison; RxJava prompts are disjoint from the bench tasks, so no leakage.
+
+base_model: google/gemma-4-E2B-it
+output_dir: outputs/rft
+# RFT prompts are the real RxJava classes (snippet field of the SFT records).
+dataset_path: data/sft/records.jsonl
+seed: 42
+
+# Shared numerical recipe (kept identical to SFT for a valid per-stage comparison).
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+# Chunked cross-entropy: skips the lm_head matmul on masked prompt tokens and chunks the CE,
+# so Gemma's 262k-vocab logits never blow up VRAM at long context. Numerically == "nll".
+loss_type: chunked_nll
+# Offload saved activations to CPU RAM so long sequences fit on a single GPU (Gemma-4's
+# per-layer embeddings make activations ~4 GiB/1k tokens even with checkpointing).
+activation_offloading: true
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: [vision_tower, audio_tower, multi_modal_projector]
+  bias: none
+
+# The SFT run regressed at LR 2e-4; RFT uses a lower LR and a single epoch (ReST^EM / RLHF
+# Book guidance) to avoid overfitting the small, already-capable model.
+#
+# max_seq_len is the training context window (TRL SFTConfig.max_length): sequences longer than
+# this are TRUNCATED, which would silently drop the tail of a long subject's source or thinking
+# trace. Gemma 4 supports 128k, and with dynamic padding the per-step activation memory tracks the
+# longest *actual* example in each micro-batch (not this cap) — so raising it only avoids
+# truncation, it does not by itself inflate VRAM. Set generously so no real (SUT source + thinking
+# + benchmark) example is shortened; push toward 131072 if a corpus has very large classes.
+max_seq_len: 32768
+learning_rate: 1.0e-5
+per_device_batch_size: 1
+gradient_accumulation_steps: 8
+num_epochs: 1.0
+completion_only_loss: true   # loss over the whole assistant turn (thinking + benchmark)
+
+# --- sampling (E-step) ---
+samples_per_prompt: 16
+sampling_temperature: 1.0
+limit_prompts: 0             # 0 = all; set small (e.g. 4) for a smoke run
+# Skip subjects whose source can't fit the context window (prompt boilerplate + source +
+# max_tokens output). ~4 chars/token, so ~90k chars leaves room under a 32768-token server.
+# A handful of RxJava/Commons giants (e.g. StringUtils ~390k chars) are dropped, not truncated.
+max_source_chars: 90000
+inference:
+  base_url: http://localhost:8000/v1   # point at your RunPod vLLM server
+  model: google/gemma-4-E2B-it
+  api_key_env: VLLM_API_KEY
+  timeout_s: 600.0
+  # Parallel vLLM chat/completions requests during generate (one HTTP request per prompt).
+  max_concurrency: 8
+  # max_parallel_requests: 8   # alias for max_concurrency
+  top_p: 0.95
+  top_k: 64
+  # Output budget for thinking + benchmark. The vLLM server's --max-model-len must cover the
+  # whole prompt (incl. the embedded SUT source) PLUS this, or long subjects get truncated; serve
+  # with e.g. --max-model-len 32768 (>= max_seq_len) so generation never clips a real example.
+  max_tokens: 8192
+  enable_thinking: true      # sample WITH thinking; run vLLM without a reasoning parser
+  chat_template_kwargs: {}    # add the Gemma-specific thinking key here if needed
+  extra_body: {}
+
+# --- verification / acceptance ---
+# Composite reward R = sum_i w_i r_i (max 1.0). With these weights a benchmark that compiles
+# and runs already scores 0.5, so the threshold gates on quality: 0.9 admits a clean+stable
+# benchmark (1.0) and tolerates ~1 anti-pattern OR a small stability loss, but rejects noisy
+# or smelly ones. Acceptance ALSO requires passing the static conformance gate.
+accept_threshold: 0.9
+need_run: true
+reward_weights:
+  compile: 0.25              # r_compile: compiles/packages
+  runtime: 0.25              # r_runtime: JMH ran to completion
+  anti_pattern: 0.25         # r_anti: free of Costa et al. smells (ported from JMH-Bench)
+  rsd: 0.25                  # r_RSD: low robust-RSD measurement noise
+  mutation: 0.0              # extension point (not yet implemented)
+# Robust-RSD -> [0,1]: full reward at/below rsd_good, zero at/above rsd_bad (fractions, not %).
+rsd_good: 0.05
+rsd_bad: 0.25
+runner:
+  jmh_version: "1.37"
+  java_release: 17
+  jmh:
+    warmup_iterations: 3
+    measurement_iterations: 5
+    forks: 1
+# Map CodeSnippet.project -> classpath file from jmh-provision-classpath. RxJava benchmarks
+# import internal APIs, so this must be set or every compile fails.
+project_classpaths:
+  rxjava: data/classpaths/rxjava.cp
+
+# --- dataset construction ---
+work_dir: data/rft
+max_keep_per_prompt: 4       # cap accepted per prompt so easy prompts don't dominate
+dedup: true                  # keep only distinct solutions (Yuan 2023)
+drop_all_pass: false         # set true to also drop prompts where every sample passed
+val_fraction: 0.05

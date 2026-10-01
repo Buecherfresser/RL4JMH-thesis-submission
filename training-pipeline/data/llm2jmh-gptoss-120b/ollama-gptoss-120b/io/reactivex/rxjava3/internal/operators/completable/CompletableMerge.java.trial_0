@@ -1,0 +1,90 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.completable.CompletableMerge;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import org.reactivestreams.Publisher;
+
+/**
+ * Benchmark for {@link CompletableMerge}.
+ *
+ * Measures the throughput of merging a configurable number of {@link Completable}
+ * sources with different concurrency limits and error‑handling strategies.
+ *
+ * The benchmark subscribes to the merged Completable and blocks until it terminates,
+ * ensuring that the measured time includes the complete execution of all inner
+ * completables.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class CompletableMergeBenchmark {
+
+    /** Number of inner Completable sources emitted by the upstream Publisher. */
+    @Param({"1000", "10000"})
+    public int innerCount;
+
+    /** Maximum number of concurrent inner subscriptions. */
+    @Param({"1", "4", "Integer.MAX_VALUE"})
+    public String maxConcurrencyStr;
+
+    /** Whether errors from inner sources are delayed until all have terminated. */
+    @Param({"true", "false"})
+    public boolean delayErrors;
+
+    /** The upstream Publisher that emits the Completable sources. */
+    private Publisher<? extends CompletableSource> upstream;
+
+    /** Parsed maxConcurrency value (Integer.MAX_VALUE when the string is "Integer.MAX_VALUE"). */
+    private int maxConcurrency;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Parse the maxConcurrency parameter.
+        maxConcurrency = "Integer.MAX_VALUE".equals(maxConcurrencyStr)
+                ? Integer.MAX_VALUE
+                : Integer.parseInt(maxConcurrencyStr);
+
+        // Create a Publisher that emits `innerCount` Completable.complete() sources.
+        // Using Flowable.range to avoid allocation of a large array and hide() to prevent
+        // fusion optimizations that would hide the true cost of the merge operator.
+        upstream = Flowable.range(1, innerCount)
+                .map(i -> Completable.complete())
+                .hide();
+    }
+
+    /**
+     * Benchmark method.
+     *
+     * Creates a new {@link CompletableMerge} instance for each iteration,
+     * subscribes to it and blocks until completion.
+     *
+     * The use of {@code blockingAwait()} guarantees that the benchmark measures
+     * the full lifecycle of the merged Completable, not just the subscription cost.
+     */
+    @Benchmark
+    public void mergeCompletable() {
+        CompletableMerge merge = new CompletableMerge(upstream, maxConcurrency, delayErrors);
+        // block until the merged Completable terminates
+        merge.blockingAwait();
+    }
+
+    /**
+     * Variant that runs the merge on a dedicated Scheduler to emulate typical
+     * asynchronous usage. This helps to assess the overhead of thread hopping.
+     */
+    @Benchmark
+    public void mergeCompletableAsync() {
+        CompletableMerge merge = new CompletableMerge(upstream, maxConcurrency, delayErrors);
+        // Subscribe on a computation scheduler to introduce async boundaries.
+        merge.subscribeOn(Schedulers.computation())
+                .blockingAwait();
+    }
+}
+```

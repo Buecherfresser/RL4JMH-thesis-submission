@@ -1,0 +1,98 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.maybe.MaybeFlatMapSingle}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * {@code Maybe.flatMapSingle} operator when the upstream Maybe emits a single
+ * value and the mapper returns a pre‑created {@link Single}.
+ *
+ * Best practices applied:
+ * • State is scoped to a thread to avoid contention.
+ * • All objects are created in a @Setup method to exclude allocation overhead.
+ * • The result is consumed by Blackhole to prevent dead‑code elimination.
+ * • Warm‑up, measurement, and fork parameters are chosen to give stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class MaybeFlatMapSingleBenchmark {
+
+    /**
+     * Upstream Maybe that emits a constant integer.
+     */
+    private Maybe<Integer> source;
+
+    /**
+     * Mapper that converts the integer into a Single emitting a string.
+     */
+    private Function<Integer, Single<String>> mapper;
+
+    /**
+     * The operator under test: source.flatMapSingle(mapper).
+     */
+    private Maybe<String> maybeFlatMapSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple source that always succeeds with the value 1.
+        source = Maybe.just(1);
+        // Mapper creates a Single that immediately emits a string based on the input.
+        mapper = i -> Single.just("value-" + i);
+        // Build the operator chain once; the benchmark will repeatedly subscribe to it.
+        maybeFlatMapSingle = source.flatMapSingle(mapper);
+    }
+
+    /**
+     * Benchmark method that subscribes to the {@code MaybeFlatMapSingle} chain
+     * and blocks until the result is available. The result is consumed by the
+     * Blackhole to avoid dead‑code elimination.
+     *
+     * @param bh Blackhole to consume the result.
+     */
+    @Benchmark
+    public void flatMapSingle(Blackhole bh) {
+        // blockingGet() is a convenient way to trigger the whole chain synchronously.
+        String result = maybeFlatMapSingle.blockingGet();
+        bh.consume(result);
+    }
+}

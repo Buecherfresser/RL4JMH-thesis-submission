@@ -1,0 +1,593 @@
+diff --git a/org/bytedeco/javacv/AndroidFrameConverter.java b/org/bytedeco/javacv/AndroidFrameConverter.java
+index 2ac83f5..ad4e7b7 100644
+--- a/org/bytedeco/javacv/AndroidFrameConverter.java
++++ b/org/bytedeco/javacv/AndroidFrameConverter.java
+@@ -48,7 +48,7 @@ public class AndroidFrameConverter extends FrameConverter<Bitmap> {
+      * Convert YUV 4:2:0 SP (NV21) data to BGR, as received, for example,
+      * via {@link Camera.PreviewCallback#onPreviewFrame(byte[],Camera)}.
+      */
+-    public Frame convert(byte[] data, int width, int height) {
++    public Frame convert(byte[] data, int width, int height) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(13);
+         if (frame == null || frame.imageWidth != width
+                 || frame.imageHeight != height || frame.imageChannels != 3) {
+             if (frame != null) {
+diff --git a/org/bytedeco/javacv/BaseChildSettings.java b/org/bytedeco/javacv/BaseChildSettings.java
+index 705fff9..c809c5e 100644
+--- a/org/bytedeco/javacv/BaseChildSettings.java
++++ b/org/bytedeco/javacv/BaseChildSettings.java
+@@ -37,10 +37,10 @@ import java.util.logging.LogRecord;
+  */
+ public class BaseChildSettings extends BeanContextChildSupport implements Comparable<BaseChildSettings> {
+ 
+-    public void addPropertyChangeListener(PropertyChangeListener listener) {
++    public void addPropertyChangeListener(PropertyChangeListener listener) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(1);
+         pcSupport.addPropertyChangeListener(listener);
+     }
+-    public void removePropertyChangeListener(PropertyChangeListener listener) {
++    public void removePropertyChangeListener(PropertyChangeListener listener) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(2);
+         pcSupport.removePropertyChangeListener(listener);
+     }
+ 
+diff --git a/org/bytedeco/javacv/BaseSettings.java b/org/bytedeco/javacv/BaseSettings.java
+index 04df846..dd834cc 100644
+--- a/org/bytedeco/javacv/BaseSettings.java
++++ b/org/bytedeco/javacv/BaseSettings.java
+@@ -32,7 +32,7 @@ import java.util.Arrays;
+  */
+ public class BaseSettings extends BeanContextSupport implements Comparable<BaseSettings> {
+ 
+-    public void addPropertyChangeListener(PropertyChangeListener listener) {
++    public void addPropertyChangeListener(PropertyChangeListener listener) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(3);
+         pcSupport.addPropertyChangeListener(listener);
+         for (Object s : toArray()) {
+             if (s instanceof BaseChildSettings) {
+@@ -42,7 +42,7 @@ public class BaseSettings extends BeanContextSupport implements Comparable<BaseS
+             }
+         }
+     }
+-    public void removePropertyChangeListener(PropertyChangeListener listener) {
++    public void removePropertyChangeListener(PropertyChangeListener listener) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(4);
+         pcSupport.removePropertyChangeListener(listener);
+         for (Object s : toArray()) {
+             if (s instanceof BaseChildSettings) {
+diff --git a/org/bytedeco/javacv/Blobs.java b/org/bytedeco/javacv/Blobs.java
+index 21b928f..b49ae7b 100644
+--- a/org/bytedeco/javacv/Blobs.java
++++ b/org/bytedeco/javacv/Blobs.java
+@@ -100,9 +100,9 @@ public class Blobs
+     public static int [] CondensationMap = new int [BLOBTOTALCOUNT];
+     
+     // Print out all the data for all the regions (blobs)
+-    public void PrintRegionData() { PrintRegionData(0, MaxLabel); }
++    public void PrintRegionData() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(14); PrintRegionData(0, MaxLabel); }
+     public void PrintRegionData(int Label0, int Label1)
+-    {
++    { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(15);
+         if(Label0 < 0) Label0 = 0;
+         if(Label1 > MaxLabel) Label1 = MaxLabel;
+         if(Label1 < Label0) return;
+diff --git a/org/bytedeco/javacv/BufferRing.java b/org/bytedeco/javacv/BufferRing.java
+index 56e4897..b1ead9e 100644
+--- a/org/bytedeco/javacv/BufferRing.java
++++ b/org/bytedeco/javacv/BufferRing.java
+@@ -46,11 +46,11 @@ public class BufferRing<B extends BufferRing.ReleasableBuffer> {
+     private Object[] buffers;
+     private int position;
+ 
+-    public int capacity() {
++    public int capacity() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(5);
+         return buffers.length;
+     }
+ 
+-    public int position() {
++    public int position() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(6);
+         return position;
+     }
+     public BufferRing position(int position) {
+diff --git a/org/bytedeco/javacv/CameraDevice.java b/org/bytedeco/javacv/CameraDevice.java
+index d48f0dc..9312131 100644
+--- a/org/bytedeco/javacv/CameraDevice.java
++++ b/org/bytedeco/javacv/CameraDevice.java
+@@ -126,10 +126,10 @@ public class CameraDevice extends ProjectiveDevice {
+         String devicePath = null;
+         Class<? extends FrameGrabber> frameGrabber = null;
+ 
+-        public Integer getDeviceNumber() {
++        public Integer getDeviceNumber() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(16);
+             return deviceNumber;
+         }
+-        public void setDeviceNumber(Integer deviceNumber) throws PropertyVetoException {
++        public void setDeviceNumber(Integer deviceNumber) throws PropertyVetoException { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(17);
+             if (deviceNumber != null) {
+                 try {
+                     if (frameGrabber != null) {
+diff --git a/org/bytedeco/javacv/CameraSettings.java b/org/bytedeco/javacv/CameraSettings.java
+index 50180d6..92e47fe 100644
+--- a/org/bytedeco/javacv/CameraSettings.java
++++ b/org/bytedeco/javacv/CameraSettings.java
+@@ -41,10 +41,10 @@ public class CameraSettings extends BaseSettings {
+     double monitorWindowsScale = 1.0;
+     Class<? extends FrameGrabber> frameGrabber = null;
+ 
+-    public int getQuantity() {
++    public int getQuantity() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(7);
+         return size();
+     }
+-    public void setQuantity(int quantity) throws PropertyVetoException {
++    public void setQuantity(int quantity) throws PropertyVetoException { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(8);
+         quantity = Math.max(1, quantity);
+         Object[] a = toArray();
+         int i = a.length;
+diff --git a/org/bytedeco/javacv/CanvasFrame.java b/org/bytedeco/javacv/CanvasFrame.java
+index 779584d..54a67ca 100644
+--- a/org/bytedeco/javacv/CanvasFrame.java
++++ b/org/bytedeco/javacv/CanvasFrame.java
+@@ -63,7 +63,7 @@ public class CanvasFrame extends JFrame {
+         public Exception(String message, Throwable cause) { super(message, cause); }
+     }
+ 
+-    public static String[] getScreenDescriptions() {
++    public static String[] getScreenDescriptions() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(18);
+         GraphicsDevice[] screens = getScreenDevices();
+         String[] descriptions = new String[screens.length];
+         for (int i = 0; i < screens.length; i++) {
+@@ -71,7 +71,7 @@ public class CanvasFrame extends JFrame {
+         }
+         return descriptions;
+     }
+-    public static DisplayMode getDisplayMode(int screenNumber) {
++    public static DisplayMode getDisplayMode(int screenNumber) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(19);
+         GraphicsDevice[] screens = getScreenDevices();
+         if (screenNumber >= 0 && screenNumber < screens.length) {
+             return screens[screenNumber].getDisplayMode();
+diff --git a/org/bytedeco/javacv/ColorCalibrator.java b/org/bytedeco/javacv/ColorCalibrator.java
+index 05d214d..6ce3d43 100644
+--- a/org/bytedeco/javacv/ColorCalibrator.java
++++ b/org/bytedeco/javacv/ColorCalibrator.java
+@@ -38,7 +38,7 @@ public class ColorCalibrator {
+ 
+     private ProjectiveDevice device;
+ 
+-    public double calibrate(Color[] referenceColors, Color[] deviceColors) {
++    public double calibrate(Color[] referenceColors, Color[] deviceColors) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(20);
+         assert(referenceColors.length == deviceColors.length);
+ 
+         int[] order = device.getRGBColorOrder();
+diff --git a/org/bytedeco/javacv/DC1394FrameGrabber.java b/org/bytedeco/javacv/DC1394FrameGrabber.java
+index d6832bb..dbf4b0a 100644
+--- a/org/bytedeco/javacv/DC1394FrameGrabber.java
++++ b/org/bytedeco/javacv/DC1394FrameGrabber.java
+@@ -41,7 +41,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
+  * @author Samuel Audet
+  */
+ public class DC1394FrameGrabber extends FrameGrabber {
+-    public static String[] getDeviceDescriptions() throws Exception {
++    public static String[] getDeviceDescriptions() throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(21);
+         tryLoad();
+ 
+         dc1394_t d = dc1394_new();
+@@ -76,7 +76,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
+         return descriptions;
+     }
+ 
+-    public static DC1394FrameGrabber createDefault(File deviceFile)   throws Exception { throw new Exception(DC1394FrameGrabber.class + " does not support device files."); }
++    public static DC1394FrameGrabber createDefault(File deviceFile)   throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(22); throw new Exception(DC1394FrameGrabber.class + " does not support device files."); }
+     public static DC1394FrameGrabber createDefault(String devicePath) throws Exception { throw new Exception(DC1394FrameGrabber.class + " does not support device paths."); }
+     public static DC1394FrameGrabber createDefault(int deviceNumber)  throws Exception { return new DC1394FrameGrabber(deviceNumber); }
+ 
+diff --git a/org/bytedeco/javacv/FFmpegFrameFilter.java b/org/bytedeco/javacv/FFmpegFrameFilter.java
+index fbd0fbd..8b7c557 100644
+--- a/org/bytedeco/javacv/FFmpegFrameFilter.java
++++ b/org/bytedeco/javacv/FFmpegFrameFilter.java
+@@ -91,7 +91,7 @@ public class FFmpegFrameFilter extends FrameFilter {
+     }
+ 
+     private static Exception loadingException = null;
+-    public static void tryLoad() throws Exception {
++    public static void tryLoad() throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(23);
+         if (loadingException != null) {
+             throw loadingException;
+         } else {
+@@ -151,7 +151,7 @@ public class FFmpegFrameFilter extends FrameFilter {
+             releaseUnsafe();
+         }
+     }
+-    public synchronized void releaseUnsafe() throws Exception {
++    public synchronized void releaseUnsafe() throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(24);
+         started = false;
+ 
+         if (default_layout != null) {
+diff --git a/org/bytedeco/javacv/FFmpegFrameGrabber.java b/org/bytedeco/javacv/FFmpegFrameGrabber.java
+index 04d4734..8357b17 100644
+--- a/org/bytedeco/javacv/FFmpegFrameGrabber.java
++++ b/org/bytedeco/javacv/FFmpegFrameGrabber.java
+@@ -93,12 +93,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
+         public Exception(String message, Throwable cause) { super(message, cause); }
+     }
+ 
+-    public static String[] getDeviceDescriptions() throws Exception {
++    public static String[] getDeviceDescriptions() throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(25);
+         tryLoad();
+         throw new UnsupportedOperationException("Device enumeration not support by FFmpeg.");
+     }
+ 
+-    public static FFmpegFrameGrabber createDefault(File deviceFile)   throws Exception { return new FFmpegFrameGrabber(deviceFile); }
++    public static FFmpegFrameGrabber createDefault(File deviceFile)   throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(26); return new FFmpegFrameGrabber(deviceFile); }
+     public static FFmpegFrameGrabber createDefault(String devicePath) throws Exception { return new FFmpegFrameGrabber(devicePath); }
+     public static FFmpegFrameGrabber createDefault(int deviceNumber)  throws Exception { throw new Exception(FFmpegFrameGrabber.class + " does not support device numbers."); }
+ 
+diff --git a/org/bytedeco/javacv/FFmpegFrameRecorder.java b/org/bytedeco/javacv/FFmpegFrameRecorder.java
+index 615f462..a7a5979 100644
+--- a/org/bytedeco/javacv/FFmpegFrameRecorder.java
++++ b/org/bytedeco/javacv/FFmpegFrameRecorder.java
+@@ -99,8 +99,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
+         public Exception(String message, Throwable cause) { super(message, cause); }
+     }
+ 
+-    public static FFmpegFrameRecorder createDefault(File f, int w, int h)   throws Exception { return new FFmpegFrameRecorder(f, w, h); }
+-    public static FFmpegFrameRecorder createDefault(String f, int w, int h) throws Exception { return new FFmpegFrameRecorder(f, w, h); }
++    public static FFmpegFrameRecorder createDefault(File f, int w, int h)   throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(27); return new FFmpegFrameRecorder(f, w, h); }
++    public static FFmpegFrameRecorder createDefault(String f, int w, int h) throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(28); return new FFmpegFrameRecorder(f, w, h); }
+ 
+     private static Exception loadingException = null;
+     public static void tryLoad() throws Exception {
+diff --git a/org/bytedeco/javacv/FFmpegLockCallback.java b/org/bytedeco/javacv/FFmpegLockCallback.java
+index c844bcb..510d95a 100644
+--- a/org/bytedeco/javacv/FFmpegLockCallback.java
++++ b/org/bytedeco/javacv/FFmpegLockCallback.java
+@@ -19,7 +19,7 @@ public class FFmpegLockCallback {
+     private static HashMap<Integer, Lock> lockArray = new HashMap<>();
+     private static Cb_PointerPointer_int lockCallback = new Cb_PointerPointer_int() {
+         @Override
+-        public int call(@SuppressWarnings("rawtypes") @Cast("void**") PointerPointer mutex, @Cast("AVLockOp") int op) {
++        public int call(@SuppressWarnings("rawtypes") @Cast("void**") PointerPointer mutex, @Cast("AVLockOp") int op) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(29);
+             int number;
+             Lock l;
+             // System.out.println "Locking: " + op);
+@@ -62,7 +62,7 @@ public class FFmpegLockCallback {
+         }
+     }.retainReference();
+ 
+-    public static synchronized void init() {
++    public static synchronized void init() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(30);
+         if (!initialized) {
+             initialized = true;
+             av_lockmgr_register(lockCallback);
+diff --git a/org/bytedeco/javacv/FFmpegLogCallback.java b/org/bytedeco/javacv/FFmpegLogCallback.java
+index d978062..98adb18 100644
+--- a/org/bytedeco/javacv/FFmpegLogCallback.java
++++ b/org/bytedeco/javacv/FFmpegLogCallback.java
+@@ -42,7 +42,7 @@ public class FFmpegLogCallback extends LogCallback {
+     static final FFmpegLogCallback instance = new FFmpegLogCallback().retainReference();
+ 
+     /** Returns an instance that can be used with {@link org.bytedeco.ffmpeg.global.avutil#setLogCallback(LogCallback)}. */
+-    public static FFmpegLogCallback getInstance() {
++    public static FFmpegLogCallback getInstance() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(31);
+         return instance;
+     }
+ 
+@@ -52,7 +52,7 @@ public class FFmpegLogCallback extends LogCallback {
+     }
+ 
+     /** Returns {@code av_log_get_level()}. **/
+-    public static int getLevel() {
++    public static int getLevel() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(32);
+         return av_log_get_level();
+     }
+ 
+diff --git a/org/bytedeco/javacv/FlyCapture2FrameGrabber.java b/org/bytedeco/javacv/FlyCapture2FrameGrabber.java
+index c6f7975..51a11f9 100644
+--- a/org/bytedeco/javacv/FlyCapture2FrameGrabber.java
++++ b/org/bytedeco/javacv/FlyCapture2FrameGrabber.java
+@@ -46,7 +46,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
+  */
+ public class FlyCapture2FrameGrabber extends FrameGrabber {
+ 
+-    public static String[] getDeviceDescriptions() throws FrameGrabber.Exception {
++    public static String[] getDeviceDescriptions() throws FrameGrabber.Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(33);
+         tryLoad();
+ 
+         BusManager busMgr = new BusManager();
+@@ -98,7 +98,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
+                 + "Firmware build time - " + pCamInfo.firmwareBuildTime().getString() + "\n";
+     }
+ 
+-    public static FlyCapture2FrameGrabber createDefault(File deviceFile) throws FrameGrabber.Exception {
++    public static FlyCapture2FrameGrabber createDefault(File deviceFile) throws FrameGrabber.Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(34);
+         return null;
+     }
+ 
+diff --git a/org/bytedeco/javacv/FlyCaptureFrameGrabber.java b/org/bytedeco/javacv/FlyCaptureFrameGrabber.java
+index 0150122..375f98a 100644
+--- a/org/bytedeco/javacv/FlyCaptureFrameGrabber.java
++++ b/org/bytedeco/javacv/FlyCaptureFrameGrabber.java
+@@ -41,7 +41,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
+  * @author Samuel Audet
+  */
+ public class FlyCaptureFrameGrabber extends FrameGrabber {
+-    public static String[] getDeviceDescriptions() throws Exception {
++    public static String[] getDeviceDescriptions() throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(35);
+         tryLoad();
+ 
+         int[] count = new int[1];
+@@ -69,7 +69,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
+         return descriptions;
+     }
+ 
+-    public static FlyCaptureFrameGrabber createDefault(File deviceFile)   throws Exception { throw new Exception(FlyCaptureFrameGrabber.class + " does not support device files."); }
++    public static FlyCaptureFrameGrabber createDefault(File deviceFile)   throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(36); throw new Exception(FlyCaptureFrameGrabber.class + " does not support device files."); }
+     public static FlyCaptureFrameGrabber createDefault(String devicePath) throws Exception { throw new Exception(FlyCaptureFrameGrabber.class + " does not support device paths."); }
+     public static FlyCaptureFrameGrabber createDefault(int deviceNumber)  throws Exception { return new FlyCaptureFrameGrabber(deviceNumber); }
+ 
+diff --git a/org/bytedeco/javacv/Frame.java b/org/bytedeco/javacv/Frame.java
+index 496d902..be86672 100644
+--- a/org/bytedeco/javacv/Frame.java
++++ b/org/bytedeco/javacv/Frame.java
+@@ -116,7 +116,7 @@ public class Frame implements AutoCloseable, Indexable {
+     public long timestamp;
+ 
+     /** Returns {@code Math.abs(depth) / 8}. */
+-    public static int pixelSize(int depth) {
++    public static int pixelSize(int depth) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(37);
+         return Math.abs(depth) / 8;
+     }
+ 
+@@ -156,7 +156,7 @@ public class Frame implements AutoCloseable, Indexable {
+     }
+ 
+     /** Returns {@code createIndexer(true, 0)}. */
+-    public <I extends Indexer> I createIndexer() {
++    public <I extends Indexer> I createIndexer() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(38);
+         return (I)createIndexer(true, 0);
+     }
+     @Override public <I extends Indexer> I createIndexer(boolean direct) {
+diff --git a/org/bytedeco/javacv/GLCanvasFrame.java b/org/bytedeco/javacv/GLCanvasFrame.java
+index 69e2498..a961ec4 100644
+--- a/org/bytedeco/javacv/GLCanvasFrame.java
++++ b/org/bytedeco/javacv/GLCanvasFrame.java
+@@ -142,7 +142,7 @@ public class GLCanvasFrame extends CanvasFrame {
+     private int frameBuffer = 0, renderBuffer = 0;
+ 
+     private GLEventListener eventListener = new GLEventListener() {
+-        public void init(GLAutoDrawable drawable) {
++        public void init(GLAutoDrawable drawable) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(39);
+             GL2 gl = drawable.getGL().getGL2();
+ 
+             gl.setSwapInterval(1); // Sync to VBlank
+@@ -154,7 +154,7 @@ public class GLCanvasFrame extends CanvasFrame {
+             gl.glGenFramebuffers(1, params, 0);
+             frameBuffer = params[0];
+         }
+-        public void dispose(GLAutoDrawable drawable) {
++        public void dispose(GLAutoDrawable drawable) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(40);
+             GL2 gl = drawable.getGL().getGL2();
+ 
+             params[0] = frameBuffer;
+diff --git a/org/bytedeco/javacv/GNImageAligner.java b/org/bytedeco/javacv/GNImageAligner.java
+index af5ddb6..b07df93 100644
+--- a/org/bytedeco/javacv/GNImageAligner.java
++++ b/org/bytedeco/javacv/GNImageAligner.java
+@@ -144,10 +144,10 @@ public class GNImageAligner implements ImageAligner {
+         CvMat gammaTgamma      = null;
+         boolean constrained    = false;
+ 
+-        public double getStepSize() {
++        public double getStepSize() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(41);
+             return stepSize;
+         }
+-        public void setStepSize(double stepSize) {
++        public void setStepSize(double stepSize) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(42);
+             this.stepSize = stepSize;
+         }
+ 
+diff --git a/org/bytedeco/javacv/GNImageAlignerCL.java b/org/bytedeco/javacv/GNImageAlignerCL.java
+index d80dddc..192c896 100644
+--- a/org/bytedeco/javacv/GNImageAlignerCL.java
++++ b/org/bytedeco/javacv/GNImageAlignerCL.java
+@@ -101,7 +101,7 @@ public class GNImageAlignerCL extends GNImageAligner implements ImageAlignerCL {
+         setTemplateImageCL(template0, roiPts);
+         setTargetImageCL(target0);
+     }
+-    public void release() {
++    public void release() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(43);
+         final int minLevel = settings.pyramidLevelMin;
+         final int maxLevel = settings.pyramidLevelMax;
+ 
+@@ -146,7 +146,7 @@ public class GNImageAlignerCL extends GNImageAligner implements ImageAlignerCL {
+     @Override public IplImage getTemplateImage() {
+         return getTemplateImage(true);
+     }
+-    public IplImage getTemplateImage(boolean blocking) {
++    public IplImage getTemplateImage(boolean blocking) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(44);
+         if (templateChanged[pyramidLevel]) {
+             templateChanged[pyramidLevel] = false;
+             return template[pyramidLevel] = context.readImage(getTemplateImageCL(), template[pyramidLevel], blocking);
+diff --git a/org/bytedeco/javacv/GeometricCalibrator.java b/org/bytedeco/javacv/GeometricCalibrator.java
+index 21ee84e..d5b5935 100644
+--- a/org/bytedeco/javacv/GeometricCalibrator.java
++++ b/org/bytedeco/javacv/GeometricCalibrator.java
+@@ -63,10 +63,10 @@ public class GeometricCalibrator {
+         double patternSteadySize = 0.005;
+         double patternMovedSize  = 0.05;
+ 
+-        public double getDetectedBoardMin() {
++        public double getDetectedBoardMin() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(45);
+             return detectedBoardMin;
+         }
+-        public void setDetectedBoardMin(double detectedBoardMin) {
++        public void setDetectedBoardMin(double detectedBoardMin) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(46);
+             this.detectedBoardMin = detectedBoardMin;
+         }
+ 
+diff --git a/org/bytedeco/javacv/HandMouse.java b/org/bytedeco/javacv/HandMouse.java
+index e6db39b..2096941 100644
+--- a/org/bytedeco/javacv/HandMouse.java
++++ b/org/bytedeco/javacv/HandMouse.java
+@@ -69,10 +69,10 @@ public class HandMouse {
+         double brightnessMin   = 0.1;
+         double updateAlpha     = 0.5;
+ 
+-        public int getMopIterations() {
++        public int getMopIterations() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(47);
+             return mopIterations;
+         }
+-        public void setMopIterations(int mopIterations) {
++        public void setMopIterations(int mopIterations) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(48);
+             this.mopIterations = mopIterations;
+         }
+ 
+diff --git a/org/bytedeco/javacv/IPCameraFrameGrabber.java b/org/bytedeco/javacv/IPCameraFrameGrabber.java
+index ad895b2..94b40e9 100644
+--- a/org/bytedeco/javacv/IPCameraFrameGrabber.java
++++ b/org/bytedeco/javacv/IPCameraFrameGrabber.java
+@@ -51,7 +51,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
+ 
+     private static Exception loadingException = null;
+ 
+-    public static void tryLoad() throws Exception {
++    public static void tryLoad() throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(49);
+         if (loadingException != null) {
+             throw loadingException;
+         } else {
+@@ -119,7 +119,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
+     }
+ 
+     @Override
+-    public void start() throws Exception {
++    public void start() throws Exception { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(50);
+         try {
+             /*
+              * We don't need to keep a reference to the connection
+diff --git a/org/bytedeco/javacv/Java2DFrameUtils.java b/org/bytedeco/javacv/Java2DFrameUtils.java
+index a966899..e917395 100644
+--- a/org/bytedeco/javacv/Java2DFrameUtils.java
++++ b/org/bytedeco/javacv/Java2DFrameUtils.java
+@@ -44,11 +44,11 @@ public class Java2DFrameUtils {
+      * @param source
+      * @return
+      */
+-    public static BufferedImage deepCopy(BufferedImage source) {
++    public static BufferedImage deepCopy(BufferedImage source) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(9);
+         return Java2DFrameConverter.cloneBufferedImage(source);
+     }
+ 
+-    public synchronized static BufferedImage toBufferedImage(IplImage src) {
++    public synchronized static BufferedImage toBufferedImage(IplImage src) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(10);
+         try (Frame f = iplConv.convert(src).clone()) {
+             return deepCopy(biConv.getBufferedImage(f));
+         }
+diff --git a/org/bytedeco/javacv/ProjectorSettings.java b/org/bytedeco/javacv/ProjectorSettings.java
+index 55d0ffa..149e384 100644
+--- a/org/bytedeco/javacv/ProjectorSettings.java
++++ b/org/bytedeco/javacv/ProjectorSettings.java
+@@ -39,10 +39,10 @@ public class ProjectorSettings extends BaseSettings {
+ 
+     boolean calibrated = false;
+ 
+-    public int getQuantity() {
++    public int getQuantity() { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(11);
+         return size();
+     }
+-    public void setQuantity(int quantity) {
++    public void setQuantity(int quantity) { org.bytedeco.javacv.jmhbench.MutationSwitch.tick(12);
+         Object[] a = toArray();
+         int i = a.length;
+         while (i > quantity) {
+diff --git a/org/bytedeco/javacv/jmhbench/MutationSwitch.java b/org/bytedeco/javacv/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..648d65f
+--- /dev/null
++++ b/org/bytedeco/javacv/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.bytedeco.javacv.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

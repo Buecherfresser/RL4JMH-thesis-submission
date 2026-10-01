@@ -1,0 +1,567 @@
+diff --git a/com/backblaze/erasure/ByteInputOutputExpCodingLoop.java b/com/backblaze/erasure/ByteInputOutputExpCodingLoop.java
+index 965d9cd..a845da6 100644
+--- a/com/backblaze/erasure/ByteInputOutputExpCodingLoop.java
++++ b/com/backblaze/erasure/ByteInputOutputExpCodingLoop.java
+@@ -13,7 +13,7 @@ public class ByteInputOutputExpCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(3);
+ 
+         for (int iByte = offset; iByte < offset + byteCount; iByte++) {
+             {
+diff --git a/com/backblaze/erasure/ByteInputOutputTableCodingLoop.java b/com/backblaze/erasure/ByteInputOutputTableCodingLoop.java
+index 5254f1e..cab8d25 100644
+--- a/com/backblaze/erasure/ByteInputOutputTableCodingLoop.java
++++ b/com/backblaze/erasure/ByteInputOutputTableCodingLoop.java
+@@ -13,7 +13,7 @@ public class ByteInputOutputTableCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(4);
+ 
+         final byte[][] table = Galois.MULTIPLICATION_TABLE;
+ 
+diff --git a/com/backblaze/erasure/ByteOutputInputExpCodingLoop.java b/com/backblaze/erasure/ByteOutputInputExpCodingLoop.java
+index 499268a..6c20ca4 100644
+--- a/com/backblaze/erasure/ByteOutputInputExpCodingLoop.java
++++ b/com/backblaze/erasure/ByteOutputInputExpCodingLoop.java
+@@ -13,7 +13,7 @@ public class ByteOutputInputExpCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(5);
+ 
+         for (int iByte = offset; iByte < offset + byteCount; iByte++) {
+             for (int iOutput = 0; iOutput < outputCount; iOutput++) {
+diff --git a/com/backblaze/erasure/ByteOutputInputTableCodingLoop.java b/com/backblaze/erasure/ByteOutputInputTableCodingLoop.java
+index 8b48dae..842d8e1 100644
+--- a/com/backblaze/erasure/ByteOutputInputTableCodingLoop.java
++++ b/com/backblaze/erasure/ByteOutputInputTableCodingLoop.java
+@@ -13,7 +13,7 @@ public class ByteOutputInputTableCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(6);
+ 
+         byte [] [] table = Galois.MULTIPLICATION_TABLE;
+         for (int iByte = offset; iByte < offset + byteCount; iByte++) {
+diff --git a/com/backblaze/erasure/Galois.java b/com/backblaze/erasure/Galois.java
+index 181e5e5..0899f1e 100644
+--- a/com/backblaze/erasure/Galois.java
++++ b/com/backblaze/erasure/Galois.java
+@@ -189,14 +189,14 @@ public final class Galois {
+      * Inverse of addition.  If you're in an inner loop,
+      * you should inline this function: it's just XOR.
+      */
+-    public static byte subtract(byte a, byte b) {
++    public static byte subtract(byte a, byte b) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(7);
+         return (byte) (a ^ b);
+     }
+ 
+     /**
+      * Multiplies two elements of the field.
+      */
+-    public static byte multiply(byte a, byte b) {
++    public static byte multiply(byte a, byte b) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(8);
+         if (a == 0 || b == 0) {
+             return 0;
+         }
+@@ -211,7 +211,7 @@ public final class Galois {
+     /**
+      * Inverse of multiplication.
+      */
+-    public static byte divide(byte a, byte b) {
++    public static byte divide(byte a, byte b) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(9);
+         if (a == 0) {
+             return 0;
+         }
+@@ -236,7 +236,7 @@ public final class Galois {
+      * @param n A plain-old integer.
+      * @return The result of multiplying a by itself n times.
+      */
+-    public static byte exp(byte a, int n) {
++    public static byte exp(byte a, int n) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(10);
+         if (n == 0) {
+             return 1;
+         }
+@@ -256,7 +256,7 @@ public final class Galois {
+     /**
+      * Generates a logarithm table given a starting polynomial.
+      */
+-    public static short [] generateLogTable(int polynomial) {
++    public static short [] generateLogTable(int polynomial) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(11);
+         short [] result = new short[FIELD_SIZE];
+         for (int i = 0; i < FIELD_SIZE; i++) {
+             result[i] = -1; // -1 means "not set"
+@@ -278,7 +278,7 @@ public final class Galois {
+     /**
+      * Generates the inverse log table.
+      */
+-    public static byte [] generateExpTable(short [] logTable) {
++    public static byte [] generateExpTable(short [] logTable) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(12);
+         final byte [] result = new byte [FIELD_SIZE * 2 - 2];
+         for (int i = 1; i < FIELD_SIZE; i++) {
+             int log = logTable[i];
+@@ -295,7 +295,7 @@ public final class Galois {
+      *
+      *     MULTIPLICATION_TABLE[a][b]
+      */
+-    public static byte [] [] generateMultiplicationTable() {
++    public static byte [] [] generateMultiplicationTable() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(13);
+         byte [] [] result = new byte [256] [256];
+         for (int a = 0; a < FIELD_SIZE; a++) {
+             for (int b = 0; b < FIELD_SIZE; b++) {
+@@ -311,7 +311,7 @@ public final class Galois {
+      *
+      * This is never used in the code; it's just here for completeness.
+      */
+-    public static Integer [] allPossiblePolynomials() {
++    public static Integer [] allPossiblePolynomials() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(14);
+         List<Integer> result = new ArrayList<Integer>();
+         for (int i = 0; i < FIELD_SIZE; i++) {
+             try {
+diff --git a/com/backblaze/erasure/InputByteOutputExpCodingLoop.java b/com/backblaze/erasure/InputByteOutputExpCodingLoop.java
+index 457e96a..20f4d69 100644
+--- a/com/backblaze/erasure/InputByteOutputExpCodingLoop.java
++++ b/com/backblaze/erasure/InputByteOutputExpCodingLoop.java
+@@ -13,7 +13,7 @@ public class InputByteOutputExpCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(15);
+ 
+         {
+             final int iInput = 0;
+diff --git a/com/backblaze/erasure/InputByteOutputTableCodingLoop.java b/com/backblaze/erasure/InputByteOutputTableCodingLoop.java
+index 29565b8..d0735e4 100644
+--- a/com/backblaze/erasure/InputByteOutputTableCodingLoop.java
++++ b/com/backblaze/erasure/InputByteOutputTableCodingLoop.java
+@@ -13,7 +13,7 @@ public class InputByteOutputTableCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(16);
+ 
+         final byte [] [] table = Galois.MULTIPLICATION_TABLE;
+ 
+diff --git a/com/backblaze/erasure/InputOutputByteExpCodingLoop.java b/com/backblaze/erasure/InputOutputByteExpCodingLoop.java
+index 94463ae..3d13323 100644
+--- a/com/backblaze/erasure/InputOutputByteExpCodingLoop.java
++++ b/com/backblaze/erasure/InputOutputByteExpCodingLoop.java
+@@ -13,7 +13,7 @@ public class InputOutputByteExpCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(17);
+ 
+         {
+             final int iInput = 0;
+diff --git a/com/backblaze/erasure/InputOutputByteTableCodingLoop.java b/com/backblaze/erasure/InputOutputByteTableCodingLoop.java
+index 6d134e3..d8ad007 100644
+--- a/com/backblaze/erasure/InputOutputByteTableCodingLoop.java
++++ b/com/backblaze/erasure/InputOutputByteTableCodingLoop.java
+@@ -13,7 +13,7 @@ public class InputOutputByteTableCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(18);
+ 
+         final byte [] [] table = Galois.MULTIPLICATION_TABLE;
+ 
+@@ -49,7 +49,7 @@ public class InputOutputByteTableCodingLoop extends CodingLoopBase {
+             byte[][] inputs, int inputCount,
+             byte[][] toCheck, int checkCount,
+             int offset, int byteCount,
+-            byte[] tempBuffer) {
++            byte[] tempBuffer) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(19);
+ 
+         if (tempBuffer == null) {
+             return super.checkSomeShards(matrixRows, inputs, inputCount, toCheck, checkCount, offset, byteCount, null);
+diff --git a/com/backblaze/erasure/Matrix.java b/com/backblaze/erasure/Matrix.java
+index d1032b9..7442ac5 100644
+--- a/com/backblaze/erasure/Matrix.java
++++ b/com/backblaze/erasure/Matrix.java
+@@ -72,7 +72,7 @@ public class Matrix {
+     /**
+      * Returns an identity matrix of the given size.
+      */
+-    public static Matrix identity(int size) {
++    public static Matrix identity(int size) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(20);
+         Matrix result = new Matrix(size, size);
+         for (int i = 0; i < size; i++) {
+             result.set(i, i, (byte) 1);
+@@ -115,7 +115,7 @@ public class Matrix {
+      *    06 07 08
+      *    09 0a 0b
+      */
+-    public String toBigString() {
++    public String toBigString() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(21);
+         StringBuilder result = new StringBuilder();
+         for (int r = 0; r < rows; r++) {
+             for (int c = 0; c < columns; c++) {
+@@ -133,14 +133,14 @@ public class Matrix {
+     /**
+      * Returns the number of columns in this matrix.
+      */
+-    public int getColumns() {
++    public int getColumns() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(22);
+         return columns;
+     }
+ 
+     /**
+      * Returns the number of rows in this matrix.
+      */
+-    public int getRows() {
++    public int getRows() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(23);
+         return rows;
+     }
+ 
+@@ -190,7 +190,7 @@ public class Matrix {
+      * Multiplies this matrix (the one on the left) by another
+      * matrix (the one on the right).
+      */
+-    public Matrix times(Matrix right) {
++    public Matrix times(Matrix right) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(24);
+         if (getColumns() != right.getRows()) {
+             throw new IllegalArgumentException(
+                     "Columns on left (" + getColumns() +") " +
+@@ -212,7 +212,7 @@ public class Matrix {
+     /**
+      * Returns the concatenation of this matrix and the matrix on the right.
+      */
+-    public Matrix augment(Matrix right) {
++    public Matrix augment(Matrix right) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(25);
+         if (rows != right.rows) {
+             throw new IllegalArgumentException("Matrices don't have the same number of rows");
+         }
+@@ -231,7 +231,7 @@ public class Matrix {
+     /**
+      * Returns a part of this matrix.
+      */
+-    public Matrix submatrix(int rmin, int cmin, int rmax, int cmax) {
++    public Matrix submatrix(int rmin, int cmin, int rmax, int cmax) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(26);
+         Matrix result = new Matrix(rmax - rmin, cmax - cmin);
+         for (int r = rmin; r < rmax; r++) {
+             for (int c = cmin; c < cmax; c++) {
+@@ -244,7 +244,7 @@ public class Matrix {
+     /**
+      * Returns one row of the matrix as a byte array.
+      */
+-    public byte [] getRow(int row) {
++    public byte [] getRow(int row) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(27);
+         byte [] result = new byte [columns];
+         for (int c = 0; c < columns; c++) {
+             result[c] = get(row, c);
+@@ -255,7 +255,7 @@ public class Matrix {
+     /**
+      * Exchanges two rows in the matrix.
+      */
+-    public void swapRows(int r1, int r2) {
++    public void swapRows(int r1, int r2) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(28);
+         if (r1 < 0 || rows <= r1 || r2 < 0 || rows <= r2) {
+             throw new IllegalArgumentException("Row index out of range");
+         }
+@@ -270,7 +270,7 @@ public class Matrix {
+      * @throws IllegalArgumentException when the matrix is singular and
+      * doesn't have an inverse.
+      */
+-    public Matrix invert() {
++    public Matrix invert() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(29);
+         // Sanity check.
+         if (rows != columns) {
+             throw new IllegalArgumentException("Only square matrices can be inverted");
+diff --git a/com/backblaze/erasure/OutputByteInputExpCodingLoop.java b/com/backblaze/erasure/OutputByteInputExpCodingLoop.java
+index 952ea65..4277789 100644
+--- a/com/backblaze/erasure/OutputByteInputExpCodingLoop.java
++++ b/com/backblaze/erasure/OutputByteInputExpCodingLoop.java
+@@ -13,7 +13,7 @@ public class OutputByteInputExpCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(30);
+ 
+         for (int iOutput = 0; iOutput < outputCount; iOutput++) {
+             final byte[] outputShard = outputs[iOutput];
+diff --git a/com/backblaze/erasure/OutputByteInputTableCodingLoop.java b/com/backblaze/erasure/OutputByteInputTableCodingLoop.java
+index e789e85..6a3601f 100644
+--- a/com/backblaze/erasure/OutputByteInputTableCodingLoop.java
++++ b/com/backblaze/erasure/OutputByteInputTableCodingLoop.java
+@@ -13,7 +13,7 @@ public class OutputByteInputTableCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(31);
+ 
+         final byte [] [] table = Galois.MULTIPLICATION_TABLE;
+         for (int iOutput = 0; iOutput < outputCount; iOutput++) {
+diff --git a/com/backblaze/erasure/OutputInputByteExpCodingLoop.java b/com/backblaze/erasure/OutputInputByteExpCodingLoop.java
+index 9db59e7..47f74a7 100644
+--- a/com/backblaze/erasure/OutputInputByteExpCodingLoop.java
++++ b/com/backblaze/erasure/OutputInputByteExpCodingLoop.java
+@@ -13,7 +13,7 @@ public class OutputInputByteExpCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(32);
+ 
+         for (int iOutput = 0; iOutput < outputCount; iOutput++) {
+             final byte [] outputShard = outputs[iOutput];
+diff --git a/com/backblaze/erasure/OutputInputByteTableCodingLoop.java b/com/backblaze/erasure/OutputInputByteTableCodingLoop.java
+index ba1d50d..7b1d1e3 100644
+--- a/com/backblaze/erasure/OutputInputByteTableCodingLoop.java
++++ b/com/backblaze/erasure/OutputInputByteTableCodingLoop.java
+@@ -13,7 +13,7 @@ public class OutputInputByteTableCodingLoop extends CodingLoopBase {
+             byte[][] matrixRows,
+             byte[][] inputs, int inputCount,
+             byte[][] outputs, int outputCount,
+-            int offset, int byteCount) {
++            int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(33);
+ 
+         final byte [] [] table = Galois.MULTIPLICATION_TABLE;
+         for (int iOutput = 0; iOutput < outputCount; iOutput++) {
+@@ -43,7 +43,7 @@ public class OutputInputByteTableCodingLoop extends CodingLoopBase {
+             byte[][] inputs, int inputCount,
+             byte[][] toCheck, int checkCount,
+             int offset, int byteCount,
+-            byte[] tempBuffer) {
++            byte[] tempBuffer) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(34);
+ 
+         if (tempBuffer == null) {
+             return super.checkSomeShards(matrixRows, inputs, inputCount, toCheck, checkCount, offset, byteCount, null);
+diff --git a/com/backblaze/erasure/ReedSolomon.java b/com/backblaze/erasure/ReedSolomon.java
+index 09f2194..f828f61 100644
+--- a/com/backblaze/erasure/ReedSolomon.java
++++ b/com/backblaze/erasure/ReedSolomon.java
+@@ -26,7 +26,7 @@ public class ReedSolomon {
+     /**
+      * Creates a ReedSolomon codec with the default coding loop.
+      */
+-    public static ReedSolomon create(int dataShardCount, int parityShardCount) {
++    public static ReedSolomon create(int dataShardCount, int parityShardCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(35);
+         return new ReedSolomon(dataShardCount, parityShardCount, new InputOutputByteTableCodingLoop());
+     }
+ 
+@@ -58,21 +58,21 @@ public class ReedSolomon {
+     /**
+      * Returns the number of data shards.
+      */
+-    public int getDataShardCount() {
++    public int getDataShardCount() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(36);
+         return dataShardCount;
+     }
+ 
+     /**
+      * Returns the number of parity shards.
+      */
+-    public int getParityShardCount() {
++    public int getParityShardCount() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(37);
+         return parityShardCount;
+     }
+ 
+     /**
+      * Returns the total number of shards.
+      */
+-    public int getTotalShardCount() {
++    public int getTotalShardCount() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(38);
+         return totalShardCount;
+     }
+ 
+@@ -86,7 +86,7 @@ public class ReedSolomon {
+      * @param byteCount The number of bytes to encode in each shard.
+      *
+      */
+-    public void encodeParity(byte[][] shards, int offset, int byteCount) {
++    public void encodeParity(byte[][] shards, int offset, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(39);
+         // Check arguments.
+         checkBuffersAndSizes(shards, offset, byteCount);
+ 
+@@ -111,7 +111,7 @@ public class ReedSolomon {
+      * @param firstByte The index of the first byte in each shard to check.
+      * @param byteCount The number of bytes to check in each shard.
+      */
+-    public boolean isParityCorrect(byte[][] shards, int firstByte, int byteCount) {
++    public boolean isParityCorrect(byte[][] shards, int firstByte, int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(40);
+         // Check arguments.
+         checkBuffersAndSizes(shards, firstByte, byteCount);
+ 
+@@ -142,7 +142,7 @@ public class ReedSolomon {
+      * @param tempBuffer A temporary buffer (the same size as each of the
+      *                   shards) to use when computing parity.
+      */
+-    public boolean isParityCorrect(byte[][] shards, int firstByte, int byteCount, byte [] tempBuffer) {
++    public boolean isParityCorrect(byte[][] shards, int firstByte, int byteCount, byte [] tempBuffer) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(41);
+         // Check arguments.
+         checkBuffersAndSizes(shards, firstByte, byteCount);
+         if (tempBuffer.length < firstByte + byteCount) {
+@@ -174,7 +174,7 @@ public class ReedSolomon {
+     public void decodeMissing(byte [] [] shards,
+                               boolean [] shardPresent,
+                               final int offset,
+-                              final int byteCount) {
++                              final int byteCount) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(42);
+         // Check arguments.
+         checkBuffersAndSizes(shards, offset, byteCount);
+ 
+diff --git a/com/backblaze/erasure/ReedSolomonBenchmark.java b/com/backblaze/erasure/ReedSolomonBenchmark.java
+index ffadeb4..b02108c 100644
+--- a/com/backblaze/erasure/ReedSolomonBenchmark.java
++++ b/com/backblaze/erasure/ReedSolomonBenchmark.java
+@@ -36,11 +36,11 @@ public class ReedSolomonBenchmark {
+ 
+     private int nextBuffer = 0;
+ 
+-    public static void main(String [] args) {
++    public static void main(String [] args) { com.backblaze.erasure.jmhbench.MutationSwitch.tick(43);
+         (new ReedSolomonBenchmark()).run();
+     }
+ 
+-    public void run() {
++    public void run() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(44);
+ 
+         System.out.println("preparing...");
+         final BufferSet [] bufferSets = new BufferSet [NUMBER_OF_BUFFER_SETS];
+@@ -229,7 +229,7 @@ public class ReedSolomonBenchmark {
+             seconds += other.seconds;
+         }
+ 
+-        public double getRate() {
++        public double getRate() { com.backblaze.erasure.jmhbench.MutationSwitch.tick(45);
+             return megabytes / seconds;
+         }
+ 
+diff --git a/com/backblaze/erasure/SampleDecoder.java b/com/backblaze/erasure/SampleDecoder.java
+index f87a620..350cd25 100644
+--- a/com/backblaze/erasure/SampleDecoder.java
++++ b/com/backblaze/erasure/SampleDecoder.java
+@@ -31,7 +31,7 @@ public class SampleDecoder {
+     public static final int BYTES_IN_INT = 4;
+ 
+     @SuppressWarnings("ResultOfMethodCallIgnored")
+-    public static void main(String [] arguments) throws IOException {
++    public static void main(String [] arguments) throws IOException { com.backblaze.erasure.jmhbench.MutationSwitch.tick(1);
+ 
+         // Parse the command line
+         if (arguments.length != 1) {
+diff --git a/com/backblaze/erasure/SampleEncoder.java b/com/backblaze/erasure/SampleEncoder.java
+index e903397..2726bbe 100644
+--- a/com/backblaze/erasure/SampleEncoder.java
++++ b/com/backblaze/erasure/SampleEncoder.java
+@@ -36,7 +36,7 @@ public class SampleEncoder {
+ 
+     public static final int BYTES_IN_INT = 4;
+ 
+-    public static void main(String [] arguments) throws IOException {
++    public static void main(String [] arguments) throws IOException { com.backblaze.erasure.jmhbench.MutationSwitch.tick(2);
+ 
+         // Parse the command line
+         if (arguments.length != 1) {
+diff --git a/com/backblaze/erasure/jmhbench/MutationSwitch.java b/com/backblaze/erasure/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..3ff4fde
+--- /dev/null
++++ b/com/backblaze/erasure/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.backblaze.erasure.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 45;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

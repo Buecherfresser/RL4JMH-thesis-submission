@@ -1,0 +1,87 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableConcatWithSingle}
+ * measuring the throughput of concatenating a Flowable with a Single.
+ *
+ * The benchmark creates a Flowable that emits a configurable number of items,
+ * concatenates it with a Single, and then consumes all items using {@code blockingForEach}.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize the number of upstream items to explore scaling behavior.
+ * - Use Blackhole to prevent dead-code elimination.
+ * - Warm‑up, measurement, and fork settings follow typical JMH recommendations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class FlowableConcatWithSingleBenchmark {
+
+    /**
+     * Number of items emitted by the upstream Flowable before the Single is concatenated.
+     */
+    @Param({ "1", "10", "100", "1000", "10000" })
+    public int upstreamItemCount;
+
+    private Flowable<Integer> flowableWithSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Upstream Flowable emitting a range of integers.
+        Flowable<Integer> upstream = Flowable.range(0, upstreamItemCount);
+        // Single that emits a single value after the upstream completes.
+        Single<Integer> single = Single.just(-1);
+        // The operator under test: concat the Flowable with the Single.
+        flowableWithSingle = upstream.concatWith(single);
+    }
+
+    /**
+     * Consumes the concatenated sequence using a blocking subscription.
+     *
+     * @param bh Blackhole to consume the emitted items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void concatWithSingleThroughput(Blackhole bh) {
+        // blockingForEach will subscribe, request all items, and block until completion.
+        flowableWithSingle.blockingForEach(bh::consume);
+    }
+}

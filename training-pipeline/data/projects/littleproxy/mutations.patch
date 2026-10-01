@@ -1,0 +1,861 @@
+diff --git a/org/littleshoot/proxy/ActivityTrackerAdapter.java b/org/littleshoot/proxy/ActivityTrackerAdapter.java
+index 9e9087d..ca08d72 100644
+--- a/org/littleshoot/proxy/ActivityTrackerAdapter.java
++++ b/org/littleshoot/proxy/ActivityTrackerAdapter.java
+@@ -15,16 +15,16 @@ public class ActivityTrackerAdapter implements ActivityTracker {
+ 
+     @Override
+     public void bytesReceivedFromClient(FlowContext flowContext,
+-            int numberOfBytes) {
++            int numberOfBytes) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(1);
+     }
+ 
+     @Override
+     public void requestReceivedFromClient(FlowContext flowContext,
+-            HttpRequest httpRequest) {
++            HttpRequest httpRequest) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(4);
+     }
+ 
+     @Override
+-    public void bytesSentToServer(FullFlowContext flowContext, int numberOfBytes) {
++    public void bytesSentToServer(FullFlowContext flowContext, int numberOfBytes) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(7);
+     }
+ 
+     @Override
+diff --git a/org/littleshoot/proxy/ChainedProxyAdapter.java b/org/littleshoot/proxy/ChainedProxyAdapter.java
+index 61f4288..bc9361e 100644
+--- a/org/littleshoot/proxy/ChainedProxyAdapter.java
++++ b/org/littleshoot/proxy/ChainedProxyAdapter.java
+@@ -17,17 +17,17 @@ public class ChainedProxyAdapter implements ChainedProxy {
+     public static ChainedProxy FALLBACK_TO_DIRECT_CONNECTION = new ChainedProxyAdapter();
+ 
+     @Override
+-    public InetSocketAddress getChainedProxyAddress() {
++    public InetSocketAddress getChainedProxyAddress() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(10);
+         return null;
+     }
+ 
+     @Override
+-    public InetSocketAddress getLocalAddress() {
++    public InetSocketAddress getLocalAddress() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(13);
+         return null;
+     }
+ 
+     @Override
+-    public TransportProtocol getTransportProtocol() {
++    public TransportProtocol getTransportProtocol() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(16);
+         return TransportProtocol.TCP;
+     }
+ 
+diff --git a/org/littleshoot/proxy/DefaultHostResolver.java b/org/littleshoot/proxy/DefaultHostResolver.java
+index 3519dcd..9e061c9 100644
+--- a/org/littleshoot/proxy/DefaultHostResolver.java
++++ b/org/littleshoot/proxy/DefaultHostResolver.java
+@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
+ public class DefaultHostResolver implements HostResolver {
+     @Override
+     public InetSocketAddress resolve(String host, int port)
+-            throws UnknownHostException {
++            throws UnknownHostException { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(19);
+         InetAddress addr = InetAddress.getByName(host);
+         return new InetSocketAddress(addr, port);
+     }
+diff --git a/org/littleshoot/proxy/DnsSecServerResolver.java b/org/littleshoot/proxy/DnsSecServerResolver.java
+index debb075..8714197 100644
+--- a/org/littleshoot/proxy/DnsSecServerResolver.java
++++ b/org/littleshoot/proxy/DnsSecServerResolver.java
+@@ -8,7 +8,7 @@ import org.littleshoot.dnssec4j.VerifiedAddressFactory;
+ public class DnsSecServerResolver implements HostResolver {
+     @Override
+     public InetSocketAddress resolve(String host, int port)
+-            throws UnknownHostException {
++            throws UnknownHostException { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(21);
+         return VerifiedAddressFactory.newInetSocketAddress(host, port, true);
+     }
+ }
+diff --git a/org/littleshoot/proxy/FlowContext.java b/org/littleshoot/proxy/FlowContext.java
+index 15bf9ac..b7e47e5 100644
+--- a/org/littleshoot/proxy/FlowContext.java
++++ b/org/littleshoot/proxy/FlowContext.java
+@@ -30,7 +30,7 @@ public class FlowContext {
+      * 
+      * @return
+      */
+-    public InetSocketAddress getClientAddress() {
++    public InetSocketAddress getClientAddress() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(23);
+         return clientAddress;
+     }
+ 
+@@ -40,7 +40,7 @@ public class FlowContext {
+      * 
+      * @return
+      */
+-    public SSLSession getClientSslSession() {
++    public SSLSession getClientSslSession() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(25);
+         return clientSslSession;
+     }
+ 
+diff --git a/org/littleshoot/proxy/FullFlowContext.java b/org/littleshoot/proxy/FullFlowContext.java
+index 43a4d9f..10c5894 100644
+--- a/org/littleshoot/proxy/FullFlowContext.java
++++ b/org/littleshoot/proxy/FullFlowContext.java
+@@ -23,7 +23,7 @@ public class FullFlowContext extends FlowContext {
+      * 
+      * @return
+      */
+-    public String getServerHostAndPort() {
++    public String getServerHostAndPort() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(27);
+         return serverHostAndPort;
+     }
+ 
+@@ -32,7 +32,7 @@ public class FullFlowContext extends FlowContext {
+      * 
+      * @return
+      */
+-    public ChainedProxy getChainedProxy() {
++    public ChainedProxy getChainedProxy() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(29);
+         return chainedProxy;
+     }
+ 
+diff --git a/org/littleshoot/proxy/HttpFiltersAdapter.java b/org/littleshoot/proxy/HttpFiltersAdapter.java
+index 2871364..2abd72a 100644
+--- a/org/littleshoot/proxy/HttpFiltersAdapter.java
++++ b/org/littleshoot/proxy/HttpFiltersAdapter.java
+@@ -30,17 +30,17 @@ public class HttpFiltersAdapter implements HttpFilters {
+     }
+ 
+     @Override
+-    public HttpResponse clientToProxyRequest(HttpObject httpObject) {
++    public HttpResponse clientToProxyRequest(HttpObject httpObject) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(31);
+         return null;
+     }
+ 
+     @Override
+-    public HttpResponse proxyToServerRequest(HttpObject httpObject) {
++    public HttpResponse proxyToServerRequest(HttpObject httpObject) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(33);
+         return null;
+     }
+ 
+     @Override
+-    public void proxyToServerRequestSending() {
++    public void proxyToServerRequestSending() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(35);
+     }
+ 
+     @Override
+diff --git a/org/littleshoot/proxy/HttpFiltersSourceAdapter.java b/org/littleshoot/proxy/HttpFiltersSourceAdapter.java
+index 1b2cecf..383799a 100644
+--- a/org/littleshoot/proxy/HttpFiltersSourceAdapter.java
++++ b/org/littleshoot/proxy/HttpFiltersSourceAdapter.java
+@@ -8,18 +8,18 @@ import io.netty.handler.codec.http.HttpRequest;
+  */
+ public class HttpFiltersSourceAdapter implements HttpFiltersSource {
+ 
+-    public HttpFilters filterRequest(HttpRequest originalRequest) {
++    public HttpFilters filterRequest(HttpRequest originalRequest) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(37);
+         return new HttpFiltersAdapter(originalRequest, null);
+     }
+     
+     @Override
+     public HttpFilters filterRequest(HttpRequest originalRequest,
+-            ChannelHandlerContext ctx) {
++            ChannelHandlerContext ctx) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(39);
+         return filterRequest(originalRequest);
+     }
+ 
+     @Override
+-    public int getMaximumRequestBufferSizeInBytes() {
++    public int getMaximumRequestBufferSizeInBytes() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(41);
+         return 0;
+     }
+ 
+diff --git a/org/littleshoot/proxy/Launcher.java b/org/littleshoot/proxy/Launcher.java
+index f9b654a..66996f3 100644
+--- a/org/littleshoot/proxy/Launcher.java
++++ b/org/littleshoot/proxy/Launcher.java
+@@ -1,143 +1,143 @@
+-package org.littleshoot.proxy;
+-
+-import org.apache.commons.cli.CommandLine;
+-import org.apache.commons.cli.CommandLineParser;
+-import org.apache.commons.cli.HelpFormatter;
+-import org.apache.commons.cli.Options;
+-import org.apache.commons.cli.ParseException;
+-import org.apache.commons.cli.PosixParser;
+-import org.apache.commons.cli.UnrecognizedOptionException;
+-import org.apache.commons.lang3.StringUtils;
+-import org.apache.log4j.xml.DOMConfigurator;
+-import org.littleshoot.proxy.extras.SelfSignedMitmManager;
+-import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
+-import org.littleshoot.proxy.impl.ProxyUtils;
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+-
+-import java.io.File;
+-import java.net.InetSocketAddress;
+-import java.util.Arrays;
+-
+-/**
+- * Launches a new HTTP proxy.
+- */
+-public class Launcher {
+-
+-    private static final Logger LOG = LoggerFactory.getLogger(Launcher.class);
+-
+-    private static final String OPTION_DNSSEC = "dnssec";
+-
+-    private static final String OPTION_PORT = "port";
+-
+-    private static final String OPTION_HELP = "help";
+-
+-    private static final String OPTION_MITM = "mitm";
+-
+-    private static final String OPTION_NIC = "nic";
+-
+-    /**
+-     * Starts the proxy from the command line.
+-     * 
+-     * @param args
+-     *            Any command line arguments.
+-     */
+-    public static void main(final String... args) {
+-        pollLog4JConfigurationFileIfAvailable();
+-        LOG.info("Running LittleProxy with args: {}", Arrays.asList(args));
+-        final Options options = new Options();
+-        options.addOption(null, OPTION_DNSSEC, true,
+-                "Request and verify DNSSEC signatures.");
+-        options.addOption(null, OPTION_PORT, true, "Run on the specified port.");
+-        options.addOption(null, OPTION_NIC, true, "Run on a specified Nic");
+-        options.addOption(null, OPTION_HELP, false,
+-                "Display command line help.");
+-        options.addOption(null, OPTION_MITM, false, "Run as man in the middle.");
+-        
+-        final CommandLineParser parser = new PosixParser();
+-        final CommandLine cmd;
+-        try {
+-            cmd = parser.parse(options, args);
+-            if (cmd.getArgs().length > 0) {
+-                throw new UnrecognizedOptionException(
+-                        "Extra arguments were provided in "
+-                                + Arrays.asList(args));
+-            }
+-        } catch (final ParseException e) {
+-            printHelp(options,
+-                    "Could not parse command line: " + Arrays.asList(args));
+-            return;
+-        }
+-        if (cmd.hasOption(OPTION_HELP)) {
+-            printHelp(options, null);
+-            return;
+-        }
+-        final int defaultPort = 8080;
+-        int port;
+-        if (cmd.hasOption(OPTION_PORT)) {
+-            final String val = cmd.getOptionValue(OPTION_PORT);
+-            try {
+-                port = Integer.parseInt(val);
+-            } catch (final NumberFormatException e) {
+-                printHelp(options, "Unexpected port " + val);
+-                return;
+-            }
+-        } else {
+-            port = defaultPort;
+-        }
+-
+-
+-        System.out.println("About to start server on port: " + port);
+-        HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer
+-                .bootstrapFromFile("./littleproxy.properties")
+-                .withPort(port)
+-                .withAllowLocalOnly(false);
+-
+-        if (cmd.hasOption(OPTION_NIC)) {
+-            final String val = cmd.getOptionValue(OPTION_NIC);
+-            bootstrap.withNetworkInterface(new InetSocketAddress(val, 0));
+-        }
+-
+-        if (cmd.hasOption(OPTION_MITM)) {
+-            LOG.info("Running as Man in the Middle");
+-            bootstrap.withManInTheMiddle(new SelfSignedMitmManager());
+-        }
+-        
+-        if (cmd.hasOption(OPTION_DNSSEC)) {
+-            final String val = cmd.getOptionValue(OPTION_DNSSEC);
+-            if (ProxyUtils.isTrue(val)) {
+-                LOG.info("Using DNSSEC");
+-                bootstrap.withUseDnsSec(true);
+-            } else if (ProxyUtils.isFalse(val)) {
+-                LOG.info("Not using DNSSEC");
+-                bootstrap.withUseDnsSec(false);
+-            } else {
+-                printHelp(options, "Unexpected value for " + OPTION_DNSSEC
+-                        + "=:" + val);
+-                return;
+-            }
+-        }
+-
+-        System.out.println("About to start...");
+-        bootstrap.start();
+-    }
+-
+-    private static void printHelp(final Options options,
+-            final String errorMessage) {
+-        if (!StringUtils.isBlank(errorMessage)) {
+-            LOG.error(errorMessage);
+-            System.err.println(errorMessage);
+-        }
+-
+-        final HelpFormatter formatter = new HelpFormatter();
+-        formatter.printHelp("littleproxy", options);
+-    }
+-
+-    private static void pollLog4JConfigurationFileIfAvailable() {
+-        File log4jConfigurationFile = new File("src/test/resources/log4j.xml");
+-        if (log4jConfigurationFile.exists()) {
+-            DOMConfigurator.configureAndWatch(
+-                    log4jConfigurationFile.getAbsolutePath(), 15);
+-        }
+-    }
+-}
++package org.littleshoot.proxy;
++
++import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.CommandLineParser;
++import org.apache.commons.cli.HelpFormatter;
++import org.apache.commons.cli.Options;
++import org.apache.commons.cli.ParseException;
++import org.apache.commons.cli.PosixParser;
++import org.apache.commons.cli.UnrecognizedOptionException;
++import org.apache.commons.lang3.StringUtils;
++import org.apache.log4j.xml.DOMConfigurator;
++import org.littleshoot.proxy.extras.SelfSignedMitmManager;
++import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
++import org.littleshoot.proxy.impl.ProxyUtils;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++import java.io.File;
++import java.net.InetSocketAddress;
++import java.util.Arrays;
++
++/**
++ * Launches a new HTTP proxy.
++ */
++public class Launcher {
++
++    private static final Logger LOG = LoggerFactory.getLogger(Launcher.class);
++
++    private static final String OPTION_DNSSEC = "dnssec";
++
++    private static final String OPTION_PORT = "port";
++
++    private static final String OPTION_HELP = "help";
++
++    private static final String OPTION_MITM = "mitm";
++
++    private static final String OPTION_NIC = "nic";
++
++    /**
++     * Starts the proxy from the command line.
++     * 
++     * @param args
++     *            Any command line arguments.
++     */
++    public static void main(final String... args) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(43);
++        pollLog4JConfigurationFileIfAvailable();
++        LOG.info("Running LittleProxy with args: {}", Arrays.asList(args));
++        final Options options = new Options();
++        options.addOption(null, OPTION_DNSSEC, true,
++                "Request and verify DNSSEC signatures.");
++        options.addOption(null, OPTION_PORT, true, "Run on the specified port.");
++        options.addOption(null, OPTION_NIC, true, "Run on a specified Nic");
++        options.addOption(null, OPTION_HELP, false,
++                "Display command line help.");
++        options.addOption(null, OPTION_MITM, false, "Run as man in the middle.");
++        
++        final CommandLineParser parser = new PosixParser();
++        final CommandLine cmd;
++        try {
++            cmd = parser.parse(options, args);
++            if (cmd.getArgs().length > 0) {
++                throw new UnrecognizedOptionException(
++                        "Extra arguments were provided in "
++                                + Arrays.asList(args));
++            }
++        } catch (final ParseException e) {
++            printHelp(options,
++                    "Could not parse command line: " + Arrays.asList(args));
++            return;
++        }
++        if (cmd.hasOption(OPTION_HELP)) {
++            printHelp(options, null);
++            return;
++        }
++        final int defaultPort = 8080;
++        int port;
++        if (cmd.hasOption(OPTION_PORT)) {
++            final String val = cmd.getOptionValue(OPTION_PORT);
++            try {
++                port = Integer.parseInt(val);
++            } catch (final NumberFormatException e) {
++                printHelp(options, "Unexpected port " + val);
++                return;
++            }
++        } else {
++            port = defaultPort;
++        }
++
++
++        System.out.println("About to start server on port: " + port);
++        HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer
++                .bootstrapFromFile("./littleproxy.properties")
++                .withPort(port)
++                .withAllowLocalOnly(false);
++
++        if (cmd.hasOption(OPTION_NIC)) {
++            final String val = cmd.getOptionValue(OPTION_NIC);
++            bootstrap.withNetworkInterface(new InetSocketAddress(val, 0));
++        }
++
++        if (cmd.hasOption(OPTION_MITM)) {
++            LOG.info("Running as Man in the Middle");
++            bootstrap.withManInTheMiddle(new SelfSignedMitmManager());
++        }
++        
++        if (cmd.hasOption(OPTION_DNSSEC)) {
++            final String val = cmd.getOptionValue(OPTION_DNSSEC);
++            if (ProxyUtils.isTrue(val)) {
++                LOG.info("Using DNSSEC");
++                bootstrap.withUseDnsSec(true);
++            } else if (ProxyUtils.isFalse(val)) {
++                LOG.info("Not using DNSSEC");
++                bootstrap.withUseDnsSec(false);
++            } else {
++                printHelp(options, "Unexpected value for " + OPTION_DNSSEC
++                        + "=:" + val);
++                return;
++            }
++        }
++
++        System.out.println("About to start...");
++        bootstrap.start();
++    }
++
++    private static void printHelp(final Options options,
++            final String errorMessage) {
++        if (!StringUtils.isBlank(errorMessage)) {
++            LOG.error(errorMessage);
++            System.err.println(errorMessage);
++        }
++
++        final HelpFormatter formatter = new HelpFormatter();
++        formatter.printHelp("littleproxy", options);
++    }
++
++    private static void pollLog4JConfigurationFileIfAvailable() {
++        File log4jConfigurationFile = new File("src/test/resources/log4j.xml");
++        if (log4jConfigurationFile.exists()) {
++            DOMConfigurator.configureAndWatch(
++                    log4jConfigurationFile.getAbsolutePath(), 15);
++        }
++    }
++}
+diff --git a/org/littleshoot/proxy/extras/SelfSignedMitmManager.java b/org/littleshoot/proxy/extras/SelfSignedMitmManager.java
+index 45c71fe..f5d9134 100644
+--- a/org/littleshoot/proxy/extras/SelfSignedMitmManager.java
++++ b/org/littleshoot/proxy/extras/SelfSignedMitmManager.java
+@@ -14,17 +14,17 @@ public class SelfSignedMitmManager implements MitmManager {
+             new SelfSignedSslEngineSource(true);
+ 
+     @Override
+-    public SSLEngine serverSslEngine(String peerHost, int peerPort) {
++    public SSLEngine serverSslEngine(String peerHost, int peerPort) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(2);
+         return selfSignedSslEngineSource.newSslEngine(peerHost, peerPort);
+     }
+ 
+     @Override
+-    public SSLEngine serverSslEngine() {
++    public SSLEngine serverSslEngine() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(5);
+         return selfSignedSslEngineSource.newSslEngine();
+     }
+ 
+     @Override
+-    public SSLEngine clientSslEngineFor(HttpRequest httpRequest, SSLSession serverSslSession) {
++    public SSLEngine clientSslEngineFor(HttpRequest httpRequest, SSLSession serverSslSession) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(8);
+         return selfSignedSslEngineSource.newSslEngine();
+     }
+ }
+diff --git a/org/littleshoot/proxy/extras/SelfSignedSslEngineSource.java b/org/littleshoot/proxy/extras/SelfSignedSslEngineSource.java
+index 31b671c..3fd1339 100644
+--- a/org/littleshoot/proxy/extras/SelfSignedSslEngineSource.java
++++ b/org/littleshoot/proxy/extras/SelfSignedSslEngineSource.java
+@@ -66,16 +66,16 @@ public class SelfSignedSslEngineSource implements SslEngineSource {
+     }
+ 
+     @Override
+-    public SSLEngine newSslEngine() {
++    public SSLEngine newSslEngine() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(11);
+         return sslContext.createSSLEngine();
+     }
+ 
+     @Override
+-    public SSLEngine newSslEngine(String peerHost, int peerPort) {
++    public SSLEngine newSslEngine(String peerHost, int peerPort) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(14);
+         return sslContext.createSSLEngine(peerHost, peerPort);
+     }
+ 
+-    public SSLContext getSslContext() {
++    public SSLContext getSslContext() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(17);
+         return sslContext;
+     }
+ 
+diff --git a/org/littleshoot/proxy/impl/CategorizedThreadFactory.java b/org/littleshoot/proxy/impl/CategorizedThreadFactory.java
+index 8ddbc39..4a99ed7 100644
+--- a/org/littleshoot/proxy/impl/CategorizedThreadFactory.java
++++ b/org/littleshoot/proxy/impl/CategorizedThreadFactory.java
+@@ -23,7 +23,7 @@ public class CategorizedThreadFactory implements ThreadFactory {
+      */
+     private static final Thread.UncaughtExceptionHandler UNCAUGHT_EXCEPTION_HANDLER = new Thread.UncaughtExceptionHandler() {
+         @Override
+-        public void uncaughtException(Thread t, Throwable e) {
++        public void uncaughtException(Thread t, Throwable e) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(18);
+             log.error("Uncaught throwable in thread: {}", t.getName(), e);
+         }
+     };
+@@ -41,7 +41,7 @@ public class CategorizedThreadFactory implements ThreadFactory {
+     }
+ 
+     @Override
+-    public Thread newThread(Runnable r) {
++    public Thread newThread(Runnable r) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(20);
+         Thread t = new Thread(r, name + "-" + uniqueServerGroupId + "-" + category + "-" + threadCount.getAndIncrement());
+ 
+         t.setUncaughtExceptionHandler(UNCAUGHT_EXCEPTION_HANDLER);
+diff --git a/org/littleshoot/proxy/impl/ClientToProxyConnection.java b/org/littleshoot/proxy/impl/ClientToProxyConnection.java
+index 964858f..3112e71 100644
+--- a/org/littleshoot/proxy/impl/ClientToProxyConnection.java
++++ b/org/littleshoot/proxy/impl/ClientToProxyConnection.java
+@@ -160,7 +160,7 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
+                                 @Override
+                                 public void operationComplete(
+                                         Future<? super Channel> future)
+-                                        throws Exception {
++                                        throws Exception { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(22);
+                                     if (future.isSuccess()) {
+                                         clientSslSession = sslEngine
+                                                 .getSession();
+@@ -179,7 +179,7 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
+      **************************************************************************/
+ 
+     @Override
+-    protected ConnectionState readHTTPInitial(HttpRequest httpRequest) {
++    protected ConnectionState readHTTPInitial(HttpRequest httpRequest) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(24);
+         LOG.debug("Received raw request: {}", httpRequest);
+ 
+         // if we cannot parse the request, immediately return a 400 and close the connection, since we do not know what state
+@@ -393,7 +393,7 @@ public class ClientToProxyConnection extends ProxyConnection<HttpRequest> {
+     }
+ 
+     @Override
+-    protected void readHTTPChunk(HttpContent chunk) {
++    protected void readHTTPChunk(HttpContent chunk) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(26);
+         currentFilters.clientToProxyRequest(chunk);
+         currentFilters.proxyToServerRequest(chunk);
+ 
+diff --git a/org/littleshoot/proxy/impl/ConnectionFlow.java b/org/littleshoot/proxy/impl/ConnectionFlow.java
+index 23a65f0..8298ff8 100644
+--- a/org/littleshoot/proxy/impl/ConnectionFlow.java
++++ b/org/littleshoot/proxy/impl/ConnectionFlow.java
+@@ -120,7 +120,7 @@ class ConnectionFlow {
+         if (currentStep.shouldExecuteOnEventLoop()) {
+             connection.ctx.executor().submit(new Runnable() {
+                 @Override
+-                public void run() {
++                public void run() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(28);
+                     doProcessCurrentStep(LOG);
+                 }
+             });
+@@ -141,7 +141,7 @@ class ConnectionFlow {
+                 new GenericFutureListener<Future<?>>() {
+                     public void operationComplete(
+                             io.netty.util.concurrent.Future<?> future)
+-                            throws Exception {
++                            throws Exception { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(30);
+                         synchronized (connectLock) {
+                             if (future.isSuccess()) {
+                                 LOG.debug("ConnectionFlowStep succeeded");
+@@ -183,7 +183,7 @@ class ConnectionFlow {
+                 new GenericFutureListener() {
+                     @Override
+                     public void operationComplete(Future future)
+-                            throws Exception {
++                            throws Exception { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(32);
+                         synchronized (connectLock) {
+                             if (!clientConnection.serverConnectionFailed(
+                                     serverConnection,
+diff --git a/org/littleshoot/proxy/impl/ConnectionState.java b/org/littleshoot/proxy/impl/ConnectionState.java
+index 371fcd5..e8ddb6d 100644
+--- a/org/littleshoot/proxy/impl/ConnectionState.java
++++ b/org/littleshoot/proxy/impl/ConnectionState.java
+@@ -65,7 +65,7 @@ enum ConnectionState {
+      * 
+      * @return true if part of connection flow, otherwise false
+      */
+-    public boolean isPartOfConnectionFlow() {
++    public boolean isPartOfConnectionFlow() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(34);
+         return partOfConnectionFlow;
+     }
+ 
+@@ -75,7 +75,7 @@ enum ConnectionState {
+      *
+      * @return true if the connection state is {@link #DISCONNECT_REQUESTED} or {@link #DISCONNECTED}, otherwise false
+      */
+-    public boolean isDisconnectingOrDisconnected() {
++    public boolean isDisconnectingOrDisconnected() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(36);
+         return this == DISCONNECT_REQUESTED || this == DISCONNECTED;
+     }
+ }
+diff --git a/org/littleshoot/proxy/impl/DefaultHttpProxyServer.java b/org/littleshoot/proxy/impl/DefaultHttpProxyServer.java
+index 1891532..ffc2266 100644
+--- a/org/littleshoot/proxy/impl/DefaultHttpProxyServer.java
++++ b/org/littleshoot/proxy/impl/DefaultHttpProxyServer.java
+@@ -144,7 +144,7 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
+      */
+     private final Thread jvmShutdownHook = new Thread(new Runnable() {
+         @Override
+-        public void run() {
++        public void run() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(38);
+             abort();
+         }
+     }, "LittleProxy-JVM-shutdown-hook");
+@@ -154,7 +154,7 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
+      *
+      * @return
+      */
+-    public static HttpProxyServerBootstrap bootstrap() {
++    public static HttpProxyServerBootstrap bootstrap() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(40);
+         return new DefaultHttpProxyServerBootstrap();
+     }
+ 
+@@ -165,7 +165,7 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
+      * @param path
+      * @return
+      */
+-    public static HttpProxyServerBootstrap bootstrapFromFile(String path) {
++    public static HttpProxyServerBootstrap bootstrapFromFile(String path) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(42);
+         final File propsFile = new File(path);
+         Properties props = new Properties();
+ 
+diff --git a/org/littleshoot/proxy/impl/NetworkUtils.java b/org/littleshoot/proxy/impl/NetworkUtils.java
+index 79a12b4..acf8406 100644
+--- a/org/littleshoot/proxy/impl/NetworkUtils.java
++++ b/org/littleshoot/proxy/impl/NetworkUtils.java
+@@ -16,7 +16,7 @@ public class NetworkUtils {
+      * @deprecated This method is no longer used by LittleProxy and may be removed in a future release.
+      */
+     @Deprecated
+-    public static InetAddress getLocalHost() throws UnknownHostException {
++    public static InetAddress getLocalHost() throws UnknownHostException { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(3);
+         return InetAddress.getLocalHost();
+     }
+ 
+@@ -24,7 +24,7 @@ public class NetworkUtils {
+      * @deprecated This method is no longer used by LittleProxy and may be removed in a future release.
+      */
+     @Deprecated
+-    public static InetAddress firstLocalNonLoopbackIpv4Address() {
++    public static InetAddress firstLocalNonLoopbackIpv4Address() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(6);
+         try {
+             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface
+                     .getNetworkInterfaces();
+diff --git a/org/littleshoot/proxy/impl/ProxyConnectionLogger.java b/org/littleshoot/proxy/impl/ProxyConnectionLogger.java
+index 724b77b..5ffbb7a 100644
+--- a/org/littleshoot/proxy/impl/ProxyConnectionLogger.java
++++ b/org/littleshoot/proxy/impl/ProxyConnectionLogger.java
+@@ -40,19 +40,19 @@ class ProxyConnectionLogger {
+         logger = lg;
+     }
+ 
+-    protected void error(String message, Object... params) {
++    protected void error(String message, Object... params) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(44);
+         if (logger.isErrorEnabled()) {
+             dispatch.doLog(LocationAwareLogger.ERROR_INT, message, params, null);
+         }
+     }
+ 
+-    protected void error(String message, Throwable t) {
++    protected void error(String message, Throwable t) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(45);
+         if (logger.isErrorEnabled()) {
+             dispatch.doLog(LocationAwareLogger.ERROR_INT, message, null, t);
+         }
+     }
+ 
+-    protected void warn(String message, Object... params) {
++    protected void warn(String message, Object... params) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(46);
+         if (logger.isWarnEnabled()) {
+             dispatch.doLog(LocationAwareLogger.WARN_INT, message, params, null);
+         }
+diff --git a/org/littleshoot/proxy/impl/ProxyThreadPools.java b/org/littleshoot/proxy/impl/ProxyThreadPools.java
+index 2ca4f0f..1817541 100644
+--- a/org/littleshoot/proxy/impl/ProxyThreadPools.java
++++ b/org/littleshoot/proxy/impl/ProxyThreadPools.java
+@@ -46,15 +46,15 @@ public class ProxyThreadPools {
+     /**
+      * Returns all event loops (acceptor and worker thread pools) in this pool.
+      */
+-    public List<EventLoopGroup> getAllEventLoops() {
++    public List<EventLoopGroup> getAllEventLoops() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(47);
+         return ImmutableList.<EventLoopGroup>of(clientToProxyAcceptorPool, clientToProxyWorkerPool, proxyToServerWorkerPool);
+     }
+ 
+-    public NioEventLoopGroup getClientToProxyAcceptorPool() {
++    public NioEventLoopGroup getClientToProxyAcceptorPool() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(48);
+         return clientToProxyAcceptorPool;
+     }
+ 
+-    public NioEventLoopGroup getClientToProxyWorkerPool() {
++    public NioEventLoopGroup getClientToProxyWorkerPool() { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(49);
+         return clientToProxyWorkerPool;
+     }
+ 
+diff --git a/org/littleshoot/proxy/impl/ProxyToServerConnection.java b/org/littleshoot/proxy/impl/ProxyToServerConnection.java
+index b612f51..aa571d1 100644
+--- a/org/littleshoot/proxy/impl/ProxyToServerConnection.java
++++ b/org/littleshoot/proxy/impl/ProxyToServerConnection.java
+@@ -216,7 +216,7 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
+     }
+ 
+     @Override
+-    protected ConnectionState readHTTPInitial(HttpResponse httpResponse) {
++    protected ConnectionState readHTTPInitial(HttpResponse httpResponse) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(50);
+         LOG.debug("Received raw response: {}", httpResponse);
+ 
+         if (httpResponse.getDecoderResult().isFailure()) {
+diff --git a/org/littleshoot/proxy/impl/ProxyUtils.java b/org/littleshoot/proxy/impl/ProxyUtils.java
+index b0ceca0..8e07323 100644
+--- a/org/littleshoot/proxy/impl/ProxyUtils.java
++++ b/org/littleshoot/proxy/impl/ProxyUtils.java
+@@ -88,7 +88,7 @@ public class ProxyUtils {
+      *            The URI to transform.
+      * @return A string with the URI stripped.
+      */
+-    public static String stripHost(final String uri) {
++    public static String stripHost(final String uri) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(9);
+         if (!HTTP_PREFIX.matcher(uri).matches()) {
+             // It's likely a URI path, not the full URI (i.e. the host is
+             // already stripped).
+@@ -112,7 +112,7 @@ public class ProxyUtils {
+      * 
+      * @see #PATTERN_RFC1123
+      */
+-    public static String formatDate(final Date date) {
++    public static String formatDate(final Date date) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(12);
+         return formatDate(date, PATTERN_RFC1123);
+     }
+ 
+@@ -132,7 +132,7 @@ public class ProxyUtils {
+      * 
+      * @see SimpleDateFormat
+      */
+-    public static String formatDate(final Date date, final String pattern) {
++    public static String formatDate(final Date date, final String pattern) { org.littleshoot.proxy.jmhbench.MutationSwitch.tick(15);
+         if (date == null)
+             throw new IllegalArgumentException("date is null");
+         if (pattern == null)
+diff --git a/org/littleshoot/proxy/jmhbench/MutationSwitch.java b/org/littleshoot/proxy/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c9d75ca
+--- /dev/null
++++ b/org/littleshoot/proxy/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.littleshoot.proxy.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

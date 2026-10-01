@@ -1,0 +1,558 @@
+diff --git a/com/fasterxml/jackson/core/Base64Variant.java b/com/fasterxml/jackson/core/Base64Variant.java
+index 6de37a4..f906a79 100644
+--- a/com/fasterxml/jackson/core/Base64Variant.java
++++ b/com/fasterxml/jackson/core/Base64Variant.java
+@@ -319,14 +319,14 @@ public final class Base64Variant
+      * @return True if this Base64 encoding will <b>write</b> padding on output
+      *   (note: before Jackson 2.12 also dictated whether padding was accepted on read)
+      */
+-    public boolean usesPadding() { return _writePadding; }
++    public boolean usesPadding() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(37); return _writePadding; }
+ 
+     /**
+      * @return {@code True} if this variant requires padding on content decoded; {@code false} if not.
+      *
+      * @since 2.12
+      */
+-    public boolean requiresPaddingOnRead() {
++    public boolean requiresPaddingOnRead() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(35);
+         return _paddingReadBehaviour == PaddingReadBehaviour.PADDING_REQUIRED;
+     }
+ 
+@@ -335,11 +335,11 @@ public final class Base64Variant
+      *
+      * @since 2.12
+      */
+-    public boolean acceptsPaddingOnRead() {
++    public boolean acceptsPaddingOnRead() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(15);
+         return _paddingReadBehaviour != PaddingReadBehaviour.PADDING_FORBIDDEN;
+     }
+ 
+-    public boolean usesPaddingChar(char c) { return c == _paddingChar; }
++    public boolean usesPaddingChar(char c) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(38); return c == _paddingChar; }
+     public boolean usesPaddingChar(int ch) { return ch == _paddingChar; }
+ 
+     /**
+@@ -348,7 +348,7 @@ public final class Base64Variant
+      *
+      * @since 2.12
+      */
+-    public PaddingReadBehaviour paddingReadBehaviour() { return _paddingReadBehaviour; }
++    public PaddingReadBehaviour paddingReadBehaviour() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(34); return _paddingReadBehaviour; }
+ 
+     public char getPaddingChar() { return _paddingChar; }
+     public byte getPaddingByte() { return (byte)_paddingChar; }
+@@ -367,7 +367,7 @@ public final class Base64Variant
+      * @return 6-bit decoded value, if valid character;
+      */
+     public int decodeBase64Char(char c)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(29);
+         int ch = c;
+         return (ch <= 127) ? _asciiToBase64[ch] : BASE64_VALUE_INVALID;
+     }
+@@ -378,7 +378,7 @@ public final class Base64Variant
+     }
+ 
+     public int decodeBase64Byte(byte b)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(16);
+         int ch = b;
+         // note: cast retains sign, so it's from -128 to +127
+         if (ch < 0) {
+@@ -394,7 +394,7 @@ public final class Base64Variant
+      */
+ 
+     public char encodeBase64BitsAsChar(int value)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(31);
+         // Let's assume caller has done necessary checks; this
+         // method must be fast and inlinable
+         return _base64ToAsciiC[value];
+@@ -413,7 +413,7 @@ public final class Base64Variant
+      * @return Pointer in output buffer after appending 4 encoded characters
+      */
+     public int encodeBase64Chunk(int b24, char[] buffer, int outPtr)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(14);
+         buffer[outPtr++] = _base64ToAsciiC[(b24 >> 18) & 0x3F];
+         buffer[outPtr++] = _base64ToAsciiC[(b24 >> 12) & 0x3F];
+         buffer[outPtr++] = _base64ToAsciiC[(b24 >> 6) & 0x3F];
+@@ -443,7 +443,7 @@ public final class Base64Variant
+      * @return Pointer in output buffer after appending encoded characters (2, 3 or 4)
+      */
+     public int encodeBase64Partial(int bits, int outputBytes, char[] buffer, int outPtr)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(32);
+         buffer[outPtr++] = _base64ToAsciiC[(bits >> 18) & 0x3F];
+         buffer[outPtr++] = _base64ToAsciiC[(bits >> 12) & 0x3F];
+         if (usesPadding()) {
+@@ -474,7 +474,7 @@ public final class Base64Variant
+     }
+ 
+     public byte encodeBase64BitsAsByte(int value)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(30);
+         // As with above, assuming it is 6-bit value
+         return _base64ToAsciiB[value];
+     }
+@@ -864,7 +864,7 @@ public final class Base64Variant
+      *
+      * @since 2.12
+      */
+-    protected String unexpectedPaddingMessage() {
++    protected String unexpectedPaddingMessage() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(36);
+         return String.format("Unexpected end of base64-encoded String: base64 variant '%s' expects no padding at the end while decoding. This Base64Variant might have been incorrectly configured",
+                 getName());
+     }
+@@ -877,7 +877,7 @@ public final class Base64Variant
+      *
+      * @since 2.10
+      */
+-    public String missingPaddingMessage() { // !!! TODO: why is this 'public'?
++    public String missingPaddingMessage() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(33); // !!! TODO: why is this 'public'?
+         return String.format("Unexpected end of base64-encoded String: base64 variant '%s' expects padding (one or more '%c' characters) at the end. This Base64Variant might have been incorrectly configured",
+                 getName(), getPaddingChar());
+     }
+diff --git a/com/fasterxml/jackson/core/JsonFactory.java b/com/fasterxml/jackson/core/JsonFactory.java
+index 73ec628..0a524b8 100644
+--- a/com/fasterxml/jackson/core/JsonFactory.java
++++ b/com/fasterxml/jackson/core/JsonFactory.java
+@@ -591,7 +591,7 @@ public class JsonFactory
+      * @since 2.3
+      */
+     @Override
+-    public boolean requiresPropertyOrdering() { return false; }
++    public boolean requiresPropertyOrdering() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(40); return false; }
+ 
+     /**
+      * Introspection method that higher-level functionality may call
+@@ -728,7 +728,7 @@ public class JsonFactory
+      *
+      * @since 2.1
+      */
+-    public boolean requiresCustomCodec() {
++    public boolean requiresCustomCodec() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(39);
+         return false;
+     }
+ 
+@@ -743,7 +743,7 @@ public class JsonFactory
+      */
+ 
+     @Override
+-    public Version version() {
++    public Version version() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(43);
+         return PackageVersion.VERSION;
+     }
+ 
+@@ -765,7 +765,7 @@ public class JsonFactory
+      * @deprecated since 2.10 use {@link JsonFactoryBuilder#configure(JsonFactory.Feature, boolean)} instead
+      */
+     @Deprecated
+-    public final JsonFactory configure(JsonFactory.Feature f, boolean state) {
++    public final JsonFactory configure(JsonFactory.Feature f, boolean state) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(26);
+         return state ? enable(f) : disable(f);
+     }
+ 
+@@ -780,7 +780,7 @@ public class JsonFactory
+      * @deprecated since 2.10 use {@link JsonFactoryBuilder#configure(JsonFactory.Feature, boolean)} instead
+      */
+     @Deprecated
+-    public JsonFactory enable(JsonFactory.Feature f) {
++    public JsonFactory enable(JsonFactory.Feature f) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(28);
+         _factoryFeatures |= f.getMask();
+         return this;
+     }
+@@ -796,7 +796,7 @@ public class JsonFactory
+      * @deprecated since 2.10 use {@link JsonFactoryBuilder#configure(JsonFactory.Feature, boolean)} instead
+      */
+     @Deprecated
+-    public JsonFactory disable(JsonFactory.Feature f) {
++    public JsonFactory disable(JsonFactory.Feature f) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(27);
+         _factoryFeatures &= ~f.getMask();
+         return this;
+     }
+@@ -847,12 +847,12 @@ public class JsonFactory
+      */
+ 
+     @Override
+-    public StreamReadConstraints streamReadConstraints() {
++    public StreamReadConstraints streamReadConstraints() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(41);
+         return _streamReadConstraints;
+     }
+ 
+     @Override
+-    public StreamWriteConstraints streamWriteConstraints() {
++    public StreamWriteConstraints streamWriteConstraints() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(42);
+         return _streamWriteConstraints;
+     }
+ 
+diff --git a/com/fasterxml/jackson/core/io/BigDecimalParser.java b/com/fasterxml/jackson/core/io/BigDecimalParser.java
+index 2be4274..25a468e 100644
+--- a/com/fasterxml/jackson/core/io/BigDecimalParser.java
++++ b/com/fasterxml/jackson/core/io/BigDecimalParser.java
+@@ -40,7 +40,7 @@ public final class BigDecimalParser
+      * @return BigDecimal value
+      * @throws NumberFormatException
+      */
+-    public static BigDecimal parse(String valueStr) {
++    public static BigDecimal parse(String valueStr) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(12);
+         try {
+             if (valueStr.length() < SIZE_FOR_SWITCH_TO_FASTDOUBLEPARSER) {
+                 return new BigDecimal(valueStr);
+@@ -104,7 +104,7 @@ public final class BigDecimalParser
+      * @return BigDecimal value
+      * @throws NumberFormatException
+      */
+-    public static BigDecimal parseWithFastParser(final String valueStr) {
++    public static BigDecimal parseWithFastParser(final String valueStr) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(13);
+         try {
+             return JavaBigDecimalParser.parseBigDecimal(valueStr);
+         } catch (ArithmeticException | NumberFormatException e) {
+diff --git a/com/fasterxml/jackson/core/io/CharTypes.java b/com/fasterxml/jackson/core/io/CharTypes.java
+index 2b2305e..935636f 100644
+--- a/com/fasterxml/jackson/core/io/CharTypes.java
++++ b/com/fasterxml/jackson/core/io/CharTypes.java
+@@ -266,7 +266,7 @@ public final class CharTypes
+     }
+ 
+     public static int charToHex(int ch)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(44);
+         // 08-Nov-2019, tatu: As per [core#540] and [core#578], changed to
+         //   force masking here so caller need not do that.
+         return sHexValues[ch & 0xFF];
+@@ -274,7 +274,7 @@ public final class CharTypes
+ 
+     // @since 2.13
+     public static char hexToChar(int ch)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(46);
+         return HC[ch];
+     }
+ 
+@@ -287,7 +287,7 @@ public final class CharTypes
+      *
+      * @param content Unescaped String value to append with escaping applied
+      */
+-    public static void appendQuoted(StringBuilder sb, String content) {
++    public static void appendQuoted(StringBuilder sb, String content) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(9);
+         final int[] escCodes = sOutputEscapes128;
+         int escLen = escCodes.length;
+         for (int i = 0, len = content.length(); i < len; ++i) {
+@@ -325,7 +325,7 @@ public final class CharTypes
+      * @deprecated Since 2.14 Use {@link #copyHexChars(boolean)} instead
+      */
+     @Deprecated // since 2.14
+-    public static char[] copyHexChars() {
++    public static char[] copyHexChars() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(11);
+         return copyHexChars(true);
+     }
+ 
+@@ -339,7 +339,7 @@ public final class CharTypes
+      * @deprecated Since 2.14 Use {@link #copyHexBytes(boolean)} instead
+      */
+     @Deprecated // since 2.14
+-    public static byte[] copyHexBytes() {
++    public static byte[] copyHexBytes() { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(10);
+         return copyHexBytes(true);
+     }
+ 
+@@ -362,7 +362,7 @@ public final class CharTypes
+         // @since 2.17
+         private int[][] _altEscapesWithSlash = new int[128][];
+ 
+-        public int[] escapesFor(int quoteChar) {
++        public int[] escapesFor(int quoteChar) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(45);
+             int[] esc = _altEscapes[quoteChar];
+             if (esc == null) {
+                 esc = Arrays.copyOf(sOutputEscapes128, 128);
+diff --git a/com/fasterxml/jackson/core/io/JsonStringEncoder.java b/com/fasterxml/jackson/core/io/JsonStringEncoder.java
+index 2095fb0..96317ab 100644
+--- a/com/fasterxml/jackson/core/io/JsonStringEncoder.java
++++ b/com/fasterxml/jackson/core/io/JsonStringEncoder.java
+@@ -76,7 +76,7 @@ public final class JsonStringEncoder
+      * @return JSON-escaped String matching {@code input}
+      */
+     public char[] quoteAsString(String input)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(2);
+         final int inputLen = input.length();
+         char[] outputBuffer = new char[_initialCharBufSize(inputLen)];
+         final int[] escCodes = CharTypes.get7BitOutputEscapes();
+@@ -307,7 +307,7 @@ public final class JsonStringEncoder
+      */
+     @SuppressWarnings("resource")
+     public byte[] quoteAsUTF8(String text)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(3);
+         int inputPtr = 0;
+         int inputEnd = text.length();
+         int outputPtr = 0;
+@@ -413,7 +413,7 @@ public final class JsonStringEncoder
+      */
+     @SuppressWarnings("resource")
+     public byte[] encodeAsUTF8(String text)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(1);
+         int inputPtr = 0;
+         int inputEnd = text.length();
+         int outputPtr = 0;
+diff --git a/com/fasterxml/jackson/core/io/NumberInput.java b/com/fasterxml/jackson/core/io/NumberInput.java
+index 5cef8db..b3f189d 100644
+--- a/com/fasterxml/jackson/core/io/NumberInput.java
++++ b/com/fasterxml/jackson/core/io/NumberInput.java
+@@ -233,7 +233,7 @@ public final class NumberInput
+      */
+     public static boolean inLongRange(char[] ch, int off, int len,
+             boolean negative)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(4);
+         String cmpStr = negative ? MIN_LONG_STR_NO_SIGN : MAX_LONG_STR;
+         int cmpLen = cmpStr.length();
+         if (len < cmpLen) return true;
+@@ -278,7 +278,7 @@ public final class NumberInput
+     }
+ 
+     public static int parseAsInt(String s, int def)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(47);
+         if (s == null) {
+             return def;
+         }
+@@ -317,7 +317,7 @@ public final class NumberInput
+     }
+ 
+     public static long parseAsLong(String s, long def)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(48);
+         if (s == null) {
+             return def;
+         }
+@@ -362,7 +362,7 @@ public final class NumberInput
+      * @see #parseAsDouble(String, double, boolean)
+      */
+     public static double parseAsDouble(final String s, final double def)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(6);
+         return parseAsDouble(s, def, false);
+     }
+ 
+@@ -498,7 +498,7 @@ public final class NumberInput
+      * @deprecated Since 2.17 use {@link #parseBigDecimal(String, boolean)} instead
+      */
+     @Deprecated // since 2.17
+-    public static BigDecimal parseBigDecimal(final String s) throws NumberFormatException {
++    public static BigDecimal parseBigDecimal(final String s) throws NumberFormatException { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(49);
+         return parseBigDecimal(s, false);
+     }
+ 
+@@ -584,7 +584,7 @@ public final class NumberInput
+      * @deprecated Since 2.17 use {@link #parseBigInteger(String, boolean)} instead
+      */
+     @Deprecated // since 2.17
+-    public static BigInteger parseBigInteger(final String s) throws NumberFormatException {
++    public static BigInteger parseBigInteger(final String s) throws NumberFormatException { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(50);
+         return parseBigInteger(s, false);
+     }
+ 
+@@ -643,7 +643,7 @@ public final class NumberInput
+      *
+      * @since 2.17
+      */
+-    public static boolean looksLikeValidNumber(final String s) {
++    public static boolean looksLikeValidNumber(final String s) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(5);
+         // While PATTERN_FLOAT handles most cases we can optimize some simple ones:
+         if (s == null || s.isEmpty()) {
+             return false;
+diff --git a/com/fasterxml/jackson/core/io/NumberOutput.java b/com/fasterxml/jackson/core/io/NumberOutput.java
+index 844692b..60b15d3 100644
+--- a/com/fasterxml/jackson/core/io/NumberOutput.java
++++ b/com/fasterxml/jackson/core/io/NumberOutput.java
+@@ -66,7 +66,7 @@ public final class NumberOutput
+      * @return Offset within buffer after outputting {@code int}
+      */
+     public static int outputInt(int v, char[] b, int off)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(7);
+         if (v < 0) {
+             if (v == Integer.MIN_VALUE) {
+                 // Special case: no matching positive value within range;
+@@ -177,7 +177,7 @@ public final class NumberOutput
+      * @return Offset within buffer after outputting {@code long}
+      */
+     public static int outputLong(long v, char[] b, int off)
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(8);
+         // First: does it actually fit in an int?
+         if (v < 0L) {
+             if (v > MIN_INT_AS_LONG) {
+diff --git a/com/fasterxml/jackson/core/jmhbench/MutationSwitch.java b/com/fasterxml/jackson/core/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..99bafdf
+--- /dev/null
++++ b/com/fasterxml/jackson/core/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.fasterxml.jackson.core.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/fasterxml/jackson/core/util/BufferRecycler.java b/com/fasterxml/jackson/core/util/BufferRecycler.java
+index a76167f..28b7120 100644
+--- a/com/fasterxml/jackson/core/util/BufferRecycler.java
++++ b/com/fasterxml/jackson/core/util/BufferRecycler.java
+@@ -214,7 +214,7 @@ public class BufferRecycler
+     /**********************************************************
+      */
+ 
+-    protected int byteBufferLength(int ix) {
++    protected int byteBufferLength(int ix) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(24);
+         return BYTE_BUFFER_LENGTHS[ix];
+     }
+ 
+@@ -228,8 +228,8 @@ public class BufferRecycler
+     /**********************************************************
+      */
+ 
+-    protected byte[] balloc(int size) { return new byte[size]; }
+-    protected char[] calloc(int size) { return new char[size]; }
++    protected byte[] balloc(int size) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(23); return new byte[size]; }
++    protected char[] calloc(int size) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(25); return new char[size]; }
+ 
+     /*
+     /**********************************************************
+diff --git a/com/fasterxml/jackson/core/util/ByteArrayBuilder.java b/com/fasterxml/jackson/core/util/ByteArrayBuilder.java
+index 226932c..d43eb98 100644
+--- a/com/fasterxml/jackson/core/util/ByteArrayBuilder.java
++++ b/com/fasterxml/jackson/core/util/ByteArrayBuilder.java
+@@ -112,7 +112,7 @@ public final class ByteArrayBuilder
+         _currBlock[_currBlockPtr++] = (byte) i;
+     }
+ 
+-    public void appendTwoBytes(int b16) {
++    public void appendTwoBytes(int b16) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(22);
+         if ((_currBlockPtr + 1) < _currBlock.length) {
+             _currBlock[_currBlockPtr++] = (byte) (b16 >> 8);
+             _currBlock[_currBlockPtr++] = (byte) b16;
+@@ -122,7 +122,7 @@ public final class ByteArrayBuilder
+         }
+     }
+ 
+-    public void appendThreeBytes(int b24) {
++    public void appendThreeBytes(int b24) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(21);
+         if ((_currBlockPtr + 2) < _currBlock.length) {
+             _currBlock[_currBlockPtr++] = (byte) (b24 >> 16);
+             _currBlock[_currBlockPtr++] = (byte) (b24 >> 8);
+@@ -135,7 +135,7 @@ public final class ByteArrayBuilder
+     }
+ 
+     // @since 2.9
+-    public void appendFourBytes(int b32) {
++    public void appendFourBytes(int b32) { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(20);
+         if ((_currBlockPtr + 3) < _currBlock.length) {
+             _currBlock[_currBlockPtr++] = (byte) (b32 >> 24);
+             _currBlock[_currBlockPtr++] = (byte) (b32 >> 16);
+diff --git a/com/fasterxml/jackson/core/util/TextBuffer.java b/com/fasterxml/jackson/core/util/TextBuffer.java
+index 06c96fe..da528af 100644
+--- a/com/fasterxml/jackson/core/util/TextBuffer.java
++++ b/com/fasterxml/jackson/core/util/TextBuffer.java
+@@ -540,7 +540,7 @@ public class TextBuffer
+      * @since 2.14
+      */
+     public double contentsAsDouble(final boolean useFastParser) throws NumberFormatException
+-    {
++    { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(18);
+         // Order in which check is somewhat arbitrary... try likeliest ones
+         // that do not require allocation first
+ 
+@@ -592,7 +592,7 @@ public class TextBuffer
+      * @deprecated use {@link #contentsAsFloat(boolean)}
+      */
+     @Deprecated // @since 2.14
+-    public float contentsAsFloat() throws NumberFormatException {
++    public float contentsAsFloat() throws NumberFormatException { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(19);
+         return contentsAsFloat(false);
+     }
+ 
+@@ -646,7 +646,7 @@ public class TextBuffer
+      * @deprecated Since 2.15 use {@link #contentsAsDecimal(boolean)} instead.
+      */
+     @Deprecated
+-    public BigDecimal contentsAsDecimal() throws NumberFormatException {
++    public BigDecimal contentsAsDecimal() throws NumberFormatException { com.fasterxml.jackson.core.jmhbench.MutationSwitch.tick(17);
+         return contentsAsDecimal(false);
+     }
+ 

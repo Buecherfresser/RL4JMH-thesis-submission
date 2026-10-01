@@ -1,0 +1,625 @@
+diff --git a/net/schmizz/sshj/AndroidConfig.java b/net/schmizz/sshj/AndroidConfig.java
+index e6e9c1b..a6599fe 100644
+--- a/net/schmizz/sshj/AndroidConfig.java
++++ b/net/schmizz/sshj/AndroidConfig.java
+@@ -33,7 +33,7 @@ public class AndroidConfig
+     }
+ 
+     @Override
+-    protected void initKeyAlgorithms() {
++    protected void initKeyAlgorithms() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(1);
+         setKeyAlgorithms(Arrays.<Factory.Named<KeyAlgorithm>>asList(
+                 KeyAlgorithms.EdDSA25519(),
+                 KeyAlgorithms.SSHRSA(),
+diff --git a/net/schmizz/sshj/ConfigImpl.java b/net/schmizz/sshj/ConfigImpl.java
+index 98c3c51..5b659a4 100644
+--- a/net/schmizz/sshj/ConfigImpl.java
++++ b/net/schmizz/sshj/ConfigImpl.java
+@@ -55,12 +55,12 @@ public class ConfigImpl
+     private int channelErrorReadTimeoutMs = 0;
+ 
+     @Override
+-    public List<Factory.Named<Cipher>> getCipherFactories() {
++    public List<Factory.Named<Cipher>> getCipherFactories() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(9);
+         return cipherFactories;
+     }
+ 
+     @Override
+-    public List<Factory.Named<Compression>> getCompressionFactories() {
++    public List<Factory.Named<Compression>> getCompressionFactories() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(17);
+         return compressionFactories;
+     }
+ 
+diff --git a/net/schmizz/sshj/DefaultConfig.java b/net/schmizz/sshj/DefaultConfig.java
+index fd150c6..006729f 100644
+--- a/net/schmizz/sshj/DefaultConfig.java
++++ b/net/schmizz/sshj/DefaultConfig.java
+@@ -99,12 +99,12 @@ public class DefaultConfig
+     }
+ 
+     @Override
+-    public void setLoggerFactory(LoggerFactory loggerFactory) {
++    public void setLoggerFactory(LoggerFactory loggerFactory) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(25);
+         super.setLoggerFactory(loggerFactory);
+         log = loggerFactory.getLogger(getClass());
+     }
+ 
+-    protected void initKeyExchangeFactories() {
++    protected void initKeyExchangeFactories() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(33);
+         setKeyExchangeFactories(
+                 new Curve25519SHA256.Factory(),
+                 new Curve25519SHA256.FactoryLibSsh(),
+diff --git a/net/schmizz/sshj/SSHClient.java b/net/schmizz/sshj/SSHClient.java
+index 792038c..cea0717 100644
+--- a/net/schmizz/sshj/SSHClient.java
++++ b/net/schmizz/sshj/SSHClient.java
+@@ -154,7 +154,7 @@ public class SSHClient
+      *
+      * @param verifier {@link HostKeyVerifier} instance
+      */
+-    public void addHostKeyVerifier(HostKeyVerifier verifier) {
++    public void addHostKeyVerifier(HostKeyVerifier verifier) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(41);
+         trans.addHostKeyVerifier(verifier);
+     }
+ 
+@@ -163,7 +163,7 @@ public class SSHClient
+      *
+      * @param verifier {@link AlgorithmsVerifier} instance
+      */
+-    public void addAlgorithmsVerifier(AlgorithmsVerifier verifier) {
++    public void addAlgorithmsVerifier(AlgorithmsVerifier verifier) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(49);
+         trans.addAlgorithmsVerifier(verifier);
+     }
+ 
+diff --git a/net/schmizz/sshj/common/Buffer.java b/net/schmizz/sshj/common/Buffer.java
+index 13f0b5b..b2c39b6 100644
+--- a/net/schmizz/sshj/common/Buffer.java
++++ b/net/schmizz/sshj/common/Buffer.java
+@@ -64,7 +64,7 @@ public class Buffer<T extends Buffer<T>> {
+                                                             .shiftLeft(64)
+                                                             .subtract(BigInteger.ONE);
+ 
+-    protected static int getNextPowerOf2(int i) {
++    protected static int getNextPowerOf2(int i) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(2);
+         int j = 1;
+         while (j < i) {
+             j <<= 1;
+@@ -101,7 +101,7 @@ public class Buffer<T extends Buffer<T>> {
+         wpos = read ? data.length : 0;
+     }
+ 
+-    public byte[] array() {
++    public byte[] array() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(10);
+         return data;
+     }
+ 
+diff --git a/net/schmizz/sshj/common/ByteArrayUtils.java b/net/schmizz/sshj/common/ByteArrayUtils.java
+index d9c16b7..d559ead 100644
+--- a/net/schmizz/sshj/common/ByteArrayUtils.java
++++ b/net/schmizz/sshj/common/ByteArrayUtils.java
+@@ -57,7 +57,7 @@ public class ByteArrayUtils {
+      *
+      * @return hex string, each octet delimited by a space
+      */
+-    public static String printHex(byte[] array, int offset, int len) {
++    public static String printHex(byte[] array, int offset, int len) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(18);
+         StringBuilder sb = new StringBuilder();
+         for (int i = 0; i < len; i++) {
+             byte b = array[offset + i];
+@@ -76,7 +76,7 @@ public class ByteArrayUtils {
+      *
+      * @return hex string
+      */
+-    public static String toHex(byte[] array) {
++    public static String toHex(byte[] array) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(26);
+         return toHex(array, 0, array.length);
+     }
+ 
+diff --git a/net/schmizz/sshj/common/CircularBuffer.java b/net/schmizz/sshj/common/CircularBuffer.java
+index ea47351..e2e9325 100644
+--- a/net/schmizz/sshj/common/CircularBuffer.java
++++ b/net/schmizz/sshj/common/CircularBuffer.java
+@@ -101,7 +101,7 @@ public class CircularBuffer<T extends CircularBuffer<T>> {
+     /**
+      * Returns how many more bytes this buffer can receive.
+      */
+-    public int maxPossibleRemainingCapacity() {
++    public int maxPossibleRemainingCapacity() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(34);
+         // Remaining capacity is one less than remaining space to ensure that wpos does not reach rpos from the left.
+         int remaining = rpos - wpos - 1;
+         if (remaining < 0) {
+@@ -143,7 +143,7 @@ public class CircularBuffer<T extends CircularBuffer<T>> {
+     /**
+      * Reads data from this buffer into the provided array.
+      */
+-    public void readRawBytes(byte[] destination, int offset, int length) throws CircularBufferException {
++    public void readRawBytes(byte[] destination, int offset, int length) throws CircularBufferException { net.schmizz.sshj.jmhbench.MutationSwitch.tick(42);
+         ensureAvailable(length);
+ 
+         int rposNext = rpos + length;
+diff --git a/net/schmizz/sshj/common/IOUtils.java b/net/schmizz/sshj/common/IOUtils.java
+index 8d90582..a76f7ce 100644
+--- a/net/schmizz/sshj/common/IOUtils.java
++++ b/net/schmizz/sshj/common/IOUtils.java
+@@ -22,7 +22,7 @@ import java.io.InputStream;
+ 
+ public class IOUtils {
+ 
+-    public static void closeQuietly(Closeable... closeables) {
++    public static void closeQuietly(Closeable... closeables) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(50);
+         closeQuietly(LoggerFactory.DEFAULT, closeables);
+     }
+ 
+diff --git a/net/schmizz/sshj/connection/channel/ChannelInputStream.java b/net/schmizz/sshj/connection/channel/ChannelInputStream.java
+index accdb72..e6cdce9 100644
+--- a/net/schmizz/sshj/connection/channel/ChannelInputStream.java
++++ b/net/schmizz/sshj/connection/channel/ChannelInputStream.java
+@@ -77,11 +77,11 @@ public final class ChannelInputStream
+     }
+ 
+     @Override
+-    public void close() {
++    public void close() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(3);
+         eof();
+     }
+ 
+-    public void eof() {
++    public void eof() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(11);
+         lock.lock();
+         try {
+             if (!eof) {
+diff --git a/net/schmizz/sshj/connection/channel/ChannelOutputStream.java b/net/schmizz/sshj/connection/channel/ChannelOutputStream.java
+index 43584b8..23f30b8 100644
+--- a/net/schmizz/sshj/connection/channel/ChannelOutputStream.java
++++ b/net/schmizz/sshj/connection/channel/ChannelOutputStream.java
+@@ -49,7 +49,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
+         private final Buffer.PlainBuffer leftOvers = new Buffer.PlainBuffer();
+         private final AbstractChannel.TransportRunnable packetWriteRunnable = new AbstractChannel.TransportRunnable() {
+             @Override
+-            public void run() throws TransportException {
++            public void run() throws TransportException { net.schmizz.sshj.jmhbench.MutationSwitch.tick(19);
+                 trans.write(packet);
+             }
+         };
+@@ -154,7 +154,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
+     }
+ 
+     @Override
+-    public synchronized void notifyError(SSHException error) {
++    public synchronized void notifyError(SSHException error) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(27);
+         this.error = error;
+     }
+ 
+diff --git a/net/schmizz/sshj/connection/channel/SocketStreamCopyMonitor.java b/net/schmizz/sshj/connection/channel/SocketStreamCopyMonitor.java
+index 29c598c..c6a0b76 100644
+--- a/net/schmizz/sshj/connection/channel/SocketStreamCopyMonitor.java
++++ b/net/schmizz/sshj/connection/channel/SocketStreamCopyMonitor.java
+@@ -33,9 +33,9 @@ public class SocketStreamCopyMonitor
+ 
+     public static void monitor(final int frequency, final TimeUnit unit,
+                                final Event<IOException> x, final Event<IOException> y,
+-                               final Channel channel, final Socket socket) {
++                               final Channel channel, final Socket socket) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(35);
+         new SocketStreamCopyMonitor(new Runnable() {
+-            public void run() {
++            public void run() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(43);
+                 try {
+                     await(x);
+                     await(y);
+diff --git a/net/schmizz/sshj/jmhbench/MutationSwitch.java b/net/schmizz/sshj/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..36b5109
+--- /dev/null
++++ b/net/schmizz/sshj/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.schmizz.sshj.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/net/schmizz/sshj/sftp/FileAttributes.java b/net/schmizz/sshj/sftp/FileAttributes.java
+index 239eb77..fd9c4a8 100644
+--- a/net/schmizz/sshj/sftp/FileAttributes.java
++++ b/net/schmizz/sshj/sftp/FileAttributes.java
+@@ -41,7 +41,7 @@ public final class FileAttributes {
+             this.flag = flag;
+         }
+ 
+-        public boolean isSet(int mask) {
++        public boolean isSet(int mask) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(4);
+             return (mask & flag) == flag;
+         }
+ 
+@@ -77,7 +77,7 @@ public final class FileAttributes {
+         this.ext.putAll(ext);
+     }
+ 
+-    public boolean has(Flag flag) {
++    public boolean has(Flag flag) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(12);
+         return flag.isSet(mask);
+     }
+ 
+diff --git a/net/schmizz/sshj/sftp/FileMode.java b/net/schmizz/sshj/sftp/FileMode.java
+index e87de80..17d7d9f 100644
+--- a/net/schmizz/sshj/sftp/FileMode.java
++++ b/net/schmizz/sshj/sftp/FileMode.java
+@@ -46,14 +46,14 @@ public class FileMode {
+             this.val = val;
+         }
+ 
+-        public static Type fromMask(int mask) {
++        public static Type fromMask(int mask) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(20);
+             for (Type t : Type.values())
+                 if (t.val == mask)
+                     return t;
+             return UNKNOWN;
+         }
+ 
+-        public int toMask() {
++        public int toMask() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(28);
+             return val;
+         }
+ 
+diff --git a/net/schmizz/sshj/sftp/OpenMode.java b/net/schmizz/sshj/sftp/OpenMode.java
+index ed79254..3cc3efe 100644
+--- a/net/schmizz/sshj/sftp/OpenMode.java
++++ b/net/schmizz/sshj/sftp/OpenMode.java
+@@ -50,7 +50,7 @@ public enum OpenMode {
+         this.pflag = pflag;
+     }
+ 
+-    public static int toMask(Set<OpenMode> modes) {
++    public static int toMask(Set<OpenMode> modes) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(36);
+         int mask = 0;
+         for (OpenMode m : modes)
+             mask |= m.pflag;
+diff --git a/net/schmizz/sshj/sftp/PacketReader.java b/net/schmizz/sshj/sftp/PacketReader.java
+index 42fece5..d0ad65d 100644
+--- a/net/schmizz/sshj/sftp/PacketReader.java
++++ b/net/schmizz/sshj/sftp/PacketReader.java
+@@ -72,7 +72,7 @@ public class PacketReader extends Thread {
+     }
+ 
+     public SFTPPacket<Response> readPacket()
+-            throws IOException {
++            throws IOException { net.schmizz.sshj.jmhbench.MutationSwitch.tick(44);
+         final int len = getPacketLength();
+         packet.clear();
+         packet.ensureCapacity(len);
+diff --git a/net/schmizz/sshj/signature/SignatureDSA.java b/net/schmizz/sshj/signature/SignatureDSA.java
+index f263ebd..7887a2d 100644
+--- a/net/schmizz/sshj/signature/SignatureDSA.java
++++ b/net/schmizz/sshj/signature/SignatureDSA.java
+@@ -36,12 +36,12 @@ public class SignatureDSA
+             implements net.schmizz.sshj.common.Factory.Named<Signature> {
+ 
+         @Override
+-        public Signature create() {
++        public Signature create() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(5);
+             return new SignatureDSA();
+         }
+ 
+         @Override
+-        public String getName() {
++        public String getName() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(13);
+             return KeyType.DSA.toString();
+         }
+ 
+diff --git a/net/schmizz/sshj/signature/SignatureECDSA.java b/net/schmizz/sshj/signature/SignatureECDSA.java
+index 190f7f1..0474ac2 100644
+--- a/net/schmizz/sshj/signature/SignatureECDSA.java
++++ b/net/schmizz/sshj/signature/SignatureECDSA.java
+@@ -36,12 +36,12 @@ public class SignatureECDSA extends AbstractSignatureDSA {
+     public static class Factory256 implements net.schmizz.sshj.common.Factory.Named<Signature> {
+ 
+         @Override
+-        public Signature create() {
++        public Signature create() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(21);
+             return new SignatureECDSA("SHA256withECDSA", KeyType.ECDSA256.toString());
+         }
+ 
+         @Override
+-        public String getName() {
++        public String getName() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(29);
+             return KeyType.ECDSA256.toString();
+         }
+ 
+diff --git a/net/schmizz/sshj/signature/SignatureRSA.java b/net/schmizz/sshj/signature/SignatureRSA.java
+index ad8275d..67d9d46 100644
+--- a/net/schmizz/sshj/signature/SignatureRSA.java
++++ b/net/schmizz/sshj/signature/SignatureRSA.java
+@@ -32,12 +32,12 @@ public class SignatureRSA
+             implements net.schmizz.sshj.common.Factory.Named<Signature> {
+ 
+         @Override
+-        public Signature create() {
++        public Signature create() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(37);
+             return new SignatureRSA("SHA1withRSA", KeyType.RSA, KeyType.RSA.toString());
+         }
+ 
+         @Override
+-        public String getName() {
++        public String getName() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(45);
+             return KeyType.RSA.toString();
+         }
+     }
+diff --git a/net/schmizz/sshj/transport/Encoder.java b/net/schmizz/sshj/transport/Encoder.java
+index 2ecaaa3..d7cee18 100644
+--- a/net/schmizz/sshj/transport/Encoder.java
++++ b/net/schmizz/sshj/transport/Encoder.java
+@@ -138,7 +138,7 @@ final class Encoder
+         }
+     }
+ 
+-    protected void aeadOutgoingBuffer(Buffer<?> buf, int offset, int len) {
++    protected void aeadOutgoingBuffer(Buffer<?> buf, int offset, int len) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(6);
+         if (cipher == null || cipher.getAuthenticationTagSize() == 0) {
+             throw new IllegalArgumentException("AEAD mode requires an AEAD cipher");
+         }
+diff --git a/net/schmizz/sshj/transport/KeyExchanger.java b/net/schmizz/sshj/transport/KeyExchanger.java
+index abaf72e..68d0f68 100644
+--- a/net/schmizz/sshj/transport/KeyExchanger.java
++++ b/net/schmizz/sshj/transport/KeyExchanger.java
+@@ -409,7 +409,7 @@ final class KeyExchanger
+ 
+     @Override
+     public void handle(Message msg, SSHPacket buf)
+-            throws TransportException {
++            throws TransportException { net.schmizz.sshj.jmhbench.MutationSwitch.tick(14);
+         switch (expected) {
+ 
+             case KEXINIT:
+@@ -455,7 +455,7 @@ final class KeyExchanger
+     }
+ 
+     @Override
+-    public void notifyError(SSHException error) {
++    public void notifyError(SSHException error) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(22);
+         log.debug("Got notified of {}", error.toString());
+         ErrorDeliveryUtil.alertEvents(error, kexInitSent, done);
+     }
+diff --git a/net/schmizz/sshj/transport/NegotiatedAlgorithms.java b/net/schmizz/sshj/transport/NegotiatedAlgorithms.java
+index 824cb0f..010700b 100644
+--- a/net/schmizz/sshj/transport/NegotiatedAlgorithms.java
++++ b/net/schmizz/sshj/transport/NegotiatedAlgorithms.java
+@@ -38,11 +38,11 @@ public final class NegotiatedAlgorithms {
+         this.s2cComp = s2cComp;
+     }
+ 
+-    public String getKeyExchangeAlgorithm() {
++    public String getKeyExchangeAlgorithm() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(30);
+         return kex;
+     }
+ 
+-    public String getSignatureAlgorithm() {
++    public String getSignatureAlgorithm() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(38);
+         return sig;
+     }
+ 
+diff --git a/net/schmizz/sshj/transport/Proposal.java b/net/schmizz/sshj/transport/Proposal.java
+index 3a4102d..b302b27 100644
+--- a/net/schmizz/sshj/transport/Proposal.java
++++ b/net/schmizz/sshj/transport/Proposal.java
+@@ -90,7 +90,7 @@ class Proposal {
+         packet.rpos(savedPos);
+     }
+ 
+-    public List<String> getKeyExchangeAlgorithms() {
++    public List<String> getKeyExchangeAlgorithms() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(46);
+         return kex;
+     }
+ 
+diff --git a/net/schmizz/sshj/userauth/keyprovider/KeyProviderUtil.java b/net/schmizz/sshj/userauth/keyprovider/KeyProviderUtil.java
+index b1ba25d..34cfd43 100644
+--- a/net/schmizz/sshj/userauth/keyprovider/KeyProviderUtil.java
++++ b/net/schmizz/sshj/userauth/keyprovider/KeyProviderUtil.java
+@@ -32,7 +32,7 @@ public class KeyProviderUtil {
+      * @throws java.io.IOException Thrown on file processing failures
+      */
+     public static KeyFormat detectKeyFileFormat(File location)
+-            throws IOException {
++            throws IOException { net.schmizz.sshj.jmhbench.MutationSwitch.tick(7);
+         return detectKeyFileFormat(new FileReader(location),
+                 new File(location + ".pub").exists() || new File(location + "-cert.pub").exists());
+     }
+@@ -48,7 +48,7 @@ public class KeyProviderUtil {
+      * @throws java.io.IOException Thrown on file processing failures
+      */
+     public static KeyFormat detectKeyFileFormat(String privateKey, boolean separatePubKey)
+-            throws IOException {
++            throws IOException { net.schmizz.sshj.jmhbench.MutationSwitch.tick(15);
+         return detectKeyFileFormat(new StringReader(privateKey), separatePubKey);
+     }
+ 
+diff --git a/net/schmizz/sshj/userauth/keyprovider/V1PuTTYSecretKeyDerivationFunction.java b/net/schmizz/sshj/userauth/keyprovider/V1PuTTYSecretKeyDerivationFunction.java
+index 3448013..dee8c71 100644
+--- a/net/schmizz/sshj/userauth/keyprovider/V1PuTTYSecretKeyDerivationFunction.java
++++ b/net/schmizz/sshj/userauth/keyprovider/V1PuTTYSecretKeyDerivationFunction.java
+@@ -40,7 +40,7 @@ class V1PuTTYSecretKeyDerivationFunction implements PuTTYSecretKeyDerivationFunc
+      * @param passphrase Passphrase characters required
+      * @return Derived Secret Key
+      */
+-    public SecretKey deriveSecretKey(char[] passphrase) {
++    public SecretKey deriveSecretKey(char[] passphrase) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(23);
+         Objects.requireNonNull(passphrase, "Passphrase required");
+ 
+         final MessageDigest digest = getMessageDigest();
+diff --git a/net/schmizz/sshj/userauth/keyprovider/V3PuTTYSecretKeyDerivationFunction.java b/net/schmizz/sshj/userauth/keyprovider/V3PuTTYSecretKeyDerivationFunction.java
+index 111b631..4194a09 100644
+--- a/net/schmizz/sshj/userauth/keyprovider/V3PuTTYSecretKeyDerivationFunction.java
++++ b/net/schmizz/sshj/userauth/keyprovider/V3PuTTYSecretKeyDerivationFunction.java
+@@ -44,7 +44,7 @@ class V3PuTTYSecretKeyDerivationFunction implements PuTTYSecretKeyDerivationFunc
+      * @param passphrase Passphrase characters required
+      * @return Derived Secret Key
+      */
+-    public SecretKey deriveSecretKey(char[] passphrase) {
++    public SecretKey deriveSecretKey(char[] passphrase) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(31);
+         Objects.requireNonNull(passphrase, "Passphrase required");
+ 
+         final Argon2Parameters parameters = getParameters();
+diff --git a/net/schmizz/sshj/userauth/password/PasswordUtils.java b/net/schmizz/sshj/userauth/password/PasswordUtils.java
+index c60469e..f5d0cf6 100644
+--- a/net/schmizz/sshj/userauth/password/PasswordUtils.java
++++ b/net/schmizz/sshj/userauth/password/PasswordUtils.java
+@@ -28,7 +28,7 @@ public class PasswordUtils {
+      *
+      * @param pwd the character array
+      */
+-    public static void blankOut(char[] pwd) {
++    public static void blankOut(char[] pwd) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(39);
+         if (pwd != null)
+             Arrays.fill(pwd, ' ');
+     }
+@@ -38,7 +38,7 @@ public class PasswordUtils {
+      *
+      * @return the constructed {@link PasswordFinder}
+      */
+-    public static PasswordFinder createOneOff(final char[] password) {
++    public static PasswordFinder createOneOff(final char[] password) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(47);
+         if (password == null)
+             return null;
+         else
+diff --git a/net/schmizz/sshj/xfer/FilePermission.java b/net/schmizz/sshj/xfer/FilePermission.java
+index 760445e..2ba605e 100644
+--- a/net/schmizz/sshj/xfer/FilePermission.java
++++ b/net/schmizz/sshj/xfer/FilePermission.java
+@@ -67,11 +67,11 @@ public enum FilePermission {
+         this.val = val;
+     }
+ 
+-    public boolean isIn(int mask) {
++    public boolean isIn(int mask) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(24);
+         return (mask & val) == val;
+     }
+ 
+-    public static Set<FilePermission> fromMask(int mask) {
++    public static Set<FilePermission> fromMask(int mask) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(32);
+         final List<FilePermission> perms = new LinkedList<FilePermission>();
+         for (FilePermission p : FilePermission.values())
+             if (p.isIn(mask))
+diff --git a/net/schmizz/sshj/xfer/FileSystemFile.java b/net/schmizz/sshj/xfer/FileSystemFile.java
+index 56a6ebc..e78c969 100644
+--- a/net/schmizz/sshj/xfer/FileSystemFile.java
++++ b/net/schmizz/sshj/xfer/FileSystemFile.java
+@@ -38,12 +38,12 @@ public class FileSystemFile
+         this.file = file;
+     }
+ 
+-    public File getFile() {
++    public File getFile() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(40);
+         return file;
+     }
+ 
+     @Override
+-    public String getName() {
++    public String getName() { net.schmizz.sshj.jmhbench.MutationSwitch.tick(48);
+         return file.getName();
+     }
+ 
+diff --git a/net/schmizz/sshj/xfer/LoggingTransferListener.java b/net/schmizz/sshj/xfer/LoggingTransferListener.java
+index 34a1fe2..5a1b4a4 100644
+--- a/net/schmizz/sshj/xfer/LoggingTransferListener.java
++++ b/net/schmizz/sshj/xfer/LoggingTransferListener.java
+@@ -40,13 +40,13 @@ public class LoggingTransferListener
+     }
+ 
+     @Override
+-    public TransferListener directory(String name) {
++    public TransferListener directory(String name) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(8);
+         log.debug("started transferring directory `{}`", name);
+         return new LoggingTransferListener(relPath + name + "/", loggerFactory);
+     }
+ 
+     @Override
+-    public StreamCopier.Listener file(final String name, final long size) {
++    public StreamCopier.Listener file(final String name, final long size) { net.schmizz.sshj.jmhbench.MutationSwitch.tick(16);
+         final String path = relPath + name;
+         log.debug("started transferring file `{}` ({} bytes)", path, size);
+         return new StreamCopier.Listener() {

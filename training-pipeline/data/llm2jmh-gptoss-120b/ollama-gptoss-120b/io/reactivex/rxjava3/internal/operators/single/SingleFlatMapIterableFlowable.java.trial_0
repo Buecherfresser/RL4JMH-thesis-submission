@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.internal.operators.single.SingleFlatMapIterableFlowable;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * JMH benchmark for {@link SingleFlatMapIterableFlowable}.
+ *
+ * Measures the throughput of the operator when a {@link Single} is flat‑mapped
+ * to an {@link Iterable} of a configurable size.
+ *
+ * The benchmark follows best practices:
+ * <ul>
+ *   <li>All mutable state is confined to a {@link State} object with {@code Scope.Thread}.</li>
+ *   <li>Blackhole is used to consume the emitted items, preventing dead‑code elimination.</li>
+ *   <li>Warm‑up, measurement, and fork settings are provided to obtain stable results.</li>
+ *   <li>Long.MAX_VALUE request is used (via {@code subscribe(Consumer)}) to avoid back‑pressure effects.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class SingleFlatMapIterableFlowableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Size of the iterable produced by the mapper. */
+        @Param({"1", "10", "100", "1000", "10000"})
+        public int iterableSize;
+
+        /** The Flowable under test. */
+        public SingleFlatMapIterableFlowable<Integer, Integer> flowable;
+
+        /** Mapper that creates a List of {@code iterableSize} integers. */
+        private final Function<Integer, Iterable<Integer>> mapper = v ->
+                IntStream.rangeClosed(1, iterableSize)
+                         .boxed()
+                         .collect(Collectors.toList());
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Single source that emits a single value (the actual value is irrelevant for the benchmark)
+            Single<Integer> source = Single.just(1);
+            flowable = new SingleFlatMapIterableFlowable<>(source, mapper);
+        }
+    }
+
+    @Benchmark
+    public void flatMapIterable(BenchmarkState state, Blackhole bh) {
+        // Subscribe with a Consumer that forwards each item to the Blackhole.
+        // The subscribe(Consumer) overload requests Long.MAX_VALUE internally,
+        // ensuring the operator runs in an unbounded (fast‑path) mode.
+        state.flowable.subscribe(bh::consume);
+    }
+}
+```

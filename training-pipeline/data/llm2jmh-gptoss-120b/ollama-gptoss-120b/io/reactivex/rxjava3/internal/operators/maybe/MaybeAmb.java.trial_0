@@ -1,0 +1,66 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.MaybeSource;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeAmb;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link MaybeAmb}.
+ *
+ * Measures the throughput of the operator when merging a configurable number of {@code Maybe.just}
+ * sources. The benchmark uses {@link Maybe#blockingGet()} to force subscription and terminal
+ * event handling, which is a common pattern in micro‑benchmarks for reactive streams.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - {@code @Param} to vary the number of sources.
+ * - Warm‑up and measurement iterations with a reasonable fork count.
+ * - {@code Mode.Throughput} with {@code TimeUnit.SECONDS} for clear per‑second rates.
+ */
+@State(Scope.Thread)
+public class MaybeAmbBenchmark {
+
+    /** Number of Maybe sources to merge. */
+    @Param({"1", "2", "4", "8", "16", "32", "64"})
+    public int sourceCount;
+
+    /** The Maybe instance under test. */
+    private Maybe<Integer> maybeAmb;
+
+    /**
+     * Creates a new {@code MaybeAmb} instance before each benchmark invocation.
+     * Using {@code Level.Invocation} ensures that the operator sees a fresh set of
+     * sources for every measurement, eliminating caching effects.
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        @SuppressWarnings("unchecked")
+        MaybeSource<Integer>[] sources = new MaybeSource[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            // Each source emits a distinct value immediately.
+            sources[i] = Maybe.just(i);
+        }
+        // The iterable argument is not used when the array is supplied, so we pass null.
+        maybeAmb = new MaybeAmb<>(sources, null);
+    }
+
+    /**
+     * Benchmark method that subscribes to the {@code MaybeAmb} and blocks until the
+     * first source signals. The returned value is consumed by JMH, so no additional
+     * Blackhole is required.
+     */
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+    @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+    @Fork(2)
+    public Integer testMaybeAmb() {
+        return maybeAmb.blockingGet();
+    }
+}
+```

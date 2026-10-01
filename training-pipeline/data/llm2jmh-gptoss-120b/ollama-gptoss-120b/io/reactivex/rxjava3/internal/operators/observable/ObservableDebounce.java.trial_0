@@ -1,0 +1,47 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableDebounce}
+ * using the {@code debounce(Function)} overload.
+ *
+ * The benchmark measures the throughput (operations per second) of processing a fixed
+ * number of items through the debounce operator where the debounce selector returns
+ * an immediately completing Observable. This isolates the overhead of the debounce
+ * operator itself without introducing additional scheduling latency.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Thread)
+public class ObservableDebounceBenchmark {
+
+    /** Number of items emitted by the upstream source per benchmark iteration. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Debounce selector that returns an Observable that completes immediately. */
+    private static final Function<Integer, ObservableSource<Object>> IMMEDIATE_SELECTOR =
+            v -> Observable.just(new Object());
+
+    /**
+     * Executes the debounce operator on a cold Observable that emits {@code itemCount}
+     * sequential integers. The downstream consumes the items via {@code blockingForEach},
+     * ensuring the whole chain is executed within the benchmark iteration.
+     */
+    @Benchmark
+    public void debounceImmediate() {
+        Observable.range(0, itemCount)
+                .debounce(IMMEDIATE_SELECTOR)
+                .blockingForEach(v -> {
+                    // No-op consumer; the work is in the debounce operator itself.
+                });
+    }
+}
+```

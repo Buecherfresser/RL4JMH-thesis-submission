@@ -1,0 +1,59 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableZip}
+ * measuring throughput of the zip operator with two integer streams.
+ *
+ * The benchmark follows best practices:
+ * - State is scoped per thread to avoid contention.
+ * - Sources are created once in @Setup to exclude allocation overhead.
+ * - Each benchmark iteration creates a fresh subscription.
+ * - Blackhole is used to consume the zipped values, preventing dead‑code elimination.
+ * - Warm‑up and measurement iterations are configured to let the JIT stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableZipBenchmark {
+
+    /** Number of items emitted by each source Flowable. */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    /** First source Flowable emitting a range of integers. */
+    private Flowable<Integer> source1;
+
+    /** Second source Flowable emitting a range of integers. */
+    private Flowable<Integer> source2;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create hot sources that can be subscribed to repeatedly.
+        source1 = Flowable.range(1, size);
+        source2 = Flowable.range(1, size);
+    }
+
+    /**
+     * Benchmark that zips two integer streams and consumes the result.
+     *
+     * @param bh Blackhole to consume the zipped values.
+     */
+    @Benchmark
+    public void zipTwoSources(Blackhole bh) {
+        // Use the BiFunction overload of zip for two sources.
+        Flowable.zip(source1, source2, (a, b) -> a + b)
+                .subscribe(bh::consume);
+    }
+}
+```

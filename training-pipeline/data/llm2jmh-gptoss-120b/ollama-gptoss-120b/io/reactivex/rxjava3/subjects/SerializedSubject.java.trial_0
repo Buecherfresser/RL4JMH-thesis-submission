@@ -1,0 +1,64 @@
+```
+package io.reactivex.rxjava3.subjects;
+
+import org.openjdk.jmh.annotations.*;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for SerializedSubject. Measures throughput of the main
+ * reactive signals (onNext, onError, onComplete) under concurrent access.
+ *
+ * The benchmark creates a fresh SerializedSubject for each iteration to
+ * avoid state leakage between measurements.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
+public class SerializedSubjectBenchmark {
+
+    /** Subject used as the underlying actual implementation. */
+    private PublishSubject<Integer> actual;
+
+    /** Serialized wrapper that is the target of the benchmark. */
+    private SerializedSubject<Integer> serialized;
+
+    /** Dummy observer to keep the subject alive and avoid back‑pressure effects. */
+    private final Observer<Integer> dummyObserver = new Observer<Integer>() {
+        @Override public void onSubscribe(Disposable d) {}
+        @Override public void onNext(Integer t) {}
+        @Override public void onError(Throwable e) {}
+        @Override public void onComplete() {}
+    };
+
+    /** Re‑initialise the subject before each iteration. */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        actual = PublishSubject.create();
+        serialized = new SerializedSubject<>(actual);
+        serialized.subscribe(dummyObserver);
+    }
+
+    /** Benchmark for the hot path: emitting a value. */
+    @Benchmark
+    @Threads(4)                     // simulate concurrent producers
+    public void onNext() {
+        serialized.onNext(1);
+    }
+
+    /** Benchmark for error propagation. */
+    @Benchmark
+    @Threads(4)
+    public void onError() {
+        serialized.onError(new RuntimeException("benchmark"));
+    }
+
+    /** Benchmark for completion signalling. */
+    @Benchmark
+    @Threads(4)
+    public void onComplete() {
+        serialized.onComplete();
+    }
+}
+```

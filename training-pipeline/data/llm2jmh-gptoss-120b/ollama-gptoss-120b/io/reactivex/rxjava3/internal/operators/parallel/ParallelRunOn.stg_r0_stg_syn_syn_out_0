@@ -1,0 +1,115 @@
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.parallel.ParallelRunOn}
+ * measuring throughput of items processed through the operator.
+ *
+ * The benchmark creates a finite {@link Flowable} source, splits it into parallel rails,
+ * applies {@code runOn} with a configurable prefetch size and parallelism, then
+ * drains the resulting sequential flow while counting items via a {@link Blackhole}.
+ *
+ * Best‑practice JMH settings are used: warm‑up, measurement iterations,
+ * multiple forks and a time unit of seconds for throughput.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3)
+@State(Scope.Thread)
+public class ParallelRunOnBenchmark {
+
+    /**
+     * Number of parallel rails (parallelism).
+     */
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    /**
+     * Prefetch size for the operator.
+     */
+    @Param({ "32", "128", "512" })
+    public int prefetch;
+
+    /**
+     * Number of items emitted by the source per benchmark iteration.
+     */
+    @Param({ "1000000" })
+    public int itemCount;
+
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a finite source that emits a known number of integers.
+        source = Flowable.range(1, itemCount);
+    }
+
+    @Benchmark
+    public void runOnThroughput(Blackhole bh) throws InterruptedException {
+        // Build the parallel flow, apply runOn, then merge back to sequential.
+        ParallelFlowable<Integer> parallel = source.parallel(parallelism);
+        Flowable<Integer> runOn = parallel.runOn(Schedulers.computation(), prefetch).sequential();
+        // Use a latch to wait for completion without blocking the JMH thread.
+        CountDownLatch latch = new CountDownLatch(1);
+        runOn.subscribe(new DisposableSubscriber<Integer>() {
+
+            @Override
+            public void onNext(Integer t) {
+                // Consume the item via Blackhole to prevent dead‑code elimination.
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are unexpected in this benchmark; rethrow to fail the run.
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        // Wait until the flow finishes processing all items.
+        latch.await();
+    }
+}

@@ -1,0 +1,113 @@
+```java
+package io.reactivex.rxjava3.subjects.benchmark;
+
+import io.reactivex.rxjava3.core.MaybeObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.subjects.MaybeSubject;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link MaybeSubject}.
+ *
+ * The benchmarks focus on the most common operations:
+ *   1. Subscribing a single observer and emitting a success value.
+ *   2. Subscribing a single observer and emitting an error.
+ *   3. Subscribing a single observer and completing without a value.
+ *   4. Adding and removing observers repeatedly.
+ *
+ * All benchmarks run in {@link Mode#Throughput} to measure how many
+ * operations can be performed per time unit. The {@link Blackhole}
+ * is used to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@Threads(4)
+@State(Scope.Thread)
+public class MaybeSubjectBenchmark {
+
+    /** Simple observer that does nothing except hold a reference to the received value/error. */
+    static final class NoOpObserver<T> implements MaybeObserver<T> {
+        volatile T value;
+        volatile Throwable error;
+        volatile boolean completed;
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            // No disposal logic needed for the benchmark
+        }
+
+        @Override
+        public void onSuccess(T t) {
+            value = t;
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            error = e;
+        }
+
+        @Override
+        public void onComplete() {
+            completed = true;
+        }
+    }
+
+    /** Subject used for the subscribe‑and‑emit benchmarks. */
+    private MaybeSubject<Integer> subject;
+
+    /** Observer used for the subscribe‑and‑emit benchmarks. */
+    private NoOpObserver<Integer> observer;
+
+    /** Pre‑created disposable to avoid allocation overhead in the add/remove benchmark. */
+    private MaybeSubject.MaybeDisposable<Integer> disposable;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        subject = MaybeSubject.create();
+        observer = new NoOpObserver<>();
+    }
+
+    @Benchmark
+    public void subscribeAndEmitSuccess(Blackhole bh) {
+        subject.subscribe(observer);
+        subject.onSuccess(42);
+        // Consume the observed value to prevent dead‑code elimination
+        bh.consume(observer.value);
+    }
+
+    @Benchmark
+    public void subscribeAndEmitError(Blackhole bh) {
+        subject.subscribe(observer);
+        subject.onError(new RuntimeException("test"));
+        bh.consume(observer.error);
+    }
+
+    @Benchmark
+    public void subscribeAndComplete(Blackhole bh) {
+        subject.subscribe(observer);
+        subject.onComplete();
+        bh.consume(observer.completed);
+    }
+
+    /**
+     * Benchmark that repeatedly adds and removes observers.
+     * The subject is kept in a terminated state to avoid the cost of emission.
+     */
+    @Benchmark
+    public void addRemoveObservers() {
+        // Create a fresh observer for each iteration to simulate realistic usage
+        NoOpObserver<Integer> tempObserver = new NoOpObserver<>();
+        MaybeSubject.MaybeDisposable<Integer> md = new MaybeSubject.MaybeDisposable<>(tempObserver, subject);
+        // Directly add without going through subscribeActual to isolate add/remove cost
+        subject.add(md);
+        // Immediately remove
+        subject.remove(md);
+    }
+}
+```

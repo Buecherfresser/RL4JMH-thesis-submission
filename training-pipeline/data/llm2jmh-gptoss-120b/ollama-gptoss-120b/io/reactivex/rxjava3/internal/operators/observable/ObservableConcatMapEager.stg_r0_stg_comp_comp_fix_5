@@ -1,0 +1,97 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.util.ErrorMode;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link ObservableConcatMapEager}.
+ *
+ * Measures throughput of the eager concat‑map operator.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class ObservableConcatMapEagerBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        @Param({ "1000", "10000", "100000" })
+        public int sourceSize;
+
+        @Param({ "2", "8", "32" })
+        public int maxConcurrency;
+
+        @Param({ "16", "64", "256" })
+        public int prefetch;
+
+        Observable<Integer> source;
+        Function<Integer, ObservableSource<Integer>> mapper;
+        Scheduler innerScheduler;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Observable.range(1, sourceSize);
+            mapper = v -> Observable.just(v).observeOn(innerScheduler = Schedulers.computation());
+            // Warm up scheduler threads
+            innerScheduler.scheduleDirect(() -> {});
+        }
+
+        static final class CountingObserver implements Observer<Integer> {
+            final CountDownLatch latch;
+            final Blackhole bh;
+            final AtomicLong count = new AtomicLong();
+
+            CountingObserver(CountDownLatch latch, Blackhole bh) {
+                this.latch = latch;
+                this.bh = bh;
+            }
+
+            @Override public void onSubscribe(Disposable d) { }
+
+            @Override public void onNext(Integer t) {
+                count.incrementAndGet();
+                bh.consume(t);
+            }
+
+            @Override public void onError(Throwable e) {
+                latch.countDown();
+                throw new RuntimeException(e);
+            }
+
+            @Override public void onComplete() {
+                latch.countDown();
+            }
+        }
+    }
+
+    @Benchmark
+    public long eagerConcatMapThroughput(BenchmarkState state, Blackhole bh) throws InterruptedException {
+        ObservableConcatMapEager<Integer, Integer> operator =
+                new ObservableConcatMapEager<>(
+                        state.source,
+                        state.mapper,
+                        ErrorMode.IMMEDIATE,
+                        state.maxConcurrency,
+                        state.prefetch);
+
+        CountDownLatch latch = new CountDownLatch(1);
+        BenchmarkState.CountingObserver observer = new BenchmarkState.CountingObserver(latch, bh);
+
+        operator.subscribe(observer);
+        latch.await();
+
+        return observer.count.get();
+    }
+}
+```

@@ -1,0 +1,77 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.flowables.ConnectableFlowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableAutoConnect;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+/**
+ * Benchmark for {@link FlowableAutoConnect}.
+ *
+ * Measures the throughput of subscribing to a FlowableAutoConnect instance.
+ * The benchmark uses a hot source (ConnectableFlowable) that is connected
+ * after the first subscription (numberOfSubscribers = 1). Subsequent
+ * subscriptions only incur the overhead of the operator.
+ *
+ * Best practices applied:
+ * - Warm‑up and measurement iterations.
+ * - Single fork to avoid JVM start‑up noise.
+ * - Use of a reusable no‑op Subscriber to minimise allocation overhead.
+ * - Time unit set to seconds for throughput reporting.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Benchmark)
+public class FlowableAutoConnectBenchmark {
+
+    /** Hot source that emits a finite range of integers. */
+    private ConnectableFlowable<Integer> source;
+
+    /** FlowableAutoConnect wrapper under test. */
+    private Flowable<Integer> autoConnect;
+
+    /** Reusable no‑op subscriber to avoid allocation per operation. */
+    private static final Subscriber<Integer> DUMMY_SUBSCRIBER = new Subscriber<Integer>() {
+        @Override public void onSubscribe(Subscription s) { s.request(Long.MAX_VALUE); }
+        @Override public void onNext(Integer t) { /* no‑op */ }
+        @Override public void onError(Throwable t) { /* no‑op */ }
+        @Override public void onComplete() { /* no‑op */ }
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a ConnectableFlowable that emits 1..1000 and then completes.
+        source = Flowable.range(1, 1000).publish();
+
+        // numberOfSubscribers = 1 triggers immediate connection on first subscribe.
+        // The connection consumer is a no‑op.
+        autoConnect = new FlowableAutoConnect<>(
+                source,
+                1,
+                disposable -> { /* no‑op */ }
+        );
+
+        // Ensure the source is connected before the benchmark starts.
+        // The first subscription will trigger the connection, but we do it explicitly
+        // to avoid measuring the connection cost in the benchmark.
+        source.connect(disposable -> { /* no‑op */ });
+    }
+
+    @Benchmark
+    public void subscribeThroughput() {
+        // Each iteration subscribes a dummy subscriber to the auto‑connected Flowable.
+        // The subscription path goes through FlowableAutoConnect.subscribeActual().
+        autoConnect.subscribe(DUMMY_SUBSCRIBER);
+    }
+}
+```

@@ -1,0 +1,78 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeDelaySubscriptionOtherPublisher;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Publisher;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link MaybeDelaySubscriptionOtherPublisher}.
+ *
+ * The benchmark measures the throughput (operations per second) of subscribing to a {@code Maybe}
+ * that delays its subscription until another {@link Publisher} signals.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Perform all allocations in @Setup to exclude them from the measured time.
+ * - Use Blackhole to consume results and prevent dead-code elimination.
+ * - Configure warm‑up, measurement, forks and time units for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@Threads(1)
+public class MaybeDelaySubscriptionOtherPublisherBenchmark {
+
+    /**
+     * State holding the source {@code Maybe} and the "other" {@link Publisher}.
+     * Each thread gets its own instance to avoid contention.
+     */
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Simple source that emits a single value. */
+        Maybe<Integer> source;
+
+        /** Publisher that triggers the subscription after a short delay. */
+        Publisher<Long> other;
+
+        /** The operator under test. */
+        Maybe<Integer> delayedMaybe;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // A source that immediately succeeds with the value 1.
+            source = Maybe.just(1);
+
+            // An "other" publisher that emits after a tiny asynchronous delay.
+            // Using Flowable.timer to simulate a realistic asynchronous trigger.
+            other = Flowable.timer(1, TimeUnit.MILLISECONDS, Schedulers.single());
+
+            // Build the operator instance manually to avoid extra operator overhead.
+            delayedMaybe = new MaybeDelaySubscriptionOtherPublisher<>(source, other);
+        }
+    }
+
+    /**
+     * Benchmark method that subscribes to the delayed {@code Maybe} and blocks
+     * until the result is available. The result is consumed by {@link Blackhole}
+     * to prevent the JIT from optimizing the call away.
+     *
+     * @param state   the benchmark state containing the prepared operator
+     * @param bh      blackhole to consume the result
+     */
+    @Benchmark
+    public void subscribeAndBlock(BenchmarkState state, Blackhole bh) {
+        // blockingGet will wait for the other Publisher to emit and then for the source Maybe.
+        Integer result = state.delayedMaybe.blockingGet();
+        bh.consume(result);
+    }
+}
+```

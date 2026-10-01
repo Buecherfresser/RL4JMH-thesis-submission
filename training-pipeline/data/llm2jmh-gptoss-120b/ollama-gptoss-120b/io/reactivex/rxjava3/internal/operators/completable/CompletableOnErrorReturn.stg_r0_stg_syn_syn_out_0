@@ -1,0 +1,144 @@
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link CompletableOnErrorReturn}.
+ *
+ * Measures throughput of the operator in two scenarios:
+ *   1. The upstream {@link Completable} completes normally.
+ *   2. The upstream {@link Completable} terminates with an error.
+ *
+ * The benchmark uses {@link Blackhole} to consume the emitted value or terminal signal,
+ * preventing dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class CompletableOnErrorReturnBenchmark {
+
+    /**
+     * Upstream that completes without error.
+     */
+    private CompletableSource sourceSuccess;
+
+    /**
+     * Upstream that fails with a RuntimeException.
+     */
+    private CompletableSource sourceError;
+
+    /**
+     * Simple value supplier used by the operator.
+     */
+    private Function<Throwable, Integer> valueSupplier;
+
+    /**
+     * Operator instance for the successful upstream.
+     */
+    private Maybe<Integer> maybeSuccess;
+
+    /**
+     * Operator instance for the error‑producing upstream.
+     */
+    private Maybe<Integer> maybeError;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        sourceSuccess = Completable.complete();
+        sourceError = Completable.error(new RuntimeException("test"));
+        // constant fallback value
+        valueSupplier = throwable -> 42;
+        maybeSuccess = new CompletableOnErrorReturn<>(sourceSuccess, valueSupplier);
+        maybeError = new CompletableOnErrorReturn<>(sourceError, valueSupplier);
+    }
+
+    @Benchmark
+    public void benchmarkSuccess(Blackhole bh) {
+        maybeSuccess.subscribe(new MaybeObserver<Integer>() {
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                /* no‑op */
+            }
+
+            @Override
+            public void onSuccess(Integer value) {
+                bh.consume(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                bh.consume(e);
+            }
+
+            @Override
+            public void onComplete() {
+                // Completable completed without emitting a value; consume a marker.
+                bh.consume(false);
+            }
+        });
+    }
+
+    @Benchmark
+    public void benchmarkError(Blackhole bh) {
+        maybeError.subscribe(new MaybeObserver<Integer>() {
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                /* no‑op */
+            }
+
+            @Override
+            public void onSuccess(Integer value) {
+                bh.consume(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // The operator converts the error into a success value.
+                bh.consume(e);
+            }
+
+            @Override
+            public void onComplete() {
+                bh.consume(false);
+            }
+        });
+    }
+}

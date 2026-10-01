@@ -1,0 +1,22 @@
+--- a/bench/Primes.java
++++ b/bench/Primes.java
+@@ -7,15 +7,13 @@
+     /** Count primes below {@code limit} via Sieve of Eratosthenes. */
+     public static int count(int limit) {
+         if (limit < 3) return limit == 2 ? 1 : 0;
+-        boolean[] composite = new boolean[limit];
+         int count = 0;
+         for (int i = 2; i < limit; i++) {
+-            if (!composite[i]) {
+-                count++;
+-                for (long j = (long) i * i; j < limit; j += i) {
+-                    composite[(int) j] = true;
+-                }
++            boolean prime = true;
++            for (int d = 2; (long) d * d <= i; d++) {
++                if (i % d == 0) { prime = false; break; }
+             }
++            if (prime) count++;
+         }
+         return count;
+     }

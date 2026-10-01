@@ -1,0 +1,31 @@
+# Qwen3.5-4B supervised fine-tuning. Run only from profiles/qwen-cu128.
+base_model: Qwen/Qwen3.5-4B
+model_family: qwen
+output_dir: outputs/qwen35-4b/sft
+dataset_path: data/sft/sft.jsonl
+seed: 42
+
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  # Qwen3.5 interleaves DeltaNet and full-attention blocks.  The loader verifies these names
+  # against the installed checkpoint before PEFT is created.
+  target_modules: [q_proj, k_proj, v_proj, o_proj, in_proj, out_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: []
+  bias: none
+
+max_seq_len: 6144
+learning_rate: 2.0e-4
+per_device_batch_size: 1
+gradient_accumulation_steps: 8
+num_epochs: 3.0
+packing: false
+completion_only_loss: true
+warmup_ratio: 0.03
+logging_steps: 5
+report_to: none

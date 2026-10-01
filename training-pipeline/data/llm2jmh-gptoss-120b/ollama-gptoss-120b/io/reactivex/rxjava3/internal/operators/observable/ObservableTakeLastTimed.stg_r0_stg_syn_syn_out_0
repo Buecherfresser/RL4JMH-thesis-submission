@@ -1,0 +1,121 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link ObservableTakeLastTimed}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * {@code takeLastTimed} operator when processing a stream of integers.
+ *
+ * Best‑practice notes:
+ * • Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * • Parameters are provided via @Param to explore different configurations.
+ * • Blackhole consumes the emitted items to prevent dead‑code elimination.
+ * • Warm‑up and measurement iterations are kept modest for quick feedback;
+ *   adjust them for more rigorous runs.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableTakeLastTimedBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the upstream source.
+         */
+        @Param({ "1000", "10000", "100000" })
+        public int sourceSize;
+
+        /**
+         * Maximum number of items to retain (count filter).
+         */
+        // Long.MAX_VALUE as string
+        @Param({ "10", "100", "1000", "9223372036854775807" })
+        public long count;
+
+        /**
+         * Time window for retaining items (in milliseconds).
+         */
+        @Param({ "0", "10", "1000" })
+        public long timeMs;
+
+        /**
+         * Buffer size for the internal queue.
+         */
+        @Param({ "128", "1024" })
+        public int bufferSize;
+
+        /**
+         * Whether errors should be delayed until after draining.
+         */
+        @Param({ "true", "false" })
+        public boolean delayError;
+
+        /**
+         * Scheduler used by the operator (trampoline runs on the current thread).
+         */
+        public io.reactivex.rxjava3.core.Scheduler scheduler = Schedulers.trampoline();
+
+        /**
+         * TimeUnit for the time window.
+         */
+        public TimeUnit unit = TimeUnit.MILLISECONDS;
+
+        /**
+         * Pre‑built source Observable to avoid measuring its creation cost.
+         */
+        public ObservableSource<Integer> source;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Observable.range(0, sourceSize);
+        }
+    }
+
+    @Benchmark
+    public void takeLastTimedThroughput(BenchmarkState state, Blackhole bh) {
+        // Build the operator instance directly to isolate its performance.
+        ObservableTakeLastTimed<Integer> operator = new ObservableTakeLastTimed<>(state.source, state.count, state.timeMs, state.unit, state.scheduler, state.bufferSize, state.delayError);
+        // Subscribe and consume all items, forcing the operator to drain.
+        operator.subscribe(bh::consume);
+    }
+}

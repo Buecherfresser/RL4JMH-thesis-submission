@@ -1,0 +1,87 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Scheduler;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.single.SingleUnsubscribeOn}
+ * measuring the throughput of subscribe‑dispose cycles.
+ *
+ * The benchmark creates a simple {@code Single.just(1)} source and applies
+ * {@code unsubscribeOn} with a dedicated {@link Scheduler}. Each benchmark
+ * iteration subscribes to the {@code Single} and immediately disposes the
+ * subscription, forcing the disposal to be scheduled on the provided
+ * scheduler. This mimics the typical usage pattern of the operator and
+ * isolates the overhead introduced by the {@code SingleUnsubscribeOn}
+ * implementation.
+ *
+ * Best practices applied:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state across threads.</li>
+ *   <li>Warm‑up and measurement iterations are configured via JMH defaults (can be overridden on the command line).</li>
+ *   <li>All allocations are performed in {@code @Setup(Level.Trial)} to keep the measured code focused on the operator.</li>
+ *   <li>Blackhole is used to consume the result and prevent dead‑code elimination.</li>
+ *   <li>Throughput mode reports operations per second, which is the most relevant metric for subscribe‑dispose cycles.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class SingleUnsubscribeOnBenchmark {
+
+    /** Scheduler used by the operator; a single‑threaded scheduler isolates the disposal work. */
+    private Scheduler scheduler;
+
+    /** The source {@code Single} that emits a constant value. */
+    private Single<Integer> source;
+
+    /** The {@code Single} wrapped with {@code unsubscribeOn}. */
+    private Single<Integer> singleWithUnsubscribeOn;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a dedicated single‑threaded scheduler to avoid interference from other benchmarks.
+        scheduler = Schedulers.single();
+
+        // Simple source that completes immediately.
+        source = Single.just(1);
+
+        // Apply the operator under test.
+        singleWithUnsubscribeOn = source.unsubscribeOn(scheduler);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Shut down the scheduler to release resources.
+        scheduler.shutdown();
+    }
+
+    /**
+     * Benchmark that subscribes to the {@code Single} and immediately disposes the subscription.
+     * The disposal is scheduled on the provided {@link Scheduler}, exercising the
+     * {@code SingleUnsubscribeOn} logic.
+     *
+     * @param bh Blackhole to consume the disposable and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void subscribeAndDispose(Blackhole bh) {
+        // Subscribe with no-op callbacks; the returned Disposable is used for disposal.
+        // The lambda bodies are empty because we only care about the subscription/disposal overhead.
+        var disposable = singleWithUnsubscribeOn.subscribe(
+                v -> { /* ignore success */ },
+                e -> { /* ignore error */ });
+
+        // Immediately dispose; the actual disposal work will be scheduled on the scheduler.
+        disposable.dispose();
+
+        // Consume the disposable to avoid dead‑code elimination.
+        bh.consume(disposable);
+    }
+}
+```

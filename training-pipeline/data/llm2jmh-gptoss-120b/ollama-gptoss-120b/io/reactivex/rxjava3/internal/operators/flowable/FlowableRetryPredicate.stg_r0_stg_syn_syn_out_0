@@ -1,0 +1,123 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableRetryPredicate}.
+ * Measures the throughput of a Flowable that retries on a specific exception
+ * using a predicate. The benchmark runs in {@link Mode#Throughput} and reports
+ * operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableRetryPredicateBenchmark {
+
+    /**
+     * Number of items emitted before an artificial error is introduced.
+     */
+    @Param({ "1000", "10000" })
+    public int itemCount;
+
+    /**
+     * How many times the source may be retried.
+     */
+    @Param({ "1", "5", "10" })
+    public int retryCount;
+
+    /**
+     * Predicate that decides whether to retry on the given Throwable.
+     */
+    private Predicate<Throwable> retryPredicate;
+
+    /**
+     * Source Flowable that emits {@code itemCount} items and then fails.
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * Counter to ensure the subscriber does not get optimized away.
+     */
+    private final AtomicInteger consumed = new AtomicInteger();
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Predicate that retries only on RuntimeException.
+        retryPredicate = throwable -> throwable instanceof RuntimeException;
+        // Build a source that emits a range of integers and then throws.
+        source = Flowable.range(1, itemCount).concatWith(Flowable.error(new RuntimeException("forced failure")));
+    }
+
+    /**
+     * Benchmark method that subscribes to the Flowable with retry logic.
+     * The subscriber consumes all items and discards them via Blackhole.
+     */
+    @Benchmark
+    public void retryPredicateThroughput(Blackhole bh) {
+        // Reset the consumed counter for each invocation.
+        consumed.set(0);
+        source.retryWhen(errors -> errors.zipWith(Flowable.range(1, retryCount + 1), (err, attempt) -> {
+            // Apply the predicate; if it returns false, propagate the error.
+            if (!retryPredicate.test(err)) {
+                throw new RuntimeException(err);
+            }
+            // Otherwise, retry by emitting a dummy item.
+            return attempt;
+        }).flatMap(// trigger retry without emitting items
+        attempt -> Flowable.empty())).subscribe(new DisposableSubscriber<Integer>() {
+
+            @Override
+            public void onNext(Integer integer) {
+                // Consume the value to prevent dead code elimination.
+                consumed.incrementAndGet();
+                bh.consume(integer);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are expected after retries are exhausted.
+                bh.consume(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // No-op.
+            }
+        });
+    }
+}

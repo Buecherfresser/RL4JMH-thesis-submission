@@ -1,0 +1,1337 @@
+diff --git a/org/streaminer/stream/avg/ExponentialMovingAverage.java b/org/streaminer/stream/avg/ExponentialMovingAverage.java
+index 2e68bc3..1153a7e 100644
+--- a/org/streaminer/stream/avg/ExponentialMovingAverage.java
++++ b/org/streaminer/stream/avg/ExponentialMovingAverage.java
+@@ -42,7 +42,7 @@ public class ExponentialMovingAverage implements IAverage {
+             this.decay = 1 - 1. / window;
+     }
+ 
+-    public synchronized void clear() {
++    public synchronized void clear() { org.streaminer.stream.jmhbench.MutationSwitch.tick(1);
+         weight = 0;
+         sum = 0;
+         sumSquares = 0;
+@@ -70,7 +70,7 @@ public class ExponentialMovingAverage implements IAverage {
+     /**
+      * @return the number of measurements recorded
+      */
+-    public int getCount() {
++    public int getCount() { org.streaminer.stream.jmhbench.MutationSwitch.tick(20);
+         return count;
+     }
+ 
+diff --git a/org/streaminer/stream/avg/MovingAverage.java b/org/streaminer/stream/avg/MovingAverage.java
+index 3c91052..b5f0c03 100644
+--- a/org/streaminer/stream/avg/MovingAverage.java
++++ b/org/streaminer/stream/avg/MovingAverage.java
+@@ -35,7 +35,7 @@ public class MovingAverage implements IAverage {
+         }
+     }
+  
+-    public double getAverage() {
++    public double getAverage() { org.streaminer.stream.jmhbench.MutationSwitch.tick(39);
+         if (window.isEmpty()) return 0; // technically the average is undefined
+         return sum / window.size();
+     }
+diff --git a/org/streaminer/stream/cardinality/AdaptiveCounting.java b/org/streaminer/stream/cardinality/AdaptiveCounting.java
+index 91296c9..675e782 100644
+--- a/org/streaminer/stream/cardinality/AdaptiveCounting.java
++++ b/org/streaminer/stream/cardinality/AdaptiveCounting.java
+@@ -59,7 +59,7 @@ public class AdaptiveCounting extends LogLog {
+     }
+ 
+     @Override
+-    public boolean offer(Object o) {
++    public boolean offer(Object o) { org.streaminer.stream.jmhbench.MutationSwitch.tick(40);
+         boolean modified = false;
+ 
+         long x = Lookup3Hash.lookup3ycs64(o.toString());
+diff --git a/org/streaminer/stream/cardinality/RegisterSet.java b/org/streaminer/stream/cardinality/RegisterSet.java
+index b69f32b..d5a1626 100644
+--- a/org/streaminer/stream/cardinality/RegisterSet.java
++++ b/org/streaminer/stream/cardinality/RegisterSet.java
+@@ -47,12 +47,12 @@ public class RegisterSet
+     }
+ 
+     public static int getBits(int count)
+-    {
++    { org.streaminer.stream.jmhbench.MutationSwitch.tick(2);
+         return count / LOG2_BITS_PER_WORD;
+     }
+ 
+     public static int getSizeForCount(int count)
+-    {
++    { org.streaminer.stream.jmhbench.MutationSwitch.tick(21);
+         int bits = getBits(count);
+         if (bits == 0)
+         {
+diff --git a/org/streaminer/stream/change/AbsoluteChange.java b/org/streaminer/stream/change/AbsoluteChange.java
+index 8460331..0a016c0 100644
+--- a/org/streaminer/stream/change/AbsoluteChange.java
++++ b/org/streaminer/stream/change/AbsoluteChange.java
+@@ -37,7 +37,7 @@ public class AbsoluteChange extends AbstractChange {
+         }
+     }
+     
+-    public List<Long> getDeltoids(int thresh) {
++    public List<Long> getDeltoids(int thresh) { org.streaminer.stream.jmhbench.MutationSwitch.tick(3);
+         long guess, hash;
+         int testval = 0;
+         List<Long> results = new ArrayList<Long>();
+diff --git a/org/streaminer/stream/change/CusumNP.java b/org/streaminer/stream/change/CusumNP.java
+index 9383e4f..80da9f8 100644
+--- a/org/streaminer/stream/change/CusumNP.java
++++ b/org/streaminer/stream/change/CusumNP.java
+@@ -32,7 +32,7 @@ public class CusumNP extends AbstractCusum {
+     
+     
+     @Override
+-    protected double computeScore(double value) {
++    protected double computeScore(double value) { org.streaminer.stream.jmhbench.MutationSwitch.tick(22);
+         // compute the mean
+         double mean;
+         if (lastValuesCount > 0) {
+@@ -57,7 +57,7 @@ public class CusumNP extends AbstractCusum {
+     }
+ 
+     @Override
+-    protected void resetScore() {
++    protected void resetScore() { org.streaminer.stream.jmhbench.MutationSwitch.tick(41);
+         lastValueIndex  = 0;
+         lastValuesCount = 0;
+     }
+diff --git a/org/streaminer/stream/classifier/AROWClassifier.java b/org/streaminer/stream/classifier/AROWClassifier.java
+index 5d15be0..400951b 100644
+--- a/org/streaminer/stream/classifier/AROWClassifier.java
++++ b/org/streaminer/stream/classifier/AROWClassifier.java
+@@ -41,7 +41,7 @@ public class AROWClassifier extends SimpleClassifier<Boolean> {
+     }
+ 
+     @Override
+-    public Boolean predict(double[] features) {
++    public Boolean predict(double[] features) { org.streaminer.stream.jmhbench.MutationSwitch.tick(23);
+         if (weights == null || variance == null) {
+             init(features.length);
+         }
+@@ -53,7 +53,7 @@ public class AROWClassifier extends SimpleClassifier<Boolean> {
+     }
+ 
+     @Override
+-    public void learn(Boolean label, double[] features) {
++    public void learn(Boolean label, double[] features) { org.streaminer.stream.jmhbench.MutationSwitch.tick(42);
+         if (weights == null || variance == null) {
+             init(features.length);
+         }
+diff --git a/org/streaminer/stream/classifier/tree/Range.java b/org/streaminer/stream/classifier/tree/Range.java
+index 2ebf056..5a5771c 100644
+--- a/org/streaminer/stream/classifier/tree/Range.java
++++ b/org/streaminer/stream/classifier/tree/Range.java
+@@ -20,7 +20,7 @@ public class Range {
+ 		this.max = max;
+ 	}
+ 	
+-	public boolean includes( Double d ){
++	public boolean includes( Double d ){ org.streaminer.stream.jmhbench.MutationSwitch.tick(4);
+ 		return min < d && d <= max;
+ 	}
+ }
+\ No newline at end of file
+diff --git a/org/streaminer/stream/clustering/KMeans.java b/org/streaminer/stream/clustering/KMeans.java
+index 6c1947a..90ff128 100644
+--- a/org/streaminer/stream/clustering/KMeans.java
++++ b/org/streaminer/stream/clustering/KMeans.java
+@@ -43,7 +43,7 @@ public class KMeans implements IClusterer, Serializable {
+     }
+ 
+     @Override
+-    public Integer classify(double[] features) {
++    public Integer classify(double[] features) { org.streaminer.stream.jmhbench.MutationSwitch.tick(5);
+         if (!this.isReady()) {
+             throw new IllegalStateException("KMeans is not ready yet");
+         }
+@@ -73,7 +73,7 @@ public class KMeans implements IClusterer, Serializable {
+     }
+ 
+     @Override
+-    public double[] distribution(double[] features) {
++    public double[] distribution(double[] features) { org.streaminer.stream.jmhbench.MutationSwitch.tick(24);
+         if (!this.isReady()) {
+             throw new IllegalStateException("KMeans is not ready yet");
+         }
+diff --git a/org/streaminer/stream/clustering/birch/CFEntry.java b/org/streaminer/stream/clustering/birch/CFEntry.java
+index ac35bfe..c3cf166 100644
+--- a/org/streaminer/stream/clustering/birch/CFEntry.java
++++ b/org/streaminer/stream/clustering/birch/CFEntry.java
+@@ -80,7 +80,7 @@ public class CFEntry {
+ 			this.indexList.add(i);
+ 	}
+ 	
+-	protected ArrayList<Integer> getIndexList() {
++	protected ArrayList<Integer> getIndexList() { org.streaminer.stream.jmhbench.MutationSwitch.tick(43);
+ 		return indexList;
+ 	}
+ 	
+diff --git a/org/streaminer/stream/data/DataImpl.java b/org/streaminer/stream/data/DataImpl.java
+index c5f50fd..0f6b7b1 100644
+--- a/org/streaminer/stream/data/DataImpl.java
++++ b/org/streaminer/stream/data/DataImpl.java
+@@ -59,7 +59,7 @@ public class DataImpl extends LinkedHashMap<String, Serializable> implements Dat
+      * @return 
+      * @see stream.Measurable#getByteSize()
+      */
+-    public double getByteSize() {
++    public double getByteSize() { org.streaminer.stream.jmhbench.MutationSwitch.tick(44);
+         double size = 0.0d;
+ 
+         for (String key : keySet()) {
+diff --git a/org/streaminer/stream/data/DataUtils.java b/org/streaminer/stream/data/DataUtils.java
+index de25d4e..83a2969 100644
+--- a/org/streaminer/stream/data/DataUtils.java
++++ b/org/streaminer/stream/data/DataUtils.java
+@@ -50,7 +50,7 @@ public class DataUtils {
+ 	 * @param item
+ 	 * @return
+ 	 */
+-	public final static Set<String> getKeys(Data item) {
++	public final static Set<String> getKeys(Data item) { org.streaminer.stream.jmhbench.MutationSwitch.tick(6);
+ 		Set<String> set = new LinkedHashSet<String>();
+ 		for (String key : item.keySet()) {
+ 			if (!isSpecial(key) && !isHidden(key))
+@@ -66,7 +66,7 @@ public class DataUtils {
+ 	 * @param item
+ 	 * @return
+ 	 */
+-	public final static Set<String> getSpecialKeys(Data item) {
++	public final static Set<String> getSpecialKeys(Data item) { org.streaminer.stream.jmhbench.MutationSwitch.tick(25);
+ 		Set<String> set = new LinkedHashSet<String>();
+ 		for (String key : item.keySet())
+ 			if (isSpecial(key) && !isHidden(key))
+diff --git a/org/streaminer/stream/entropy/EntropyExact.java b/org/streaminer/stream/entropy/EntropyExact.java
+index 68033e6..645956b 100644
+--- a/org/streaminer/stream/entropy/EntropyExact.java
++++ b/org/streaminer/stream/entropy/EntropyExact.java
+@@ -39,11 +39,11 @@ public class EntropyExact implements IEntropy {
+         data = new HashMap<String, Double>();
+     }
+     
+-    public void push(byte[] b, int inc) {
++    public void push(byte[] b, int inc) { org.streaminer.stream.jmhbench.MutationSwitch.tick(7);
+         data.put(Arrays.toString(b), (double)inc);
+     }
+     
+-    public double entropy() {
++    public double entropy() { org.streaminer.stream.jmhbench.MutationSwitch.tick(26);
+         int hm = 0;
+         double size = 0.0;
+         
+diff --git a/org/streaminer/stream/entropy/EntropySketch.java b/org/streaminer/stream/entropy/EntropySketch.java
+index d100bfe..f3e0357 100644
+--- a/org/streaminer/stream/entropy/EntropySketch.java
++++ b/org/streaminer/stream/entropy/EntropySketch.java
+@@ -65,7 +65,7 @@ public class EntropySketch implements IEntropy {
+      * @param b The element to be added
+      * @param inc How many times the element occurred
+      */
+-    public void push(byte[] b, int inc) {
++    public void push(byte[] b, int inc) { org.streaminer.stream.jmhbench.MutationSwitch.tick(45);
+         long it = hasher.hash64(b);
+         
+         count += inc;
+diff --git a/org/streaminer/stream/eval/ConfusionMatrix.java b/org/streaminer/stream/eval/ConfusionMatrix.java
+index 873a9f7..6f1575d 100644
+--- a/org/streaminer/stream/eval/ConfusionMatrix.java
++++ b/org/streaminer/stream/eval/ConfusionMatrix.java
+@@ -1,340 +1,340 @@
+-package org.streaminer.stream.eval;
+-
+-import java.text.DecimalFormat;
+-import java.util.ArrayList;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Map;
+-
+-/**
+- * <p>This is a data structure for dealing with label-pair-relations. For statistical
+- * information on a per-label-base there are methods which return instance(s) of
+- * {@link TableOfConfusion}. That class has methods to calculate values like Precision, Recall, [...].</p>
+- *
+- * <p>Look at http://en.wikipedia.org/wiki/Confusion_matrix for detailed descriptions.</p>
+- *
+- * <p>Although there is a method for adding a label or a list of labels to the existing labels, it is highly recommended
+- * to use it as rare as possible, as it requires that (internally) the array storing the label-combination-counts has to 
+- * be copied to a new array which then replaces the old array. Instead, use the constructor with a list of labels as argument,
+- * where that list should contain as much labels as possible so that the need for adding labels is at a minimum frequency.
+- * However, if the labels are not known in advance, using {@link #addLabels(java.util.List)} is preferable to
+- * {@link #addLabel(java.lang.Object)} as there are fewer array copy operations needed with the first mentioned method.</p>
+- *
+- * @param T the type of the labels
+- * @author Benedikt Kulmann, Lukas Kalabis
+- * @see TableOfConfusion
+- */
+-public final class ConfusionMatrix<T> {
+-
+-	/**
+-	 * The list of all labels. Indices refer to the {@link #confusionMatrix}.
+-	 */
+-	private List<T> labels;
+-
+-	/**
+-	 * <p>Array which stores the counts of classification instances (pairs of true and predicted labels)</p>
+-	 *
+-	 * <p>The first dimension represents the true labels while the second dimension represents the predicted labels.</p>
+-	 */
+-	private long[][] confusionMatrix;
+-
+-	/**
+-	 * Creates a new ConfusionMatrix instance with an empty list of labels. Don't use
+-	 * this constructor if it is possible to construct a list of possible labels in advance.
+-	 */
+-	public ConfusionMatrix() {
+-		this(new ArrayList<T>());
+-	}
+-
+-	/**
+-	 * Creates a new ConfusionMatrix instance.
+-	 *
+-	 * @param labels Labels to maintain a label-pair-combination-counter for.
+-	 */
+-	public ConfusionMatrix(List<T> labels) {
+-		this.labels = labels;
+-		this.confusionMatrix = new long[labels.size()][labels.size()];
+-	}
+-
+-	/**
+-	 * <p>Adds the provided label to the list of labels. Afterwards it is necessary to create
+-	 * a new array for the internal counters so the usage of this method is expensive. Try to
+-	 * add as much labels as possible at a time by using {@link #addLabels(java.util.List)} or,
+-	 * which is even better, at object creation time.</p>
+-	 *
+-	 * <p>Duplicates are ignored.</p>
+-	 *
+-	 * @param additionalLabel The label to add to the internal list of labels
+-	 */
+-	public void addLabel(T additionalLabel) {
+-		final List<T> additionalLabelAsList = new ArrayList<T>();
+-		additionalLabelAsList.add(additionalLabel);
+-		addLabels(additionalLabelAsList);
+-	}
+-
+-	/**
+-	 * <p>Adds the provided list of labels to the internal list of labels. Afterwards it is necessary to create
+-	 * a new array for the internal counters so the usage of this method is expensive. Try to
+-	 * add as much labels as possible at object creation time.</p>
+-	 *
+-	 * <p>Duplicates are ignored.</p>
+-	 *
+-	 * @param additionalLabels The labels to add to the internal list of labels
+-	 */
+-	public void addLabels(List<T> additionalLabels) {
+-		// construct new list of labels
+-		final List<T> modAdditionalLabels = new ArrayList<T>(additionalLabels);
+-		modAdditionalLabels.removeAll(labels);
+-		labels.addAll(modAdditionalLabels);
+-
+-		// construct new confusion matrix
+-		final long[][] newConfusionMatrix = new long[labels.size()][labels.size()];
+-		for(int i=0; i<confusionMatrix.length; i++) {
+-			System.arraycopy(confusionMatrix[i], 0, newConfusionMatrix[i], 0, confusionMatrix.length);
+-		}
+-		confusionMatrix = newConfusionMatrix;
+-	}
+-
+-	/**
+-	 * Returns the list of labels this {@link ConfusionMatrix} maintains counters for.
+-	 * @return The list of labels this {@link ConfusionMatrix} maintains counters for.
+-	 */
+-	public List<T> getLabels() {
+-		return labels;
+-	}
+-
+-	/**
+-	 * <p>Adds a classification instance (true and predicted label) to this {@link ConfusionMatrix}.</p>
+-	 *
+-	 * <p>Each label which didn't exist previously will be added within this method automatically (which is
+-	 * expensive and to be avoided).</p>
+-	 *
+-	 * @param truth The true label
+-	 * @param prediction The predicted label
+-	 */
+-	public void add(T truth, T prediction) {
+-		int indexOfTruth = labels.indexOf(truth);
+-		if(indexOfTruth == -1) {
+-			indexOfTruth = labels.size();
+-			addLabel(truth);
+-		}
+-
+-		int indexOfPrediction = labels.indexOf(prediction);
+-		if(indexOfPrediction == -1) {
+-			indexOfPrediction = labels.size();
+-			addLabel(prediction);
+-		}
+-
+-		confusionMatrix[indexOfTruth][indexOfPrediction]++;
+-	}
+-
+-	/**
+-	 * Returns a map which contains a {@link TableOfConfusion} per label.
+-	 *
+-	 * @return a map of {@link TableOfConfusion} instances
+-	 * @see #getTableOfConfusion(java.lang.Object)
+-	 */
+-	public Map<T, TableOfConfusion> getTablesOfConfusion() {
+-		final Map<T, TableOfConfusion> tablesOfConfusion = new HashMap<T, TableOfConfusion>();
+-		for(T label : labels) {
+-			tablesOfConfusion.put(label, getTableOfConfusion(label));
+-		}
+-		return tablesOfConfusion;
+-	}
+-
+-	/**
+-	 * Constructs and returns the {@link TableOfConfusion} for the provided label.
+-	 *
+-	 * @param label The label to construct a {@link TableOfConfusion} for
+-	 * @return A {@link TableOfConfusion} instance for the provided label
+-	 *
+-	 * @see TableOfConfusion
+-	 */
+-	public TableOfConfusion getTableOfConfusion(T label) {
+-		final TableOfConfusion tableOfConfusion = new TableOfConfusion();
+-		tableOfConfusion.addTruePositive(getTruePositiveCount(label));
+-		tableOfConfusion.addTrueNegative(getTrueNegativeCount(label));
+-		tableOfConfusion.addFalsePositive(getFalsePositiveCount(label));
+-		tableOfConfusion.addFalseNegative(getFalseNegativeCount(label));
+-		return tableOfConfusion;
+-	}
+-
+-	/**
+-	 * Calculates and returns the overall accuracy for this confusion matrix in range [0,1].
+-	 *
+-	 * @return the overall accuracy for this confusion matrix in range [0,1]
+-	 */
+-	public double calculateAccuracy() {
+-		double correct = 0.0;
+-		for(int i=0; i<labels.size(); i++) {
+-			correct += confusionMatrix[i][i];
+-		}
+-		double divisor = 0.0;
+-		for(int i=0; i<labels.size(); i++) {
+-			for(int j=0; j<labels.size(); j++) {
+-				divisor += confusionMatrix[i][j];
+-			}
+-		}
+-		if(divisor == 0) {
+-			return Double.NaN;
+-		} else {
+-			return correct / divisor;
+-		}
+-	}
+-
+-	/**
+-	 * Returns the class size as a weight for per-class-calculations.
+-	 * @param label The label to get the weight for
+-	 * @return the class size as a weight for per-class-calculations.
+-	 */
+-	public long getWeightForLabel(T label) {
+-		final int indexOfLabel = labels.indexOf(label);
+-		long weight = 0L;
+-		for(int i=0; i<labels.size(); i++) {
+-			if(i == indexOfLabel) {
+-				continue;
+-			}
+-			weight += confusionMatrix[indexOfLabel][i];
+-		}
+-		return weight;
+-	}
+-
+-	/**
+-	 * Returns the number of "true positive" instances for the provided label.
+-	 *
+-	 * @param label The label to return the counted number of "true positive" instances for
+-	 * @return The number of "true positive" instances for the provided label
+-	 */
+-	private long getTruePositiveCount(T label) {
+-		final int indexOfLabel = labels.indexOf(label);
+-		return confusionMatrix[indexOfLabel][indexOfLabel];
+-	}
+-
+-	/**
+-	 * Returns the number of "true negative" instances for the provided label.
+-	 *
+-	 * @param label The label to return the counted number of "true negative" instances for
+-	 * @return The number of "true negative" instances for the provided label
+-	 */
+-	private long getTrueNegativeCount(T label) {
+-		final int indexOfLabel = labels.indexOf(label);
+-
+-		long trueNegativeCount = 0L;
+-		for(int i=0; i<labels.size(); i++) {
+-			if(i == indexOfLabel) {
+-				continue;
+-			}
+-			for(int j=0; j<labels.size(); j++) {
+-				if(j == indexOfLabel) {
+-					continue;
+-				}
+-				trueNegativeCount += confusionMatrix[i][j];
+-			}
+-		}
+-		return trueNegativeCount;
+-	}
+-
+-	/**
+-	 * Returns the number of "false positive" instances for the provided label.
+-	 *
+-	 * @param label The label to return the counted number of "false positive" instances for
+-	 * @return The number of "false positive" instances for the provided label
+-	 */
+-	private long getFalsePositiveCount(T label) {
+-		final int indexOfLabel = labels.indexOf(label);
+-
+-		long falsePositiveCount = 0L;
+-		for(int i=0; i<labels.size(); i++) {
+-			if(i == indexOfLabel) {
+-				continue;
+-			} else {
+-				falsePositiveCount += confusionMatrix[indexOfLabel][i];
+-			}
+-		}
+-		return falsePositiveCount;
+-	}
+-
+-	/**
+-	 * Returns the number of "false negative" instances for the provided label.
+-	 *
+-	 * @param label The label to return the counted number of "false negative" instances for
+-	 * @return The number of "false negative" instances for the provided label
+-	 */
+-	private long getFalseNegativeCount(T label) {
+-		final int indexOfLabel = labels.indexOf(label);
+-
+-		long falseNegativeCount = 0L;
+-		for(int i=0; i<labels.size(); i++) {
+-			if(i == indexOfLabel) {
+-				continue;
+-			} else {
+-				falseNegativeCount += confusionMatrix[i][indexOfLabel];
+-			}
+-		}
+-		return falseNegativeCount;
+-	}
+-
+-	/**
+-	 * {@inheritDoc}
+-	 */
+-	@Override
+-	public String toString() {
+-		final String lineSeparator = System.getProperty("line.separator");
+-		StringBuilder sb = new StringBuilder("ConfusionMatrix (rows=truth,columns=prediction)").append(lineSeparator).append("values:").append(lineSeparator);
+-		for(int i=0; i<labels.size(); i++) {
+-			sb.append(labels.get(i));
+-			for(int j=0; j<labels.size(); j++) {
+-				sb.append(" ").append(confusionMatrix[i][j]);
+-			}
+-			sb.append(lineSeparator);
+-		}
+-		sb.append(lineSeparator).append("results:").append(lineSeparator);
+-
+-		for(T label : labels) {
+-			sb.append(label).append(lineSeparator).append(getTableOfConfusion(label));
+-		}
+-		return sb.toString();
+-	}
+-	
+-	
+-	public String toHtml(){
+-		StringBuilder b = new StringBuilder( "<table class=\"confusionMatrix\">" );
+-		b.append( "<tr>" );
+-		b.append( "<td colspan=\"2\" rowspan=\"2\" style=\"border: none;\"></td><th colspan=\"" + labels.size() + "\">prediction</th>" );
+-		b.append( "</tr>");
+-		b.append( "<tr>" );
+-		for( T l : labels ){
+-			b.append( "<th>" + l.toString() + "</th>" );
+-		}
+-		
+-		b.append( "<th>Precision</th>" );
+-		b.append( "</tr>" );
+-		DecimalFormat fmt = new DecimalFormat( "0.00 %" );
+-		
+-		for(int i=0; i<labels.size(); i++) {
+-			T cur = labels.get( i );
+-			b.append( "<tr>" );
+-			if( i == 0 )
+-				b.append( "<th rowspan=\"" + labels.size() + "\">true</th>" );
+-			
+-			b.append( "<th>" + labels.get(i) + "</th>" );
+-			Double tp = 0.0d;
+-			Double fp = 0.0d;
+-			for(int j=0; j<labels.size(); j++){
+-				T against = labels.get( j );
+-				if( cur != against )
+-					fp += confusionMatrix[i][j];
+-				else
+-					tp += confusionMatrix[i][j];
+-				b.append(" <td>").append(confusionMatrix[i][j]).append( "</td>" );
+-			}
+-			b.append( "<td><nobr>" + fmt.format( tp / (tp+fp) ) + "</nobr></td>" );
+-			
+-			b.append( "</tr>\n" );
+-		}
+-		
+-		
+-		b.append( "</table>" );
+-		return b.toString();
+-	}
++package org.streaminer.stream.eval;
++
++import java.text.DecimalFormat;
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++/**
++ * <p>This is a data structure for dealing with label-pair-relations. For statistical
++ * information on a per-label-base there are methods which return instance(s) of
++ * {@link TableOfConfusion}. That class has methods to calculate values like Precision, Recall, [...].</p>
++ *
++ * <p>Look at http://en.wikipedia.org/wiki/Confusion_matrix for detailed descriptions.</p>
++ *
++ * <p>Although there is a method for adding a label or a list of labels to the existing labels, it is highly recommended
++ * to use it as rare as possible, as it requires that (internally) the array storing the label-combination-counts has to 
++ * be copied to a new array which then replaces the old array. Instead, use the constructor with a list of labels as argument,
++ * where that list should contain as much labels as possible so that the need for adding labels is at a minimum frequency.
++ * However, if the labels are not known in advance, using {@link #addLabels(java.util.List)} is preferable to
++ * {@link #addLabel(java.lang.Object)} as there are fewer array copy operations needed with the first mentioned method.</p>
++ *
++ * @param T the type of the labels
++ * @author Benedikt Kulmann, Lukas Kalabis
++ * @see TableOfConfusion
++ */
++public final class ConfusionMatrix<T> {
++
++	/**
++	 * The list of all labels. Indices refer to the {@link #confusionMatrix}.
++	 */
++	private List<T> labels;
++
++	/**
++	 * <p>Array which stores the counts of classification instances (pairs of true and predicted labels)</p>
++	 *
++	 * <p>The first dimension represents the true labels while the second dimension represents the predicted labels.</p>
++	 */
++	private long[][] confusionMatrix;
++
++	/**
++	 * Creates a new ConfusionMatrix instance with an empty list of labels. Don't use
++	 * this constructor if it is possible to construct a list of possible labels in advance.
++	 */
++	public ConfusionMatrix() {
++		this(new ArrayList<T>());
++	}
++
++	/**
++	 * Creates a new ConfusionMatrix instance.
++	 *
++	 * @param labels Labels to maintain a label-pair-combination-counter for.
++	 */
++	public ConfusionMatrix(List<T> labels) {
++		this.labels = labels;
++		this.confusionMatrix = new long[labels.size()][labels.size()];
++	}
++
++	/**
++	 * <p>Adds the provided label to the list of labels. Afterwards it is necessary to create
++	 * a new array for the internal counters so the usage of this method is expensive. Try to
++	 * add as much labels as possible at a time by using {@link #addLabels(java.util.List)} or,
++	 * which is even better, at object creation time.</p>
++	 *
++	 * <p>Duplicates are ignored.</p>
++	 *
++	 * @param additionalLabel The label to add to the internal list of labels
++	 */
++	public void addLabel(T additionalLabel) { org.streaminer.stream.jmhbench.MutationSwitch.tick(8);
++		final List<T> additionalLabelAsList = new ArrayList<T>();
++		additionalLabelAsList.add(additionalLabel);
++		addLabels(additionalLabelAsList);
++	}
++
++	/**
++	 * <p>Adds the provided list of labels to the internal list of labels. Afterwards it is necessary to create
++	 * a new array for the internal counters so the usage of this method is expensive. Try to
++	 * add as much labels as possible at object creation time.</p>
++	 *
++	 * <p>Duplicates are ignored.</p>
++	 *
++	 * @param additionalLabels The labels to add to the internal list of labels
++	 */
++	public void addLabels(List<T> additionalLabels) { org.streaminer.stream.jmhbench.MutationSwitch.tick(27);
++		// construct new list of labels
++		final List<T> modAdditionalLabels = new ArrayList<T>(additionalLabels);
++		modAdditionalLabels.removeAll(labels);
++		labels.addAll(modAdditionalLabels);
++
++		// construct new confusion matrix
++		final long[][] newConfusionMatrix = new long[labels.size()][labels.size()];
++		for(int i=0; i<confusionMatrix.length; i++) {
++			System.arraycopy(confusionMatrix[i], 0, newConfusionMatrix[i], 0, confusionMatrix.length);
++		}
++		confusionMatrix = newConfusionMatrix;
++	}
++
++	/**
++	 * Returns the list of labels this {@link ConfusionMatrix} maintains counters for.
++	 * @return The list of labels this {@link ConfusionMatrix} maintains counters for.
++	 */
++	public List<T> getLabels() {
++		return labels;
++	}
++
++	/**
++	 * <p>Adds a classification instance (true and predicted label) to this {@link ConfusionMatrix}.</p>
++	 *
++	 * <p>Each label which didn't exist previously will be added within this method automatically (which is
++	 * expensive and to be avoided).</p>
++	 *
++	 * @param truth The true label
++	 * @param prediction The predicted label
++	 */
++	public void add(T truth, T prediction) {
++		int indexOfTruth = labels.indexOf(truth);
++		if(indexOfTruth == -1) {
++			indexOfTruth = labels.size();
++			addLabel(truth);
++		}
++
++		int indexOfPrediction = labels.indexOf(prediction);
++		if(indexOfPrediction == -1) {
++			indexOfPrediction = labels.size();
++			addLabel(prediction);
++		}
++
++		confusionMatrix[indexOfTruth][indexOfPrediction]++;
++	}
++
++	/**
++	 * Returns a map which contains a {@link TableOfConfusion} per label.
++	 *
++	 * @return a map of {@link TableOfConfusion} instances
++	 * @see #getTableOfConfusion(java.lang.Object)
++	 */
++	public Map<T, TableOfConfusion> getTablesOfConfusion() {
++		final Map<T, TableOfConfusion> tablesOfConfusion = new HashMap<T, TableOfConfusion>();
++		for(T label : labels) {
++			tablesOfConfusion.put(label, getTableOfConfusion(label));
++		}
++		return tablesOfConfusion;
++	}
++
++	/**
++	 * Constructs and returns the {@link TableOfConfusion} for the provided label.
++	 *
++	 * @param label The label to construct a {@link TableOfConfusion} for
++	 * @return A {@link TableOfConfusion} instance for the provided label
++	 *
++	 * @see TableOfConfusion
++	 */
++	public TableOfConfusion getTableOfConfusion(T label) {
++		final TableOfConfusion tableOfConfusion = new TableOfConfusion();
++		tableOfConfusion.addTruePositive(getTruePositiveCount(label));
++		tableOfConfusion.addTrueNegative(getTrueNegativeCount(label));
++		tableOfConfusion.addFalsePositive(getFalsePositiveCount(label));
++		tableOfConfusion.addFalseNegative(getFalseNegativeCount(label));
++		return tableOfConfusion;
++	}
++
++	/**
++	 * Calculates and returns the overall accuracy for this confusion matrix in range [0,1].
++	 *
++	 * @return the overall accuracy for this confusion matrix in range [0,1]
++	 */
++	public double calculateAccuracy() {
++		double correct = 0.0;
++		for(int i=0; i<labels.size(); i++) {
++			correct += confusionMatrix[i][i];
++		}
++		double divisor = 0.0;
++		for(int i=0; i<labels.size(); i++) {
++			for(int j=0; j<labels.size(); j++) {
++				divisor += confusionMatrix[i][j];
++			}
++		}
++		if(divisor == 0) {
++			return Double.NaN;
++		} else {
++			return correct / divisor;
++		}
++	}
++
++	/**
++	 * Returns the class size as a weight for per-class-calculations.
++	 * @param label The label to get the weight for
++	 * @return the class size as a weight for per-class-calculations.
++	 */
++	public long getWeightForLabel(T label) {
++		final int indexOfLabel = labels.indexOf(label);
++		long weight = 0L;
++		for(int i=0; i<labels.size(); i++) {
++			if(i == indexOfLabel) {
++				continue;
++			}
++			weight += confusionMatrix[indexOfLabel][i];
++		}
++		return weight;
++	}
++
++	/**
++	 * Returns the number of "true positive" instances for the provided label.
++	 *
++	 * @param label The label to return the counted number of "true positive" instances for
++	 * @return The number of "true positive" instances for the provided label
++	 */
++	private long getTruePositiveCount(T label) {
++		final int indexOfLabel = labels.indexOf(label);
++		return confusionMatrix[indexOfLabel][indexOfLabel];
++	}
++
++	/**
++	 * Returns the number of "true negative" instances for the provided label.
++	 *
++	 * @param label The label to return the counted number of "true negative" instances for
++	 * @return The number of "true negative" instances for the provided label
++	 */
++	private long getTrueNegativeCount(T label) {
++		final int indexOfLabel = labels.indexOf(label);
++
++		long trueNegativeCount = 0L;
++		for(int i=0; i<labels.size(); i++) {
++			if(i == indexOfLabel) {
++				continue;
++			}
++			for(int j=0; j<labels.size(); j++) {
++				if(j == indexOfLabel) {
++					continue;
++				}
++				trueNegativeCount += confusionMatrix[i][j];
++			}
++		}
++		return trueNegativeCount;
++	}
++
++	/**
++	 * Returns the number of "false positive" instances for the provided label.
++	 *
++	 * @param label The label to return the counted number of "false positive" instances for
++	 * @return The number of "false positive" instances for the provided label
++	 */
++	private long getFalsePositiveCount(T label) {
++		final int indexOfLabel = labels.indexOf(label);
++
++		long falsePositiveCount = 0L;
++		for(int i=0; i<labels.size(); i++) {
++			if(i == indexOfLabel) {
++				continue;
++			} else {
++				falsePositiveCount += confusionMatrix[indexOfLabel][i];
++			}
++		}
++		return falsePositiveCount;
++	}
++
++	/**
++	 * Returns the number of "false negative" instances for the provided label.
++	 *
++	 * @param label The label to return the counted number of "false negative" instances for
++	 * @return The number of "false negative" instances for the provided label
++	 */
++	private long getFalseNegativeCount(T label) {
++		final int indexOfLabel = labels.indexOf(label);
++
++		long falseNegativeCount = 0L;
++		for(int i=0; i<labels.size(); i++) {
++			if(i == indexOfLabel) {
++				continue;
++			} else {
++				falseNegativeCount += confusionMatrix[i][indexOfLabel];
++			}
++		}
++		return falseNegativeCount;
++	}
++
++	/**
++	 * {@inheritDoc}
++	 */
++	@Override
++	public String toString() {
++		final String lineSeparator = System.getProperty("line.separator");
++		StringBuilder sb = new StringBuilder("ConfusionMatrix (rows=truth,columns=prediction)").append(lineSeparator).append("values:").append(lineSeparator);
++		for(int i=0; i<labels.size(); i++) {
++			sb.append(labels.get(i));
++			for(int j=0; j<labels.size(); j++) {
++				sb.append(" ").append(confusionMatrix[i][j]);
++			}
++			sb.append(lineSeparator);
++		}
++		sb.append(lineSeparator).append("results:").append(lineSeparator);
++
++		for(T label : labels) {
++			sb.append(label).append(lineSeparator).append(getTableOfConfusion(label));
++		}
++		return sb.toString();
++	}
++	
++	
++	public String toHtml(){
++		StringBuilder b = new StringBuilder( "<table class=\"confusionMatrix\">" );
++		b.append( "<tr>" );
++		b.append( "<td colspan=\"2\" rowspan=\"2\" style=\"border: none;\"></td><th colspan=\"" + labels.size() + "\">prediction</th>" );
++		b.append( "</tr>");
++		b.append( "<tr>" );
++		for( T l : labels ){
++			b.append( "<th>" + l.toString() + "</th>" );
++		}
++		
++		b.append( "<th>Precision</th>" );
++		b.append( "</tr>" );
++		DecimalFormat fmt = new DecimalFormat( "0.00 %" );
++		
++		for(int i=0; i<labels.size(); i++) {
++			T cur = labels.get( i );
++			b.append( "<tr>" );
++			if( i == 0 )
++				b.append( "<th rowspan=\"" + labels.size() + "\">true</th>" );
++			
++			b.append( "<th>" + labels.get(i) + "</th>" );
++			Double tp = 0.0d;
++			Double fp = 0.0d;
++			for(int j=0; j<labels.size(); j++){
++				T against = labels.get( j );
++				if( cur != against )
++					fp += confusionMatrix[i][j];
++				else
++					tp += confusionMatrix[i][j];
++				b.append(" <td>").append(confusionMatrix[i][j]).append( "</td>" );
++			}
++			b.append( "<td><nobr>" + fmt.format( tp / (tp+fp) ) + "</nobr></td>" );
++			
++			b.append( "</tr>\n" );
++		}
++		
++		
++		b.append( "</table>" );
++		return b.toString();
++	}
+ }
+\ No newline at end of file
+diff --git a/org/streaminer/stream/eval/TableOfConfusion.java b/org/streaminer/stream/eval/TableOfConfusion.java
+index 9a4c437..a39029b 100644
+--- a/org/streaminer/stream/eval/TableOfConfusion.java
++++ b/org/streaminer/stream/eval/TableOfConfusion.java
+@@ -18,7 +18,7 @@ public final class TableOfConfusion {
+     /**
+      * Short form of {@link #addTruePositive(1)}.
+      */
+-    public void addTruePositive() {
++    public void addTruePositive() { org.streaminer.stream.jmhbench.MutationSwitch.tick(46);
+         addTruePositive(1);
+     }
+ 
+diff --git a/org/streaminer/stream/frequency/topk/ConcurrentStreamSummary.java b/org/streaminer/stream/frequency/topk/ConcurrentStreamSummary.java
+index 96b3579..bac789b 100644
+--- a/org/streaminer/stream/frequency/topk/ConcurrentStreamSummary.java
++++ b/org/streaminer/stream/frequency/topk/ConcurrentStreamSummary.java
+@@ -112,7 +112,7 @@ public class ConcurrentStreamSummary<T> implements ITopK<T> {
+     }
+ 
+     @Override
+-    public List<CountEntry<T>> peek(final int k) {
++    public List<CountEntry<T>> peek(final int k) { org.streaminer.stream.jmhbench.MutationSwitch.tick(9);
+         List<CountEntry<T>> toReturn = new ArrayList<CountEntry<T>>(k);
+         List<ScoredItem<T>> values = peekWithScores(k);
+         for (ScoredItem<T> value : values) {
+@@ -123,7 +123,7 @@ public class ConcurrentStreamSummary<T> implements ITopK<T> {
+         return toReturn;
+     }
+ 
+-    public long size() {
++    public long size() { org.streaminer.stream.jmhbench.MutationSwitch.tick(28);
+         return size.get();
+     }
+ 
+diff --git a/org/streaminer/stream/frequency/topk/StreamSummary.java b/org/streaminer/stream/frequency/topk/StreamSummary.java
+index 6ae4381..756716c 100644
+--- a/org/streaminer/stream/frequency/topk/StreamSummary.java
++++ b/org/streaminer/stream/frequency/topk/StreamSummary.java
+@@ -61,7 +61,7 @@ public class StreamSummary<T> implements ITopK<T> {
+         bucketList = new DoublyLinkedList<Bucket>();
+     }
+ 
+-    public int getCapacity() {
++    public int getCapacity() { org.streaminer.stream.jmhbench.MutationSwitch.tick(47);
+         return capacity;
+     }
+ 
+diff --git a/org/streaminer/stream/histogram/spdt/ArrayBinReservoir.java b/org/streaminer/stream/histogram/spdt/ArrayBinReservoir.java
+index ce0a119..30d0c45 100644
+--- a/org/streaminer/stream/histogram/spdt/ArrayBinReservoir.java
++++ b/org/streaminer/stream/histogram/spdt/ArrayBinReservoir.java
+@@ -24,7 +24,7 @@ public class ArrayBinReservoir <T extends Target> extends BinReservoir<T> {
+   }
+ 
+   @Override
+-  public void insert(Bin<T> bin) {
++  public void insert(Bin<T> bin) { org.streaminer.stream.jmhbench.MutationSwitch.tick(10);
+     addTotalCount(bin);
+     int index = Collections.binarySearch(_bins, bin);
+     if (index >= 0) {
+@@ -49,7 +49,7 @@ public class ArrayBinReservoir <T extends Target> extends BinReservoir<T> {
+   }
+ 
+   @Override
+-  public Bin<T> first() {
++  public Bin<T> first() { org.streaminer.stream.jmhbench.MutationSwitch.tick(29);
+     return _bins.get(0);
+   }
+ 
+diff --git a/org/streaminer/stream/histogram/spdt/ArrayCategoricalTarget.java b/org/streaminer/stream/histogram/spdt/ArrayCategoricalTarget.java
+index f4bbdb1..866fc9c 100644
+--- a/org/streaminer/stream/histogram/spdt/ArrayCategoricalTarget.java
++++ b/org/streaminer/stream/histogram/spdt/ArrayCategoricalTarget.java
+@@ -37,7 +37,7 @@ public class ArrayCategoricalTarget extends Target<ArrayCategoricalTarget> imple
+     }
+   }
+ 
+-  public void setIndexMap(Map<Object, Integer> indexMap) {
++  public void setIndexMap(Map<Object, Integer> indexMap) { org.streaminer.stream.jmhbench.MutationSwitch.tick(48);
+     _indexMap = indexMap;
+   }
+   
+diff --git a/org/streaminer/stream/jmhbench/MutationSwitch.java b/org/streaminer/stream/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..f6007f1
+--- /dev/null
++++ b/org/streaminer/stream/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.streaminer.stream.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/streaminer/stream/learner/LearnerUtils.java b/org/streaminer/stream/learner/LearnerUtils.java
+index 769af4e..f689ee5 100644
+--- a/org/streaminer/stream/learner/LearnerUtils.java
++++ b/org/streaminer/stream/learner/LearnerUtils.java
+@@ -21,7 +21,7 @@ public class LearnerUtils
+ {
+ 
+ 
+-	public static String detectLabelAttribute( Data item ){
++	public static String detectLabelAttribute( Data item ){ org.streaminer.stream.jmhbench.MutationSwitch.tick(11);
+ 		String label = null;
+ 		for( String key : item.keySet() ){
+ 			if( isLabel( key ) )
+@@ -33,7 +33,7 @@ public class LearnerUtils
+ 	}
+ 
+ 
+-	public static boolean isLabel( String name ){
++	public static boolean isLabel( String name ){ org.streaminer.stream.jmhbench.MutationSwitch.tick(30);
+ 		return name.startsWith( Data.ANNOTATION_PREFIX + "label" ) || name.equals( "label" ) || name.startsWith( "class" ) || name.startsWith( "_class" );
+ 	}
+ 
+diff --git a/org/streaminer/stream/mapper/KeyMapper.java b/org/streaminer/stream/mapper/KeyMapper.java
+index e5158d9..4ed6a60 100644
+--- a/org/streaminer/stream/mapper/KeyMapper.java
++++ b/org/streaminer/stream/mapper/KeyMapper.java
+@@ -31,7 +31,7 @@ public class KeyMapper implements IMapper<Data, Data> {
+ 	/**
+ 	 * @return the oldKey
+ 	 */
+-	public String getOld() {
++	public String getOld() { org.streaminer.stream.jmhbench.MutationSwitch.tick(12);
+ 		return oldKey;
+ 	}
+ 
+@@ -39,7 +39,7 @@ public class KeyMapper implements IMapper<Data, Data> {
+ 	 * @param oldKey
+ 	 *            the oldKey to set
+ 	 */
+-	public void setOld(String oldKey) {
++	public void setOld(String oldKey) { org.streaminer.stream.jmhbench.MutationSwitch.tick(31);
+ 		this.oldKey = oldKey;
+ 	}
+ 
+diff --git a/org/streaminer/stream/mapper/SelectFeaturesMapper.java b/org/streaminer/stream/mapper/SelectFeaturesMapper.java
+index 9c9bc47..7db028c 100644
+--- a/org/streaminer/stream/mapper/SelectFeaturesMapper.java
++++ b/org/streaminer/stream/mapper/SelectFeaturesMapper.java
+@@ -28,7 +28,7 @@ public class SelectFeaturesMapper implements IMapper<Map<String,Object>, Map<Str
+ 	 * @see stream.data.mapper.Mapper#map(java.lang.Object)
+ 	 */
+ 	@Override
+-	public Map<String, Object> map(Map<String, Object> input) throws Exception {
++	public Map<String, Object> map(Map<String, Object> input) throws Exception { org.streaminer.stream.jmhbench.MutationSwitch.tick(49);
+ 		Set<String> remove = new TreeSet<String>();
+ 		for( String key : input.keySet() )
+ 			if( ! include.contains(key) )
+diff --git a/org/streaminer/stream/membership/BloomCalculations.java b/org/streaminer/stream/membership/BloomCalculations.java
+index 8a5f0bc..9f5edba 100644
+--- a/org/streaminer/stream/membership/BloomCalculations.java
++++ b/org/streaminer/stream/membership/BloomCalculations.java
+@@ -72,7 +72,7 @@ public class BloomCalculations {
+      * @param bucketsPerElement
+      * @return The number of hash functions that minimize the false positive rate.
+      */
+-    public static int computeBestK(int bucketsPerElement){
++    public static int computeBestK(int bucketsPerElement){ org.streaminer.stream.jmhbench.MutationSwitch.tick(50);
+         assert bucketsPerElement >= 0;
+         if(bucketsPerElement >= optKPerBuckets.length)
+             return optKPerBuckets[optKPerBuckets.length-1];
+diff --git a/org/streaminer/stream/membership/HashFunction.java b/org/streaminer/stream/membership/HashFunction.java
+index d45cd9e..0222dfc 100644
+--- a/org/streaminer/stream/membership/HashFunction.java
++++ b/org/streaminer/stream/membership/HashFunction.java
+@@ -97,7 +97,7 @@ public final class HashFunction {
+   }
+ 
+   /** Clears <i>this</i> hash function. A NOOP */
+-  public void clear() {
++  public void clear() { org.streaminer.stream.jmhbench.MutationSwitch.tick(13);
+   }
+ 
+   /**
+@@ -105,7 +105,7 @@ public final class HashFunction {
+    * @param k The specified key.
+    * @return The array of hashed values.
+    */
+-  public int[] hash(Key k){
++  public int[] hash(Key k){ org.streaminer.stream.jmhbench.MutationSwitch.tick(32);
+       byte[] b = k.getBytes();
+       if (b == null) {
+         throw new NullPointerException("buffer reference is null");
+diff --git a/org/streaminer/stream/misc/MovingWindowDelta.java b/org/streaminer/stream/misc/MovingWindowDelta.java
+index a523dd3..f40aa16 100644
+--- a/org/streaminer/stream/misc/MovingWindowDelta.java
++++ b/org/streaminer/stream/misc/MovingWindowDelta.java
+@@ -59,7 +59,7 @@ public class MovingWindowDelta<T extends Number> {
+         sumDelta += newDelta - lastDelta;
+     }
+     
+-    public long getDelta() {
++    public long getDelta() { org.streaminer.stream.jmhbench.MutationSwitch.tick(14);
+         return sumDelta;
+     }
+ }
+diff --git a/org/streaminer/stream/misc/Significance.java b/org/streaminer/stream/misc/Significance.java
+index 34707ad..75876ce 100644
+--- a/org/streaminer/stream/misc/Significance.java
++++ b/org/streaminer/stream/misc/Significance.java
+@@ -28,7 +28,7 @@ public class Significance {
+    * @param expected The expected amount.
+    * @return [(observed - expected) ** 2 / expected] * sign(observed - expected)
+    */
+-  public static double chiSqrScore(double observed, double expected) {
++  public static double chiSqrScore(double observed, double expected) { org.streaminer.stream.jmhbench.MutationSwitch.tick(33);
+     double score = Math.pow((observed - expected), 2) / expected;
+     if (observed < expected) {
+       score *= -1;
+diff --git a/org/streaminer/stream/model/StreamDistribution.java b/org/streaminer/stream/model/StreamDistribution.java
+index bf0b434..b7f789c 100644
+--- a/org/streaminer/stream/model/StreamDistribution.java
++++ b/org/streaminer/stream/model/StreamDistribution.java
+@@ -33,7 +33,7 @@ public class StreamDistribution<T extends Serializable>
+ 	}
+ 	
+ 	
+-	public void setCounter( IRichFrequency<T> counter ){
++	public void setCounter( IRichFrequency<T> counter ){ org.streaminer.stream.jmhbench.MutationSwitch.tick(15);
+ 		this.counter = counter;
+ 	}
+ 	
+@@ -41,7 +41,7 @@ public class StreamDistribution<T extends Serializable>
+ 	 * @see stream.model.Distribution#getCount()
+ 	 */
+ 	@Override
+-	public Integer getCount() {
++	public Integer getCount() { org.streaminer.stream.jmhbench.MutationSwitch.tick(34);
+ 		return (int) counter.size();
+ 	}
+ 
+diff --git a/org/streaminer/stream/norm/StableSketch.java b/org/streaminer/stream/norm/StableSketch.java
+index 226d6c6..bab3942 100644
+--- a/org/streaminer/stream/norm/StableSketch.java
++++ b/org/streaminer/stream/norm/StableSketch.java
+@@ -78,7 +78,7 @@ public class StableSketch implements Comparable<StableSketch> {
+      * Subtracts that sketch with this.
+      * @param that 
+      */
+-    public void subtract(StableSketch that) {
++    public void subtract(StableSketch that) { org.streaminer.stream.jmhbench.MutationSwitch.tick(16);
+         if (this.compareTo(that) == 0) {
+             for (int i=0; i<sksize; i++)
+                 sk[i] -= that.sk[i];
+@@ -94,7 +94,7 @@ public class StableSketch implements Comparable<StableSketch> {
+      * @param that
+      * @return The distance
+      */
+-    public double distance(StableSketch that) {
++    public double distance(StableSketch that) { org.streaminer.stream.jmhbench.MutationSwitch.tick(35);
+         if (this.compareTo(that) != 0) return -1.0;
+         
+         double sum = 0.0;
+diff --git a/org/streaminer/stream/quantile/CKMSQuantiles.java b/org/streaminer/stream/quantile/CKMSQuantiles.java
+index 0c6566f..8e4d53d 100644
+--- a/org/streaminer/stream/quantile/CKMSQuantiles.java
++++ b/org/streaminer/stream/quantile/CKMSQuantiles.java
+@@ -76,7 +76,7 @@ public class CKMSQuantiles implements IQuantiles<Long> {
+      * @param value
+      */
+     @Override
+-    public void offer(Long value) {
++    public void offer(Long value) { org.streaminer.stream.jmhbench.MutationSwitch.tick(17);
+         buffer[bufferCount] = value;
+         bufferCount++;
+ 
+@@ -93,7 +93,7 @@ public class CKMSQuantiles implements IQuantiles<Long> {
+      * @return Estimated value at that quantile.
+      */
+     @Override
+-    public Long getQuantile(double q) throws QuantilesException {
++    public Long getQuantile(double q) throws QuantilesException { org.streaminer.stream.jmhbench.MutationSwitch.tick(36);
+         // clear the buffer
+         insertBatch();
+         compress();
+diff --git a/org/streaminer/stream/sampler/BernoulliSampler.java b/org/streaminer/stream/sampler/BernoulliSampler.java
+index 65c40f6..a26daba 100644
+--- a/org/streaminer/stream/sampler/BernoulliSampler.java
++++ b/org/streaminer/stream/sampler/BernoulliSampler.java
+@@ -37,7 +37,7 @@ public class BernoulliSampler implements ISampler {
+         nextRnd = rnd.nextDouble();
+     }
+ 
+-    public void setSeed(long seed) {
++    public void setSeed(long seed) { org.streaminer.stream.jmhbench.MutationSwitch.tick(18);
+         rnd.setSeed(seed);
+     }
+ }
+\ No newline at end of file
+diff --git a/org/streaminer/stream/sampler/ChainSampler.java b/org/streaminer/stream/sampler/ChainSampler.java
+index 432c3ec..042cf5d 100644
+--- a/org/streaminer/stream/sampler/ChainSampler.java
++++ b/org/streaminer/stream/sampler/ChainSampler.java
+@@ -53,7 +53,7 @@ public class ChainSampler implements ISampleList<Serializable> {
+      * Give an item to the sampler so that it can decide to add or not as a sample.
+      * @param item The item to be sampled
+      */
+-    public void sample(Serializable item) {
++    public void sample(Serializable item) { org.streaminer.stream.jmhbench.MutationSwitch.tick(37);
+         int i = (int) (count%n);
+         
+         if (replacements.containsKey(i)) {
+diff --git a/org/streaminer/stream/wavelet/HaarWaveletTransform.java b/org/streaminer/stream/wavelet/HaarWaveletTransform.java
+index 40a5901..79f75de 100644
+--- a/org/streaminer/stream/wavelet/HaarWaveletTransform.java
++++ b/org/streaminer/stream/wavelet/HaarWaveletTransform.java
+@@ -46,14 +46,14 @@ public class HaarWaveletTransform implements IWavelet {
+         dataSize = coeff.length + 1;
+     }
+ 
+-    public void setNumLargest(int numLargest) {
++    public void setNumLargest(int numLargest) { org.streaminer.stream.jmhbench.MutationSwitch.tick(19);
+         this.numLargest = numLargest;
+     }
+ 
+     /**
+      * @param data
+      */
+-    public void transform(int[] data) {
++    public void transform(int[] data) { org.streaminer.stream.jmhbench.MutationSwitch.tick(38);
+         if (isMultipleOfTwo(data.length)) {
+             coeff = new int[data.length - 1];
+             findCoeff(data, coeff, 0);

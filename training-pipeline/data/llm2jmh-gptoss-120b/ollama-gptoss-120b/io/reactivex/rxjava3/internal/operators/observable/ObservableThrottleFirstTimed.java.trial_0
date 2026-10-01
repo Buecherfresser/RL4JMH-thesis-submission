@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for the {@code Observable.throttleFirst} operator which internally uses
+ * {@code ObservableThrottleFirstTimed}. The benchmark measures throughput (operations per second)
+ * while emitting a configurable number of items per iteration.
+ *
+ * Best practices applied:
+ * - Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - Hide the source observable to prevent fusion optimizations that could bypass the operator.
+ * - Use a no‑op {@code Consumer} to eliminate side‑effects and let the JIT focus on the operator logic.
+ * - Configure warm‑up, measurement, and fork parameters to obtain stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ObservableThrottleFirstTimedBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the source per benchmark iteration. */
+        @Param({"1000", "10000"})
+        public int itemCount;
+
+        /** Timeout for the throttleFirst operator (in milliseconds). */
+        public long timeoutMs = 1L;
+
+        /** Scheduler used by the operator; computation scheduler provides a real thread pool. */
+        public Scheduler scheduler = Schedulers.computation();
+
+        /** Source observable that emits a range of integers. */
+        public Observable<Integer> source;
+
+        /** No‑op consumer used as the downstream observer and as the onDropped handler. */
+        public final Consumer<Integer> blackhole = t -> {
+            // intentionally empty
+        };
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // hide() prevents upstream/downstream fusion which could otherwise mask the cost of the operator.
+            source = Observable.range(0, itemCount)
+                    .subscribeOn(scheduler)
+                    .hide();
+        }
+    }
+
+    @Benchmark
+    public void throttleFirstTimed(BenchmarkState state) {
+        state.source
+                .throttleFirst(state.timeoutMs, TimeUnit.MILLISECONDS, state.scheduler, state.blackhole)
+                .blockingSubscribe(state.blackhole);
+    }
+}
+```

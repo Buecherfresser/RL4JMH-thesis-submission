@@ -1,0 +1,61 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Maybe;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@code Maybe.takeUntil(MaybeSource)} which internally uses
+ * {@code MaybeTakeUntilMaybe}. The benchmark measures the throughput of the
+ * operator when the upstream Maybe emits a value and the "other" Maybe never
+ * terminates (the typical success path).
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source and other Maybes in @Setup to exclude allocation cost.
+ * - Use blockingGet() to make the flow synchronous, ensuring the benchmark
+ *   measures only the operator logic.
+ * - Consume the result with Blackhole to prevent dead‑code elimination.
+ * - Configure warm‑up, measurement, and fork parameters for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class MaybeTakeUntilMaybeBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        // Upstream that emits a single value.
+        Maybe<Integer> source;
+
+        // "Other" Maybe that never terminates, so the operator should forward the upstream value.
+        Maybe<Object> other;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Maybe.just(1);
+            other = Maybe.never();
+        }
+    }
+
+    @Benchmark
+    public void takeUntilSuccess(BenchmarkState state, Blackhole bh) {
+        // The operator under test is applied here.
+        Integer result = state.source.takeUntil(state.other).blockingGet();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void takeUntilOtherCompletesFirst(BenchmarkState state, Blackhole bh) {
+        // In this variant the "other" completes immediately, causing the downstream to complete without a value.
+        Maybe<Object> immediateOther = Maybe.empty();
+        Integer result = state.source.takeUntil(immediateOther).blockingGet();
+        bh.consume(result);
+    }
+}
+```

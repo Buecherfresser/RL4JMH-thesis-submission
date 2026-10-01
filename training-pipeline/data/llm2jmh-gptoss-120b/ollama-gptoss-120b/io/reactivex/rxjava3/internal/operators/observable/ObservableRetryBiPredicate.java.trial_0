@@ -1,0 +1,74 @@
+```java
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.functions.BiPredicate;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableRetryBiPredicate;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * JMH benchmark for {@link ObservableRetryBiPredicate}.
+ *
+ * Measures the throughput of the retry operator when the source fails a configurable
+ * number of times before succeeding. The benchmark runs in {@link Mode#Throughput}
+ * to report operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class ObservableRetryBiPredicateBenchmark {
+
+    /**
+     * Number of times the source Observable will fail before emitting a value.
+     * Adjust to simulate different retry scenarios.
+     */
+    @Param({"0", "1", "5", "10"})
+    public int failCount;
+
+    private Observable<Integer> retryObservable;
+
+    /**
+     * Sets up the benchmark by creating an Observable that fails {@code failCount}
+     * times and then emits a single integer. The retry operator is applied with a
+     * predicate that allows unlimited retries (or you could limit it via the predicate).
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        AtomicInteger attempt = new AtomicInteger(0);
+
+        ObservableSource<Integer> source = observer -> {
+            int current = attempt.getAndIncrement();
+            if (current < failCount) {
+                observer.onError(new RuntimeException("Failure #" + current));
+            } else {
+                observer.onNext(1);
+                observer.onComplete();
+            }
+        };
+
+        BiPredicate<Integer, Throwable> predicate = (retry, error) -> true; // always retry
+
+        // Wrap the source with the retry operator under test
+        retryObservable = new ObservableRetryBiPredicate<>(Observable.create(source), predicate);
+    }
+
+    /**
+     * Executes the retry Observable and consumes the emitted value.
+     * The {@link Blackhole} ensures the JIT does not eliminate the subscription.
+     */
+    @Benchmark
+    public void retryThroughput(Blackhole bh) {
+        // blockingSubscribe ensures the whole chain runs synchronously for the benchmark iteration
+        retryObservable.blockingSubscribe(
+                bh::consume,          // onNext
+                bh::consume,          // onError (should not happen)
+                () -> {}              // onComplete
+        );
+    }
+}
+```

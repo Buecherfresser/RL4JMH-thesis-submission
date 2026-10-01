@@ -1,0 +1,98 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableOnBackpressureBuffer}.
+ * Measures the throughput (items processed per second) of the operator under different
+ * configurations (buffer size, bounded/unbounded, delayError).
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Param provides a matrix of configurations.
+ * - @Setup(Level.Trial) prepares immutable sources once per trial.
+ * - Blackhole consumes items to prevent dead‑code elimination.
+ * - Blocking subscription ensures the benchmark measures the full processing pipeline.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableOnBackpressureBufferBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        @Param({ "128", "1024" })
+        public int bufferSize;
+
+        @Param({ "true", "false" })
+        public boolean unbounded;
+
+        @Param({ "true", "false" })
+        public boolean delayError;
+
+        /**
+         * Number of items emitted by the upstream source.
+         */
+        private static final int ELEMENT_COUNT = 1_000_000;
+
+        private Flowable<Integer> source;
+
+        private Flowable<Integer> buffered;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Simple synchronous source that emits a known number of items.
+            source = Flowable.range(1, ELEMENT_COUNT);
+            // No‑op callbacks for overflow handling – they are required by the API.
+            Action onOverflow = () -> {
+            };
+            Consumer<Integer> onDropped = v -> {
+            };
+            // Apply the operator with the current parameter set.
+            buffered = source.onBackpressureBuffer(bufferSize, unbounded, delayError, onOverflow, onDropped);
+        }
+    }
+
+    @Benchmark
+    public void backpressureBufferThroughput(BenchmarkState state, Blackhole bh) {
+        // blockingSubscribe guarantees the benchmark runs until the stream completes.
+        state.buffered.blockingSubscribe(bh::consume);
+    }
+}

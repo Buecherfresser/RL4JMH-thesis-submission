@@ -1,0 +1,627 @@
+diff --git a/org/la4j/LinearAlgebra.java b/org/la4j/LinearAlgebra.java
+index 782883a..f4e171f 100644
+--- a/org/la4j/LinearAlgebra.java
++++ b/org/la4j/LinearAlgebra.java
+@@ -248,13 +248,13 @@ public final class LinearAlgebra {
+     public static enum SolverFactory {
+         GAUSSIAN {
+             @Override
+-            public LinearSystemSolver create(Matrix matrix) {
++            public LinearSystemSolver create(Matrix matrix) { org.la4j.jmhbench.MutationSwitch.tick(1);
+                 return new GaussianSolver(matrix);
+             }
+         },
+         JACOBI {
+             @Override
+-            public LinearSystemSolver create(Matrix matrix) {
++            public LinearSystemSolver create(Matrix matrix) { org.la4j.jmhbench.MutationSwitch.tick(9);
+                 return new JacobiSolver(matrix);
+             }
+         },
+diff --git a/org/la4j/Matrices.java b/org/la4j/Matrices.java
+index 45457f9..cb77fd7 100644
+--- a/org/la4j/Matrices.java
++++ b/org/la4j/Matrices.java
+@@ -58,12 +58,12 @@ public final class Matrices {
+      */
+     public static final MatrixPredicate DIAGONAL_MATRIX = new MatrixPredicate() {
+         @Override
+-        public boolean test(int rows, int columns) {
++        public boolean test(int rows, int columns) { org.la4j.jmhbench.MutationSwitch.tick(17);
+             return rows == columns;
+         }
+ 
+         @Override
+-        public boolean test(int i, int j, double value) {
++        public boolean test(int i, int j, double value) { org.la4j.jmhbench.MutationSwitch.tick(25);
+             return (i == j) || Math.abs(value) < EPS;
+         }
+     };
+diff --git a/org/la4j/Vectors.java b/org/la4j/Vectors.java
+index 6ab5d7a..e3b8392 100644
+--- a/org/la4j/Vectors.java
++++ b/org/la4j/Vectors.java
+@@ -40,14 +40,14 @@ public final class Vectors {
+ 
+     public static final VectorFactory<BasicVector> BASIC = new VectorFactory<BasicVector>() {
+         @Override
+-        public BasicVector apply(int length) {
++        public BasicVector apply(int length) { org.la4j.jmhbench.MutationSwitch.tick(33);
+             return BasicVector.zero(length);
+         }
+     };
+ 
+     public static final VectorFactory<CompressedVector> COMPRESSED = new VectorFactory<CompressedVector>() {
+         @Override
+-        public CompressedVector apply(int length) {
++        public CompressedVector apply(int length) { org.la4j.jmhbench.MutationSwitch.tick(39);
+             return CompressedVector.zero(length);
+         }
+     };
+diff --git a/org/la4j/decomposition/CholeskyDecompositor.java b/org/la4j/decomposition/CholeskyDecompositor.java
+index 511feb7..9f541a5 100644
+--- a/org/la4j/decomposition/CholeskyDecompositor.java
++++ b/org/la4j/decomposition/CholeskyDecompositor.java
+@@ -47,7 +47,7 @@ public class CholeskyDecompositor extends AbstractDecompositor implements Matrix
+      * @return { L }
+      */
+     @Override
+-    public Matrix[] decompose() {
++    public Matrix[] decompose() { org.la4j.jmhbench.MutationSwitch.tick(2);
+ 
+         Matrix l = matrix.blankOfShape(matrix.rows(), matrix.rows());
+ 
+@@ -83,7 +83,7 @@ public class CholeskyDecompositor extends AbstractDecompositor implements Matrix
+     }
+ 
+     @Override
+-    public boolean applicableTo(Matrix matrix) {
++    public boolean applicableTo(Matrix matrix) { org.la4j.jmhbench.MutationSwitch.tick(10);
+         return matrix.rows() == matrix.columns() &&
+                 matrix.is(Matrices.SYMMETRIC_MATRIX) && matrix.is(Matrices.POSITIVE_DEFINITE_MATRIX);
+     }
+diff --git a/org/la4j/decomposition/EigenDecompositor.java b/org/la4j/decomposition/EigenDecompositor.java
+index 169c4f1..7e38c37 100644
+--- a/org/la4j/decomposition/EigenDecompositor.java
++++ b/org/la4j/decomposition/EigenDecompositor.java
+@@ -52,7 +52,7 @@ public class EigenDecompositor extends AbstractDecompositor implements MatrixDec
+      * @return { V, D }
+      */
+     @Override
+-    public Matrix[] decompose() {
++    public Matrix[] decompose() { org.la4j.jmhbench.MutationSwitch.tick(18);
+ 
+         if (matrix.is(Matrices.SYMMETRIC_MATRIX)) {
+             return decomposeSymmetricMatrix(matrix);
+@@ -64,7 +64,7 @@ public class EigenDecompositor extends AbstractDecompositor implements MatrixDec
+     }
+ 
+     @Override
+-    public boolean applicableTo(Matrix matrix) {
++    public boolean applicableTo(Matrix matrix) { org.la4j.jmhbench.MutationSwitch.tick(26);
+         return matrix.rows() == matrix.columns();
+     }
+ 
+diff --git a/org/la4j/decomposition/LUDecompositor.java b/org/la4j/decomposition/LUDecompositor.java
+index 233dae1..0c7fda2 100644
+--- a/org/la4j/decomposition/LUDecompositor.java
++++ b/org/la4j/decomposition/LUDecompositor.java
+@@ -45,7 +45,7 @@ public class LUDecompositor extends RawLUDecompositor implements MatrixDecomposi
+      * @return { L, U, P }
+      */
+     @Override
+-    public Matrix[] decompose() {
++    public Matrix[] decompose() { org.la4j.jmhbench.MutationSwitch.tick(34);
+ 
+         Matrix[] lup = super.decompose();
+         Matrix lu = lup[0];
+diff --git a/org/la4j/decomposition/QRDecompositor.java b/org/la4j/decomposition/QRDecompositor.java
+index 804b14d..28115ae 100644
+--- a/org/la4j/decomposition/QRDecompositor.java
++++ b/org/la4j/decomposition/QRDecompositor.java
+@@ -46,7 +46,7 @@ public class QRDecompositor extends RawQRDecompositor implements MatrixDecomposi
+      * @return { Q, R }
+      */
+     @Override
+-    public Matrix[] decompose() {
++    public Matrix[] decompose() { org.la4j.jmhbench.MutationSwitch.tick(40);
+ 
+         Matrix[] qrr = super.decompose();
+         Matrix qr = qrr[0];
+diff --git a/org/la4j/decomposition/RawLUDecompositor.java b/org/la4j/decomposition/RawLUDecompositor.java
+index f5291ab..66989bb 100644
+--- a/org/la4j/decomposition/RawLUDecompositor.java
++++ b/org/la4j/decomposition/RawLUDecompositor.java
+@@ -32,7 +32,7 @@ public class RawLUDecompositor extends AbstractDecompositor implements MatrixDec
+     }
+ 
+     @Override
+-    public Matrix[] decompose() {
++    public Matrix[] decompose() { org.la4j.jmhbench.MutationSwitch.tick(44);
+ 
+         Matrix lu = matrix.copy();
+         Matrix p = SparseMatrix.identity(lu.rows());
+@@ -74,7 +74,7 @@ public class RawLUDecompositor extends AbstractDecompositor implements MatrixDec
+     }
+ 
+     @Override
+-    public boolean applicableTo(Matrix matrix) {
++    public boolean applicableTo(Matrix matrix) { org.la4j.jmhbench.MutationSwitch.tick(48);
+         return matrix.rows() == matrix.columns();
+     }
+ }
+diff --git a/org/la4j/inversion/GaussJordanInverter.java b/org/la4j/inversion/GaussJordanInverter.java
+index 56af8b8..b5887b7 100644
+--- a/org/la4j/inversion/GaussJordanInverter.java
++++ b/org/la4j/inversion/GaussJordanInverter.java
+@@ -36,7 +36,7 @@ public class GaussJordanInverter implements MatrixInverter {
+     }
+ 
+     @Override
+-    public Matrix inverse() {
++    public Matrix inverse() { org.la4j.jmhbench.MutationSwitch.tick(3);
+ 
+         if (matrix.rows() != matrix.columns()) {
+             throw new IllegalArgumentException("Wrong matrix size: "
+@@ -63,7 +63,7 @@ public class GaussJordanInverter implements MatrixInverter {
+     }
+ 
+     @Override
+-    public Matrix self() {
++    public Matrix self() { org.la4j.jmhbench.MutationSwitch.tick(11);
+         return matrix;
+     }
+ }
+diff --git a/org/la4j/inversion/NoPivotGaussInverter.java b/org/la4j/inversion/NoPivotGaussInverter.java
+index 5df52a3..9307774 100644
+--- a/org/la4j/inversion/NoPivotGaussInverter.java
++++ b/org/la4j/inversion/NoPivotGaussInverter.java
+@@ -32,7 +32,7 @@ public class NoPivotGaussInverter implements MatrixInverter {
+     }
+ 
+     @Override
+-    public Matrix inverse() {
++    public Matrix inverse() { org.la4j.jmhbench.MutationSwitch.tick(19);
+         if (matrix.rows() != matrix.columns()) {
+             throw new IllegalArgumentException("Wrong matrix size: " + "rows != columns");
+         }
+@@ -73,7 +73,7 @@ public class NoPivotGaussInverter implements MatrixInverter {
+     }
+ 
+     @Override
+-    public Matrix self() {
++    public Matrix self() { org.la4j.jmhbench.MutationSwitch.tick(27);
+         return matrix;
+     }
+ }
+diff --git a/org/la4j/iterator/CursorToColumnMajorMatrixIterator.java b/org/la4j/iterator/CursorToColumnMajorMatrixIterator.java
+index 47efd2d..de60e30 100644
+--- a/org/la4j/iterator/CursorToColumnMajorMatrixIterator.java
++++ b/org/la4j/iterator/CursorToColumnMajorMatrixIterator.java
+@@ -31,12 +31,12 @@ public class CursorToColumnMajorMatrixIterator extends ColumnMajorMatrixIterator
+     }
+ 
+     @Override
+-    public int rowIndex() {
++    public int rowIndex() { org.la4j.jmhbench.MutationSwitch.tick(4);
+         return underlying.cursor() - columnIndex() * rows;
+     }
+ 
+     @Override
+-    public int columnIndex() {
++    public int columnIndex() { org.la4j.jmhbench.MutationSwitch.tick(12);
+         return underlying.cursor() / rows;
+     }
+ 
+diff --git a/org/la4j/iterator/CursorToRowMajorMatrixIterator.java b/org/la4j/iterator/CursorToRowMajorMatrixIterator.java
+index 33fa1a6..476572b 100644
+--- a/org/la4j/iterator/CursorToRowMajorMatrixIterator.java
++++ b/org/la4j/iterator/CursorToRowMajorMatrixIterator.java
+@@ -31,12 +31,12 @@ class CursorToRowMajorMatrixIterator extends RowMajorMatrixIterator {
+     }
+ 
+     @Override
+-    public int rowIndex() {
++    public int rowIndex() { org.la4j.jmhbench.MutationSwitch.tick(20);
+         return underlying.cursor() / columns;
+     }
+ 
+     @Override
+-    public int columnIndex() {
++    public int columnIndex() { org.la4j.jmhbench.MutationSwitch.tick(28);
+         return underlying.cursor() - rowIndex() * columns;
+     }
+ 
+diff --git a/org/la4j/iterator/CursorToVectorIterator.java b/org/la4j/iterator/CursorToVectorIterator.java
+index 7957641..4ffc5ad 100644
+--- a/org/la4j/iterator/CursorToVectorIterator.java
++++ b/org/la4j/iterator/CursorToVectorIterator.java
+@@ -31,7 +31,7 @@ class CursorToVectorIterator extends VectorIterator {
+     }
+ 
+     @Override
+-    public int index() {
++    public int index() { org.la4j.jmhbench.MutationSwitch.tick(35);
+         return underlying.cursor();
+     }
+ 
+diff --git a/org/la4j/jmhbench/MutationSwitch.java b/org/la4j/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..1efcf92
+--- /dev/null
++++ b/org/la4j/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.la4j.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/la4j/linear/ForwardBackSubstitutionSolver.java b/org/la4j/linear/ForwardBackSubstitutionSolver.java
+index 89cf2c8..ac1e849 100644
+--- a/org/la4j/linear/ForwardBackSubstitutionSolver.java
++++ b/org/la4j/linear/ForwardBackSubstitutionSolver.java
+@@ -48,7 +48,7 @@ public class ForwardBackSubstitutionSolver extends AbstractSolver implements Lin
+     }
+ 
+     @Override
+-    public Vector solve(Vector b) {
++    public Vector solve(Vector b) { org.la4j.jmhbench.MutationSwitch.tick(5);
+         ensureRHSIsCorrect(b);
+ 
+         int n = unknowns();
+@@ -89,7 +89,7 @@ public class ForwardBackSubstitutionSolver extends AbstractSolver implements Lin
+     }
+ 
+     @Override
+-    public boolean applicableTo(Matrix matrix) {
++    public boolean applicableTo(Matrix matrix) { org.la4j.jmhbench.MutationSwitch.tick(13);
+         return matrix.rows() == matrix.columns();
+     }
+ }
+diff --git a/org/la4j/linear/GaussianSolver.java b/org/la4j/linear/GaussianSolver.java
+index e24b421..d326204 100644
+--- a/org/la4j/linear/GaussianSolver.java
++++ b/org/la4j/linear/GaussianSolver.java
+@@ -45,7 +45,7 @@ public class GaussianSolver extends AbstractSolver implements LinearSystemSolver
+     }
+ 
+     @Override
+-    public Vector solve(Vector b) {
++    public Vector solve(Vector b) { org.la4j.jmhbench.MutationSwitch.tick(21);
+         ensureRHSIsCorrect(b);
+ 
+         // extend augmented matrix
+@@ -115,7 +115,7 @@ public class GaussianSolver extends AbstractSolver implements LinearSystemSolver
+     }
+ 
+     @Override
+-    public boolean applicableTo(Matrix matrix) {
++    public boolean applicableTo(Matrix matrix) { org.la4j.jmhbench.MutationSwitch.tick(29);
+         return matrix.rows() == matrix.columns();
+     }
+ }
+diff --git a/org/la4j/linear/JacobiSolver.java b/org/la4j/linear/JacobiSolver.java
+index 635db76..8ddf932 100644
+--- a/org/la4j/linear/JacobiSolver.java
++++ b/org/la4j/linear/JacobiSolver.java
+@@ -55,7 +55,7 @@ public class JacobiSolver extends AbstractSolver implements LinearSystemSolver {
+     }
+ 
+     @Override
+-    public Vector solve(Vector b) {
++    public Vector solve(Vector b) { org.la4j.jmhbench.MutationSwitch.tick(36);
+         ensureRHSIsCorrect(b);
+ 
+         Vector current =b.blankOfLength(unknowns());
+@@ -84,7 +84,7 @@ public class JacobiSolver extends AbstractSolver implements LinearSystemSolver {
+     }
+ 
+     @Override
+-    public boolean applicableTo(Matrix matrix) {
++    public boolean applicableTo(Matrix matrix) { org.la4j.jmhbench.MutationSwitch.tick(41);
+         return matrix.is(Matrices.DIAGONALLY_DOMINANT_MATRIX);
+     }
+ }
+diff --git a/org/la4j/linear/LeastNormSolver.java b/org/la4j/linear/LeastNormSolver.java
+index 1120793..912f9a5 100644
+--- a/org/la4j/linear/LeastNormSolver.java
++++ b/org/la4j/linear/LeastNormSolver.java
+@@ -41,7 +41,7 @@ public class LeastNormSolver extends AbstractSolver implements LinearSystemSolve
+     }
+ 
+     @Override
+-    public Vector solve(Vector b) {
++    public Vector solve(Vector b) { org.la4j.jmhbench.MutationSwitch.tick(45);
+         ensureRHSIsCorrect(b);
+ 
+         Matrix temp = self().multiply(self().rotate());
+@@ -51,7 +51,7 @@ public class LeastNormSolver extends AbstractSolver implements LinearSystemSolve
+     }
+ 
+     @Override
+-    public boolean applicableTo(Matrix matrix) {
++    public boolean applicableTo(Matrix matrix) { org.la4j.jmhbench.MutationSwitch.tick(49);
+         //TODO: we need to think about how to improve the speed here.
+         //Note: Matrix.rank() works for O(N^3) which is quite slow.
+         int r = matrix.rank();
+diff --git a/org/la4j/matrix/dense/Basic1DMatrix.java b/org/la4j/matrix/dense/Basic1DMatrix.java
+index 9027bd1..199c24d 100644
+--- a/org/la4j/matrix/dense/Basic1DMatrix.java
++++ b/org/la4j/matrix/dense/Basic1DMatrix.java
+@@ -57,14 +57,14 @@ public class Basic1DMatrix extends DenseMatrix {
+      * Creates a zero {@link Basic1DMatrix} of the given shape:
+      * {@code rows} x {@code columns}.
+      */
+-    public static Basic1DMatrix zero(int rows, int columns) {
++    public static Basic1DMatrix zero(int rows, int columns) { org.la4j.jmhbench.MutationSwitch.tick(6);
+         return new Basic1DMatrix(rows, columns);
+     }
+ 
+     /**
+      * Creates a constant {@link Basic1DMatrix} of the given shape and {@code value}.
+      */
+-    public static Basic1DMatrix constant(int rows, int columns, double constant) {
++    public static Basic1DMatrix constant(int rows, int columns, double constant) { org.la4j.jmhbench.MutationSwitch.tick(14);
+         double[] array = new double[rows * columns];
+         Arrays.fill(array, constant);
+ 
+diff --git a/org/la4j/matrix/dense/Basic2DMatrix.java b/org/la4j/matrix/dense/Basic2DMatrix.java
+index 8440cfa..f6a010d 100644
+--- a/org/la4j/matrix/dense/Basic2DMatrix.java
++++ b/org/la4j/matrix/dense/Basic2DMatrix.java
+@@ -57,14 +57,14 @@ public class Basic2DMatrix extends DenseMatrix {
+      * Creates a zero {@link Basic2DMatrix} of the given shape:
+      * {@code rows} x {@code columns}.
+      */
+-    public static Basic2DMatrix zero(int rows, int columns) {
++    public static Basic2DMatrix zero(int rows, int columns) { org.la4j.jmhbench.MutationSwitch.tick(22);
+         return new Basic2DMatrix(rows, columns);
+     }
+ 
+     /**
+      * Creates a constant {@link Basic2DMatrix} of the given shape and {@code value}.
+      */
+-    public static Basic2DMatrix constant(int rows, int columns, double constant) {
++    public static Basic2DMatrix constant(int rows, int columns, double constant) { org.la4j.jmhbench.MutationSwitch.tick(30);
+         double[][] array = new double[rows][columns];
+ 
+         for (int i = 0; i < rows; i++) {
+diff --git a/org/la4j/matrix/sparse/CCSMatrix.java b/org/la4j/matrix/sparse/CCSMatrix.java
+index f5b84b2..c01f2dc 100644
+--- a/org/la4j/matrix/sparse/CCSMatrix.java
++++ b/org/la4j/matrix/sparse/CCSMatrix.java
+@@ -85,7 +85,7 @@ public class CCSMatrix extends ColumnMajorSparseMatrix {
+      * Creates a zero {@link CCSMatrix} of the given shape:
+      * {@code rows} x {@code columns}.
+      */
+-    public static CCSMatrix zero(int rows, int columns) {
++    public static CCSMatrix zero(int rows, int columns) { org.la4j.jmhbench.MutationSwitch.tick(37);
+         return new CCSMatrix(rows, columns);
+     }
+ 
+@@ -93,7 +93,7 @@ public class CCSMatrix extends ColumnMajorSparseMatrix {
+      * Creates a zero {@link CCSMatrix} of the given shape:
+      * {@code rows} x {@code columns} with the given {@code capacity}.
+      */
+-    public static CCSMatrix zero(int rows, int columns, int capacity) {
++    public static CCSMatrix zero(int rows, int columns, int capacity) { org.la4j.jmhbench.MutationSwitch.tick(42);
+         return new CCSMatrix(rows, columns, capacity);
+     }
+ 
+diff --git a/org/la4j/matrix/sparse/CRSMatrix.java b/org/la4j/matrix/sparse/CRSMatrix.java
+index 4289d0c..30fae02 100644
+--- a/org/la4j/matrix/sparse/CRSMatrix.java
++++ b/org/la4j/matrix/sparse/CRSMatrix.java
+@@ -85,7 +85,7 @@ public class CRSMatrix extends RowMajorSparseMatrix {
+      * Creates a zero {@link CRSMatrix} of the given shape:
+      * {@code rows} x {@code columns}.
+      */
+-    public static CRSMatrix zero(int rows, int columns) {
++    public static CRSMatrix zero(int rows, int columns) { org.la4j.jmhbench.MutationSwitch.tick(46);
+         return new CRSMatrix(rows, columns);
+     }
+ 
+@@ -93,7 +93,7 @@ public class CRSMatrix extends RowMajorSparseMatrix {
+      * Creates a zero {@link CRSMatrix} of the given shape:
+      * {@code rows} x {@code columns} with the given {@code capacity}.
+      */
+-    public static CRSMatrix zero(int rows, int columns, int capacity) {
++    public static CRSMatrix zero(int rows, int columns, int capacity) { org.la4j.jmhbench.MutationSwitch.tick(50);
+         return new CRSMatrix(rows, columns, capacity);
+     }
+ 
+diff --git a/org/la4j/operation/inplace/InPlaceCopyMatrixToMatrix.java b/org/la4j/operation/inplace/InPlaceCopyMatrixToMatrix.java
+index 359366f..333e02f 100644
+--- a/org/la4j/operation/inplace/InPlaceCopyMatrixToMatrix.java
++++ b/org/la4j/operation/inplace/InPlaceCopyMatrixToMatrix.java
+@@ -32,7 +32,7 @@ import org.la4j.matrix.SparseMatrix;
+ public class InPlaceCopyMatrixToMatrix extends SimpleMatrixMatrixOperation<Matrix> {
+ 
+     @Override
+-    public Matrix applySimple(DenseMatrix a, SparseMatrix b) {
++    public Matrix applySimple(DenseMatrix a, SparseMatrix b) { org.la4j.jmhbench.MutationSwitch.tick(7);
+         MatrixIterator it = b.iterator();
+         while (it.hasNext()) {
+             it.next();
+@@ -48,7 +48,7 @@ public class InPlaceCopyMatrixToMatrix extends SimpleMatrixMatrixOperation<Matri
+     }
+ 
+     @Override
+-    public Matrix applySimple(SparseMatrix a, DenseMatrix b) {
++    public Matrix applySimple(SparseMatrix a, DenseMatrix b) { org.la4j.jmhbench.MutationSwitch.tick(15);
+         return fromSparseToMatrix(a, b);
+     }
+ 
+diff --git a/org/la4j/operation/ooplace/OoPlaceInnerProduct.java b/org/la4j/operation/ooplace/OoPlaceInnerProduct.java
+index f184072..fa3afff 100644
+--- a/org/la4j/operation/ooplace/OoPlaceInnerProduct.java
++++ b/org/la4j/operation/ooplace/OoPlaceInnerProduct.java
+@@ -32,7 +32,7 @@ import org.la4j.vector.SparseVector;
+ public class OoPlaceInnerProduct extends SymmetricVectorVectorOperation<Double> {
+ 
+     @Override
+-    public Double apply(final SparseVector a, final SparseVector b) {
++    public Double apply(final SparseVector a, final SparseVector b) { org.la4j.jmhbench.MutationSwitch.tick(23);
+         VectorIterator these = a.nonZeroIterator();
+         VectorIterator those = b.nonZeroIterator();
+ 
+@@ -40,7 +40,7 @@ public class OoPlaceInnerProduct extends SymmetricVectorVectorOperation<Double>
+     }
+ 
+     @Override
+-    public Double applySymmetric(DenseVector a, SparseVector b) {
++    public Double applySymmetric(DenseVector a, SparseVector b) { org.la4j.jmhbench.MutationSwitch.tick(31);
+         return b.foldNonZero(Vectors.asSumFunctionAccumulator(0.0, dot(a)));
+     }
+ 
+diff --git a/org/la4j/operation/ooplace/OoPlaceKroneckerProduct.java b/org/la4j/operation/ooplace/OoPlaceKroneckerProduct.java
+index b71b932..1f182d9 100644
+--- a/org/la4j/operation/ooplace/OoPlaceKroneckerProduct.java
++++ b/org/la4j/operation/ooplace/OoPlaceKroneckerProduct.java
+@@ -8,7 +8,7 @@ public class OoPlaceKroneckerProduct extends CommonMatrixMatrixOperation<Matrix>
+     // TODO: It should not be common.
+ 
+     @Override
+-    public Matrix applyCommon(Matrix a, Matrix b) {
++    public Matrix applyCommon(Matrix a, Matrix b) { org.la4j.jmhbench.MutationSwitch.tick(38);
+         int n = a.rows() * b.rows();
+         int m = a.columns() * b.columns();
+         int p = b.rows();
+diff --git a/org/la4j/operation/ooplace/OoPlaceMatricesAddition.java b/org/la4j/operation/ooplace/OoPlaceMatricesAddition.java
+index 4291610..aa31b38 100644
+--- a/org/la4j/operation/ooplace/OoPlaceMatricesAddition.java
++++ b/org/la4j/operation/ooplace/OoPlaceMatricesAddition.java
+@@ -33,7 +33,7 @@ import org.la4j.matrix.SparseMatrix;
+ public class OoPlaceMatricesAddition extends SymmetricMatrixMatrixOperation<Matrix> {
+ 
+     @Override
+-    public Matrix applySymmetric(DenseMatrix a, SparseMatrix b) {
++    public Matrix applySymmetric(DenseMatrix a, SparseMatrix b) { org.la4j.jmhbench.MutationSwitch.tick(43);
+         Matrix result = a.copy();
+         MatrixIterator it = b.nonZeroIterator();
+ 
+@@ -48,7 +48,7 @@ public class OoPlaceMatricesAddition extends SymmetricMatrixMatrixOperation<Matr
+     }
+ 
+     @Override
+-    public Matrix applySymmetric(RowMajorSparseMatrix a, ColumnMajorSparseMatrix b) {
++    public Matrix applySymmetric(RowMajorSparseMatrix a, ColumnMajorSparseMatrix b) { org.la4j.jmhbench.MutationSwitch.tick(47);
+         Matrix result = a.blank();
+         RowMajorMatrixIterator these = a.nonZeroRowMajorIterator();
+         RowMajorMatrixIterator those = b.nonZeroRowMajorIterator();
+diff --git a/org/la4j/vector/dense/BasicVector.java b/org/la4j/vector/dense/BasicVector.java
+index b7ae417..8ba310a 100644
+--- a/org/la4j/vector/dense/BasicVector.java
++++ b/org/la4j/vector/dense/BasicVector.java
+@@ -71,7 +71,7 @@ public class BasicVector extends DenseVector {
+     /**
+      * Creates a zero {@link BasicVector} of the given {@code length}.
+      */
+-    public static BasicVector zero(int length) {
++    public static BasicVector zero(int length) { org.la4j.jmhbench.MutationSwitch.tick(8);
+         return new BasicVector(length);
+     }
+ 
+@@ -79,7 +79,7 @@ public class BasicVector extends DenseVector {
+      * Creates a constant {@link BasicVector} of the given {@code length} with
+      * the given {@code value}.
+      */
+-    public static BasicVector constant(int length, double value) {
++    public static BasicVector constant(int length, double value) { org.la4j.jmhbench.MutationSwitch.tick(16);
+         double[] array = new double[length];
+         Arrays.fill(array, value);
+ 
+diff --git a/org/la4j/vector/sparse/CompressedVector.java b/org/la4j/vector/sparse/CompressedVector.java
+index 7464f3b..4e4a52c 100644
+--- a/org/la4j/vector/sparse/CompressedVector.java
++++ b/org/la4j/vector/sparse/CompressedVector.java
+@@ -86,7 +86,7 @@ public class CompressedVector extends SparseVector {
+     /**
+      * Creates a zero {@link CompressedVector} of the given {@code length}.
+      */
+-    public static CompressedVector zero(int length) {
++    public static CompressedVector zero(int length) { org.la4j.jmhbench.MutationSwitch.tick(24);
+         return new CompressedVector(length);
+     }
+ 
+@@ -94,7 +94,7 @@ public class CompressedVector extends SparseVector {
+      * Creates a zero {@link CompressedVector} of the given {@code length} with
+      * the given {@code capacity}.
+      */
+-    public static CompressedVector zero(int length, int capacity) {
++    public static CompressedVector zero(int length, int capacity) { org.la4j.jmhbench.MutationSwitch.tick(32);
+         return new CompressedVector(length, capacity);
+     }
+ 

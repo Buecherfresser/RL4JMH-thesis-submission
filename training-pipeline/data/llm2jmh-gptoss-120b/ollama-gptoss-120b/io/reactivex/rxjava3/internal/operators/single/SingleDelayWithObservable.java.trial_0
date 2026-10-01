@@ -1,0 +1,64 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.single.SingleDelayWithObservable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link SingleDelayWithObservable}.
+ *
+ * The benchmark measures the throughput (operations per second) of the operator
+ * when the delaying Observable emits a single item immediately.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup prepares immutable objects once per iteration.
+ * - Blackhole consumes the result to prevent dead-code elimination.
+ * - Warmup and measurement iterations are defined.
+ * - Mode.Throughput with TimeUnit.SECONDS reports ops/sec.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class SingleDelayWithObservableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        // Source Single that emits a constant value.
+        Single<Integer> source;
+
+        // Observable that triggers the delay; emits immediately.
+        Observable<Integer> other;
+
+        // The operator under test.
+        Single<Integer> delayedSingle;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Single.just(42);
+            other = Observable.just(0); // immediate emission, no delay
+            delayedSingle = new SingleDelayWithObservable<>(source, other);
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            // No resources to dispose in this simple benchmark.
+        }
+    }
+
+    @Benchmark
+    public void delayWithObservableThroughput(BenchmarkState state, Blackhole bh) {
+        // blockingGet forces the whole chain to execute synchronously.
+        Integer result = state.delayedSingle.blockingGet();
+        bh.consume(result);
+    }
+}
+```

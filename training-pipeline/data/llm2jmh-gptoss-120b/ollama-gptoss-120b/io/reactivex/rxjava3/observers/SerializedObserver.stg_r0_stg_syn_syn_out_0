@@ -1,0 +1,105 @@
+package io.reactivex.rxjava3.observers;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+@State(Scope.Benchmark)
+public class SerializedObserverBenchmark {
+
+    private SerializedObserver<Integer> serializedObserver;
+
+    private DummyObserver dummyObserver;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        dummyObserver = new DummyObserver();
+        serializedObserver = new SerializedObserver<>(dummyObserver);
+        // Simulate a subscription
+        serializedObserver.onSubscribe(new Disposable() {
+
+            volatile boolean disposed;
+
+            @Override
+            public void dispose() {
+                disposed = true;
+            }
+
+            @Override
+            public boolean isDisposed() {
+                return disposed;
+            }
+        });
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void onNextSingleThread() {
+        serializedObserver.onNext(42);
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Threads(4)
+    public void onNextMultiThread() {
+        serializedObserver.onNext(42);
+    }
+
+    // A no‑op downstream observer used to isolate the SerializedObserver's overhead.
+    static class DummyObserver implements Observer<Integer> {
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onComplete() {
+            /* no‑op */
+        }
+    }
+}

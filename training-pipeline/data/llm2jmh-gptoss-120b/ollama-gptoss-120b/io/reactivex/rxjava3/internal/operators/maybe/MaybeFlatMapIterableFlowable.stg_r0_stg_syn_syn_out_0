@@ -1,0 +1,122 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link MaybeFlatMapIterableFlowable}.
+ *
+ * The benchmark measures the throughput (operations per second) of the operator
+ * when flattening a {@link Maybe} into a {@link io.reactivex.rxjava3.core.Flowable}
+ * of a configurable number of elements.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create immutable data structures in @Setup to exclude allocation overhead.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Request {@code Long.MAX_VALUE} to simplify back‑pressure handling.
+ * - Use a CountDownLatch to wait for completion without blocking the benchmark thread.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class MaybeFlatMapIterableFlowableBenchmark {
+
+    /**
+     * Number of elements produced by the mapper function.
+     * Typical values: 1, 10, 100, 1000.
+     */
+    @Param({ "1", "10", "100", "1000" })
+    public int size;
+
+    private MaybeSource<Integer> source;
+
+    private Function<Integer, Iterable<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple Maybe that always succeeds with the value 1
+        source = Maybe.just(1);
+        // Mapper creates a list of integers from 0 (inclusive) to size (exclusive)
+        mapper = v -> {
+            List<Integer> list = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                list.add(i);
+            }
+            return list;
+        };
+    }
+
+    @Benchmark
+    public void flatMapIterable(Blackhole bh) throws InterruptedException {
+        // Create the operator instance directly
+        MaybeFlatMapIterableFlowable<Integer, Integer> flowable = new MaybeFlatMapIterableFlowable<>(source, mapper);
+        // Latch to wait for onComplete/onError
+        CountDownLatch latch = new CountDownLatch(1);
+        flowable.subscribe(new io.reactivex.rxjava3.core.FlowableSubscriber<Integer>() {
+
+            @Override
+            public void onSubscribe(org.reactivestreams.Subscription s) {
+                // Request an unbounded number of items for the benchmark
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                // Consume the item to avoid dead‑code elimination
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Propagate errors to the benchmark harness
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        // Wait until the flowable signals completion
+        latch.await();
+    }
+}

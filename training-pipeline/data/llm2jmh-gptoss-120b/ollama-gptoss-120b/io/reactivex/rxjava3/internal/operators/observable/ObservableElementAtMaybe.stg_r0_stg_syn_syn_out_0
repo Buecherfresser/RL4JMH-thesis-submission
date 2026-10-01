@@ -1,0 +1,105 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link ObservableElementAtMaybe}.
+ *
+ * Measures the throughput of retrieving the element at a given index from an {@link Observable}
+ * using the {@code elementAtMaybe} operator.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Param to explore different source sizes and target indices.
+ * - @Setup to create the source Observable once per benchmark iteration.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are left to the JMH runner defaults or can be
+ *   configured via command line.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableElementAtMaybeBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     */
+    @Param({ "10", "1000", "100000" })
+    public int sourceSize;
+
+    /**
+     * Zero‑based index of the element to retrieve.
+     * Must be less than {@code sourceSize} to avoid onComplete path.
+     */
+    @Param({ "0", "1", "10", "100", "500" })
+    public int index;
+
+    private Observable<Integer> source;
+
+    /**
+     * Prepare the source Observable before each benchmark iteration.
+     * Using {@code Observable.range} provides a hot, synchronous source without
+     * additional overhead (no scheduling, no async boundaries).
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Ensure the index is within bounds; if not, clamp it to the last element.
+        int safeIndex = Math.min(index, sourceSize - 1);
+        this.index = safeIndex;
+        this.source = Observable.range(0, sourceSize);
+    }
+
+    /**
+     * Benchmark the throughput of the {@code elementAtMaybe} operator.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void elementAtMaybe(Blackhole bh) {
+        // Create the Maybe that will emit the element at the requested index.
+        Maybe<Integer> maybe = new ObservableElementAtMaybe<>(source, index, null, false);
+        // Subscribe and block to obtain the value; this forces the whole chain to execute.
+        // Using blockingGet() is acceptable in a benchmark because we want to measure
+        // the end‑to‑end latency of the operator.
+        Integer result = maybe.blockingGet();
+        // Consume the result so the JIT cannot eliminate the call.
+        bh.consume(result);
+    }
+}

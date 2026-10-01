@@ -1,0 +1,610 @@
+diff --git a/com/googlecode/javaewah/BitCounter.java b/com/googlecode/javaewah/BitCounter.java
+index 2d50c48..c2bf56c 100644
+--- a/com/googlecode/javaewah/BitCounter.java
++++ b/com/googlecode/javaewah/BitCounter.java
+@@ -20,7 +20,7 @@ public final class BitCounter implements BitmapStorage {
+      * @param newData the word
+      */
+     @Override
+-    public void addWord(final long newData) {
++    public void addWord(final long newData) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(33);
+         this.oneBits += Long.bitCount(newData);
+     }
+     
+@@ -30,7 +30,7 @@ public final class BitCounter implements BitmapStorage {
+      * @param newData the word
+      */
+     @Override
+-    public void addLiteralWord(final long newData) {
++    public void addLiteralWord(final long newData) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(34);
+         this.oneBits += Long.bitCount(newData);
+     }
+ 
+@@ -42,7 +42,7 @@ public final class BitCounter implements BitmapStorage {
+      * @param number the number of literal words to add
+      */
+     @Override
+-    public void addStreamOfLiteralWords(final Buffer buffer, int start, int number) {
++    public void addStreamOfLiteralWords(final Buffer buffer, int start, int number) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(35);
+         for (int i = start; i < start + number; i++) {
+             addLiteralWord(buffer.getWord(i));
+         }
+diff --git a/com/googlecode/javaewah/BufferedIterator.java b/com/googlecode/javaewah/BufferedIterator.java
+index 3baf830..8a6c60c 100644
+--- a/com/googlecode/javaewah/BufferedIterator.java
++++ b/com/googlecode/javaewah/BufferedIterator.java
+@@ -31,7 +31,7 @@ public class BufferedIterator implements IteratingRLW, Cloneable {
+      * @param x the number of words to be discarded
+      */
+     @Override
+-    public void discardFirstWords(long x) {
++    public void discardFirstWords(long x) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(1);
+         while (x > 0) {
+             if (this.iteratingBrlw.getRunningLength() > x) {
+                 this.iteratingBrlw.discardFirstWords(x);
+@@ -53,14 +53,14 @@ public class BufferedIterator implements IteratingRLW, Cloneable {
+         }
+     }
+ 	@Override
+-	public void discardLiteralWords(long x) {
++	public void discardLiteralWords(long x) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(4);
+ 		this.iteratingBrlw.discardLiteralWords(x);
+         if (this.iteratingBrlw.getNumberOfLiteralWords() == 0)
+             this.next();		
+ 	}
+ 	
+     @Override
+-    public void discardRunningWords() {
++    public void discardRunningWords() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(7);
+         this.iteratingBrlw.discardRunningWords();
+         if (this.iteratingBrlw.getNumberOfLiteralWords() == 0)
+             this.next();
+diff --git a/com/googlecode/javaewah/BufferedRunningLengthWord.java b/com/googlecode/javaewah/BufferedRunningLengthWord.java
+index ae156c7..daf3032 100644
+--- a/com/googlecode/javaewah/BufferedRunningLengthWord.java
++++ b/com/googlecode/javaewah/BufferedRunningLengthWord.java
+@@ -39,7 +39,7 @@ public final class BufferedRunningLengthWord implements Cloneable {
+      *
+      * @param x the x
+      */
+-    public void discardFirstWords(long x) {
++    public void discardFirstWords(long x) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(10);
+         if (this.runningLength >= x) {
+             this.runningLength -= x;
+             return;
+@@ -55,7 +55,7 @@ public final class BufferedRunningLengthWord implements Cloneable {
+      *
+      * @return the number of literal words
+      */
+-    public int getNumberOfLiteralWords() {
++    public int getNumberOfLiteralWords() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(13);
+         return this.numberOfLiteralWords;
+     }
+ 
+@@ -64,7 +64,7 @@ public final class BufferedRunningLengthWord implements Cloneable {
+      *
+      * @return the running bit
+      */
+-    public boolean getRunningBit() {
++    public boolean getRunningBit() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(16);
+         return this.runningBit;
+     }
+ 
+diff --git a/com/googlecode/javaewah/ChunkIteratorImpl.java b/com/googlecode/javaewah/ChunkIteratorImpl.java
+index 9420567..157e925 100644
+--- a/com/googlecode/javaewah/ChunkIteratorImpl.java
++++ b/com/googlecode/javaewah/ChunkIteratorImpl.java
+@@ -43,17 +43,17 @@ final class ChunkIteratorImpl implements ChunkIterator {
+     }
+ 
+     @Override
+-    public boolean nextBit() {
++    public boolean nextBit() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(36);
+         return this.nextBit;
+     }
+ 
+     @Override
+-    public int nextLength() {
++    public int nextLength() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(37);
+         return this.nextLength;
+     }
+ 
+     @Override
+-    public void move() {
++    public void move() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(38);
+         move(this.nextLength);
+     }
+ 
+diff --git a/com/googlecode/javaewah/ClearIntIterator.java b/com/googlecode/javaewah/ClearIntIterator.java
+index 1e41267..769c23e 100644
+--- a/com/googlecode/javaewah/ClearIntIterator.java
++++ b/com/googlecode/javaewah/ClearIntIterator.java
+@@ -33,7 +33,7 @@ final class ClearIntIterator implements IntIterator {
+         this.hasNext = this.moveToNext();
+     }
+ 
+-    public boolean moveToNext() {
++    public boolean moveToNext() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(39);
+         while (!runningHasNext() && !literalHasNext()) {
+             if (!this.ewahIter.hasNext()) {
+                 return false;
+diff --git a/com/googlecode/javaewah/EWAHCompressedBitmap.java b/com/googlecode/javaewah/EWAHCompressedBitmap.java
+index d8334ad..ca03f1d 100644
+--- a/com/googlecode/javaewah/EWAHCompressedBitmap.java
++++ b/com/googlecode/javaewah/EWAHCompressedBitmap.java
+@@ -209,7 +209,7 @@ public final class EWAHCompressedBitmap implements Cloneable, Externalizable,
+      * @param newData the word
+      */
+     @Override
+-    public void addWord(final long newData) {
++    public void addWord(final long newData) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(40);
+         addWord(newData, WORD_IN_BITS);
+     }
+ 
+@@ -223,7 +223,7 @@ public final class EWAHCompressedBitmap implements Cloneable, Externalizable,
+      * @param bitsThatMatter the number of significant bits (by default it should
+      *                       be 64)
+      */
+-    public void addWord(final long newData, final int bitsThatMatter) {
++    public void addWord(final long newData, final int bitsThatMatter) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(41);
+         this.sizeInBits += bitsThatMatter;
+         if (newData == 0) {
+             insertEmptyWord(false);
+@@ -263,7 +263,7 @@ public final class EWAHCompressedBitmap implements Cloneable, Externalizable,
+      * @param newData the word
+      */
+     @Override
+-    public void addLiteralWord(final long newData) {
++    public void addLiteralWord(final long newData) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(42);
+         this.sizeInBits += WORD_IN_BITS;
+         insertLiteralWord(newData);
+     }
+diff --git a/com/googlecode/javaewah/EWAHIterator.java b/com/googlecode/javaewah/EWAHIterator.java
+index 6914d04..d352df7 100644
+--- a/com/googlecode/javaewah/EWAHIterator.java
++++ b/com/googlecode/javaewah/EWAHIterator.java
+@@ -37,7 +37,7 @@ public final class EWAHIterator implements Cloneable {
+      * @param bitmap we want to iterate over
+      * @return an iterator
+      */
+-    public static EWAHIterator getEWAHIterator(EWAHCompressedBitmap bitmap) {
++    public static EWAHIterator getEWAHIterator(EWAHCompressedBitmap bitmap) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(43);
+         return bitmap.getEWAHIterator();
+     }
+ 
+@@ -46,7 +46,7 @@ public final class EWAHIterator implements Cloneable {
+      *
+      * @return the buffer
+      */
+-    public Buffer buffer() {
++    public Buffer buffer() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(44);
+         return this.rlw.buffer;
+     }
+ 
+@@ -56,7 +56,7 @@ public final class EWAHIterator implements Cloneable {
+      *
+      * @return the int
+      */
+-    public int literalWords() {
++    public int literalWords() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(45);
+         return this.pointer - this.rlw.getNumberOfLiteralWords();
+     }
+ 
+diff --git a/com/googlecode/javaewah/FastAggregation.java b/com/googlecode/javaewah/FastAggregation.java
+index df64aea..ff2a708 100644
+--- a/com/googlecode/javaewah/FastAggregation.java
++++ b/com/googlecode/javaewah/FastAggregation.java
+@@ -35,7 +35,7 @@ public final class FastAggregation {
+      * @return the or aggregate.
+      */
+     public static EWAHCompressedBitmap bufferedand(final int bufSize,
+-                                                   final EWAHCompressedBitmap... bitmaps) {
++                                                   final EWAHCompressedBitmap... bitmaps) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(46);
+         EWAHCompressedBitmap answer = new EWAHCompressedBitmap();
+         bufferedandWithContainer(answer, bufSize, bitmaps);
+         return answer;
+@@ -54,7 +54,7 @@ public final class FastAggregation {
+      */
+     public static void bufferedandWithContainer(
+             final BitmapStorage container, final int bufSize,
+-            final EWAHCompressedBitmap... bitmaps) {
++            final EWAHCompressedBitmap... bitmaps) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(47);
+ 
+         java.util.LinkedList<IteratingBufferedRunningLengthWord> al = new java.util.LinkedList<IteratingBufferedRunningLengthWord>();
+         for (EWAHCompressedBitmap bitmap : bitmaps) {
+@@ -97,7 +97,7 @@ public final class FastAggregation {
+      * @return the or aggregate.
+      */
+     public static EWAHCompressedBitmap bufferedor(final int bufSize,
+-                                                  final EWAHCompressedBitmap... bitmaps) {
++                                                  final EWAHCompressedBitmap... bitmaps) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(48);
+         EWAHCompressedBitmap answer = new EWAHCompressedBitmap();
+         bufferedorWithContainer(answer, bufSize, bitmaps);
+         return answer;
+diff --git a/com/googlecode/javaewah/IntIteratorImpl.java b/com/googlecode/javaewah/IntIteratorImpl.java
+index 633a32f..bd99d82 100644
+--- a/com/googlecode/javaewah/IntIteratorImpl.java
++++ b/com/googlecode/javaewah/IntIteratorImpl.java
+@@ -33,7 +33,7 @@ final class IntIteratorImpl implements IntIterator {
+         this.hasNext = this.moveToNext();
+     }
+ 
+-    public boolean moveToNext() {
++    public boolean moveToNext() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(49);
+         while (!runningHasNext() && !literalHasNext()) {
+             if (!this.ewahIter.hasNext()) {
+                 return false;
+diff --git a/com/googlecode/javaewah/IteratingBufferedRunningLengthWord.java b/com/googlecode/javaewah/IteratingBufferedRunningLengthWord.java
+index c341861..fd607ef 100644
+--- a/com/googlecode/javaewah/IteratingBufferedRunningLengthWord.java
++++ b/com/googlecode/javaewah/IteratingBufferedRunningLengthWord.java
+@@ -45,7 +45,7 @@ public final class IteratingBufferedRunningLengthWord implements IteratingRLW,
+      * @param x the number of words to be discarded
+      */
+     @Override
+-    public void discardFirstWords(long x) {
++    public void discardFirstWords(long x) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(18);
+         while (x > 0) {
+             if (this.brlw.runningLength > x) {
+                 this.brlw.runningLength -= x;
+@@ -70,7 +70,7 @@ public final class IteratingBufferedRunningLengthWord implements IteratingRLW,
+         }
+     }
+ 	@Override
+-	public void discardLiteralWords(long x) {
++	public void discardLiteralWords(long x) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(20);
+ 		this.literalWordStartPosition += x;
+ 		this.brlw.numberOfLiteralWords -= x;
+ 		if (this.brlw.numberOfLiteralWords == 0) {
+@@ -82,7 +82,7 @@ public final class IteratingBufferedRunningLengthWord implements IteratingRLW,
+ 		}
+ 	}
+     @Override
+-    public void discardRunningWords() {
++    public void discardRunningWords() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(22);
+         this.brlw.runningLength = 0;
+         if (this.brlw.getNumberOfLiteralWords() == 0)
+             this.next();
+diff --git a/com/googlecode/javaewah/IteratorAggregation.java b/com/googlecode/javaewah/IteratorAggregation.java
+index 66aaecc..7420a91 100644
+--- a/com/googlecode/javaewah/IteratorAggregation.java
++++ b/com/googlecode/javaewah/IteratorAggregation.java
+@@ -22,7 +22,7 @@ public final class IteratorAggregation {
+      * @param x iterator to negate
+      * @return negated version of the iterator
+      */
+-    public static IteratingRLW not(final IteratingRLW x) {
++    public static IteratingRLW not(final IteratingRLW x) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(50);
+         return new IteratingRLW() {
+ 
+             @Override
+diff --git a/com/googlecode/javaewah/IteratorUtil.java b/com/googlecode/javaewah/IteratorUtil.java
+index c8f687b..2c2d30b 100644
+--- a/com/googlecode/javaewah/IteratorUtil.java
++++ b/com/googlecode/javaewah/IteratorUtil.java
+@@ -19,7 +19,7 @@ public final class IteratorUtil {
+      * @param i iterator we wish to iterate over
+      * @return an iterator over the set bits corresponding to the iterator
+      */
+-    public static IntIterator toSetBitsIntIterator(final IteratingRLW i) {
++    public static IntIterator toSetBitsIntIterator(final IteratingRLW i) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(24);
+         return new IntIteratorOverIteratingRLW(i);
+     }
+ 
+@@ -27,7 +27,7 @@ public final class IteratorUtil {
+      * @param i iterator we wish to iterate over
+      * @return an iterator over the set bits corresponding to the iterator
+      */
+-    public static Iterator<Integer> toSetBitsIterator(final IteratingRLW i) {
++    public static Iterator<Integer> toSetBitsIterator(final IteratingRLW i) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(25);
+         return new Iterator<Integer>() {
+             @Override
+             public boolean hasNext() {
+@@ -57,7 +57,7 @@ public final class IteratorUtil {
+      * @param c where we write
+      */
+     public static void materialize(final IteratingRLW i,
+-                                   final BitmapStorage c) {
++                                   final BitmapStorage c) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(26);
+         while (true) {
+             if (i.getRunningLength() > 0) {
+                 c.addStreamOfEmptyWords(i.getRunningBit(), i.getRunningLength());
+diff --git a/com/googlecode/javaewah/LongArray.java b/com/googlecode/javaewah/LongArray.java
+index 7c63100..036f540 100644
+--- a/com/googlecode/javaewah/LongArray.java
++++ b/com/googlecode/javaewah/LongArray.java
+@@ -34,17 +34,17 @@ final class LongArray implements Buffer, Cloneable {
+     }
+     
+     @Override
+-    public int sizeInWords() {
++    public int sizeInWords() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(27);
+         return this.actualSizeInWords;
+     }
+ 
+     @Override
+-    public void ensureCapacity(int capacity) {
++    public void ensureCapacity(int capacity) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(28);
+         resizeBuffer(capacity - this.actualSizeInWords);
+     }
+ 
+     @Override
+-    public long getWord(int position) {
++    public long getWord(int position) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(29);
+         return this.buffer[position];
+     }
+     
+diff --git a/com/googlecode/javaewah/LongBufferWrapper.java b/com/googlecode/javaewah/LongBufferWrapper.java
+index 8fa2ffe..35958a3 100644
+--- a/com/googlecode/javaewah/LongBufferWrapper.java
++++ b/com/googlecode/javaewah/LongBufferWrapper.java
+@@ -25,19 +25,19 @@ final class LongBufferWrapper implements Buffer, Cloneable {
+ 		}
+     
+     @Override
+-    public int sizeInWords() {
++    public int sizeInWords() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(30);
+         return this.actualSizeInWords;
+     }
+ 
+     @Override
+-    public void ensureCapacity(int capacity) {
++    public void ensureCapacity(int capacity) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(31);
+         if(capacity > buffer.capacity()) {
+             throw new RuntimeException("Cannot increase buffer capacity. Current capacity: " + buffer.capacity() + ". New capacity: " + capacity);
+         }
+     }
+ 
+     @Override
+-    public long getWord(int position) {
++    public long getWord(int position) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(32);
+         return this.buffer.get(position);
+     }
+ 
+diff --git a/com/googlecode/javaewah/datastructure/BitSet.java b/com/googlecode/javaewah/datastructure/BitSet.java
+index 021f740..a3bb267 100644
+--- a/com/googlecode/javaewah/datastructure/BitSet.java
++++ b/com/googlecode/javaewah/datastructure/BitSet.java
+@@ -50,7 +50,7 @@ public class BitSet implements Cloneable, Iterable<Integer>, Externalizable ,Wor
+      *
+      * @param bs other bitset
+      */
+-    public void and(WordArray bs) {
++    public void and(WordArray bs) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(2);
+         for (int k = 0; k < Math.min(this.getNumberOfWords(), bs.getNumberOfWords()); ++k) {
+             this.data[k] &= bs.getWord(k);
+         }
+@@ -65,7 +65,7 @@ public class BitSet implements Cloneable, Iterable<Integer>, Externalizable ,Wor
+      * @param bs other bitset
+      * @return cardinality
+      */
+-    public int andcardinality(WordArray bs) {
++    public int andcardinality(WordArray bs) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(5);
+         int sum = 0;
+         for (int k = 0; k < Math.min(this.getNumberOfWords(), bs.getNumberOfWords()); ++k) {
+             sum += Long.bitCount(this.getWord(k) & bs.getWord(k));
+@@ -81,7 +81,7 @@ public class BitSet implements Cloneable, Iterable<Integer>, Externalizable ,Wor
+      *
+      * @param bs other bitset
+      */
+-    public void andNot(WordArray bs) {
++    public void andNot(WordArray bs) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(8);
+         for (int k = 0; k < Math.min(this.getNumberOfWords(), bs.getNumberOfWords()); ++k) {
+             this.data[k] &= ~bs.getWord(k);
+         }
+diff --git a/com/googlecode/javaewah/datastructure/ImmutableBitSet.java b/com/googlecode/javaewah/datastructure/ImmutableBitSet.java
+index 3485a84..fdb2cc9 100644
+--- a/com/googlecode/javaewah/datastructure/ImmutableBitSet.java
++++ b/com/googlecode/javaewah/datastructure/ImmutableBitSet.java
+@@ -41,7 +41,7 @@ public class ImmutableBitSet  implements Cloneable, Iterable<Integer>,WordArray
+    * Get a copy of this ImmutableBitSet as a mutable BitSet.
+    * @return a copy
+    */
+-  public BitSet asBitSet() {
++  public BitSet asBitSet() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(11);
+   	BitSet bs = new BitSet(this.size());
+   	this.data.rewind();
+   	this.data.get(bs.data, 0, bs.data.length);
+@@ -53,7 +53,7 @@ public class ImmutableBitSet  implements Cloneable, Iterable<Integer>,WordArray
+    *
+    * @return the number of bits
+    */
+-  public int cardinality() {
++  public int cardinality() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(14);
+       int sum = 0;
+       int length = this.data.limit();
+       for(int k = 0; k < length; ++k)
+@@ -101,7 +101,7 @@ public class ImmutableBitSet  implements Cloneable, Iterable<Integer>,WordArray
+    *
+    * @return true if no set bit is found
+    */
+-  public boolean empty() {
++  public boolean empty() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(17);
+     int length = this.data.limit();
+     for(int k = 0; k < length; ++k)
+           if (this.data.get(k) != 0) return false;
+diff --git a/com/googlecode/javaewah/datastructure/PriorityQ.java b/com/googlecode/javaewah/datastructure/PriorityQ.java
+index 06f98a5..0028e68 100644
+--- a/com/googlecode/javaewah/datastructure/PriorityQ.java
++++ b/com/googlecode/javaewah/datastructure/PriorityQ.java
+@@ -32,7 +32,7 @@ public final class PriorityQ<T> {
+     /**
+      * @return the size of the queue
+      */
+-    public int size() {
++    public int size() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(19);
+         return this.lastIndex;
+     }
+ 
+@@ -45,7 +45,7 @@ public final class PriorityQ<T> {
+      *
+      * @param t element to be added
+      */
+-    public void toss(final T t) {
++    public void toss(final T t) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(21);
+         this.a[++this.lastIndex] = t;
+     }
+ 
+@@ -54,7 +54,7 @@ public final class PriorityQ<T> {
+      *
+      * @return the element on top
+      */
+-    public T peek() {
++    public T peek() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(23);
+         return this.a[1];
+     }
+ 
+diff --git a/com/googlecode/javaewah/jmhbench/MutationSwitch.java b/com/googlecode/javaewah/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..d1b4d6f
+--- /dev/null
++++ b/com/googlecode/javaewah/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.googlecode.javaewah.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/googlecode/javaewah/symmetric/EWAHPointer.java b/com/googlecode/javaewah/symmetric/EWAHPointer.java
+index bc5c838..7905222 100644
+--- a/com/googlecode/javaewah/symmetric/EWAHPointer.java
++++ b/com/googlecode/javaewah/symmetric/EWAHPointer.java
+@@ -47,14 +47,14 @@ public final class EWAHPointer implements Comparable<EWAHPointer> {
+     /**
+      * @return the end of the current run
+      */
+-    public int endOfRun() {
++    public int endOfRun() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(3);
+         return this.endrun;
+     }
+ 
+     /**
+      * @return the beginning of the current run
+      */
+-    public int beginOfRun() {
++    public int beginOfRun() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(6);
+         if (this.isLiteral)
+             return this.endrun - this.iterator.getNumberOfLiteralWords();
+         return (int) (this.endrun - this.iterator.getRunningLength());
+@@ -63,7 +63,7 @@ public final class EWAHPointer implements Comparable<EWAHPointer> {
+     /**
+      * Process the next run
+      */
+-    public void parseNextRun() {
++    public void parseNextRun() { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(9);
+         if ((this.isLiteral)
+                 || (this.iterator.getNumberOfLiteralWords() == 0)) {
+             // no choice, must load next runs
+diff --git a/com/googlecode/javaewah/symmetric/RunningBitmapMerge.java b/com/googlecode/javaewah/symmetric/RunningBitmapMerge.java
+index 482cb7a..1150323 100644
+--- a/com/googlecode/javaewah/symmetric/RunningBitmapMerge.java
++++ b/com/googlecode/javaewah/symmetric/RunningBitmapMerge.java
+@@ -24,7 +24,7 @@ public class RunningBitmapMerge implements BitmapSymmetricAlgorithm {
+ 
+     @Override
+     public void symmetric(UpdateableBitmapFunction f, BitmapStorage out,
+-                          EWAHCompressedBitmap... set) {
++                          EWAHCompressedBitmap... set) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(12);
+         out.clear();
+         final PriorityQ<EWAHPointer> h = new PriorityQ<EWAHPointer>(
+                 set.length, new Comparator<EWAHPointer>() {
+diff --git a/com/googlecode/javaewah/symmetric/ThresholdFuncBitmap.java b/com/googlecode/javaewah/symmetric/ThresholdFuncBitmap.java
+index ec8dd88..9dd6de2 100644
+--- a/com/googlecode/javaewah/symmetric/ThresholdFuncBitmap.java
++++ b/com/googlecode/javaewah/symmetric/ThresholdFuncBitmap.java
+@@ -40,7 +40,7 @@ public final class ThresholdFuncBitmap extends UpdateableBitmapFunction {
+     }
+ 
+     @Override
+-    public void dispatch(BitmapStorage out, int runBegin, int runEnd) {
++    public void dispatch(BitmapStorage out, int runBegin, int runEnd) { com.googlecode.javaewah.jmhbench.MutationSwitch.tick(15);
+         final int runLength = runEnd - runBegin;
+         if (this.hammingWeight >= this.min) {
+             out.addStreamOfEmptyWords(true, runLength);

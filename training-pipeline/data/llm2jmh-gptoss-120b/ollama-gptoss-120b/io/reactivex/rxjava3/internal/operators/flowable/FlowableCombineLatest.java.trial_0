@@ -1,0 +1,90 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+
+/**
+ * JMH benchmark for {@code FlowableCombineLatest} (throughput mode).
+ *
+ * The benchmark creates a configurable number of source {@code Flowable}s,
+ * each emitting a configurable range of integers. The sources are combined
+ * using {@code Flowable.combineLatest} with a simple summing combiner.
+ *
+ * Throughput (operations per second) is measured by repeatedly executing
+ * the combined flowable and consuming all emitted items via a {@link Blackhole}.
+ *
+ * The benchmark follows best practices:
+ * - Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - Parameterize source count and item count to explore different workloads.
+ * - Include warm‑up and measurement iterations.
+ * - Use {@code blockingForEach} to ensure the whole stream is processed per operation.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableCombineLatestThroughputBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of source Flowables to combine.
+         * Typical values: 2, 5, 10.
+         */
+        @Param({"2", "5", "10"})
+        public int sourceCount;
+
+        /**
+         * Number of items each source Flowable emits.
+         * Adjust to keep the total work reasonable for the benchmark duration.
+         */
+        @Param({"1000"})
+        public int itemCount;
+
+        /**
+         * The combined Flowable that will be exercised in the benchmark.
+         */
+        public Flowable<Integer> combined;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            @SuppressWarnings("unchecked")
+            Flowable<Integer>[] sources = new Flowable[sourceCount];
+            for (int i = 0; i < sourceCount; i++) {
+                // Each source emits a range of integers from 1 to itemCount.
+                sources[i] = Flowable.range(1, itemCount);
+            }
+
+            // Combine the sources using a summing combiner.
+            combined = Flowable.combineLatest(
+                    sources,
+                    (Object[] values) -> {
+                        int sum = 0;
+                        for (Object v : values) {
+                            sum += (Integer) v;
+                        }
+                        return sum;
+                    });
+        }
+    }
+
+    /**
+     * Executes the combined Flowable and consumes all emitted items.
+     *
+     * @param state shared benchmark state
+     * @param bh    Blackhole to consume the results and prevent dead‑code elimination
+     */
+    @Benchmark
+    public void combineLatestThroughput(BenchmarkState state, Blackhole bh) {
+        // Process the entire stream for each operation.
+        state.combined.blockingForEach(bh::consume);
+    }
+}
+```

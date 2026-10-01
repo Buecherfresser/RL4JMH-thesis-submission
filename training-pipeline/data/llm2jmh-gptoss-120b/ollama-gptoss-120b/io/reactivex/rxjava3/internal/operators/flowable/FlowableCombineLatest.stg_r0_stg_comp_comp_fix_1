@@ -1,0 +1,56 @@
+```java
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+
+/**
+ * JMH benchmark for {@code FlowableCombineLatest} (throughput mode).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableCombineLatestBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        @Param({ "2", "5", "10" })
+        public int sourceCount;
+
+        @Param({ "1000" })
+        public int itemCount;
+
+        public Flowable<Integer> combined;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            @SuppressWarnings("unchecked")
+            Flowable<Integer>[] sources = new Flowable[sourceCount];
+            for (int i = 0; i < sourceCount; i++) {
+                sources[i] = Flowable.range(1, itemCount);
+            }
+
+            combined = Flowable.combineLatest(
+                    Arrays.asList(sources),
+                    values -> {
+                        int sum = 0;
+                        for (Object v : values) {
+                            sum += (Integer) v;
+                        }
+                        return sum;
+                    });
+        }
+    }
+
+    @Benchmark
+    public void combineLatestThroughput(BenchmarkState state, Blackhole bh) {
+        state.combined.blockingForEach(bh::consume);
+    }
+}
+```

@@ -1,0 +1,90 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@code Maybe.takeUntil(MaybeSource)} which internally uses
+ * {@code MaybeTakeUntilMaybe}. The benchmark measures the throughput of the
+ * operator when the upstream Maybe emits a value and the "other" Maybe never
+ * terminates (the typical success path).
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source and other Maybes in @Setup to exclude allocation cost.
+ * - Use blockingGet() to make the flow synchronous, ensuring the benchmark
+ *   measures only the operator logic.
+ * - Consume the result with Blackhole to prevent dead‑code elimination.
+ * - Configure warm‑up, measurement, and fork parameters for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class MaybeTakeUntilMaybeBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        // Upstream that emits a single value.
+        Maybe<Integer> source;
+
+        // "Other" Maybe that never terminates, so the operator should forward the upstream value.
+        Maybe<Object> other;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Maybe.just(1);
+            other = Maybe.never();
+        }
+    }
+
+    @Benchmark
+    public void takeUntilSuccess(BenchmarkState state, Blackhole bh) {
+        // The operator under test is applied here.
+        Integer result = state.source.takeUntil(state.other).blockingGet();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void takeUntilOtherCompletesFirst(BenchmarkState state, Blackhole bh) {
+        // In this variant the "other" completes immediately, causing the downstream to complete without a value.
+        Maybe<Object> immediateOther = Maybe.empty();
+        Integer result = state.source.takeUntil(immediateOther).blockingGet();
+        bh.consume(result);
+    }
+}

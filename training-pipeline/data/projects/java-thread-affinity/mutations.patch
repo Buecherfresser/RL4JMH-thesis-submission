@@ -1,0 +1,582 @@
+diff --git a/net/openhft/affinity/Affinity.java b/net/openhft/affinity/Affinity.java
+index 8dadd8a..e7a09e1 100644
+--- a/net/openhft/affinity/Affinity.java
++++ b/net/openhft/affinity/Affinity.java
+@@ -64,7 +64,7 @@ public enum Affinity {
+         }
+     }
+ 
+-    public static IAffinity getAffinityImpl() {
++    public static IAffinity getAffinityImpl() { net.openhft.affinity.jmhbench.MutationSwitch.tick(1);
+         return AFFINITY_IMPL;
+     }
+ 
+@@ -138,11 +138,11 @@ public enum Affinity {
+         LOGGER.warn(sw.toString());
+     }
+ 
+-    public static BitSet getAffinity() {
++    public static BitSet getAffinity() { net.openhft.affinity.jmhbench.MutationSwitch.tick(5);
+         return AFFINITY_IMPL.getAffinity();
+     }
+ 
+-    public static void setAffinity(final BitSet affinity) {
++    public static void setAffinity(final BitSet affinity) { net.openhft.affinity.jmhbench.MutationSwitch.tick(8);
+         AFFINITY_IMPL.setAffinity(affinity);
+     }
+ 
+diff --git a/net/openhft/affinity/AffinityLock.java b/net/openhft/affinity/AffinityLock.java
+index cf0ed4c..47e7d17 100644
+--- a/net/openhft/affinity/AffinityLock.java
++++ b/net/openhft/affinity/AffinityLock.java
+@@ -90,7 +90,7 @@ public class AffinityLock implements Closeable {
+      *
+      * @param cpuLayout for this application to use for this machine.
+      */
+-    public static void cpuLayout(@NotNull CpuLayout cpuLayout) {
++    public static void cpuLayout(@NotNull CpuLayout cpuLayout) { net.openhft.affinity.jmhbench.MutationSwitch.tick(11);
+         LOCK_INVENTORY.set(cpuLayout);
+     }
+ 
+@@ -98,7 +98,7 @@ public class AffinityLock implements Closeable {
+      * @return The current CpuLayout for the application.
+      */
+     @NotNull
+-    public static CpuLayout cpuLayout() {
++    public static CpuLayout cpuLayout() { net.openhft.affinity.jmhbench.MutationSwitch.tick(14);
+         return LOCK_INVENTORY.getCpuLayout();
+     }
+ 
+@@ -132,7 +132,7 @@ public class AffinityLock implements Closeable {
+      *
+      * @return A handle for the current AffinityLock.
+      */
+-    public static AffinityLock acquireLock() {
++    public static AffinityLock acquireLock() { net.openhft.affinity.jmhbench.MutationSwitch.tick(16);
+         return acquireLock(true);
+     }
+ 
+diff --git a/net/openhft/affinity/AffinityThreadFactory.java b/net/openhft/affinity/AffinityThreadFactory.java
+index 6e1d67e..acbb11b 100644
+--- a/net/openhft/affinity/AffinityThreadFactory.java
++++ b/net/openhft/affinity/AffinityThreadFactory.java
+@@ -36,7 +36,7 @@ public class AffinityThreadFactory implements ThreadFactory {
+ 
+     @NotNull
+     @Override
+-    public synchronized Thread newThread(@NotNull final Runnable r) {
++    public synchronized Thread newThread(@NotNull final Runnable r) { net.openhft.affinity.jmhbench.MutationSwitch.tick(18);
+         String name2 = id <= 1 ? name : (name + '-' + id);
+         id++;
+         Thread t = new Thread(() -> {
+diff --git a/net/openhft/affinity/BootClassPath.java b/net/openhft/affinity/BootClassPath.java
+index 85efa32..2c48e61 100644
+--- a/net/openhft/affinity/BootClassPath.java
++++ b/net/openhft/affinity/BootClassPath.java
+@@ -60,7 +60,7 @@ enum BootClassPath {
+             Files.walkFileTree(modules, new SimpleFileVisitor<Path>() {
+                 @Override
+                 public @NotNull FileVisitResult visitFile(final @NotNull Path file,
+-                                                          final @NotNull BasicFileAttributes attrs) throws IOException {
++                                                          final @NotNull BasicFileAttributes attrs) throws IOException { net.openhft.affinity.jmhbench.MutationSwitch.tick(20);
+                     if (file.getFileName().toString().endsWith(".class")) {
+                         Path relative = modules.relativize(file);
+                         if (relative.getNameCount() > 1) {
+@@ -111,7 +111,7 @@ enum BootClassPath {
+         try {
+             Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                 @Override
+-                public @NotNull FileVisitResult visitFile(final @NotNull Path file, final @NotNull BasicFileAttributes attrs) throws IOException {
++                public @NotNull FileVisitResult visitFile(final @NotNull Path file, final @NotNull BasicFileAttributes attrs) throws IOException { net.openhft.affinity.jmhbench.MutationSwitch.tick(22);
+                     if (file.getFileName().toString().endsWith(".class")) {
+                         dirResources.add(path.relativize(file).toString());
+                     }
+@@ -125,7 +125,7 @@ enum BootClassPath {
+         return dirResources;
+     }
+ 
+-    public final boolean has(String binaryClassName) {
++    public final boolean has(String binaryClassName) { net.openhft.affinity.jmhbench.MutationSwitch.tick(24);
+         final String resourceClassName = binaryClassName.replace('.', '/').concat(".class");
+         return bootClassPathResources.contains(resourceClassName);
+     }
+diff --git a/net/openhft/affinity/LockCheck.java b/net/openhft/affinity/LockCheck.java
+index e3c485f..a434613 100644
+--- a/net/openhft/affinity/LockCheck.java
++++ b/net/openhft/affinity/LockCheck.java
+@@ -25,7 +25,7 @@ public enum LockCheck {
+ 
+     private static final LockChecker lockChecker = FileLockBasedLockChecker.getInstance();
+ 
+-    public static long getPID() {
++    public static long getPID() { net.openhft.affinity.jmhbench.MutationSwitch.tick(26);
+         return Utilities.currentProcessId();
+     }
+ 
+@@ -33,7 +33,7 @@ public enum LockCheck {
+         return IS_LINUX;
+     }
+ 
+-    public static boolean isCpuFree(int cpu) {
++    public static boolean isCpuFree(int cpu) { net.openhft.affinity.jmhbench.MutationSwitch.tick(28);
+         if (!canOSSupportOperation())
+             return true;
+ 
+@@ -44,7 +44,7 @@ public enum LockCheck {
+         return storePid(processID, cpu, cpu2);
+     }
+ 
+-    public static boolean isProcessRunning(long pid) {
++    public static boolean isProcessRunning(long pid) { net.openhft.affinity.jmhbench.MutationSwitch.tick(30);
+         if (canOSSupportOperation())
+             return new File("/proc/" + pid).exists();
+         else
+diff --git a/net/openhft/affinity/LockInventory.java b/net/openhft/affinity/LockInventory.java
+index b546152..2945a88 100644
+--- a/net/openhft/affinity/LockInventory.java
++++ b/net/openhft/affinity/LockInventory.java
+@@ -34,7 +34,7 @@ class LockInventory {
+         set(cpuLayout);
+     }
+ 
+-    public static String dumpLocks(@NotNull AffinityLock[] locks) {
++    public static String dumpLocks(@NotNull AffinityLock[] locks) { net.openhft.affinity.jmhbench.MutationSwitch.tick(32);
+         StringBuilder sb = new StringBuilder();
+         for (int i = 0; i < locks.length; i++) {
+             AffinityLock al = locks[i];
+@@ -81,7 +81,7 @@ class LockInventory {
+         return false;
+     }
+ 
+-    public final synchronized CpuLayout getCpuLayout() {
++    public final synchronized CpuLayout getCpuLayout() { net.openhft.affinity.jmhbench.MutationSwitch.tick(34);
+         return cpuLayout;
+     }
+ 
+@@ -126,7 +126,7 @@ class LockInventory {
+         }
+     }
+ 
+-    public final synchronized AffinityLock acquireLock(boolean bind, int cpuId, AffinityStrategy... strategies) {
++    public final synchronized AffinityLock acquireLock(boolean bind, int cpuId, AffinityStrategy... strategies) { net.openhft.affinity.jmhbench.MutationSwitch.tick(36);
+         if (getAffinityImpl() instanceof NullAffinity)
+             return noLock();
+ 
+diff --git a/net/openhft/affinity/MicroJitterSampler.java b/net/openhft/affinity/MicroJitterSampler.java
+index 30e27d2..2e69bf8 100644
+--- a/net/openhft/affinity/MicroJitterSampler.java
++++ b/net/openhft/affinity/MicroJitterSampler.java
+@@ -34,7 +34,7 @@ public class MicroJitterSampler {
+         }
+     }
+ 
+-    public static void main(String... ignored) throws InterruptedException {
++    public static void main(String... ignored) throws InterruptedException { net.openhft.affinity.jmhbench.MutationSwitch.tick(38);
+         MicroJitterSampler sampler = new MicroJitterSampler();
+ 
+         Thread t = new Thread(sampler::run);
+@@ -55,7 +55,7 @@ public class MicroJitterSampler {
+         }
+     }
+ 
+-    public void run() {
++    public void run() { net.openhft.affinity.jmhbench.MutationSwitch.tick(40);
+         try (final AffinityLock lock = AffinityLock.acquireLock(CPU)) {
+             assert lock != null;
+             boolean first = true;
+diff --git a/net/openhft/affinity/impl/LinuxHelper.java b/net/openhft/affinity/impl/LinuxHelper.java
+index a52404b..fea57ed 100644
+--- a/net/openhft/affinity/impl/LinuxHelper.java
++++ b/net/openhft/affinity/impl/LinuxHelper.java
+@@ -52,11 +52,11 @@ public class LinuxHelper {
+         return cpuset;
+     }
+ 
+-    public static void sched_setaffinity(final BitSet affinity) {
++    public static void sched_setaffinity(final BitSet affinity) { net.openhft.affinity.jmhbench.MutationSwitch.tick(12);
+         sched_setaffinity(0, affinity);
+     }
+ 
+-    public static void sched_setaffinity(final int pid, final BitSet affinity) {
++    public static void sched_setaffinity(final int pid, final BitSet affinity) { net.openhft.affinity.jmhbench.MutationSwitch.tick(15);
+         final CLibrary lib = CLibrary.INSTANCE;
+         final cpu_set_t cpuset = new cpu_set_t();
+         final int size = version.isSameOrNewer(VERSION_2_6) ? cpu_set_t.SIZE_OF_CPU_SET_T : NativeLong.SIZE;
+@@ -80,7 +80,7 @@ public class LinuxHelper {
+         }
+     }
+ 
+-    public static int sched_getcpu() {
++    public static int sched_getcpu() { net.openhft.affinity.jmhbench.MutationSwitch.tick(17);
+         final CLibrary lib = CLibrary.INSTANCE;
+         try {
+             final int ret = lib.sched_getcpu();
+diff --git a/net/openhft/affinity/impl/LinuxJNAAffinity.java b/net/openhft/affinity/impl/LinuxJNAAffinity.java
+index d16fc3b..85f1e17 100644
+--- a/net/openhft/affinity/impl/LinuxJNAAffinity.java
++++ b/net/openhft/affinity/impl/LinuxJNAAffinity.java
+@@ -46,7 +46,7 @@ public enum LinuxJNAAffinity implements IAffinity {
+     private final ThreadLocal<Integer> THREAD_ID = new ThreadLocal<>();
+ 
+     @Override
+-    public BitSet getAffinity() {
++    public BitSet getAffinity() { net.openhft.affinity.jmhbench.MutationSwitch.tick(19);
+         final LinuxHelper.cpu_set_t cpuset = LinuxHelper.sched_getaffinity();
+ 
+         BitSet ret = new BitSet(LinuxHelper.cpu_set_t.__CPU_SETSIZE);
+@@ -59,12 +59,12 @@ public enum LinuxJNAAffinity implements IAffinity {
+     }
+ 
+     @Override
+-    public void setAffinity(final BitSet affinity) {
++    public void setAffinity(final BitSet affinity) { net.openhft.affinity.jmhbench.MutationSwitch.tick(21);
+         LinuxHelper.sched_setaffinity(affinity);
+     }
+ 
+     @Override
+-    public int getCpu() {
++    public int getCpu() { net.openhft.affinity.jmhbench.MutationSwitch.tick(23);
+         return LinuxHelper.sched_getcpu();
+     }
+ 
+diff --git a/net/openhft/affinity/impl/NoCpuLayout.java b/net/openhft/affinity/impl/NoCpuLayout.java
+index e57b1de..29e311c 100644
+--- a/net/openhft/affinity/impl/NoCpuLayout.java
++++ b/net/openhft/affinity/impl/NoCpuLayout.java
+@@ -18,17 +18,17 @@ public class NoCpuLayout implements CpuLayout {
+     }
+ 
+     @Override
+-    public int sockets() {
++    public int sockets() { net.openhft.affinity.jmhbench.MutationSwitch.tick(25);
+         return 1;
+     }
+ 
+     @Override
+-    public int coresPerSocket() {
++    public int coresPerSocket() { net.openhft.affinity.jmhbench.MutationSwitch.tick(27);
+         return cpus;
+     }
+ 
+     @Override
+-    public int threadsPerCore() {
++    public int threadsPerCore() { net.openhft.affinity.jmhbench.MutationSwitch.tick(29);
+         return 1;
+     }
+ 
+diff --git a/net/openhft/affinity/impl/NullAffinity.java b/net/openhft/affinity/impl/NullAffinity.java
+index 4c5e8e3..1781b99 100644
+--- a/net/openhft/affinity/impl/NullAffinity.java
++++ b/net/openhft/affinity/impl/NullAffinity.java
+@@ -17,17 +17,17 @@ public enum NullAffinity implements IAffinity {
+     private static final Logger LOGGER = LoggerFactory.getLogger(NullAffinity.class);
+ 
+     @Override
+-    public BitSet getAffinity() {
++    public BitSet getAffinity() { net.openhft.affinity.jmhbench.MutationSwitch.tick(31);
+         return new BitSet();
+     }
+ 
+     @Override
+-    public void setAffinity(final BitSet affinity) {
++    public void setAffinity(final BitSet affinity) { net.openhft.affinity.jmhbench.MutationSwitch.tick(33);
+         LOGGER.trace("unable to set mask to {} as the JNI and JNA libraries not loaded", Utilities.toHexString(affinity));
+     }
+ 
+     @Override
+-    public int getCpu() {
++    public int getCpu() { net.openhft.affinity.jmhbench.MutationSwitch.tick(35);
+         return -1;
+     }
+ 
+diff --git a/net/openhft/affinity/impl/OSXJNAAffinity.java b/net/openhft/affinity/impl/OSXJNAAffinity.java
+index fd020fd..78bb903 100644
+--- a/net/openhft/affinity/impl/OSXJNAAffinity.java
++++ b/net/openhft/affinity/impl/OSXJNAAffinity.java
+@@ -24,17 +24,17 @@ public enum OSXJNAAffinity implements IAffinity {
+     private final ThreadLocal<Integer> THREAD_ID = new ThreadLocal<>();
+ 
+     @Override
+-    public BitSet getAffinity() {
++    public BitSet getAffinity() { net.openhft.affinity.jmhbench.MutationSwitch.tick(37);
+         return new BitSet();
+     }
+ 
+     @Override
+-    public void setAffinity(final BitSet affinity) {
++    public void setAffinity(final BitSet affinity) { net.openhft.affinity.jmhbench.MutationSwitch.tick(39);
+         LOGGER.trace("unable to set mask to {} as the JNI and JNA libraries not loaded", Utilities.toHexString(affinity));
+     }
+ 
+     @Override
+-    public int getCpu() {
++    public int getCpu() { net.openhft.affinity.jmhbench.MutationSwitch.tick(41);
+         return -1;
+     }
+ 
+diff --git a/net/openhft/affinity/impl/PosixJNAAffinity.java b/net/openhft/affinity/impl/PosixJNAAffinity.java
+index 39aed93..3481857 100644
+--- a/net/openhft/affinity/impl/PosixJNAAffinity.java
++++ b/net/openhft/affinity/impl/PosixJNAAffinity.java
+@@ -57,7 +57,7 @@ public enum PosixJNAAffinity implements IAffinity {
+     private final ThreadLocal<Integer> THREAD_ID = new ThreadLocal<>();
+ 
+     @Override
+-    public BitSet getAffinity() {
++    public BitSet getAffinity() { net.openhft.affinity.jmhbench.MutationSwitch.tick(42);
+         final CLibrary lib = CLibrary.INSTANCE;
+         final int procs = Runtime.getRuntime().availableProcessors();
+ 
+@@ -94,7 +94,7 @@ public enum PosixJNAAffinity implements IAffinity {
+     }
+ 
+     @Override
+-    public void setAffinity(final BitSet affinity) {
++    public void setAffinity(final BitSet affinity) { net.openhft.affinity.jmhbench.MutationSwitch.tick(43);
+         int procs = Runtime.getRuntime().availableProcessors();
+         if (affinity.isEmpty()) {
+             throw new IllegalArgumentException("Cannot set zero affinity");
+@@ -132,7 +132,7 @@ public enum PosixJNAAffinity implements IAffinity {
+     }
+ 
+     @Override
+-    public int getCpu() {
++    public int getCpu() { net.openhft.affinity.jmhbench.MutationSwitch.tick(44);
+         final CLibrary lib = CLibrary.INSTANCE;
+         try {
+             final int ret = lib.sched_getcpu();
+diff --git a/net/openhft/affinity/impl/SolarisJNAAffinity.java b/net/openhft/affinity/impl/SolarisJNAAffinity.java
+index fcb5b8d..72e75f8 100644
+--- a/net/openhft/affinity/impl/SolarisJNAAffinity.java
++++ b/net/openhft/affinity/impl/SolarisJNAAffinity.java
+@@ -24,17 +24,17 @@ public enum SolarisJNAAffinity implements IAffinity {
+     private final ThreadLocal<Integer> THREAD_ID = new ThreadLocal<>();
+ 
+     @Override
+-    public BitSet getAffinity() {
++    public BitSet getAffinity() { net.openhft.affinity.jmhbench.MutationSwitch.tick(45);
+         return new BitSet();
+     }
+ 
+     @Override
+-    public void setAffinity(final BitSet affinity) {
++    public void setAffinity(final BitSet affinity) { net.openhft.affinity.jmhbench.MutationSwitch.tick(46);
+         LOGGER.trace("unable to set mask to {} as the JNI and JNA libraries not loaded", Utilities.toHexString(affinity));
+     }
+ 
+     @Override
+-    public int getCpu() {
++    public int getCpu() { net.openhft.affinity.jmhbench.MutationSwitch.tick(47);
+         return -1;
+     }
+ 
+diff --git a/net/openhft/affinity/impl/Utilities.java b/net/openhft/affinity/impl/Utilities.java
+index babf6b3..d333729 100644
+--- a/net/openhft/affinity/impl/Utilities.java
++++ b/net/openhft/affinity/impl/Utilities.java
+@@ -24,7 +24,7 @@ public final class Utilities {
+      * @param set the bit set to convert
+      * @return the hexademical string representation
+      */
+-    public static String toHexString(final BitSet set) {
++    public static String toHexString(final BitSet set) { net.openhft.affinity.jmhbench.MutationSwitch.tick(2);
+         ByteArrayOutputStream out = new ByteArrayOutputStream();
+         PrintWriter writer = new PrintWriter(out);
+         final long[] longs = set.toLongArray();
+@@ -36,7 +36,7 @@ public final class Utilities {
+         return new String(out.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+     }
+ 
+-    public static String toBinaryString(BitSet set) {
++    public static String toBinaryString(BitSet set) { net.openhft.affinity.jmhbench.MutationSwitch.tick(6);
+         ByteArrayOutputStream out = new ByteArrayOutputStream();
+         PrintWriter writer = new PrintWriter(out);
+         final long[] longs = set.toLongArray();
+@@ -48,7 +48,7 @@ public final class Utilities {
+         return new String(out.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+     }
+ 
+-    public static boolean is64Bit() {
++    public static boolean is64Bit() { net.openhft.affinity.jmhbench.MutationSwitch.tick(9);
+         return IS64BIT;
+     }
+ 
+diff --git a/net/openhft/affinity/impl/VanillaCpuLayout.java b/net/openhft/affinity/impl/VanillaCpuLayout.java
+index 4fac94f..8c049a0 100644
+--- a/net/openhft/affinity/impl/VanillaCpuLayout.java
++++ b/net/openhft/affinity/impl/VanillaCpuLayout.java
+@@ -53,19 +53,19 @@ public class VanillaCpuLayout implements CpuLayout {
+     }
+ 
+     @NotNull
+-    public static VanillaCpuLayout fromProperties(String fileName) throws IOException {
++    public static VanillaCpuLayout fromProperties(String fileName) throws IOException { net.openhft.affinity.jmhbench.MutationSwitch.tick(48);
+         return fromProperties(openFile(fileName));
+     }
+ 
+     @NotNull
+-    public static VanillaCpuLayout fromProperties(InputStream is) throws IOException {
++    public static VanillaCpuLayout fromProperties(InputStream is) throws IOException { net.openhft.affinity.jmhbench.MutationSwitch.tick(49);
+         Properties prop = new Properties();
+         prop.load(is);
+         return fromProperties(prop);
+     }
+ 
+     @NotNull
+-    public static VanillaCpuLayout fromProperties(@NotNull Properties prop) {
++    public static VanillaCpuLayout fromProperties(@NotNull Properties prop) { net.openhft.affinity.jmhbench.MutationSwitch.tick(50);
+         List<CpuInfo> cpuDetails = new ArrayList<>();
+         for (int i = 0; i < MAX_CPUS_SUPPORTED; i++) {
+             String line = prop.getProperty("" + i);
+diff --git a/net/openhft/affinity/jmhbench/MutationSwitch.java b/net/openhft/affinity/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..81c0d1e
+--- /dev/null
++++ b/net/openhft/affinity/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.openhft.affinity.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/net/openhft/affinity/lockchecker/FileLockBasedLockChecker.java b/net/openhft/affinity/lockchecker/FileLockBasedLockChecker.java
+index eb2394d..ec1a800 100644
+--- a/net/openhft/affinity/lockchecker/FileLockBasedLockChecker.java
++++ b/net/openhft/affinity/lockchecker/FileLockBasedLockChecker.java
+@@ -41,12 +41,12 @@ public class FileLockBasedLockChecker implements LockChecker {
+         //nothing
+     }
+ 
+-    public static LockChecker getInstance() {
++    public static LockChecker getInstance() { net.openhft.affinity.jmhbench.MutationSwitch.tick(3);
+         return instance;
+     }
+ 
+     @Override
+-    public synchronized boolean isLockFree(int id) {
++    public synchronized boolean isLockFree(int id) { net.openhft.affinity.jmhbench.MutationSwitch.tick(7);
+         // check if this process already has the lock
+         if (locks[id] != null) {
+             return false;
+@@ -85,7 +85,7 @@ public class FileLockBasedLockChecker implements LockChecker {
+     }
+ 
+     @Override
+-    public synchronized boolean obtainLock(int id, int id2, String metaInfo) throws IOException {
++    public synchronized boolean obtainLock(int id, int id2, String metaInfo) throws IOException { net.openhft.affinity.jmhbench.MutationSwitch.tick(10);
+         int attempt = 0;
+         while (attempt < MAX_LOCK_RETRIES) {
+             try {
+diff --git a/net/openhft/affinity/lockchecker/LockReference.java b/net/openhft/affinity/lockchecker/LockReference.java
+index 10e2b1b..6d05c89 100644
+--- a/net/openhft/affinity/lockchecker/LockReference.java
++++ b/net/openhft/affinity/lockchecker/LockReference.java
+@@ -19,7 +19,7 @@ public class LockReference {
+         this.lock = lock;
+     }
+ 
+-    public FileChannel getChannel() {
++    public FileChannel getChannel() { net.openhft.affinity.jmhbench.MutationSwitch.tick(13);
+         return channel;
+     }
+ }
+diff --git a/net/openhft/affinity/main/AffinityTestMain.java b/net/openhft/affinity/main/AffinityTestMain.java
+index fcaa328..ed24974 100644
+--- a/net/openhft/affinity/main/AffinityTestMain.java
++++ b/net/openhft/affinity/main/AffinityTestMain.java
+@@ -14,7 +14,7 @@ import java.util.Date;
+  */
+ public class AffinityTestMain {
+ 
+-    public static void main(String[] args) {
++    public static void main(String[] args) { net.openhft.affinity.jmhbench.MutationSwitch.tick(4);
+ 
+         int cpus;
+         if (args.length == 0) {

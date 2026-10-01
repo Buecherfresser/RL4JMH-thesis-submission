@@ -1,0 +1,73 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Microbenchmark for {@code Observable.concatWith(Maybe)} which internally uses
+ * {@code ObservableConcatWithMaybe}. The benchmark measures the throughput
+ * (operations per second) of concatenating an {@link Observable} with a {@link Maybe}
+ * and consuming the resulting sequence.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@link State} for shared immutable data.</li>
+ *   <li>Parameterized source size to explore scaling.</li>
+ *   <li>Warm‑up and measurement iterations to let the JIT stabilize.</li>
+ *   <li>Multiple forks to reduce JVM start‑up noise.</li>
+ *   <li>Use of {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Blocking consumption to keep the benchmark simple and deterministic.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Benchmark)
+public class ObservableConcatWithMaybeBenchmark {
+
+    /** Number of items emitted by the upstream Observable. */
+    @Param({"1", "10", "100", "1000", "10000"})
+    public int upstreamSize;
+
+    /** Upstream Observable emitting a range of integers. */
+    private Observable<Integer> source;
+
+    /** Maybe that emits a single integer after the upstream completes. */
+    private Maybe<Integer> other;
+
+    /** Cached concatenated Observable used in the benchmark. */
+    private Observable<Integer> concatenated;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple range Observable; each element is a distinct Integer.
+        source = Observable.range(0, upstreamSize);
+
+        // The Maybe emits a constant value; using a distinct value helps avoid
+        // accidental optimizations that could drop the subscription.
+        other = Maybe.just(-1);
+
+        // Build the concatenated Observable once per trial.
+        concatenated = source.concatWith(other);
+    }
+
+    /**
+     * Benchmark that subscribes to the concatenated Observable and consumes all
+     * emitted items using a {@link Blackhole}. The subscription is performed
+     * synchronously via {@code blockingForEach} to keep the measurement focused
+     * on the operator's overhead rather than thread scheduling.
+     *
+     * @param bh Blackhole to consume the emitted items.
+     */
+    @Benchmark
+    public void concatWithMaybeThroughput(Blackhole bh) {
+        concatenated.blockingForEach(bh::consume);
+    }
+}
+```

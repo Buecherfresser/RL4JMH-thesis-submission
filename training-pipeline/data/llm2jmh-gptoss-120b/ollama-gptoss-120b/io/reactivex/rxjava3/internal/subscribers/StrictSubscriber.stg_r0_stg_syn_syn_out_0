@@ -1,0 +1,166 @@
+package io.reactivex.rxjava3.internal.subscribers;
+
+import org.reactivestreams.Subscription;
+import org.reactivestreams.Subscriber;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmarks for {@link StrictSubscriber}.
+ *
+ * <p>These benchmarks focus on the hot paths of the subscriber:
+ * {@code request}, {@code onNext}, {@code cancel}, {@code onError} and {@code onComplete}.
+ *
+ * <p>Best‑practice JMH settings are used:
+ * <ul>
+ *   <li>5 warm‑up iterations to let the JIT stabilize.</li>
+ *   <li>10 measurement iterations for reliable statistics.</li>
+ *   <li>3 forks to isolate JVM state.</li>
+ *   <li>Throughput mode (operations per time unit).</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class StrictSubscriberBenchmark {
+
+    /**
+     * Simple downstream that does virtually no work.
+     */
+    static final class NoOpSubscriber<T> implements Subscriber<T> {
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onNext(T t) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onComplete() {
+            /* no‑op */
+        }
+    }
+
+    /**
+     * The subscriber under test.
+     */
+    private StrictSubscriber<Integer> strictSubscriber;
+
+    /**
+     * A dummy upstream subscription used to satisfy the contract.
+     */
+    private static final class DummySubscription implements Subscription {
+
+        @Override
+        public void request(long n) {
+            /* no‑op */
+        }
+
+        @Override
+        public void cancel() {
+            /* no‑op */
+        }
+    }
+
+    /**
+     * A reusable value for onNext.
+     */
+    private static final Integer ONE = 1;
+
+    /**
+     * Blackhole to consume values and avoid dead‑code elimination.
+     */
+    @SuppressWarnings("unused")
+    private Blackhole bh;
+
+    @Setup(Level.Iteration)
+    public void setUp() {
+        // downstream does nothing, allowing us to focus on StrictSubscriber overhead
+        FlowableSubscriber<Integer> downstream = new NoOpSubscriber<>();
+        strictSubscriber = new StrictSubscriber<>(downstream);
+        // Simulate a proper upstream subscription
+        strictSubscriber.onSubscribe(new DummySubscription());
+    }
+
+    @Benchmark
+    public void requestPositive() {
+        // Request a small, valid amount (the typical fast‑path)
+        strictSubscriber.request(1L);
+    }
+
+    @Benchmark
+    public void requestZero() {
+        // Zero is illegal and triggers the error path; we catch the exception to keep the benchmark running
+        try {
+            strictSubscriber.request(0L);
+        } catch (IllegalArgumentException ignored) {
+            // ignored – the benchmark measures the cost of the validation path
+        }
+    }
+
+    @Benchmark
+    public void onNext() {
+        strictSubscriber.onNext(ONE);
+    }
+
+    @Benchmark
+    public void cancel() {
+        strictSubscriber.cancel();
+    }
+
+    @Benchmark
+    public void onError() {
+        strictSubscriber.onError(new RuntimeException("benchmark"));
+    }
+
+    @Benchmark
+    public void onComplete() {
+        strictSubscriber.onComplete();
+    }
+}

@@ -1,0 +1,550 @@
+diff --git a/com/leansoft/bigqueue/BigArrayImpl.java b/com/leansoft/bigqueue/BigArrayImpl.java
+index eba38df..6965e12 100644
+--- a/com/leansoft/bigqueue/BigArrayImpl.java
++++ b/com/leansoft/bigqueue/BigArrayImpl.java
+@@ -150,7 +150,7 @@ public class BigArrayImpl implements IBigArray {
+ 		this.commonInit();
+ 	}
+ 	
+-	public String getArrayDirectory() {
++	public String getArrayDirectory() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(1);
+ 		return this.arrayDirectory;
+ 	}
+ 	
+@@ -176,7 +176,7 @@ public class BigArrayImpl implements IBigArray {
+ 	}
+ 
+ 	@Override
+-	public void removeAll() throws IOException {
++	public void removeAll() throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(5);
+ 		try {
+ 			arrayWriteLock.lock();
+ 			this.indexPageFactory.deleteAllPages();
+@@ -191,7 +191,7 @@ public class BigArrayImpl implements IBigArray {
+ 	}
+ 	
+ 	@Override
+-	public void removeBeforeIndex(long index) throws IOException {
++	public void removeBeforeIndex(long index) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(9);
+     try {
+       arrayWriteLock.lock();
+ 
+@@ -219,7 +219,7 @@ public class BigArrayImpl implements IBigArray {
+ 
+ 
+ 	@Override
+-	public void removeBefore(long timestamp) throws IOException {
++	public void removeBefore(long timestamp) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(13);
+ 		try {
+ 			arrayWriteLock.lock();
+ 			long firstIndexPageIndex = this.indexPageFactory.getFirstPageIndexBefore(timestamp);
+@@ -283,7 +283,7 @@ public class BigArrayImpl implements IBigArray {
+ 	/**
+ 	 * Append the data into the head of the array
+ 	 */
+-	public long append(byte[] data) throws IOException {
++	public long append(byte[] data) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(17);
+ 		try {
+ 			arrayReadLock.lock(); 
+ 			IMappedPage toAppendDataPage = null;
+@@ -404,7 +404,7 @@ public class BigArrayImpl implements IBigArray {
+ 		}
+ 	}
+ 	
+-	public long getTimestamp(long index) throws IOException {
++	public long getTimestamp(long index) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(21);
+ 		try {
+ 			arrayReadLock.lock();
+ 			validateIndex(index);
+@@ -450,7 +450,7 @@ public class BigArrayImpl implements IBigArray {
+ 		}
+ 	}
+ 
+-	public long size() {
++	public long size() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(25);
+ 		try {
+ 			arrayReadLock.lock();
+ 			return (this.arrayHeadIndex.get() - this.arrayTailIndex.get());
+@@ -459,7 +459,7 @@ public class BigArrayImpl implements IBigArray {
+ 		}
+ 	}
+ 
+-	public long getHeadIndex() {
++	public long getHeadIndex() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(28);
+ 		try {
+ 			arrayReadLock.lock();
+ 			return arrayHeadIndex.get();
+@@ -468,7 +468,7 @@ public class BigArrayImpl implements IBigArray {
+ 		}
+ 	}
+ 
+-	public long getTailIndex() {
++	public long getTailIndex() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(30);
+ 		try {
+ 			arrayReadLock.lock();
+ 			return arrayTailIndex.get();
+@@ -478,7 +478,7 @@ public class BigArrayImpl implements IBigArray {
+ 	}
+ 
+ 	@Override
+-	public boolean isEmpty() {
++	public boolean isEmpty() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(32);
+ 		try {
+ 			arrayReadLock.lock();
+ 			return this.arrayHeadIndex.get() == this.arrayTailIndex.get();
+@@ -488,14 +488,14 @@ public class BigArrayImpl implements IBigArray {
+ 	}
+ 
+ 	@Override
+-	public boolean isFull() {
++	public boolean isFull() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(34);
+ 		// full means the java long space has been used up,
+ 		// the end of the world:)
+ 		return false;
+ 	}
+ 
+ 	@Override
+-	public void close() throws IOException {
++	public void close() throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(36);
+ 		try {
+ 			arrayWriteLock.lock();
+ 			if (this.metaPageFactory != null) {
+@@ -513,12 +513,12 @@ public class BigArrayImpl implements IBigArray {
+ 	}
+ 
+ 	@Override
+-	public int getDataPageSize() {
++	public int getDataPageSize() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(38);
+ 		return DATA_PAGE_SIZE;
+ 	}
+ 
+ 	@Override
+-	public long findClosestIndex(long timestamp) throws IOException {
++	public long findClosestIndex(long timestamp) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(40);
+ 		try {
+ 			arrayReadLock.lock();
+ 			long closestIndex = NOT_FOUND;
+@@ -579,7 +579,7 @@ public class BigArrayImpl implements IBigArray {
+ 	}
+ 
+ 	@Override
+-	public long getBackFileSize() throws IOException {
++	public long getBackFileSize() throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(42);
+ 		try {
+ 			arrayReadLock.lock();
+ 			
+@@ -591,7 +591,7 @@ public class BigArrayImpl implements IBigArray {
+ 	}
+ 
+ 	@Override
+-	public void limitBackFileSize(long sizeLimit) throws IOException {
++	public void limitBackFileSize(long sizeLimit) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(44);
+ 		if (sizeLimit < INDEX_PAGE_SIZE + DATA_PAGE_SIZE) {
+ 			return; // ignore, one index page + one data page are minimum for big array to work correctly
+ 		}
+@@ -638,7 +638,7 @@ public class BigArrayImpl implements IBigArray {
+ 	}
+ 
+ 	@Override
+-	public int getItemLength(long index) throws IOException {
++	public int getItemLength(long index) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(46);
+ 		try {
+ 			arrayReadLock.lock();
+ 			validateIndex(index);
+diff --git a/com/leansoft/bigqueue/BigQueueImpl.java b/com/leansoft/bigqueue/BigQueueImpl.java
+index 0f0eae0..4013702 100644
+--- a/com/leansoft/bigqueue/BigQueueImpl.java
++++ b/com/leansoft/bigqueue/BigQueueImpl.java
+@@ -88,12 +88,12 @@ public class BigQueueImpl implements IBigQueue {
+     }
+ 
+     @Override
+-    public boolean isEmpty() {
++    public boolean isEmpty() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(48);
+         return this.queueFrontIndex.get() == this.innerArray.getHeadIndex();
+     }
+ 
+     @Override
+-    public void enqueue(byte[] data) throws IOException {
++    public void enqueue(byte[] data) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(50);
+         this.innerArray.append(data);
+ 
+         this.completeFutures();
+diff --git a/com/leansoft/bigqueue/cache/LRUCacheImpl.java b/com/leansoft/bigqueue/cache/LRUCacheImpl.java
+index 29ceb2e..8c4e636 100644
+--- a/com/leansoft/bigqueue/cache/LRUCacheImpl.java
++++ b/com/leansoft/bigqueue/cache/LRUCacheImpl.java
+@@ -56,7 +56,7 @@ public class LRUCacheImpl<K, V extends Closeable> implements ILRUCache<K, V> {
+ 	 * 
+ 	 * Call this only after you have closed your bigqueue instance.
+ 	 */
+-	public static void CloseExecutorService() {
++	public static void CloseExecutorService() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(2);
+ 		executorService.shutdown();
+ 	}
+ 
+@@ -153,7 +153,7 @@ public class LRUCacheImpl<K, V extends Closeable> implements ILRUCache<K, V> {
+ 			this.valuesToClose = valuesToClose;
+ 		}
+ 		
+-		public void run() {
++		public void run() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(6);
+ 			int size = valuesToClose.size();
+ 			for(V v : valuesToClose) {
+ 				try {
+@@ -170,7 +170,7 @@ public class LRUCacheImpl<K, V extends Closeable> implements ILRUCache<K, V> {
+ 		}
+ 	}
+ 
+-	public void release(K key) {
++	public void release(K key) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(10);
+ 		try {
+ 			readLock.lock();
+ 			TTLValue ttl = ttlMap.get(key);
+@@ -184,7 +184,7 @@ public class LRUCacheImpl<K, V extends Closeable> implements ILRUCache<K, V> {
+ 		}
+ 	}
+ 
+-	public int size() {
++	public int size() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(14);
+ 		try {
+ 			readLock.lock();
+ 			return map.size();
+@@ -194,7 +194,7 @@ public class LRUCacheImpl<K, V extends Closeable> implements ILRUCache<K, V> {
+ 	}
+ 
+ 	@Override
+-	public void removeAll()  throws IOException {
++	public void removeAll()  throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(18);
+ 		try {
+ 			writeLock.lock();
+ 			
+@@ -234,7 +234,7 @@ public class LRUCacheImpl<K, V extends Closeable> implements ILRUCache<K, V> {
+ 	}
+ 
+ 	@Override
+-	public Collection<V> getValues() {
++	public Collection<V> getValues() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(22);
+ 		try {
+ 			readLock.lock();
+ 		    Collection<V> col = new ArrayList<V>();
+diff --git a/com/leansoft/bigqueue/jmhbench/MutationSwitch.java b/com/leansoft/bigqueue/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..dbe45f7
+--- /dev/null
++++ b/com/leansoft/bigqueue/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.leansoft.bigqueue.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/leansoft/bigqueue/page/MappedPageFactoryImpl.java b/com/leansoft/bigqueue/page/MappedPageFactoryImpl.java
+index 4542351..eac452a 100644
+--- a/com/leansoft/bigqueue/page/MappedPageFactoryImpl.java
++++ b/com/leansoft/bigqueue/page/MappedPageFactoryImpl.java
+@@ -64,7 +64,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 		this.cache = new LRUCacheImpl<Long, MappedPageImpl>();
+ 	}
+ 
+-	public IMappedPage acquirePage(long index) throws IOException {
++	public IMappedPage acquirePage(long index) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(3);
+ 		MappedPageImpl mpi = cache.get(index);
+ 		if (mpi == null) { // not in cache, need to create one
+ 			try {
+@@ -115,15 +115,15 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	}
+ 
+ 
+-	public int getPageSize() {
++	public int getPageSize() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(7);
+ 		return pageSize;
+ 	}
+ 
+-	public String getPageDir() {
++	public String getPageDir() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(11);
+ 		return pageDir;
+ 	}
+ 
+-	public void releasePage(long index) {
++	public void releasePage(long index) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(15);
+ 		cache.release(index);
+ 	}
+ 
+@@ -131,7 +131,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	 * thread unsafe, caller need synchronization
+ 	 */
+ 	@Override
+-	public void releaseCachedPages() throws IOException {
++	public void releaseCachedPages() throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(19);
+ 		cache.removeAll();
+ 	}
+ 
+@@ -139,7 +139,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	 * thread unsafe, caller need synchronization
+ 	 */
+ 	@Override
+-	public void deleteAllPages() throws IOException {
++	public void deleteAllPages() throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(23);
+ 		cache.removeAll();
+ 		Set<Long> indexSet = getExistingBackFileIndexSet();
+ 		this.deletePages(indexSet);
+@@ -152,7 +152,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	 * thread unsafe, caller need synchronization
+ 	 */
+ 	@Override
+-	public void deletePages(Set<Long> indexes) throws IOException {
++	public void deletePages(Set<Long> indexes) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(26);
+ 		if (indexes == null) return;
+ 		for(long index : indexes) {
+ 			this.deletePage(index);
+@@ -163,7 +163,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	 * thread unsafe, caller need synchronization
+ 	 */
+ 	@Override
+-	public void deletePage(long index) throws IOException {
++	public void deletePage(long index) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(29);
+ 		// remove the page from cache first
+ 		cache.remove(index);
+ 		String fileName = this.getFileNameByIndex(index);
+@@ -194,7 +194,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	}
+ 
+ 	@Override
+-	public Set<Long> getPageIndexSetBefore(long timestamp) {
++	public Set<Long> getPageIndexSetBefore(long timestamp) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(31);
+ 		Set<Long> beforeIndexSet = new HashSet<Long>();
+ 		File[] pageFiles = this.pageDirFile.listFiles();
+ 		if (pageFiles != null && pageFiles.length > 0) {
+@@ -225,7 +225,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	 * @throws IOException 
+ 	 */
+ 	@Override
+-	public void deletePagesBefore(long timestamp) throws IOException {
++	public void deletePagesBefore(long timestamp) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(33);
+ 		Set<Long> indexSet = this.getPageIndexSetBefore(timestamp);
+ 		this.deletePages(indexSet);
+ 		if (logger.isDebugEnabled()) {
+@@ -234,7 +234,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	}
+ 
+     @Override
+-    public void deletePagesBeforePageIndex(long pageIndex) throws IOException {
++    public void deletePagesBeforePageIndex(long pageIndex) throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(35);
+         Set<Long> indexSet = this.getExistingBackFileIndexSet();
+         for (Long index : indexSet) {
+             if (index < pageIndex) {
+@@ -245,7 +245,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 
+ 
+     @Override
+-	public Set<Long> getExistingBackFileIndexSet() {
++	public Set<Long> getExistingBackFileIndexSet() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(37);
+ 		Set<Long> indexSet = new HashSet<Long>();
+ 		File[] pageFiles = this.pageDirFile.listFiles();
+ 		if (pageFiles != null && pageFiles.length > 0) {
+@@ -261,7 +261,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	}
+ 
+ 	@Override
+-	public int getCacheSize() {
++	public int getCacheSize() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(39);
+ 		return cache.size();
+ 	}
+ 	
+@@ -271,7 +271,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	}
+ 
+ 	@Override
+-	public long getPageFileLastModifiedTime(long index) {
++	public long getPageFileLastModifiedTime(long index) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(41);
+ 		String pageFileName = this.getFileNameByIndex(index);
+ 		File pageFile = new File(pageFileName);
+ 		if (!pageFile.exists()) {
+@@ -281,7 +281,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	}
+ 
+ 	@Override
+-	public long getFirstPageIndexBefore(long timestamp) {
++	public long getFirstPageIndexBefore(long timestamp) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(43);
+ 		Set<Long> beforeIndexSet = getPageIndexSetBefore(timestamp);
+ 		if (beforeIndexSet.size() == 0) return -1L;
+ 		TreeSet<Long> sortedIndexSet = new TreeSet<Long>(beforeIndexSet);
+@@ -301,7 +301,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	}
+ 
+ 	@Override
+-	public Set<String> getBackPageFileSet() {
++	public Set<String> getBackPageFileSet() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(45);
+ 		Set<String> fileSet = new HashSet<String>();
+ 		File[] pageFiles = this.pageDirFile.listFiles();
+ 		if (pageFiles != null && pageFiles.length > 0) {
+@@ -316,7 +316,7 @@ public class MappedPageFactoryImpl implements IMappedPageFactory {
+ 	}
+ 
+ 	@Override
+-	public long getBackPageFileSize() {
++	public long getBackPageFileSize() { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(47);
+ 		long totalSize = 0L;
+ 		File[] pageFiles = this.pageDirFile.listFiles();
+ 		if (pageFiles != null && pageFiles.length > 0) {
+diff --git a/com/leansoft/bigqueue/page/MappedPageImpl.java b/com/leansoft/bigqueue/page/MappedPageImpl.java
+index 6fb1249..8225016 100644
+--- a/com/leansoft/bigqueue/page/MappedPageImpl.java
++++ b/com/leansoft/bigqueue/page/MappedPageImpl.java
+@@ -25,7 +25,7 @@ public class MappedPageImpl implements IMappedPage, Closeable {
+ 		this.index = index;
+ 	}
+ 	
+-	public void close() throws IOException {
++	public void close() throws IOException { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(49);
+ 		synchronized(this) {
+ 			if (closed) return;
+ 
+diff --git a/com/leansoft/bigqueue/utils/Calculator.java b/com/leansoft/bigqueue/utils/Calculator.java
+index d24960e..0c32d4e 100644
+--- a/com/leansoft/bigqueue/utils/Calculator.java
++++ b/com/leansoft/bigqueue/utils/Calculator.java
+@@ -10,7 +10,7 @@ public class Calculator {
+ 	 * @param bits
+ 	 * @return
+ 	 */
+-	public static long mod(long val, int bits) {
++	public static long mod(long val, int bits) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(16);
+ 		return val - ((val >> bits) << bits);
+ 	}
+ 	
+@@ -21,7 +21,7 @@ public class Calculator {
+ 	 * @param bits
+ 	 * @return
+ 	 */
+-	public static long mul(long val, int bits) {
++	public static long mul(long val, int bits) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(20);
+ 		return val << bits;
+ 	}
+ 	
+@@ -32,7 +32,7 @@ public class Calculator {
+ 	 * @param bits
+ 	 * @return
+ 	 */
+-	public static long div(long val, int bits) {
++	public static long div(long val, int bits) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(24);
+ 		return val >> bits;
+ 	}
+ 
+diff --git a/com/leansoft/bigqueue/utils/FileUtil.java b/com/leansoft/bigqueue/utils/FileUtil.java
+index 17464c0..c36805d 100644
+--- a/com/leansoft/bigqueue/utils/FileUtil.java
++++ b/com/leansoft/bigqueue/utils/FileUtil.java
+@@ -13,7 +13,7 @@ public class FileUtil {
+ 	 * @param file the name of a file
+ 	 * @return true if the file is valid, false otherwise
+ 	 */
+-	public static boolean isFilenameValid(String file) {
++	public static boolean isFilenameValid(String file) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(4);
+ 		File f = new File(file);
+ 		try {
+ 			f.getCanonicalPath();
+@@ -23,7 +23,7 @@ public class FileUtil {
+ 		}
+ 	}
+ 	
+-    public static void deleteDirectory(File dir) {
++    public static void deleteDirectory(File dir) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(8);
+         if (!dir.exists()) return;
+         File[] subs = dir.listFiles();
+         if (subs != null) {
+@@ -42,7 +42,7 @@ public class FileUtil {
+         }
+     }
+     
+-    public static void deleteFile(File file) {
++    public static void deleteFile(File file) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(12);
+     	if (!file.exists() || !file.isFile()) {
+     		return;
+     	}
+diff --git a/com/leansoft/bigqueue/utils/FolderNameValidator.java b/com/leansoft/bigqueue/utils/FolderNameValidator.java
+index 8dea014..2a0d80a 100644
+--- a/com/leansoft/bigqueue/utils/FolderNameValidator.java
++++ b/com/leansoft/bigqueue/utils/FolderNameValidator.java
+@@ -8,7 +8,7 @@ public class FolderNameValidator {
+             + "-" + '\uFFFF';
+     private static final Pattern p = Pattern.compile("(^\\.{1,2}$)|[" + illegalChars + "]");
+ 
+-    public static void validate(String name) {
++    public static void validate(String name) { com.leansoft.bigqueue.jmhbench.MutationSwitch.tick(27);
+         if (name == null || name.length() == 0) {
+             throw new IllegalArgumentException("folder name is emtpy");
+         }

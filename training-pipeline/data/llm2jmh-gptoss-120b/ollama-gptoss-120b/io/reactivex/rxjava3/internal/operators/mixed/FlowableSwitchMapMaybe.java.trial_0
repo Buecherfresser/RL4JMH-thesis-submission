@@ -1,0 +1,72 @@
+```
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.mixed.FlowableSwitchMapMaybe}.
+ * Measures the throughput of switching a Flowable of integers into Maybes and emitting the results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableSwitchMapMaybeBenchmark {
+
+    /** Number of items emitted by the upstream Flowable per benchmark invocation. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Whether the operator should delay errors (not used in this benchmark, kept for completeness). */
+    @Param({"false"})
+    public boolean delayErrors;
+
+    private Flowable<Integer> source;
+    private Function<Integer, MaybeSource<Integer>> mapper;
+    private Flowable<Integer> flowableSwitchMapMaybe;
+
+    /**
+     * Set up the upstream Flowable, the mapper function and the operator under test.
+     * This method runs once per thread before any benchmark iterations.
+     */
+    @Setup(Level.Trial)
+    public void setup() {
+        // Upstream emits a range of integers synchronously.
+        source = Flowable.range(1, itemCount);
+
+        // Mapper turns each integer into a Maybe that immediately emits the doubled value.
+        mapper = new Function<Integer, MaybeSource<Integer>>() {
+            @Override
+            public MaybeSource<Integer> apply(Integer v) {
+                return Maybe.just(v * 2);
+            }
+        };
+
+        // Create the operator instance directly (internal API).
+        flowableSwitchMapMaybe = new io.reactivex.rxjava3.internal.operators.mixed.FlowableSwitchMapMaybe<>(
+                source,
+                mapper,
+                delayErrors
+        );
+    }
+
+    /**
+     * Benchmark method that subscribes to the FlowableSwitchMapMaybe and consumes all emitted items.
+     * The {@link Blackhole} ensures that the JIT compiler does not eliminate the consumption.
+     */
+    @Benchmark
+    public void switchMapMaybeThroughput(Blackhole bh) {
+        // Use blockingForEach to synchronously consume all items.
+        flowableSwitchMapMaybe.blockingForEach(bh::consume);
+    }
+
+    /**
+     * Tear down method (optional). Included for completeness; no resources need explicit cleanup.
+     */
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // No-op – RxJava disposables are cleaned up by the blocking subscription.
+    }
+}
+```

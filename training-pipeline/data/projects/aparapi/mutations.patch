@@ -1,0 +1,620 @@
+diff --git a/com/aparapi/internal/exception/ClassParseException.java b/com/aparapi/internal/exception/ClassParseException.java
+index bd8fb37..e81475e 100644
+--- a/com/aparapi/internal/exception/ClassParseException.java
++++ b/com/aparapi/internal/exception/ClassParseException.java
+@@ -109,7 +109,7 @@ import com.aparapi.internal.instruction.Instruction;
+          description = _description;
+       }
+ 
+-      public String getDescription() {
++      public String getDescription() { com.aparapi.internal.jmhbench.MutationSwitch.tick(1);
+          return (description);
+       }
+    };
+@@ -140,7 +140,7 @@ import com.aparapi.internal.instruction.Instruction;
+       super(_t);
+    }
+ 
+-   public Instruction getInstruction() {
++   public Instruction getInstruction() { com.aparapi.internal.jmhbench.MutationSwitch.tick(9);
+       return (instruction);
+    }
+ 
+diff --git a/com/aparapi/internal/instruction/BranchSet.java b/com/aparapi/internal/instruction/BranchSet.java
+index 81e9440..9a06027 100644
+--- a/com/aparapi/internal/instruction/BranchSet.java
++++ b/com/aparapi/internal/instruction/BranchSet.java
+@@ -127,7 +127,7 @@ public class BranchSet {
+ 
+       private LogicalExpressionNode parent = null;
+ 
+-      public void setParent(LogicalExpressionNode _parent) {
++      public void setParent(LogicalExpressionNode _parent) { com.aparapi.internal.jmhbench.MutationSwitch.tick(2);
+          parent = _parent;
+       }
+ 
+@@ -139,7 +139,7 @@ public class BranchSet {
+ 
+       public abstract LogicalExpressionNode cloneInverted();
+ 
+-      public LogicalExpressionNode getRoot() {
++      public LogicalExpressionNode getRoot() { com.aparapi.internal.jmhbench.MutationSwitch.tick(10);
+          if (parent != null) {
+             return (parent);
+          } else {
+diff --git a/com/aparapi/internal/instruction/ExpressionList.java b/com/aparapi/internal/instruction/ExpressionList.java
+index c7d38b1..77bbb9a 100644
+--- a/com/aparapi/internal/instruction/ExpressionList.java
++++ b/com/aparapi/internal/instruction/ExpressionList.java
+@@ -124,7 +124,7 @@ public class ExpressionList{
+     * @param _extent
+     * @return
+     */
+-   public boolean doesNotContainContinueOrBreak(Instruction _start, Instruction _extent) {
++   public boolean doesNotContainContinueOrBreak(Instruction _start, Instruction _extent) { com.aparapi.internal.jmhbench.MutationSwitch.tick(17);
+       boolean ok = true;
+       boolean breakOrContinue = false;
+       for (Instruction i = _start; i != null; i = i.getNextExpr()) {
+@@ -149,7 +149,7 @@ public class ExpressionList{
+       return (ok);
+    }
+ 
+-   public boolean doesNotContainCompositeOrBranch(Instruction _start, Instruction _exclusiveEnd) {
++   public boolean doesNotContainCompositeOrBranch(Instruction _start, Instruction _exclusiveEnd) { com.aparapi.internal.jmhbench.MutationSwitch.tick(23);
+       boolean ok = true;
+       for (Instruction i = _start; (i != null) && (i != _exclusiveEnd); i = i.getNextExpr()) {
+          if (!(i instanceof CompositeInstruction) && (i.isBranch())) {
+diff --git a/com/aparapi/internal/instruction/InstructionPattern.java b/com/aparapi/internal/instruction/InstructionPattern.java
+index d7d5288..ce11819 100644
+--- a/com/aparapi/internal/instruction/InstructionPattern.java
++++ b/com/aparapi/internal/instruction/InstructionPattern.java
+@@ -99,7 +99,7 @@ public class InstructionPattern{
+          ok = _ok;
+       }
+ 
+-      public static InstructionMatch test(boolean _condition) {
++      public static InstructionMatch test(boolean _condition) { com.aparapi.internal.jmhbench.MutationSwitch.tick(37);
+          return (_condition ? TRUE : FALSE);
+       }
+    }
+@@ -124,7 +124,7 @@ public class InstructionPattern{
+          description = _description;
+       }
+ 
+-      public String getDescription() {
++      public String getDescription() { com.aparapi.internal.jmhbench.MutationSwitch.tick(41);
+          return (description);
+       }
+    }
+diff --git a/com/aparapi/internal/instruction/InstructionSet.java b/com/aparapi/internal/instruction/InstructionSet.java
+index 9fe5a71..97c7ead 100644
+--- a/com/aparapi/internal/instruction/InstructionSet.java
++++ b/com/aparapi/internal/instruction/InstructionSet.java
+@@ -121,11 +121,11 @@ public class InstructionSet{
+          slots = _slots;
+       }
+ 
+-      public int getSize() {
++      public int getSize() { com.aparapi.internal.jmhbench.MutationSwitch.tick(29);
+          return (size);
+       }
+ 
+-      public int getSlots() {
++      public int getSlots() { com.aparapi.internal.jmhbench.MutationSwitch.tick(33);
+          return (slots);
+       }
+ 
+diff --git a/com/aparapi/internal/jmhbench/MutationSwitch.java b/com/aparapi/internal/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..af11594
+--- /dev/null
++++ b/com/aparapi/internal/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.aparapi.internal.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/aparapi/internal/kernel/KernelArg.java b/com/aparapi/internal/kernel/KernelArg.java
+index d8d580a..111289c 100644
+--- a/com/aparapi/internal/kernel/KernelArg.java
++++ b/com/aparapi/internal/kernel/KernelArg.java
+@@ -69,14 +69,14 @@ public class KernelArg extends KernelArgJNI{
+    /**
+     * @return the objArrayBuffer
+     */
+-   protected byte[] getObjArrayBuffer() {
++   protected byte[] getObjArrayBuffer() { com.aparapi.internal.jmhbench.MutationSwitch.tick(3);
+       return objArrayBuffer;
+    }
+ 
+    /**
+     * @param objArrayBuffer the objArrayBuffer to set
+     */
+-   protected void setObjArrayBuffer(byte[] objArrayBuffer) {
++   protected void setObjArrayBuffer(byte[] objArrayBuffer) { com.aparapi.internal.jmhbench.MutationSwitch.tick(11);
+       this.objArrayBuffer = objArrayBuffer;
+    }
+ 
+diff --git a/com/aparapi/internal/kernel/KernelDeviceProfile.java b/com/aparapi/internal/kernel/KernelDeviceProfile.java
+index d5ba227..32a3175 100644
+--- a/com/aparapi/internal/kernel/KernelDeviceProfile.java
++++ b/com/aparapi/internal/kernel/KernelDeviceProfile.java
+@@ -186,7 +186,7 @@ public class KernelDeviceProfile {
+       format.setMaximumFractionDigits(3);
+    }
+ 
+-   public void onEvent(ProfilingEvent event) {
++   public void onEvent(ProfilingEvent event) { com.aparapi.internal.jmhbench.MutationSwitch.tick(18);
+ 	   getAccForThreadPutIfAbsent().onEvent(event);
+    }
+ 
+@@ -201,7 +201,7 @@ public class KernelDeviceProfile {
+     * 
+     *  
+     */
+-   public double getElapsedTimeCurrentThread(int stage) {
++   public double getElapsedTimeCurrentThread(int stage) { com.aparapi.internal.jmhbench.MutationSwitch.tick(24);
+ 	   if (stage == ProfilingEvent.START.ordinal()) {
+            return 0;    
+ 	   }
+diff --git a/com/aparapi/internal/kernel/KernelManager.java b/com/aparapi/internal/kernel/KernelManager.java
+index aff1d5c..535310d 100644
+--- a/com/aparapi/internal/kernel/KernelManager.java
++++ b/com/aparapi/internal/kernel/KernelManager.java
+@@ -51,11 +51,11 @@ public class KernelManager {
+     * Convenience method for being overridden to an empty implementation, so that derived 
+     * KernelManager classes can provide non static parameters to their constructors.
+     */
+-   protected void setup() {
++   protected void setup() { com.aparapi.internal.jmhbench.MutationSwitch.tick(30);
+ 	   defaultPreferences = createDefaultPreferences(); 
+    }
+    
+-   public static KernelManager instance() {
++   public static KernelManager instance() { com.aparapi.internal.jmhbench.MutationSwitch.tick(34);
+       return INSTANCE;
+    }
+ 
+diff --git a/com/aparapi/internal/kernel/KernelManagers.java b/com/aparapi/internal/kernel/KernelManagers.java
+index d33c0bb..9da643a 100644
+--- a/com/aparapi/internal/kernel/KernelManagers.java
++++ b/com/aparapi/internal/kernel/KernelManagers.java
+@@ -27,7 +27,7 @@ public class KernelManagers {
+    public static final KernelManager JTP_ONLY = new KernelManager() {
+ 
+       @Override
+-      protected List<Device.TYPE> getPreferredDeviceTypes() {
++      protected List<Device.TYPE> getPreferredDeviceTypes() { com.aparapi.internal.jmhbench.MutationSwitch.tick(38);
+ 			return Collections.singletonList(Device.TYPE.JTP);
+       }
+    };
+@@ -35,7 +35,7 @@ public class KernelManagers {
+    public static final KernelManager SEQUENTIAL_ONLY = new KernelManager() {
+ 
+       @Override
+-      protected List<Device.TYPE> getPreferredDeviceTypes() {
++      protected List<Device.TYPE> getPreferredDeviceTypes() { com.aparapi.internal.jmhbench.MutationSwitch.tick(42);
+ 			return Collections.singletonList(Device.TYPE.SEQ);
+       }
+    };
+diff --git a/com/aparapi/internal/kernel/KernelPreferences.java b/com/aparapi/internal/kernel/KernelPreferences.java
+index 2863e83..e59216b 100644
+--- a/com/aparapi/internal/kernel/KernelPreferences.java
++++ b/com/aparapi/internal/kernel/KernelPreferences.java
+@@ -36,11 +36,11 @@ public class KernelPreferences {
+    }
+ 
+    /** What Kernel subclass is this the preferences for? */
+-   public Class<? extends Kernel> getKernelClass() {
++   public Class<? extends Kernel> getKernelClass() { com.aparapi.internal.jmhbench.MutationSwitch.tick(45);
+       return kernelClass;
+    }
+ 
+-   public List<Device> getPreferredDevices(Kernel kernel) {
++   public List<Device> getPreferredDevices(Kernel kernel) { com.aparapi.internal.jmhbench.MutationSwitch.tick(47);
+       maybeSetUpDefaultPreferredDevices();
+ 
+       ArrayList<Device> copy;
+diff --git a/com/aparapi/internal/kernel/KernelProfile.java b/com/aparapi/internal/kernel/KernelProfile.java
+index 933b3f2..44827a6 100644
+--- a/com/aparapi/internal/kernel/KernelProfile.java
++++ b/com/aparapi/internal/kernel/KernelProfile.java
+@@ -39,7 +39,7 @@ public class KernelProfile {
+       kernelClass = _kernelClass;
+    }
+ 
+-   public double getLastExecutionTime() {
++   public double getLastExecutionTime() { com.aparapi.internal.jmhbench.MutationSwitch.tick(49);
+       KernelDeviceProfile lastDeviceProfile = getLastDeviceProfile();
+       return lastDeviceProfile == null ? Double.NaN : lastDeviceProfile.getElapsedTimeLastThread(ProfilingEvent.START.ordinal(), ProfilingEvent.EXECUTED.ordinal());
+    }
+diff --git a/com/aparapi/internal/model/CacheEnabler.java b/com/aparapi/internal/model/CacheEnabler.java
+index c1f5fb6..bdd5793 100644
+--- a/com/aparapi/internal/model/CacheEnabler.java
++++ b/com/aparapi/internal/model/CacheEnabler.java
+@@ -20,7 +20,7 @@ import com.aparapi.Kernel;
+ public class CacheEnabler{
+    private static volatile boolean cachesEnabled = true;
+ 
+-   public static void setCachesEnabled(boolean cachesEnabled) {
++   public static void setCachesEnabled(boolean cachesEnabled) { com.aparapi.internal.jmhbench.MutationSwitch.tick(4);
+       if (CacheEnabler.cachesEnabled != cachesEnabled) {
+          Kernel.invalidateCaches();
+          ClassModel.invalidateCaches();
+@@ -29,7 +29,7 @@ public class CacheEnabler{
+       CacheEnabler.cachesEnabled = cachesEnabled;
+    }
+ 
+-   public static boolean areCachesEnabled() {
++   public static boolean areCachesEnabled() { com.aparapi.internal.jmhbench.MutationSwitch.tick(12);
+       return cachesEnabled;
+    }
+ }
+diff --git a/com/aparapi/internal/model/ClassModel.java b/com/aparapi/internal/model/ClassModel.java
+index 0cfdb13..4347c88 100644
+--- a/com/aparapi/internal/model/ClassModel.java
++++ b/com/aparapi/internal/model/ClassModel.java
+@@ -166,7 +166,7 @@ public class ClassModel {
+    private ValueCache<String, Integer, ClassParseException> privateMemorySizes = ValueCache
+          .on(new ThrowingValueComputer<String, Integer, ClassParseException>(){
+             @Override
+-            public Integer compute(String fieldName) throws ClassParseException {
++            public Integer compute(String fieldName) throws ClassParseException { com.aparapi.internal.jmhbench.MutationSwitch.tick(19);
+                return computePrivateMemorySize(fieldName);
+             }
+          });
+@@ -220,7 +220,7 @@ public class ClassModel {
+     * @param otherClassName The name of the class to compare against
+     * @return true if 'this' a superclass of another named class 
+     */
+-   public boolean isSuperClass(String otherClassName) {
++   public boolean isSuperClass(String otherClassName) { com.aparapi.internal.jmhbench.MutationSwitch.tick(25);
+       if (getClassWeAreModelling().getName().equals(otherClassName)) {
+          return true;
+       } else if (superClazz != null) {
+diff --git a/com/aparapi/internal/model/Entrypoint.java b/com/aparapi/internal/model/Entrypoint.java
+index 24ec1a1..80fa45c 100644
+--- a/com/aparapi/internal/model/Entrypoint.java
++++ b/com/aparapi/internal/model/Entrypoint.java
+@@ -114,11 +114,11 @@ public class Entrypoint implements Cloneable {
+ 
+    private boolean usesAtomic64;
+ 
+-   public boolean requiresDoublePragma() {
++   public boolean requiresDoublePragma() { com.aparapi.internal.jmhbench.MutationSwitch.tick(31);
+       return usesDoubles;
+    }
+ 
+-   public boolean requiresByteAddressableStorePragma() {
++   public boolean requiresByteAddressableStorePragma() { com.aparapi.internal.jmhbench.MutationSwitch.tick(35);
+       return usesByteWrites;
+    }
+ 
+diff --git a/com/aparapi/internal/model/EntrypointKey.java b/com/aparapi/internal/model/EntrypointKey.java
+index 8eba129..614e060 100644
+--- a/com/aparapi/internal/model/EntrypointKey.java
++++ b/com/aparapi/internal/model/EntrypointKey.java
+@@ -16,7 +16,7 @@
+ package com.aparapi.internal.model;
+ 
+ final class EntrypointKey{
+-   public static EntrypointKey of(String entrypointName, String descriptor) {
++   public static EntrypointKey of(String entrypointName, String descriptor) { com.aparapi.internal.jmhbench.MutationSwitch.tick(39);
+       return new EntrypointKey(entrypointName, descriptor);
+    }
+ 
+diff --git a/com/aparapi/internal/model/MethodKey.java b/com/aparapi/internal/model/MethodKey.java
+index d47ffe7..941e70e 100644
+--- a/com/aparapi/internal/model/MethodKey.java
++++ b/com/aparapi/internal/model/MethodKey.java
+@@ -62,11 +62,11 @@ final class MethodKey{
+       this.signature = signature;
+    }
+ 
+-   public String getName() {
++   public String getName() { com.aparapi.internal.jmhbench.MutationSwitch.tick(43);
+       return name;
+    }
+ 
+-   public String getSignature() {
++   public String getSignature() { com.aparapi.internal.jmhbench.MutationSwitch.tick(46);
+       return signature;
+    }
+ }
+diff --git a/com/aparapi/internal/model/MethodModel.java b/com/aparapi/internal/model/MethodModel.java
+index d8ec20c..544e1a6 100644
+--- a/com/aparapi/internal/model/MethodModel.java
++++ b/com/aparapi/internal/model/MethodModel.java
+@@ -98,11 +98,11 @@ public class MethodModel{
+ 
+    private boolean noCL = false;
+ 
+-   public boolean isGetter() {
++   public boolean isGetter() { com.aparapi.internal.jmhbench.MutationSwitch.tick(48);
+       return methodIsGetter;
+    }
+ 
+-   public boolean isSetter() {
++   public boolean isSetter() { com.aparapi.internal.jmhbench.MutationSwitch.tick(50);
+       return methodIsSetter;
+    }
+ 
+diff --git a/com/aparapi/internal/opencl/OpenCLKernel.java b/com/aparapi/internal/opencl/OpenCLKernel.java
+index 3409d93..41f9f12 100644
+--- a/com/aparapi/internal/opencl/OpenCLKernel.java
++++ b/com/aparapi/internal/opencl/OpenCLKernel.java
+@@ -55,7 +55,7 @@ public class OpenCLKernel extends OpenCLJNI{
+     * @param _args
+     * @return
+     */
+-   public static OpenCLKernel createKernel(OpenCLProgram _program, String _kernelName, List<OpenCLArgDescriptor> _args) {
++   public static OpenCLKernel createKernel(OpenCLProgram _program, String _kernelName, List<OpenCLArgDescriptor> _args) { com.aparapi.internal.jmhbench.MutationSwitch.tick(5);
+       final OpenCLArgDescriptor[] argArray = _args.toArray(new OpenCLArgDescriptor[0]);
+       final OpenCLKernel oclk = new OpenCLKernel().createKernelJNI(_program, _kernelName, argArray);
+       for (final OpenCLArgDescriptor arg : argArray) {
+@@ -64,7 +64,7 @@ public class OpenCLKernel extends OpenCLJNI{
+       return oclk;
+    }
+ 
+-   public String getName() {
++   public String getName() { com.aparapi.internal.jmhbench.MutationSwitch.tick(13);
+       return kernelName;
+    }
+ 
+diff --git a/com/aparapi/internal/opencl/OpenCLLoader.java b/com/aparapi/internal/opencl/OpenCLLoader.java
+index 23b8cf8..e3e389a 100644
+--- a/com/aparapi/internal/opencl/OpenCLLoader.java
++++ b/com/aparapi/internal/opencl/OpenCLLoader.java
+@@ -57,7 +57,7 @@ public class OpenCLLoader extends OpenCLJNI{
+     * 
+     * @return A singleton instance of OpenCLLoader
+     */
+-   protected static OpenCLLoader getInstance() {
++   protected static OpenCLLoader getInstance() { com.aparapi.internal.jmhbench.MutationSwitch.tick(20);
+       return instance;
+    }
+ 
+@@ -66,7 +66,7 @@ public class OpenCLLoader extends OpenCLJNI{
+     * 
+     * @return The status of whether OpenCL was successfully loaded
+     */
+-   public static boolean isOpenCLAvailable() {
++   public static boolean isOpenCLAvailable() { com.aparapi.internal.jmhbench.MutationSwitch.tick(26);
+       return openCLAvailable;
+    }
+ }
+diff --git a/com/aparapi/internal/opencl/OpenCLPlatform.java b/com/aparapi/internal/opencl/OpenCLPlatform.java
+index 12dd737..18e3398 100644
+--- a/com/aparapi/internal/opencl/OpenCLPlatform.java
++++ b/com/aparapi/internal/opencl/OpenCLPlatform.java
+@@ -60,11 +60,11 @@ public class OpenCLPlatform extends OpenCLJNI{
+       name = _name;
+    }
+ 
+-   public void addOpenCLDevice(OpenCLDevice device) {
++   public void addOpenCLDevice(OpenCLDevice device) { com.aparapi.internal.jmhbench.MutationSwitch.tick(32);
+       devices.add(device);
+    }
+ 
+-   public List<OpenCLDevice> getOpenCLDevices() {
++   public List<OpenCLDevice> getOpenCLDevices() { com.aparapi.internal.jmhbench.MutationSwitch.tick(36);
+       return (devices);
+    }
+ 
+diff --git a/com/aparapi/internal/opencl/OpenCLProgram.java b/com/aparapi/internal/opencl/OpenCLProgram.java
+index 2672f15..bbd7598 100644
+--- a/com/aparapi/internal/opencl/OpenCLProgram.java
++++ b/com/aparapi/internal/opencl/OpenCLProgram.java
+@@ -72,11 +72,11 @@ public class OpenCLProgram extends OpenCLJNI{
+       source = _source;
+    }
+ 
+-   public OpenCLProgram createProgram(OpenCLDevice context) {
++   public OpenCLProgram createProgram(OpenCLDevice context) { com.aparapi.internal.jmhbench.MutationSwitch.tick(40);
+       return createProgram(context, source);
+    }
+ 
+-   public OpenCLDevice getDevice() {
++   public OpenCLDevice getDevice() { com.aparapi.internal.jmhbench.MutationSwitch.tick(44);
+       return device;
+    }
+ 
+diff --git a/com/aparapi/internal/reader/ByteReader.java b/com/aparapi/internal/reader/ByteReader.java
+index 57192b2..49197db 100644
+--- a/com/aparapi/internal/reader/ByteReader.java
++++ b/com/aparapi/internal/reader/ByteReader.java
+@@ -98,13 +98,13 @@ public class ByteReader{
+       this(new ByteBuffer(_inputStream));
+    }
+ 
+-   public int u1() {
++   public int u1() { com.aparapi.internal.jmhbench.MutationSwitch.tick(6);
+       final int value = byteBuffer.u1(offset);
+       offset += 1;
+       return (value);
+    }
+ 
+-   public int u2() {
++   public int u2() { com.aparapi.internal.jmhbench.MutationSwitch.tick(14);
+       final int value = byteBuffer.u2(offset);
+       offset += 2;
+       return (value);
+diff --git a/com/aparapi/internal/tool/InstructionHelper.java b/com/aparapi/internal/tool/InstructionHelper.java
+index e366a4a..16ea3c5 100644
+--- a/com/aparapi/internal/tool/InstructionHelper.java
++++ b/com/aparapi/internal/tool/InstructionHelper.java
+@@ -68,14 +68,14 @@ public class InstructionHelper{
+             this("%s");
+          }
+ 
+-         public void format(Object... args) {
++         public void format(Object... args) { com.aparapi.internal.jmhbench.MutationSwitch.tick(7);
+             final String s = String.format(format, args);
+ 
+             width = Math.max(s.length(), width);
+             text.add(s);
+          }
+ 
+-         public int size() {
++         public int size() { com.aparapi.internal.jmhbench.MutationSwitch.tick(15);
+             return (text.size());
+          }
+ 
+diff --git a/com/aparapi/internal/tool/InstructionViewer.java b/com/aparapi/internal/tool/InstructionViewer.java
+index 4a60eb9..3cdc54d 100644
+--- a/com/aparapi/internal/tool/InstructionViewer.java
++++ b/com/aparapi/internal/tool/InstructionViewer.java
+@@ -254,7 +254,7 @@ public class InstructionViewer implements Config.InstructionListener{
+ 
+       public abstract void sync();
+ 
+-      public Component getPanel() {
++      public Component getPanel() { com.aparapi.internal.jmhbench.MutationSwitch.tick(21);
+          return (panel);
+       }
+    }
+@@ -311,7 +311,7 @@ public class InstructionViewer implements Config.InstructionListener{
+ 
+       private double y;
+ 
+-      public double translatex(int _screenx) {
++      public double translatex(int _screenx) { com.aparapi.internal.jmhbench.MutationSwitch.tick(27);
+          return ((_screenx - offGraphicsTransform.getTranslateX()) / offGraphicsTransform.getScaleX());
+ 
+       }
+diff --git a/com/aparapi/internal/util/OpenCLUtil.java b/com/aparapi/internal/util/OpenCLUtil.java
+index a3ed273..924d3c3 100644
+--- a/com/aparapi/internal/util/OpenCLUtil.java
++++ b/com/aparapi/internal/util/OpenCLUtil.java
+@@ -29,7 +29,7 @@ public class OpenCLUtil{
+     * 
+     * @return Available OpenCL Platforms
+     */
+-   public static List<OpenCLPlatform> getOpenCLPlatforms() {
++   public static List<OpenCLPlatform> getOpenCLPlatforms() { com.aparapi.internal.jmhbench.MutationSwitch.tick(8);
+       final OpenCLPlatform ocp = new OpenCLPlatform();
+       return ocp.getOpenCLPlatforms();
+    }
+diff --git a/com/aparapi/internal/util/Reflection.java b/com/aparapi/internal/util/Reflection.java
+index 8350c0a..4c540d8 100644
+--- a/com/aparapi/internal/util/Reflection.java
++++ b/com/aparapi/internal/util/Reflection.java
+@@ -21,7 +21,7 @@ package com.aparapi.internal.util;
+ public class Reflection {
+ 
+    /** Avoids getting dumb empty names for anonymous inners. */
+-   public static String getSimpleName(Class<?> klass) {
++   public static String getSimpleName(Class<?> klass) { com.aparapi.internal.jmhbench.MutationSwitch.tick(16);
+       String simpleName = klass.getSimpleName();
+       if (simpleName.isEmpty()) {
+          String fullName = klass.getName();
+diff --git a/com/aparapi/internal/util/UnsafeWrapper.java b/com/aparapi/internal/util/UnsafeWrapper.java
+index ec53e9e..9599749 100644
+--- a/com/aparapi/internal/util/UnsafeWrapper.java
++++ b/com/aparapi/internal/util/UnsafeWrapper.java
+@@ -150,7 +150,7 @@ public class UnsafeWrapper{
+       }
+    }
+ 
+-   public static int atomicAdd(int[] _arr, int _index, int _delta) {
++   public static int atomicAdd(int[] _arr, int _index, int _delta) { com.aparapi.internal.jmhbench.MutationSwitch.tick(22);
+       if ((_index < 0) || (_index >= _arr.length)) {
+          throw new IndexOutOfBoundsException("index " + _index);
+       }
+@@ -177,7 +177,7 @@ public class UnsafeWrapper{
+       }
+    }
+ 
+-   public static int arrayBaseOffset(Class<?> _arrayClass) {
++   public static int arrayBaseOffset(Class<?> _arrayClass) { com.aparapi.internal.jmhbench.MutationSwitch.tick(28);
+       int offset = 0;
+ 
+       try {

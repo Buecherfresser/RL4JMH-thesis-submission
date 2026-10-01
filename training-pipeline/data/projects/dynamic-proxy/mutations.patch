@@ -1,0 +1,585 @@
+diff --git a/net/neoremind/dynamicproxy/DefaultProxyCreator.java b/net/neoremind/dynamicproxy/DefaultProxyCreator.java
+index f3ce163..9eec3b1 100644
+--- a/net/neoremind/dynamicproxy/DefaultProxyCreator.java
++++ b/net/neoremind/dynamicproxy/DefaultProxyCreator.java
+@@ -15,7 +15,7 @@ public class DefaultProxyCreator implements ProxyCreator {
+     private static final ServiceLoader<ProxyCreator> SERVICES = ServiceLoader.load(ProxyCreator.class);
+ 
+     @Override
+-    public boolean canProxy(Class<?>... proxyClasses) {
++    public boolean canProxy(Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(1);
+         for (ProxyCreator proxyFactory : SERVICES) {
+             if (proxyFactory.canProxy(proxyClasses)) {
+                 return true;
+@@ -26,7 +26,7 @@ public class DefaultProxyCreator implements ProxyCreator {
+     }
+ 
+     @Override
+-    public <T> T createDelegatorProxy(ObjectProvider<?> delegateProvider, Class<?>... proxyClasses) {
++    public <T> T createDelegatorProxy(ObjectProvider<?> delegateProvider, Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(9);
+         @SuppressWarnings("unchecked")
+         T result = (T) getCapableProxyCreator(proxyClasses).createDelegatorProxy(delegateProvider, proxyClasses);
+ 
+@@ -35,7 +35,7 @@ public class DefaultProxyCreator implements ProxyCreator {
+ 
+     @Override
+     public <T> T createDelegatorProxy(ClassLoader classLoader, ObjectProvider<?> delegateProvider,
+-                                      Class<?>... proxyClasses) {
++                                      Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(15);
+         @SuppressWarnings("unchecked")
+         T result =
+                 (T) getCapableProxyCreator(proxyClasses).createDelegatorProxy(classLoader, delegateProvider,
+@@ -45,7 +45,7 @@ public class DefaultProxyCreator implements ProxyCreator {
+     }
+ 
+     @Override
+-    public <T> T createInterceptorProxy(Object target, Interceptor interceptor, Class<?>... proxyClasses) {
++    public <T> T createInterceptorProxy(Object target, Interceptor interceptor, Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(20);
+         @SuppressWarnings("unchecked")
+         T result = (T) getCapableProxyCreator(proxyClasses).createInterceptorProxy(target, interceptor, proxyClasses);
+ 
+diff --git a/net/neoremind/dynamicproxy/MethodSignature.java b/net/neoremind/dynamicproxy/MethodSignature.java
+index b01cc56..7015d76 100644
+--- a/net/neoremind/dynamicproxy/MethodSignature.java
++++ b/net/neoremind/dynamicproxy/MethodSignature.java
+@@ -153,7 +153,7 @@ public class MethodSignature implements Serializable {
+         this.internal = buf.toString();
+     }
+ 
+-    public static String getName(String className, String methodName, Class<?>[] parameterTypes) {
++    public static String getName(String className, String methodName, Class<?>[] parameterTypes) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(25);
+         final StringBuilder buf = new StringBuilder(className).append(".").append(methodName).append('(');
+         if (ArrayUtils.isNotEmpty(parameterTypes)) {
+             for (Class<?> p : parameterTypes) {
+@@ -164,7 +164,7 @@ public class MethodSignature implements Serializable {
+         return buf.toString();
+     }
+ 
+-    public Method toMethod(Class<?> type) {
++    public Method toMethod(Class<?> type) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(30);
+         final KeyAndValue<String, Class<?>[]> info = parse(internal);
+ 
+         return ReflectionUtil.getMethod(type, info.getKey(), info.getValue());
+diff --git a/net/neoremind/dynamicproxy/bytebuddy/DynamicDelegator.java b/net/neoremind/dynamicproxy/bytebuddy/DynamicDelegator.java
+index dd82cff..3948f23 100644
+--- a/net/neoremind/dynamicproxy/bytebuddy/DynamicDelegator.java
++++ b/net/neoremind/dynamicproxy/bytebuddy/DynamicDelegator.java
+@@ -19,11 +19,11 @@ public class DynamicDelegator {
+ 
+     @RuntimeType
+     public static Object invoke(@This Object proxy, @Origin Method method, @AllArguments Object[] arguments)
+-            throws Throwable {
++            throws Throwable { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(2);
+         return invoker.invoke(proxy, method, arguments);
+     }
+ 
+-    public static void setInvoker(ObjectInvoker invoker) {
++    public static void setInvoker(ObjectInvoker invoker) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(10);
+         DynamicDelegator.invoker = invoker;
+     }
+ }
+diff --git a/net/neoremind/dynamicproxy/impl/ASMCreator.java b/net/neoremind/dynamicproxy/impl/ASMCreator.java
+index 29e1fab..c1a565b 100644
+--- a/net/neoremind/dynamicproxy/impl/ASMCreator.java
++++ b/net/neoremind/dynamicproxy/impl/ASMCreator.java
+@@ -33,18 +33,18 @@ public class ASMCreator extends SubclassCreatorTemplate {
+ 
+     @Override
+     public <T> T createDelegatorProxy(ClassLoader classLoader, ObjectProvider<?> delegateProvider,
+-                                      Class<?>... proxyClasses) {
++                                      Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(3);
+         return createProxy(classLoader, new DelegatorInvoker(delegateProvider), proxyClasses);
+     }
+ 
+     @Override
+     public <T> T createInterceptorProxy(ClassLoader classLoader, Object target, Interceptor interceptor,
+-                                        Class<?>... proxyClasses) {
++                                        Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(11);
+         return createProxy(classLoader, new InterceptorInvoker(target, interceptor), proxyClasses);
+     }
+ 
+     @Override
+-    public <T> T createInvokerProxy(ClassLoader classLoader, ObjectInvoker invoker, Class<?>... proxyClasses) {
++    public <T> T createInvokerProxy(ClassLoader classLoader, ObjectInvoker invoker, Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(16);
+         return createProxy(classLoader, new Invokering(invoker), proxyClasses);
+     }
+ 
+@@ -66,7 +66,7 @@ public class ASMCreator extends SubclassCreatorTemplate {
+         private static final Type INVOKER_TYPE = Type.getType(ObjectInvoker.class);
+ 
+         @Override
+-        public Class<?> generateProxyClass(final ClassLoader classLoader, final Class<?>... proxyClasses) {
++        public Class<?> generateProxyClass(final ClassLoader classLoader, final Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(21);
+             Class<?> superclass = getSuperclass(proxyClasses);
+             String proxyName = CLASSNAME_PREFIX + CLASS_NUMBER.incrementAndGet();
+             Method[] implementationMethods = getImplementationMethods(proxyClasses);
+diff --git a/net/neoremind/dynamicproxy/impl/ByteBuddyCreator.java b/net/neoremind/dynamicproxy/impl/ByteBuddyCreator.java
+index 6fd0f80..6b1785c 100644
+--- a/net/neoremind/dynamicproxy/impl/ByteBuddyCreator.java
++++ b/net/neoremind/dynamicproxy/impl/ByteBuddyCreator.java
+@@ -33,7 +33,7 @@ public class ByteBuddyCreator extends SubclassCreatorTemplate {
+     protected static final ClassCache PROXY_CLASS_CACHE = new ClassCache(new ProxyGenerator());
+ 
+     @Override
+-    public boolean canProxy(Class<?>... proxyClasses) {
++    public boolean canProxy(Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(26);
+         Preconditions.checkNotNull(proxyClasses, "Proxy class cannot be NULL");
+         Preconditions.checkArgument(proxyClasses.length == 1,
+                 "ByteBuddy only supports one proxy class currently, but note that proxy class can be a Class or "
+@@ -43,18 +43,18 @@ public class ByteBuddyCreator extends SubclassCreatorTemplate {
+ 
+     @Override
+     public <T> T createDelegatorProxy(ClassLoader classLoader, ObjectProvider<?> delegateProvider,
+-                                      Class<?>... proxyClasses) {
++                                      Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(31);
+         return createProxy(classLoader, new DelegatorInvoker(delegateProvider), proxyClasses);
+     }
+ 
+     @Override
+     public <T> T createInterceptorProxy(ClassLoader classLoader, Object target, Interceptor interceptor,
+-                                        Class<?>... proxyClasses) {
++                                        Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(35);
+         return createProxy(classLoader, new InterceptorInvoker(target, interceptor), proxyClasses);
+     }
+ 
+     @Override
+-    public <T> T createInvokerProxy(ClassLoader classLoader, ObjectInvoker invoker, Class<?>... proxyClasses) {
++    public <T> T createInvokerProxy(ClassLoader classLoader, ObjectInvoker invoker, Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(38);
+         return createProxy(classLoader, invoker, proxyClasses);
+     }
+ 
+diff --git a/net/neoremind/dynamicproxy/impl/CglibCreator.java b/net/neoremind/dynamicproxy/impl/CglibCreator.java
+index e6666cd..b52573d 100644
+--- a/net/neoremind/dynamicproxy/impl/CglibCreator.java
++++ b/net/neoremind/dynamicproxy/impl/CglibCreator.java
+@@ -30,7 +30,7 @@ public class CglibCreator extends SubclassCreatorTemplate {
+ 
+     @Override
+     public <T> T createDelegatorProxy(ClassLoader classLoader, ObjectProvider<?> targetProvider,
+-                                      Class<?>... proxyClasses) {
++                                      Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(40);
+         Enhancer enhancer = new Enhancer();
+         enhancer.setClassLoader(classLoader);
+         enhancer.setInterfaces(toInterfaces(proxyClasses));
+@@ -46,7 +46,7 @@ public class CglibCreator extends SubclassCreatorTemplate {
+ 
+     @Override
+     public <T> T createInterceptorProxy(ClassLoader classLoader, Object target, Interceptor interceptor,
+-                                        Class<?>... proxyClasses) {
++                                        Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(42);
+         Enhancer enhancer = new Enhancer();
+         enhancer.setClassLoader(classLoader);
+         enhancer.setInterfaces(toInterfaces(proxyClasses));
+@@ -61,7 +61,7 @@ public class CglibCreator extends SubclassCreatorTemplate {
+     }
+ 
+     @Override
+-    public <T> T createInvokerProxy(ClassLoader classLoader, ObjectInvoker invoker, Class<?>... proxyClasses) {
++    public <T> T createInvokerProxy(ClassLoader classLoader, ObjectInvoker invoker, Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(43);
+         Enhancer enhancer = new Enhancer();
+         enhancer.setClassLoader(classLoader);
+         enhancer.setInterfaces(toInterfaces(proxyClasses));
+@@ -77,7 +77,7 @@ public class CglibCreator extends SubclassCreatorTemplate {
+ 
+     private static class CglibProxyFactoryCallbackFilter implements CallbackFilter {
+         @Override
+-        public int accept(Method method) {
++        public int accept(Method method) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(44);
+             if (ProxyUtil.isEqualsMethod(method)) {
+                 return 1;
+             }
+diff --git a/net/neoremind/dynamicproxy/impl/JavassistCreator.java b/net/neoremind/dynamicproxy/impl/JavassistCreator.java
+index 701871a..6529427 100644
+--- a/net/neoremind/dynamicproxy/impl/JavassistCreator.java
++++ b/net/neoremind/dynamicproxy/impl/JavassistCreator.java
+@@ -61,7 +61,7 @@ public class JavassistCreator extends SubclassCreatorTemplate {
+ 
+     @Override
+     public <T> T createDelegatorProxy(ClassLoader classLoader, ObjectProvider<?> targetProvider,
+-                                      Class<?>... proxyClasses) {
++                                      Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(45);
+         try {
+             @SuppressWarnings("unchecked")
+             Class<? extends T> clazz =
+@@ -75,7 +75,7 @@ public class JavassistCreator extends SubclassCreatorTemplate {
+ 
+     @Override
+     public <T> T createInterceptorProxy(ClassLoader classLoader, Object target, Interceptor interceptor,
+-                                        Class<?>... proxyClasses) {
++                                        Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(46);
+         try {
+             @SuppressWarnings("unchecked")
+             Class<? extends T> clazz =
+@@ -88,7 +88,7 @@ public class JavassistCreator extends SubclassCreatorTemplate {
+     }
+ 
+     @Override
+-    public <T> T createInvokerProxy(ClassLoader classLoader, ObjectInvoker invoker, Class<?>... proxyClasses) {
++    public <T> T createInvokerProxy(ClassLoader classLoader, ObjectInvoker invoker, Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(47);
+         try {
+             @SuppressWarnings("unchecked")
+             Class<? extends T> clazz =
+@@ -102,7 +102,7 @@ public class JavassistCreator extends SubclassCreatorTemplate {
+ 
+     private static class DelegatingProxyClassGenerator extends GeneratorTemplate {
+         @Override
+-        public Class<?> generateProxyClass(ClassLoader classLoader, Class<?>... proxyClasses) {
++        public Class<?> generateProxyClass(ClassLoader classLoader, Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(48);
+             try {
+                 CtClass proxyClass = JavassistUtil.createClass(getSuperclass(proxyClasses));
+                 JavassistUtil.addField(ObjectProvider.class, "provider", proxyClass);
+diff --git a/net/neoremind/dynamicproxy/impl/JdkProxyCreator.java b/net/neoremind/dynamicproxy/impl/JdkProxyCreator.java
+index 80b5d9e..2d6659b 100644
+--- a/net/neoremind/dynamicproxy/impl/JdkProxyCreator.java
++++ b/net/neoremind/dynamicproxy/impl/JdkProxyCreator.java
+@@ -25,7 +25,7 @@ public class JdkProxyCreator extends CreatorTemplate {
+ 
+     @Override
+     public <T> T createDelegatorProxy(ClassLoader classLoader, ObjectProvider<?> delegateProvider,
+-                                      Class<?>... proxyClasses) {
++                                      Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(49);
+         @SuppressWarnings("unchecked")
+         T result =
+                 (T) Proxy.newProxyInstance(classLoader, proxyClasses, new DelegatorInvocationHandler(delegateProvider));
+@@ -35,7 +35,7 @@ public class JdkProxyCreator extends CreatorTemplate {
+ 
+     @Override
+     public <T> T createInterceptorProxy(ClassLoader classLoader, Object target, Interceptor interceptor,
+-                                        Class<?>... proxyClasses) {
++                                        Class<?>... proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(50);
+         @SuppressWarnings("unchecked")
+         T result =
+                 (T) Proxy.newProxyInstance(classLoader, proxyClasses, new InterceptorInvocationHandler(target,
+diff --git a/net/neoremind/dynamicproxy/invoke/NullInvoker.java b/net/neoremind/dynamicproxy/invoke/NullInvoker.java
+index 1abec93..5d52575 100644
+--- a/net/neoremind/dynamicproxy/invoke/NullInvoker.java
++++ b/net/neoremind/dynamicproxy/invoke/NullInvoker.java
+@@ -16,7 +16,7 @@ public class NullInvoker implements ObjectInvoker, Serializable {
+     public static final NullInvoker INSTANCE = new NullInvoker();
+ 
+     @Override
+-    public Object invoke(Object proxy, Method method, Object... args) throws Throwable {
++    public Object invoke(Object proxy, Method method, Object... args) throws Throwable { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(4);
+         Class<?> returnType = method.getReturnType();
+ 
+         return ProxyUtil.nullValue(returnType);
+diff --git a/net/neoremind/dynamicproxy/jmhbench/MutationSwitch.java b/net/neoremind/dynamicproxy/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..998725c
+--- /dev/null
++++ b/net/neoremind/dynamicproxy/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.neoremind.dynamicproxy.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/net/neoremind/dynamicproxy/provider/BeanProvider.java b/net/neoremind/dynamicproxy/provider/BeanProvider.java
+index f5fc1f7..00916f2 100644
+--- a/net/neoremind/dynamicproxy/provider/BeanProvider.java
++++ b/net/neoremind/dynamicproxy/provider/BeanProvider.java
+@@ -16,7 +16,7 @@ public class BeanProvider<T> implements ObjectProvider<T>, Serializable {
+     }
+ 
+     @Override
+-    public T getObject() {
++    public T getObject() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(5);
+         return ReflectionUtil.newInstance(beanClass);
+     }
+ }
+diff --git a/net/neoremind/dynamicproxy/provider/ConstantProvider.java b/net/neoremind/dynamicproxy/provider/ConstantProvider.java
+index 7ece800..2dfac88 100644
+--- a/net/neoremind/dynamicproxy/provider/ConstantProvider.java
++++ b/net/neoremind/dynamicproxy/provider/ConstantProvider.java
+@@ -19,7 +19,7 @@ public class ConstantProvider<T> implements ObjectProvider<T>, Serializable {
+     }
+ 
+     @Override
+-    public T getObject() {
++    public T getObject() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(12);
+         return constant;
+     }
+ }
+diff --git a/net/neoremind/dynamicproxy/provider/ProviderDecorator.java b/net/neoremind/dynamicproxy/provider/ProviderDecorator.java
+index 6a3640d..93fcf64 100644
+--- a/net/neoremind/dynamicproxy/provider/ProviderDecorator.java
++++ b/net/neoremind/dynamicproxy/provider/ProviderDecorator.java
+@@ -17,15 +17,15 @@ public class ProviderDecorator<T> implements ObjectProvider<T> {
+     }
+ 
+     @Override
+-    public T getObject() {
++    public T getObject() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(17);
+         return inner.getObject();
+     }
+ 
+-    protected ObjectProvider<? extends T> getInner() {
++    protected ObjectProvider<? extends T> getInner() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(22);
+         return inner;
+     }
+ 
+-    public void setInner(ObjectProvider<? extends T> inner) {
++    public void setInner(ObjectProvider<? extends T> inner) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(27);
+         this.inner = inner;
+     }
+ }
+diff --git a/net/neoremind/dynamicproxy/provider/SingletonProvider.java b/net/neoremind/dynamicproxy/provider/SingletonProvider.java
+index 2954592..22d65d4 100644
+--- a/net/neoremind/dynamicproxy/provider/SingletonProvider.java
++++ b/net/neoremind/dynamicproxy/provider/SingletonProvider.java
+@@ -20,7 +20,7 @@ public class SingletonProvider<T> extends ProviderDecorator<T> {
+     }
+ 
+     @Override
+-    public T getObject() {
++    public T getObject() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(32);
+         return instance;
+     }
+ }
+diff --git a/net/neoremind/dynamicproxy/support/DelegatorInvoker.java b/net/neoremind/dynamicproxy/support/DelegatorInvoker.java
+index 17cda3c..2fb6482 100644
+--- a/net/neoremind/dynamicproxy/support/DelegatorInvoker.java
++++ b/net/neoremind/dynamicproxy/support/DelegatorInvoker.java
+@@ -19,7 +19,7 @@ public class DelegatorInvoker extends AbstractInvoker {
+     }
+ 
+     @Override
+-    public Object invokeImpl(Object proxy, Method method, Object[] args) throws Throwable {
++    public Object invokeImpl(Object proxy, Method method, Object[] args) throws Throwable { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(6);
+         try {
+             return method.invoke(delegateProvider.getObject(), args);
+         } catch (InvocationTargetException e) {
+diff --git a/net/neoremind/dynamicproxy/support/InterceptorInvoker.java b/net/neoremind/dynamicproxy/support/InterceptorInvoker.java
+index ffcfc2c..2529467 100644
+--- a/net/neoremind/dynamicproxy/support/InterceptorInvoker.java
++++ b/net/neoremind/dynamicproxy/support/InterceptorInvoker.java
+@@ -20,7 +20,7 @@ public class InterceptorInvoker extends AbstractInvoker {
+     }
+ 
+     @Override
+-    public Object invokeImpl(Object proxy, Method method, Object[] args) throws Throwable {
++    public Object invokeImpl(Object proxy, Method method, Object[] args) throws Throwable { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(13);
+         final ReflectionInvocation invocation = new ReflectionInvocation(target, proxy, method, args);
+         return methodInterceptor.intercept(invocation);
+     }
+diff --git a/net/neoremind/dynamicproxy/support/Invokering.java b/net/neoremind/dynamicproxy/support/Invokering.java
+index 739ec64..ff731ac 100644
+--- a/net/neoremind/dynamicproxy/support/Invokering.java
++++ b/net/neoremind/dynamicproxy/support/Invokering.java
+@@ -18,7 +18,7 @@ public class Invokering extends AbstractInvoker {
+     }
+ 
+     @Override
+-    public Object invokeImpl(Object proxy, Method method, Object[] args) throws Throwable {
++    public Object invokeImpl(Object proxy, Method method, Object[] args) throws Throwable { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(18);
+         return invoker.invoke(proxy, method, args);
+     }
+ }
+diff --git a/net/neoremind/dynamicproxy/support/ReflectionInvocation.java b/net/neoremind/dynamicproxy/support/ReflectionInvocation.java
+index 6901be6..bab90ae 100644
+--- a/net/neoremind/dynamicproxy/support/ReflectionInvocation.java
++++ b/net/neoremind/dynamicproxy/support/ReflectionInvocation.java
+@@ -27,22 +27,22 @@ public class ReflectionInvocation implements Invocation {
+     }
+ 
+     @Override
+-    public Object[] getArguments() {
++    public Object[] getArguments() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(23);
+         return arguments;
+     }
+ 
+     @Override
+-    public Method getMethod() {
++    public Method getMethod() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(28);
+         return method;
+     }
+ 
+     @Override
+-    public Object getProxy() {
++    public Object getProxy() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(33);
+         return proxy;
+     }
+ 
+     @Override
+-    public Object proceed() throws Throwable {
++    public Object proceed() throws Throwable { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(36);
+         try {
+             return method.invoke(target, arguments);
+         } catch (InvocationTargetException e) {
+diff --git a/net/neoremind/dynamicproxy/template/ClassCache.java b/net/neoremind/dynamicproxy/template/ClassCache.java
+index 107427a..c650213 100644
+--- a/net/neoremind/dynamicproxy/template/ClassCache.java
++++ b/net/neoremind/dynamicproxy/template/ClassCache.java
+@@ -36,7 +36,7 @@ public class ClassCache {
+         return Sets.newHashSet(Arrays.asList(proxyClasses));
+     }
+ 
+-    public synchronized Class<?> getProxyClass(ClassLoader classLoader, Class<?>[] proxyClasses) {
++    public synchronized Class<?> getProxyClass(ClassLoader classLoader, Class<?>[] proxyClasses) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(7);
+         Map<Set<Class<?>>, WeakReference<Class<?>>> classCache = getClassCache(classLoader);
+         Set<Class<?>> key = toClassCacheKey(proxyClasses);
+         Class<?> proxyClass;
+diff --git a/net/neoremind/dynamicproxy/util/KeyAndValue.java b/net/neoremind/dynamicproxy/util/KeyAndValue.java
+index ad2546c..10fe609 100644
+--- a/net/neoremind/dynamicproxy/util/KeyAndValue.java
++++ b/net/neoremind/dynamicproxy/util/KeyAndValue.java
+@@ -19,19 +19,19 @@ public class KeyAndValue<K, V> extends Entity<KeyAndValue<K, V>> implements Entr
+         this.value = value;
+     }
+ 
+-    public K getKey() {
++    public K getKey() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(34);
+         return this.key;
+     }
+ 
+-    public void setKey(K key) {
++    public void setKey(K key) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(37);
+         this.key = key;
+     }
+ 
+-    public V getValue() {
++    public V getValue() { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(39);
+         return this.value;
+     }
+ 
+-    public void setValue(V value) {
++    public void setValue(V value) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(41);
+         this.value = value;
+     }
+ 
+diff --git a/net/neoremind/dynamicproxy/util/ObjectUtil.java b/net/neoremind/dynamicproxy/util/ObjectUtil.java
+index e8d577f..baa7eea 100644
+--- a/net/neoremind/dynamicproxy/util/ObjectUtil.java
++++ b/net/neoremind/dynamicproxy/util/ObjectUtil.java
+@@ -5,7 +5,7 @@ package net.neoremind.dynamicproxy.util;
+  */
+ public class ObjectUtil {
+ 
+-    public static <T, S extends T> T defaultIfNull(T object, S defaultValue) {
++    public static <T, S extends T> T defaultIfNull(T object, S defaultValue) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(8);
+         return object == null ? defaultValue : object;
+     }
+ 
+diff --git a/net/neoremind/dynamicproxy/util/ReflectionUtil.java b/net/neoremind/dynamicproxy/util/ReflectionUtil.java
+index c6394c8..7586033 100644
+--- a/net/neoremind/dynamicproxy/util/ReflectionUtil.java
++++ b/net/neoremind/dynamicproxy/util/ReflectionUtil.java
+@@ -24,11 +24,11 @@ public class ReflectionUtil {
+      *
+      * @return 如果有返回<code>true</code>，否则返回<code>false</code>
+      */
+-    public static boolean hasSuperClass(Class<?> clazz) {
++    public static boolean hasSuperClass(Class<?> clazz) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(14);
+         return (clazz != null) && !clazz.equals(Object.class);
+     }
+ 
+-    public static Method getMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
++    public static Method getMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(19);
+         if (clazz == null || StringUtils.isBlank(methodName)) {
+             return null;
+         }
+@@ -47,7 +47,7 @@ public class ReflectionUtil {
+ 
+     }
+ 
+-    public static Method getMethod(Object object, String methodName, Class<?>... parameterTypes) {
++    public static Method getMethod(Object object, String methodName, Class<?>... parameterTypes) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(24);
+         if (object == null || StringUtils.isBlank(methodName)) {
+             return null;
+         }
+@@ -64,7 +64,7 @@ public class ReflectionUtil {
+         return null;
+     }
+ 
+-    public static <T> T newInstance(final Class<T> clazz) {
++    public static <T> T newInstance(final Class<T> clazz) { net.neoremind.dynamicproxy.jmhbench.MutationSwitch.tick(29);
+         Constructor<?>[] constructors = getAllConstructorsOfClass(clazz, true);
+         // impossible ?
+         if (ArrayUtils.isEmpty(constructors)) {

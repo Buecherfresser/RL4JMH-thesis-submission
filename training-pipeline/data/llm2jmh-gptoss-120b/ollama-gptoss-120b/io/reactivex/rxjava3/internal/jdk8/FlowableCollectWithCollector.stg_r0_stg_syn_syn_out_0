@@ -1,0 +1,104 @@
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link FlowableCollectWithCollector}.
+ *
+ * Measures the throughput of collecting a Flowable of integers into a {@link List}
+ * using a Java {@link Collector}.
+ *
+ * The benchmark follows best practices:
+ * - Uses @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Performs a warm‑up phase to let the JIT optimize the code.
+ * - Uses Blackhole to consume the result and prevent dead‑code elimination.
+ * - Configured for throughput mode (operations per second).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableCollectWithCollectorBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * The source Flowable emitting a range of integers.
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * Collector that accumulates items into a List.
+     */
+    private Collector<Integer, ?, List<Integer>> collector;
+
+    /**
+     * The operator under test.
+     */
+    private FlowableCollectWithCollector<Integer, ?, List<Integer>> operator;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple source that emits a deterministic range of integers.
+        source = Flowable.range(1, itemCount);
+        // Use the standard toList collector.
+        collector = Collectors.toList();
+        // Instantiate the operator directly (equivalent to source.collect(collector)).
+        operator = new FlowableCollectWithCollector<>(source, collector);
+    }
+
+    /**
+     * Benchmark method that subscribes to the operator and blocks until the collection
+     * is complete. The resulting list is consumed by Blackhole to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void collectToList(Blackhole bh) {
+        // blockingFirst() will wait for the Flowable to emit the single aggregated result.
+        List<Integer> result = operator.blockingFirst();
+        // Consume the result so the JIT cannot discard the whole computation.
+        bh.consume(result);
+    }
+}

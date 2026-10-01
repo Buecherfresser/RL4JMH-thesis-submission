@@ -1,0 +1,126 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link ObservableWindowBoundary}.
+ *
+ * The benchmark creates a source Observable that emits a configurable number of integers
+ * and a boundary Observable that emits a signal after each item, causing a new window to be opened.
+ * Throughput is measured as the number of windows (and consequently the number of items) processed per second.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source and boundary Observables in @Setup(Level.Trial) to exclude their construction cost.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Block until the stream completes with a CountDownLatch to ensure the benchmark measures the full processing.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableWindowBoundaryBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the source Observable.
+         */
+        @Param({ "1000", "10000", "100000" })
+        public int itemCount;
+
+        /**
+         * Hint for the internal UnicastSubject capacity.
+         */
+        public final int capacityHint = 128;
+
+        /**
+         * Source Observable emitting a range of integers.
+         */
+        public Observable<Integer> source;
+
+        /**
+         * Boundary Observable that emits a signal after each source item, closing the current window.
+         */
+        public Observable<Integer> boundary;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Emit exactly {@code itemCount} items.
+            source = Observable.range(1, itemCount);
+            // Emit a boundary signal after each source item, forcing a new window per item.
+            // Using the same range ensures deterministic behavior without timers.
+            boundary = Observable.range(0, itemCount);
+        }
+    }
+
+    @Benchmark
+    public void windowBoundaryThroughput(BenchmarkState state, Blackhole bh) throws InterruptedException {
+        // Create the operator instance with the pre‑built source and boundary.
+        ObservableWindowBoundary<Integer, Integer> operator =
+                new ObservableWindowBoundary<>(state.source, state.boundary, state.capacityHint);
+
+        // Latch to wait for completion of the whole stream.
+        CountDownLatch latch = new CountDownLatch(1);
+
+        // Subscribe to the operator.
+        operator.subscribe(new Observer<Observable<Integer>>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                // No need to keep the Disposable; the benchmark runs to completion.
+            }
+
+            @Override
+            public void onNext(Observable<Integer> window) {
+                // For each window, subscribe and consume its items.
+                window.subscribe(new Observer<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        // No action needed.
+                    }
+
+                    @Override
+                    public void onNext(Integer value) {
+                        // Consume the value to avoid dead‑code elimination.
+                        bh.consume(value);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        // Propagate errors to the latch to avoid hanging.
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        // No per‑window completion handling required.
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // Signal benchmark termination on error.
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                // Signal that the whole stream has finished.
+                latch.countDown();
+            }
+        });
+
+        // Wait for the stream to finish before returning control to JMH.
+        latch.await();
+    }
+}
+```

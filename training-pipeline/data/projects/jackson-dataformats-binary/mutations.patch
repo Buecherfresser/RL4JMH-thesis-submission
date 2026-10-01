@@ -1,0 +1,616 @@
+diff --git a/tools/jackson/dataformat/avro/AvroFactoryBuilder.java b/tools/jackson/dataformat/avro/AvroFactoryBuilder.java
+index 9643417..e3eb903 100644
+--- a/tools/jackson/dataformat/avro/AvroFactoryBuilder.java
++++ b/tools/jackson/dataformat/avro/AvroFactoryBuilder.java
+@@ -63,7 +63,7 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
+     }
+ 
+     @Override
+-    public AvroFactory build() {
++    public AvroFactory build() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(1);
+         // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
+         return new AvroFactory(this);
+     }
+@@ -74,7 +74,7 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
+     /**********************************************************
+      */
+ 
+-    public boolean useApacheLibDecoder() { return _useApacheLibDecoder; }
++    public boolean useApacheLibDecoder() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(5); return _useApacheLibDecoder; }
+ 
+     /*
+     /**********************************************************
+diff --git a/tools/jackson/dataformat/avro/AvroMapper.java b/tools/jackson/dataformat/avro/AvroMapper.java
+index 8b0a4a0..69edfc5 100644
+--- a/tools/jackson/dataformat/avro/AvroMapper.java
++++ b/tools/jackson/dataformat/avro/AvroMapper.java
+@@ -51,12 +51,12 @@ public class AvroMapper extends ObjectMapper
+         }
+         
+         @Override
+-        public AvroMapper build() {
++        public AvroMapper build() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(9);
+             return new AvroMapper(this);
+         }
+ 
+         @Override
+-        protected MapperBuilderState _saveState() {
++        protected MapperBuilderState _saveState() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(13);
+             // nothing extra, just format features
+             return new StateImpl(this);
+         }
+diff --git a/tools/jackson/dataformat/avro/AvroTypeResolverBuilder.java b/tools/jackson/dataformat/avro/AvroTypeResolverBuilder.java
+index d57da87..3dfd4d3 100644
+--- a/tools/jackson/dataformat/avro/AvroTypeResolverBuilder.java
++++ b/tools/jackson/dataformat/avro/AvroTypeResolverBuilder.java
+@@ -24,7 +24,7 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder
+         super(config);
+     }
+ 
+-    public static AvroTypeResolverBuilder construct(JsonTypeInfo.Value config) {
++    public static AvroTypeResolverBuilder construct(JsonTypeInfo.Value config) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(17);
+         if (config == null) {
+             config = JsonTypeInfo.Value.construct(JsonTypeInfo.Id.CUSTOM, // could be NONE, but there is type discriminator in Avro...
+                     JsonTypeInfo.As.PROPERTY, // N/A for custom
+@@ -39,7 +39,7 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder
+ 
+     @Override
+     public TypeSerializer buildTypeSerializer(SerializationContext ctxt, JavaType baseType,
+-            Collection<NamedType> subtypes) {
++            Collection<NamedType> subtypes) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(21);
+         // All type information is encoded in the schema, never in the data.
+         return null;
+     }
+diff --git a/tools/jackson/dataformat/avro/apacheimpl/ApacheAvroParserImpl.java b/tools/jackson/dataformat/avro/apacheimpl/ApacheAvroParserImpl.java
+index 6b974ce..de6a9d8 100644
+--- a/tools/jackson/dataformat/avro/apacheimpl/ApacheAvroParserImpl.java
++++ b/tools/jackson/dataformat/avro/apacheimpl/ApacheAvroParserImpl.java
+@@ -115,7 +115,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
+     }
+ 
+     @Override
+-    protected void _releaseBuffers() {
++    protected void _releaseBuffers() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(25);
+         super._releaseBuffers();
+         if (_bufferRecyclable) {
+             byte[] buf = _inputBuffer;
+@@ -143,7 +143,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
+      */
+ 
+     @Override
+-    public Object streamReadInputSource() {
++    public Object streamReadInputSource() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(29);
+         return _inputStream;
+     }
+ 
+diff --git a/tools/jackson/dataformat/avro/apacheimpl/DecoderOverAvroParser.java b/tools/jackson/dataformat/avro/apacheimpl/DecoderOverAvroParser.java
+index 6721dcc..87323c3 100644
+--- a/tools/jackson/dataformat/avro/apacheimpl/DecoderOverAvroParser.java
++++ b/tools/jackson/dataformat/avro/apacheimpl/DecoderOverAvroParser.java
+@@ -29,7 +29,7 @@ public class DecoderOverAvroParser extends Decoder {
+      * @throws IOException              If there is an error while reading the next token
+      * @throws IllegalArgumentException If the next token is not one of the <code>expectedTokens</code>
+      */
+-    protected JsonToken consumeToken(JsonToken... expectedTokens) throws IOException {
++    protected JsonToken consumeToken(JsonToken... expectedTokens) throws IOException { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(33);
+         JsonToken token = nextValue();
+         for (JsonToken expectedToken : expectedTokens) {
+             if (token.equals(expectedToken)) {
+@@ -48,7 +48,7 @@ public class DecoderOverAvroParser extends Decoder {
+      * @return The next data token
+      * @throws IOException If there is an error while reading the next token
+      */
+-    protected JsonToken nextValue() throws IOException {
++    protected JsonToken nextValue() throws IOException { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(37);
+         // Decoders don't care about start and end of records, or field names in records; swallow them
+         while (((_parser.currentToken() == JsonToken.START_OBJECT || _parser.currentToken() == JsonToken.END_OBJECT
+             || _parser.currentToken() == JsonToken.PROPERTY_NAME) && _parser.isRecord()) || _parser.currentToken() == null
+diff --git a/tools/jackson/dataformat/avro/deser/JacksonAvroParserImpl.java b/tools/jackson/dataformat/avro/deser/JacksonAvroParserImpl.java
+index 287df3b..3fa412b 100644
+--- a/tools/jackson/dataformat/avro/deser/JacksonAvroParserImpl.java
++++ b/tools/jackson/dataformat/avro/deser/JacksonAvroParserImpl.java
+@@ -95,7 +95,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
+     }
+ 
+     @Override
+-    protected void _releaseBuffers() {
++    protected void _releaseBuffers() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(41);
+         super._releaseBuffers();
+         if (_bufferRecyclable) {
+             byte[] buf = _inputBuffer;
+@@ -113,7 +113,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
+      */
+ 
+     @Override
+-    public Object streamReadInputSource() {
++    public Object streamReadInputSource() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(45);
+         return _inputStream;
+     }
+ 
+diff --git a/tools/jackson/dataformat/avro/deser/ScalarDecoderWrapper.java b/tools/jackson/dataformat/avro/deser/ScalarDecoderWrapper.java
+index c5b3e5d..f0be4cb 100644
+--- a/tools/jackson/dataformat/avro/deser/ScalarDecoderWrapper.java
++++ b/tools/jackson/dataformat/avro/deser/ScalarDecoderWrapper.java
+@@ -31,7 +31,7 @@ final class ScalarDecoderWrapper extends AvroStructureReader
+     }
+ 
+     @Override
+-    public ScalarDecoderWrapper newReader(AvroReadContext parent, AvroParserImpl parser) {
++    public ScalarDecoderWrapper newReader(AvroReadContext parent, AvroParserImpl parser) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(49);
+         return new ScalarDecoderWrapper(parent, parser, _valueDecoder);
+     }
+ 
+diff --git a/tools/jackson/dataformat/cbor/CBORConstants.java b/tools/jackson/dataformat/cbor/CBORConstants.java
+index 55a9806..58d4506 100644
+--- a/tools/jackson/dataformat/cbor/CBORConstants.java
++++ b/tools/jackson/dataformat/cbor/CBORConstants.java
+@@ -156,12 +156,12 @@ public final class CBORConstants
+         sUtf8UnitLengths = table;
+     }
+ 
+-    public static boolean hasMajorType(int expType, byte encoded) {
++    public static boolean hasMajorType(int expType, byte encoded) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(34);
+         int actual = (encoded & MASK_MAJOR_TYPE) >> 5;
+         return (actual == expType);
+     }
+ 
+-    public static boolean shouldReferenceString(int index, int stringBytes) {
++    public static boolean shouldReferenceString(int index, int stringBytes) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(38);
+         // See table in specification: http://cbor.schmorp.de/stringref
+         // Only support 32-bit indices.
+         return (index >= 0 && index <= 23 && stringBytes >= 3) ||
+diff --git a/tools/jackson/dataformat/cbor/CBORFactory.java b/tools/jackson/dataformat/cbor/CBORFactory.java
+index 4af32c1..af1e6b0 100644
+--- a/tools/jackson/dataformat/cbor/CBORFactory.java
++++ b/tools/jackson/dataformat/cbor/CBORFactory.java
+@@ -106,7 +106,7 @@ public class CBORFactory
+     }
+ 
+     @Override
+-    public CBORFactoryBuilder rebuild() {
++    public CBORFactoryBuilder rebuild() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(42);
+         return new CBORFactoryBuilder(this);
+     }
+ 
+@@ -114,7 +114,7 @@ public class CBORFactory
+      * Main factory method to use for constructing {@link CBORFactory} instances with
+      * different configuration.
+      */
+-    public static CBORFactoryBuilder builder() {
++    public static CBORFactoryBuilder builder() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(46);
+         return new CBORFactoryBuilder();
+     }
+ 
+diff --git a/tools/jackson/dataformat/cbor/CBORFactoryBuilder.java b/tools/jackson/dataformat/cbor/CBORFactoryBuilder.java
+index 3cfc17a..8ca90d5 100644
+--- a/tools/jackson/dataformat/cbor/CBORFactoryBuilder.java
++++ b/tools/jackson/dataformat/cbor/CBORFactoryBuilder.java
+@@ -34,12 +34,12 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
+ 
+     // // // Generator features
+ 
+-    public CBORFactoryBuilder enable(CBORWriteFeature f) {
++    public CBORFactoryBuilder enable(CBORWriteFeature f) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(2);
+         _formatWriteFeatures |= f.getMask();
+         return _this();
+     }
+ 
+-    public CBORFactoryBuilder enable(CBORWriteFeature first, CBORWriteFeature... other) {
++    public CBORFactoryBuilder enable(CBORWriteFeature first, CBORWriteFeature... other) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(6);
+         _formatWriteFeatures |= first.getMask();
+         for (CBORWriteFeature f : other) {
+             _formatWriteFeatures |= f.getMask();
+diff --git a/tools/jackson/dataformat/cbor/CBORGenerator.java b/tools/jackson/dataformat/cbor/CBORGenerator.java
+index f5d61e6..a6637d3 100644
+--- a/tools/jackson/dataformat/cbor/CBORGenerator.java
++++ b/tools/jackson/dataformat/cbor/CBORGenerator.java
+@@ -244,7 +244,7 @@ public class CBORGenerator extends GeneratorBase
+      */
+ 
+     @Override
+-    public Version version() {
++    public Version version() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(50);
+         return PackageVersion.VERSION;
+     }
+ 
+diff --git a/tools/jackson/dataformat/cbor/CBORMapper.java b/tools/jackson/dataformat/cbor/CBORMapper.java
+index 4ed81c1..025a054 100644
+--- a/tools/jackson/dataformat/cbor/CBORMapper.java
++++ b/tools/jackson/dataformat/cbor/CBORMapper.java
+@@ -28,12 +28,12 @@ public class CBORMapper extends ObjectMapper
+         }
+ 
+         @Override
+-        public CBORMapper build() {
++        public CBORMapper build() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(10);
+             return new CBORMapper(this);
+         }
+ 
+         @Override
+-        protected MapperBuilderState _saveState() {
++        protected MapperBuilderState _saveState() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(14);
+             return new StateImpl(this);
+         }
+ 
+diff --git a/tools/jackson/dataformat/cbor/CBORParser.java b/tools/jackson/dataformat/cbor/CBORParser.java
+index 735f55c..24a6c35 100644
+--- a/tools/jackson/dataformat/cbor/CBORParser.java
++++ b/tools/jackson/dataformat/cbor/CBORParser.java
+@@ -39,7 +39,7 @@ public class CBORParser extends ParserBase
+          *
+          * @return The number of tags.
+          */
+-        public int size() {
++        public int size() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(18);
+             return _tagCount;
+         }
+ 
+@@ -48,7 +48,7 @@ public class CBORParser extends ParserBase
+          *
+          * @return {@code true} if there are no tags, {@code false} if there are tags..
+          */
+-        public boolean isEmpty() {
++        public boolean isEmpty() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(22);
+             return _tagCount == 0;
+         }
+ 
+diff --git a/tools/jackson/dataformat/cbor/CBORParserBootstrapper.java b/tools/jackson/dataformat/cbor/CBORParserBootstrapper.java
+index a84b78f..d501279 100644
+--- a/tools/jackson/dataformat/cbor/CBORParserBootstrapper.java
++++ b/tools/jackson/dataformat/cbor/CBORParserBootstrapper.java
+@@ -84,7 +84,7 @@ public class CBORParserBootstrapper
+             int generalParserFeatures, int formatFeatures,
+             ByteQuadsCanonicalizer rootByteSymbols)
+         throws JacksonException
+-    {
++    { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(26);
+         // 13-Mar-2021, tatu: [dataformats-binary#253] Create canonicalizing OR
+         //    placeholder, depending on settings
+         ByteQuadsCanonicalizer can = rootByteSymbols.makeChildOrPlaceholder(factoryFeatures);
+@@ -112,7 +112,7 @@ public class CBORParserBootstrapper
+      */
+ 
+     protected boolean ensureLoaded(int minimum) throws JacksonException
+-    {
++    { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(30);
+         if (_in == null) { // block source; nothing more to load
+             return false;
+         }
+diff --git a/tools/jackson/dataformat/ion/EnumAsIonSymbolModule.java b/tools/jackson/dataformat/ion/EnumAsIonSymbolModule.java
+index 0378800..06a0ed0 100644
+--- a/tools/jackson/dataformat/ion/EnumAsIonSymbolModule.java
++++ b/tools/jackson/dataformat/ion/EnumAsIonSymbolModule.java
+@@ -34,14 +34,14 @@ public class EnumAsIonSymbolModule extends JacksonModule
+ 
+     @Override
+     public void setupModule(SetupContext context)
+-    {
++    { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(43);
+         context.addSerializers(new SimpleSerializers()
+                 .addSerializer(new EnumAsIonSymbolSerializer())
+         );
+     }
+ 
+     @Override
+-    public String getModuleName() {
++    public String getModuleName() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(47);
+         return getClass().getName();
+     }
+ 
+diff --git a/tools/jackson/dataformat/ion/IonFactoryBuilder.java b/tools/jackson/dataformat/ion/IonFactoryBuilder.java
+index c793825..d4f621c 100644
+--- a/tools/jackson/dataformat/ion/IonFactoryBuilder.java
++++ b/tools/jackson/dataformat/ion/IonFactoryBuilder.java
+@@ -51,7 +51,7 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
+     }
+ 
+     @Override
+-    public IonFactory build() {
++    public IonFactory build() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(3);
+         // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
+         return new IonFactory(this);
+     }
+@@ -62,7 +62,7 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
+     /**********************************************************
+      */
+ 
+-    public IonFactoryBuilder withBinaryWriters() {
++    public IonFactoryBuilder withBinaryWriters() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(7);
+         _createBinaryWriters = true;
+         return this;
+     }
+diff --git a/tools/jackson/dataformat/ion/IonObjectMapper.java b/tools/jackson/dataformat/ion/IonObjectMapper.java
+index 674c5ef..ef61dfd 100644
+--- a/tools/jackson/dataformat/ion/IonObjectMapper.java
++++ b/tools/jackson/dataformat/ion/IonObjectMapper.java
+@@ -77,12 +77,12 @@ public class IonObjectMapper extends ObjectMapper
+         }
+ 
+         @Override
+-        public IonObjectMapper build() {
++        public IonObjectMapper build() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(11);
+             return new IonObjectMapper(this);
+         }
+ 
+         @Override
+-        protected MapperBuilderState _saveState() {
++        protected MapperBuilderState _saveState() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(15);
+             return new StateImpl(this);
+         }
+ 
+diff --git a/tools/jackson/dataformat/ion/IonParser.java b/tools/jackson/dataformat/ion/IonParser.java
+index 77dc721..12e6664 100644
+--- a/tools/jackson/dataformat/ion/IonParser.java
++++ b/tools/jackson/dataformat/ion/IonParser.java
+@@ -97,7 +97,7 @@ public class IonParser
+     }
+ 
+     @Override
+-    public Version version() {
++    public Version version() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(19);
+         return PackageVersion.VERSION;
+     }
+ 
+@@ -109,7 +109,7 @@ public class IonParser
+      *
+      * @since 2.12.2
+      */
+-    public IonSystem getIonSystem() {
++    public IonSystem getIonSystem() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(23);
+         return _system;
+     }
+ 
+diff --git a/tools/jackson/dataformat/ion/ionvalue/IonValueMapper.java b/tools/jackson/dataformat/ion/ionvalue/IonValueMapper.java
+index c94ef33..2c6161b 100644
+--- a/tools/jackson/dataformat/ion/ionvalue/IonValueMapper.java
++++ b/tools/jackson/dataformat/ion/ionvalue/IonValueMapper.java
+@@ -42,7 +42,7 @@ public class IonValueMapper extends IonObjectMapper
+     }
+ 
+     @Deprecated // use `readValue(IonValue, Class)` instead
+-    public <T> T parse(IonValue value, Class<T> clazz) throws IOException {
++    public <T> T parse(IonValue value, Class<T> clazz) throws IOException { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(27);
+         if (value == null) {
+             return null;
+         }
+@@ -50,7 +50,7 @@ public class IonValueMapper extends IonObjectMapper
+     }
+ 
+     @Deprecated // use `writeValueAsIonValue(Object)` instead
+-    public IonValue serialize(Object o) throws IOException {
++    public IonValue serialize(Object o) throws IOException { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(31);
+         if (o == null) {
+             return null;
+         }
+diff --git a/tools/jackson/dataformat/ion/polymorphism/IonAnnotationTypeResolverBuilder.java b/tools/jackson/dataformat/ion/polymorphism/IonAnnotationTypeResolverBuilder.java
+index e089c94..77b424d 100644
+--- a/tools/jackson/dataformat/ion/polymorphism/IonAnnotationTypeResolverBuilder.java
++++ b/tools/jackson/dataformat/ion/polymorphism/IonAnnotationTypeResolverBuilder.java
+@@ -60,12 +60,12 @@ public class IonAnnotationTypeResolverBuilder
+ 
+     public static IonAnnotationTypeResolverBuilder construct(JavaType baseType,
+             JsonTypeInfo.Value typeInfo, TypeIdResolver idResolver)
+-    {
++    { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(35);
+         return new IonAnnotationTypeResolverBuilder(baseType.getRawClass(), idResolver);
+     }
+ 
+     @Override
+-    public Class<?> getDefaultImpl() {
++    public Class<?> getDefaultImpl() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(39);
+         return defaultImpl;
+     }
+ 
+diff --git a/tools/jackson/dataformat/jmhbench/MutationSwitch.java b/tools/jackson/dataformat/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..3cd4412
+--- /dev/null
++++ b/tools/jackson/dataformat/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package tools.jackson.dataformat.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/tools/jackson/dataformat/smile/SmileFactory.java b/tools/jackson/dataformat/smile/SmileFactory.java
+index 1447956..70afc3e 100644
+--- a/tools/jackson/dataformat/smile/SmileFactory.java
++++ b/tools/jackson/dataformat/smile/SmileFactory.java
+@@ -107,7 +107,7 @@ public class SmileFactory
+     }
+ 
+     @Override
+-    public SmileFactoryBuilder rebuild() {
++    public SmileFactoryBuilder rebuild() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(48);
+         return new SmileFactoryBuilder(this);
+     }
+ 
+diff --git a/tools/jackson/dataformat/smile/SmileFactoryBuilder.java b/tools/jackson/dataformat/smile/SmileFactoryBuilder.java
+index 00e4252..10876ba 100644
+--- a/tools/jackson/dataformat/smile/SmileFactoryBuilder.java
++++ b/tools/jackson/dataformat/smile/SmileFactoryBuilder.java
+@@ -30,7 +30,7 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
+     }
+ 
+     @Override
+-    public SmileFactory build() {
++    public SmileFactory build() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(4);
+         // No special settings beyond base class ones, so:
+         return new SmileFactory(this);
+     }
+@@ -43,7 +43,7 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
+ 
+     // // // Parser features
+ 
+-    public SmileFactoryBuilder enable(SmileReadFeature f) {
++    public SmileFactoryBuilder enable(SmileReadFeature f) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(8);
+         _formatReadFeatures |= f.getMask();
+         return _this();
+     }
+diff --git a/tools/jackson/dataformat/smile/SmileMapper.java b/tools/jackson/dataformat/smile/SmileMapper.java
+index 0364012..d3065ed 100644
+--- a/tools/jackson/dataformat/smile/SmileMapper.java
++++ b/tools/jackson/dataformat/smile/SmileMapper.java
+@@ -28,12 +28,12 @@ public class SmileMapper extends ObjectMapper
+         }
+ 
+         @Override
+-        public SmileMapper build() {
++        public SmileMapper build() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(12);
+             return new SmileMapper(this);
+         }
+ 
+         @Override
+-        protected MapperBuilderState _saveState() {
++        protected MapperBuilderState _saveState() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(16);
+             return new StateImpl(this);
+         }
+ 
+diff --git a/tools/jackson/dataformat/smile/SmileParser.java b/tools/jackson/dataformat/smile/SmileParser.java
+index 67336c3..ee190c8 100644
+--- a/tools/jackson/dataformat/smile/SmileParser.java
++++ b/tools/jackson/dataformat/smile/SmileParser.java
+@@ -111,7 +111,7 @@ public class SmileParser extends SmileParserBase
+      */
+     protected boolean handleSignature(boolean consumeFirstByte, boolean throwException)
+         throws JacksonException
+-    {
++    { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(20);
+         if (consumeFirstByte) {
+             ++_inputPtr;
+         }
+@@ -165,7 +165,7 @@ versionBits);
+ 
+     @Override
+     public int releaseBuffered(OutputStream out) throws JacksonException
+-    {
++    { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(24);
+         int count = _inputEnd - _inputPtr;
+         if (count < 1) {
+             return 0;
+diff --git a/tools/jackson/dataformat/smile/SmileParserBootstrapper.java b/tools/jackson/dataformat/smile/SmileParserBootstrapper.java
+index 105d7e7..b083dc4 100644
+--- a/tools/jackson/dataformat/smile/SmileParserBootstrapper.java
++++ b/tools/jackson/dataformat/smile/SmileParserBootstrapper.java
+@@ -89,7 +89,7 @@ public class SmileParserBootstrapper
+             int generalParserFeatures, int smileFeatures,
+             ByteQuadsCanonicalizer rootByteSymbols)
+         throws JacksonException
+-    {
++    { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(28);
+         // 13-Mar-2021, tatu: [dataformats-binary#252] Create canonicalizing OR
+         //    placeholder, depending on settings
+         ByteQuadsCanonicalizer can = rootByteSymbols.makeChildOrPlaceholder(factoryFeatures);
+diff --git a/tools/jackson/dataformat/smile/SmileUtil.java b/tools/jackson/dataformat/smile/SmileUtil.java
+index 69a9e73..0cc6ca4 100644
+--- a/tools/jackson/dataformat/smile/SmileUtil.java
++++ b/tools/jackson/dataformat/smile/SmileUtil.java
+@@ -5,7 +5,7 @@ package tools.jackson.dataformat.smile;
+  */
+ public class SmileUtil
+ {
+-    public static int zigzagEncode(int input) {
++    public static int zigzagEncode(int input) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(32);
+         // canonical, avoids branching, which matters more than alu ops
+         return (input << 1) ^  (input >> 31);
+         /*
+@@ -16,7 +16,7 @@ public class SmileUtil
+         */
+     }
+ 
+-    public static int zigzagDecode(int encoded) {
++    public static int zigzagDecode(int encoded) { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(36);
+         // canonical, avoids branching
+         return (encoded >>> 1) ^ (-(encoded & 1));
+         /*
+diff --git a/tools/jackson/dataformat/smile/async/NonBlockingByteArrayParser.java b/tools/jackson/dataformat/smile/async/NonBlockingByteArrayParser.java
+index 252da29..b81ae7f 100644
+--- a/tools/jackson/dataformat/smile/async/NonBlockingByteArrayParser.java
++++ b/tools/jackson/dataformat/smile/async/NonBlockingByteArrayParser.java
+@@ -68,12 +68,12 @@ public class NonBlockingByteArrayParser
+      */
+ 
+     @Override
+-    public ByteArrayFeeder nonBlockingInputFeeder() {
++    public ByteArrayFeeder nonBlockingInputFeeder() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(40);
+         return this;
+     }
+ 
+     @Override
+-    public final boolean needMoreInput() {
++    public final boolean needMoreInput() { tools.jackson.dataformat.jmhbench.MutationSwitch.tick(44);
+         return (_inputPtr >=_inputEnd) && !_endOfInput;
+     }
+ 

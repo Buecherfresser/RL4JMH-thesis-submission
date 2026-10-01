@@ -1,0 +1,57 @@
+```java
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Publisher;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+
+/**
+ * JMH benchmark for {@code MaybeDelayOtherPublisher}.
+ *
+ * Measures the throughput of the operator when the upstream Maybe succeeds
+ * and the "other" Publisher completes immediately.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeDelayOtherPublisherBenchmark {
+
+    /** Upstream Maybe that emits a single value. */
+    private Maybe<Integer> upstream;
+
+    /** Publisher used as the "other" source; completes immediately. */
+    private Publisher<Object> other;
+
+    /** The Maybe after applying the delay operator. */
+    private Maybe<Integer> delayedMaybe;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        upstream = Maybe.just(42);
+        other = Flowable.empty(); // Flowable implements Publisher
+        delayedMaybe = upstream.delay(other);
+    }
+
+    @Benchmark
+    public void subscribeAndBlock(Blackhole bh) {
+        Integer result = delayedMaybe.blockingGet();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void subscribeWithObserver(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        delayedMaybe.subscribe(bh::consume, bh::consume, latch::countDown);
+        latch.await();
+    }
+}
+```

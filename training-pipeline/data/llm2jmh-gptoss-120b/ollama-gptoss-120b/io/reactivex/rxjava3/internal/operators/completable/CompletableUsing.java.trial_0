@@ -1,0 +1,73 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.core.CompletableSource;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Consumer;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.completable.CompletableUsing}.
+ *
+ * Measures the throughput of subscribing to a Completable created via CompletableUsing
+ * with eager and non‑eager resource disposal.
+ *
+ * The benchmark uses a trivial resource (an Integer) and a no‑op disposer to isolate
+ * the overhead of the operator itself.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class CompletableUsingBenchmark {
+
+    private Completable eagerCompletable;
+    private Completable nonEagerCompletable;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        Supplier<Integer> resourceSupplier = () -> 42; // cheap resource
+        Function<Integer, CompletableSource> completableFunction = r -> Completable.complete();
+        Consumer<Integer> disposer = r -> {
+            // no‑op disposer; in real code this would release the resource
+        };
+
+        // eager disposal
+        eagerCompletable = Completable.using(
+                resourceSupplier,
+                completableFunction,
+                disposer,
+                true);
+
+        // non‑eager disposal
+        nonEagerCompletable = Completable.using(
+                resourceSupplier,
+                completableFunction,
+                disposer,
+                false);
+    }
+
+    @Benchmark
+    public void eager(Blackhole bh) {
+        // blockingAwait subscribes and waits for termination; the result is always true
+        // for Completable.complete(). We feed the boolean into Blackhole to prevent dead‑code elimination.
+        boolean completed = eagerCompletable.blockingAwait();
+        bh.consume(completed);
+    }
+
+    @Benchmark
+    public void nonEager(Blackhole bh) {
+        boolean completed = nonEagerCompletable.blockingAwait();
+        bh.consume(completed);
+    }
+}
+```

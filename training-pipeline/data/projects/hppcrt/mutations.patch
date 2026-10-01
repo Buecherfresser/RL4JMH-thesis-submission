@@ -1,0 +1,743 @@
+diff --git a/com/carrotsearch/hppcrt/BenchmarkSuiteRunner.java b/com/carrotsearch/hppcrt/BenchmarkSuiteRunner.java
+index dbb33d1..bb0c8b7 100644
+--- a/com/carrotsearch/hppcrt/BenchmarkSuiteRunner.java
++++ b/com/carrotsearch/hppcrt/BenchmarkSuiteRunner.java
+@@ -58,7 +58,7 @@ public class BenchmarkSuiteRunner
+      * @return the remaining command line args with the common options removed, for further processing by specific benchmarks.
+      * @throws BenchmarkOptionException if invalid command line
+      */
+-    public static final String[] parseCommonArguments(final String[] originalArgs, final BenchmarkOptions commonOptions) throws BenchmarkOptionException {
++    public static final String[] parseCommonArguments(final String[] originalArgs, final BenchmarkOptions commonOptions) throws BenchmarkOptionException { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(9);
+ 
+         //default values
+         commonOptions.nbMeasurements = BenchmarkSuiteRunner.NB_MEASUREMENTS_DEFAULT;
+diff --git a/com/carrotsearch/hppcrt/BitUtil.java b/com/carrotsearch/hppcrt/BitUtil.java
+index 69c1ab1..7dba0e8 100644
+--- a/com/carrotsearch/hppcrt/BitUtil.java
++++ b/com/carrotsearch/hppcrt/BitUtil.java
+@@ -39,7 +39,7 @@ public final class BitUtil
+     // intrinsic since Java 6u18) in a naive loop, see LUCENE-2221
+ 
+     /** Returns the number of set bits in an array of longs. */
+-    public static long pop_array(final long[] arr, final int wordOffset, final int numWords) {
++    public static long pop_array(final long[] arr, final int wordOffset, final int numWords) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(1);
+         long popCount = 0;
+         for (int i = wordOffset, end = wordOffset + numWords; i < end; ++i) {
+             popCount += Long.bitCount(arr[i]);
+@@ -49,7 +49,7 @@ public final class BitUtil
+ 
+     /** Returns the popcount or cardinality of the two sets after an intersection.
+      *  Neither array is modified. */
+-    public static long pop_intersect(final long[] arr1, final long[] arr2, final int wordOffset, final int numWords) {
++    public static long pop_intersect(final long[] arr1, final long[] arr2, final int wordOffset, final int numWords) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(5);
+         long popCount = 0;
+         for (int i = wordOffset, end = wordOffset + numWords; i < end; ++i) {
+             popCount += Long.bitCount(arr1[i] & arr2[i]);
+diff --git a/com/carrotsearch/hppcrt/BroadWord.java b/com/carrotsearch/hppcrt/BroadWord.java
+index 2884bf7..64cfc9b 100644
+--- a/com/carrotsearch/hppcrt/BroadWord.java
++++ b/com/carrotsearch/hppcrt/BroadWord.java
+@@ -40,7 +40,7 @@ public final class BroadWord {
+    * normally {@link Long#bitCount} is preferable.
+    * @return The total number of 1 bits in x.
+    */
+-  public static int rank9(long x) {
++  public static int rank9(long x) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(13);
+     // Step 0 leaves in each pair of bits the number of ones originally contained in that pair:
+     x = x - ((x & 0xAAAAAAAAAAAAAAAAL) >>> 1);
+     // Step 1, idem for each nibble:
+@@ -54,7 +54,7 @@ public final class BroadWord {
+   /** Select a 1-bit from a long.
+    * @return The index of the r-th 1 bit in x, or if no such bit exists, 72.
+    */
+-  public static int select9(long x, int r) {
++  public static int select9(long x, int r) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(17);
+     long s = x - ((x & 0xAAAAAAAAAAAAAAAAL) >>> 1); // Step 0, pairwise bitsums
+ 
+     // Correct a small mistake in algorithm 2:
+diff --git a/com/carrotsearch/hppcrt/Containers.java b/com/carrotsearch/hppcrt/Containers.java
+index 3bedf05..0d5fb76 100644
+--- a/com/carrotsearch/hppcrt/Containers.java
++++ b/com/carrotsearch/hppcrt/Containers.java
+@@ -46,13 +46,13 @@ public final class Containers
+      * Full random values are returned if either <code>tests.seed</code> is not available, or is set to "" (empty String).
+      * @see "https://github.com/carrotsearch/randomizedtesting"
+      */
+-    public static long randomSeed64() {
++    public static long randomSeed64() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(21);
+ 
+         if (Containers.testsSeedProperty == null) {
+             try {
+                 Containers.testsSeedProperty = java.security.AccessController.doPrivileged(new PrivilegedAction<String>() {
+                     @Override
+-                    public String run() {
++                    public String run() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(25);
+                         return System.getProperty("tests.seed", Containers.NOT_AVAILABLE);
+                     }
+                 });
+diff --git a/com/carrotsearch/hppcrt/DistributionGenerator.java b/com/carrotsearch/hppcrt/DistributionGenerator.java
+index 08fe903..614cb56 100644
+--- a/com/carrotsearch/hppcrt/DistributionGenerator.java
++++ b/com/carrotsearch/hppcrt/DistributionGenerator.java
+@@ -262,7 +262,7 @@ public class DistributionGenerator
+     //main for tests
+     /////////////////////////////////
+ 
+-    public static void main(final String[] args) {
++    public static void main(final String[] args) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(28);
+ 
+         DistributionGenerator.testGenerators(-100, 200, 1234789L, 500);
+         DistributionGenerator.testGenerators((long) (Integer.MIN_VALUE * 0.5), Integer.MAX_VALUE - 10, 79914664L, 500);
+diff --git a/com/carrotsearch/hppcrt/HashContainers.java b/com/carrotsearch/hppcrt/HashContainers.java
+index c9d527d..57aa249 100644
+--- a/com/carrotsearch/hppcrt/HashContainers.java
++++ b/com/carrotsearch/hppcrt/HashContainers.java
+@@ -40,7 +40,7 @@ public final class HashContainers
+      * stored in a hash container for a given load factor.
+      * @param loadFactor
+      */
+-    public static int maxElements(final double loadFactor) {
++    public static int maxElements(final double loadFactor) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(31);
+ 
+         HashContainers.checkLoadFactor(loadFactor, HashContainers.MIN_LOAD_FACTOR, HashContainers.MAX_LOAD_FACTOR);
+         return HashContainers.expandAtCount(HashContainers.MAX_HASH_ARRAY_LENGTH, loadFactor) - 1;
+@@ -54,7 +54,7 @@ public final class HashContainers
+      * @param loadFactor
+      */
+     @SuppressWarnings("boxing")
+-    public static int minBufferSize(final int elements, final double loadFactor) {
++    public static int minBufferSize(final int elements, final double loadFactor) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(34);
+ 
+         HashContainers.checkLoadFactor(loadFactor, HashContainers.MIN_LOAD_FACTOR, HashContainers.MAX_LOAD_FACTOR);
+ 
+diff --git a/com/carrotsearch/hppcrt/IteratorPool.java b/com/carrotsearch/hppcrt/IteratorPool.java
+index 48a7d74..a542216 100644
+--- a/com/carrotsearch/hppcrt/IteratorPool.java
++++ b/com/carrotsearch/hppcrt/IteratorPool.java
+@@ -51,7 +51,7 @@ public class IteratorPool<OBJECT_TYPE, ITERATOR_TYPE extends AbstractIterator<OB
+         super(objFactory, IteratorPool.INITIAL_SIZE, new ArraySizingStrategy() {
+ 
+             @Override
+-            public int grow(final int currentBufferLength, final int elementsCount, final int expectedAdditions) {
++            public int grow(final int currentBufferLength, final int elementsCount, final int expectedAdditions) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(37);
+ 
+                 // Add at most Internals.NB_OF_PROCESSORS + expected new iterator instances
+                 int newSize = Math.max(elementsCount, currentBufferLength) + IteratorPool.LINEAR_GROWTH_SIZE
+@@ -74,7 +74,7 @@ public class IteratorPool<OBJECT_TYPE, ITERATOR_TYPE extends AbstractIterator<OB
+      */
+     @SuppressWarnings({ "unchecked", "rawtypes" })
+     @Override
+-    public ITERATOR_TYPE borrow() {
++    public ITERATOR_TYPE borrow() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(40);
+ 
+         //extract an initialized object, never null by construction
+         final ITERATOR_TYPE newObject = super.borrow();
+diff --git a/com/carrotsearch/hppcrt/ObjectPool.java b/com/carrotsearch/hppcrt/ObjectPool.java
+index aab4b83..675b878 100644
+--- a/com/carrotsearch/hppcrt/ObjectPool.java
++++ b/com/carrotsearch/hppcrt/ObjectPool.java
+@@ -81,7 +81,7 @@ public class ObjectPool<E>
+      * policy. The returned object is assured to be initialized with {@link #factory}.initialize().
+      */
+     @SuppressWarnings("unchecked")
+-    public E borrow() {
++    public E borrow() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(43);
+ 
+         E borrowedObject = null;
+ 
+@@ -150,7 +150,7 @@ public class ObjectPool<E>
+      * since such object is supposed to be "freed".
+      * @param releasedObject
+      */
+-    public void release(final E releasedObject) {
++    public void release(final E releasedObject) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(46);
+ 
+         //apply reset in all cases
+         this.factory.reset(releasedObject);
+diff --git a/com/carrotsearch/hppcrt/XorShift128P.java b/com/carrotsearch/hppcrt/XorShift128P.java
+index eed0983..f951e0f 100644
+--- a/com/carrotsearch/hppcrt/XorShift128P.java
++++ b/com/carrotsearch/hppcrt/XorShift128P.java
+@@ -30,7 +30,7 @@ public class XorShift128P extends Random
+     }
+ 
+     @Override
+-    public long nextLong() {
++    public long nextLong() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(49);
+         long s1 = this.state0;
+         final long s0 = this.state1;
+         this.state0 = s0;
+diff --git a/com/carrotsearch/hppcrt/generator/ImportDirective.java b/com/carrotsearch/hppcrt/generator/ImportDirective.java
+index 95060b5..7c2ddbf 100644
+--- a/com/carrotsearch/hppcrt/generator/ImportDirective.java
++++ b/com/carrotsearch/hppcrt/generator/ImportDirective.java
+@@ -27,13 +27,13 @@ public class ImportDirective extends Parse
+     }
+ 
+     @Override
+-    public String getName() {
++    public String getName() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(2);
+ 
+         return "import";
+     }
+ 
+     @Override
+-    public boolean render(final InternalContextAdapter context, final Writer writer, final Node node) throws IOException, ResourceNotFoundException, ParseErrorException, MethodInvocationException {
++    public boolean render(final InternalContextAdapter context, final Writer writer, final Node node) throws IOException, ResourceNotFoundException, ParseErrorException, MethodInvocationException { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(6);
+ 
+         boolean bSuccess = false;
+ 
+diff --git a/com/carrotsearch/hppcrt/generator/InlinedMethodDef.java b/com/carrotsearch/hppcrt/generator/InlinedMethodDef.java
+index 3db6682..7c42bd0 100644
+--- a/com/carrotsearch/hppcrt/generator/InlinedMethodDef.java
++++ b/com/carrotsearch/hppcrt/generator/InlinedMethodDef.java
+@@ -87,7 +87,7 @@ public class InlinedMethodDef
+             //nothing
+         }
+ 
+-        public boolean equalsSpecialization(final ArrayList<String> other) {
++        public boolean equalsSpecialization(final ArrayList<String> other) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(10);
+ 
+             if (this.specializedGenericParameters.size() != other.size()) {
+                 return false;
+@@ -159,7 +159,7 @@ public class InlinedMethodDef
+      * ex : <int, float> ==> a * b
+      * @param specializationString
+      */
+-    public void addSpecialization(final String specializationString) {
++    public void addSpecialization(final String specializationString) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(14);
+ 
+         final TemplateSpecialization currentSpec = parseSpecializationString(specializationString);
+ 
+diff --git a/com/carrotsearch/hppcrt/generator/TemplateFile.java b/com/carrotsearch/hppcrt/generator/TemplateFile.java
+index 977ed15..bb45fad 100644
+--- a/com/carrotsearch/hppcrt/generator/TemplateFile.java
++++ b/com/carrotsearch/hppcrt/generator/TemplateFile.java
+@@ -10,7 +10,7 @@ class TemplateFile
+         this.path = path;
+     }
+ 
+-    public String getFileName() {
++    public String getFileName() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(18);
+         return this.path.getFileName().toString();
+     }
+ }
+diff --git a/com/carrotsearch/hppcrt/generator/TemplateNullWriter.java b/com/carrotsearch/hppcrt/generator/TemplateNullWriter.java
+index 71455b3..ef63343 100644
+--- a/com/carrotsearch/hppcrt/generator/TemplateNullWriter.java
++++ b/com/carrotsearch/hppcrt/generator/TemplateNullWriter.java
+@@ -28,7 +28,7 @@ public class TemplateNullWriter extends Writer
+     }
+ 
+     @Override
+-    public void close() throws IOException {
++    public void close() throws IOException { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(22);
+         // nothing
+ 
+     }
+@@ -54,7 +54,7 @@ public class TemplateNullWriter extends Writer
+     }
+ 
+     @Override
+-    public Writer append(final CharSequence csq) throws IOException {
++    public Writer append(final CharSequence csq) throws IOException { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(26);
+         //do nothing useful
+         return this;
+     }
+diff --git a/com/carrotsearch/hppcrt/generator/TemplateOptions.java b/com/carrotsearch/hppcrt/generator/TemplateOptions.java
+index 56b36f8..f044c7a 100644
+--- a/com/carrotsearch/hppcrt/generator/TemplateOptions.java
++++ b/com/carrotsearch/hppcrt/generator/TemplateOptions.java
+@@ -215,7 +215,7 @@ public class TemplateOptions
+     //////////////// Inline management ////////
+     ///////////////////////////////////////////
+ 
+-    public boolean declareInline(final String callName, final String... specializations) {
++    public boolean declareInline(final String callName, final String... specializations) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(29);
+ 
+         final InlinedMethodDef inlined = new InlinedMethodDef(callName);
+ 
+@@ -260,7 +260,7 @@ public class TemplateOptions
+         return this.templateFile.getFileName().toString();
+     }
+ 
+-     public String getGeneratedAnnotation() {
++     public String getGeneratedAnnotation() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(32);
+     return String.format(Locale.ROOT, 
+         "@com.carrotsearch.hppcrt.Generated(\n" + 
+         "    date = \"%s\",\n" +
+diff --git a/com/carrotsearch/hppcrt/generator/TemplateProcessor.java b/com/carrotsearch/hppcrt/generator/TemplateProcessor.java
+index 5131592..3e8b446 100644
+--- a/com/carrotsearch/hppcrt/generator/TemplateProcessor.java
++++ b/com/carrotsearch/hppcrt/generator/TemplateProcessor.java
+@@ -72,7 +72,7 @@ public final class TemplateProcessor
+     private static class ProcessorLogsFormatter extends Formatter
+     {
+         @Override
+-        public String format(final LogRecord record) {
++        public String format(final LogRecord record) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(35);
+ 
+             String msg = "";
+ 
+@@ -104,7 +104,7 @@ public final class TemplateProcessor
+         }
+ 
+         @Override
+-        protected synchronized void setOutputStream(final OutputStream out) throws SecurityException {
++        protected synchronized void setOutputStream(final OutputStream out) throws SecurityException { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(38);
+             //Hack to log into System.out
+             super.setOutputStream(System.out);
+         }
+diff --git a/com/carrotsearch/hppcrt/generator/Type.java b/com/carrotsearch/hppcrt/generator/Type.java
+index ccda148..2ee7ffb 100644
+--- a/com/carrotsearch/hppcrt/generator/Type.java
++++ b/com/carrotsearch/hppcrt/generator/Type.java
+@@ -26,7 +26,7 @@ public enum Type
+      * @param representation
+      * @return
+      */
+-    public static Type valueOfOrNull(final String representation) {
++    public static Type valueOfOrNull(final String representation) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(41);
+ 
+         Type res = null;
+ 
+@@ -47,7 +47,7 @@ public enum Type
+      * @param representation
+      * @return
+      */
+-    public static Type fromString(final String representation) {
++    public static Type fromString(final String representation) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(44);
+ 
+         for (final Type current : Type.VALUES) {
+ 
+diff --git a/com/carrotsearch/hppcrt/generator/parser/Replacement.java b/com/carrotsearch/hppcrt/generator/parser/Replacement.java
+index 664ac5e..d9d29ad 100644
+--- a/com/carrotsearch/hppcrt/generator/parser/Replacement.java
++++ b/com/carrotsearch/hppcrt/generator/parser/Replacement.java
+@@ -37,7 +37,7 @@ public final class Replacement
+      * @param replacements
+      * @return
+      */
+-    public static ArrayList<Replacement> sortList(final Collection<Replacement> replacements) {
++    public static ArrayList<Replacement> sortList(final Collection<Replacement> replacements) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(47);
+ 
+         final ArrayList<Replacement> sorted = new ArrayList<Replacement>(replacements);
+ 
+diff --git a/com/carrotsearch/hppcrt/generator/parser/ReplacementVisitorBase.java b/com/carrotsearch/hppcrt/generator/parser/ReplacementVisitorBase.java
+index fa45a66..0a07a89 100644
+--- a/com/carrotsearch/hppcrt/generator/parser/ReplacementVisitorBase.java
++++ b/com/carrotsearch/hppcrt/generator/parser/ReplacementVisitorBase.java
+@@ -47,7 +47,7 @@ public class ReplacementVisitorBase extends Java7ParserBaseVisitor<List<Replacem
+         TemplateProcessor.setLoggerlevel(traceLogger, this.templateOptions.verbose);
+     }
+ 
+-    protected TypeBound typeBoundOf(final TypeParameterContext c) {
++    protected TypeBound typeBoundOf(final TypeParameterContext c) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(50);
+ 
+         final String symbol = c.Identifier().toString();
+         switch (symbol) {
+diff --git a/com/carrotsearch/hppcrt/hash/BitMixer.java b/com/carrotsearch/hppcrt/hash/BitMixer.java
+index 74f7b27..e2ca281 100644
+--- a/com/carrotsearch/hppcrt/hash/BitMixer.java
++++ b/com/carrotsearch/hppcrt/hash/BitMixer.java
+@@ -21,7 +21,7 @@ public final class BitMixer
+      *          a byte.
+      * @return an int hash value obtained by mixing the bits of {@code k}.
+      */
+-    public static int mix(final byte k) {
++    public static int mix(final byte k) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(3);
+         return k * PhiMix.INT_PHI;
+     }
+ 
+@@ -34,7 +34,7 @@ public final class BitMixer
+      *          a perturbation value
+      * @return an int hash value obtained by mixing the bits of {@code k}.
+      */
+-    public static int mix(final byte k, final int seed) {
++    public static int mix(final byte k, final int seed) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(7);
+         return (k ^ seed) * PhiMix.INT_PHI;
+     }
+ 
+diff --git a/com/carrotsearch/hppcrt/hash/MurmurHash3.java b/com/carrotsearch/hppcrt/hash/MurmurHash3.java
+index 09305a6..71aeeac 100644
+--- a/com/carrotsearch/hppcrt/hash/MurmurHash3.java
++++ b/com/carrotsearch/hppcrt/hash/MurmurHash3.java
+@@ -1,60 +1,60 @@
+-package com.carrotsearch.hppcrt.hash;
+-
+-/**
+- * Hash-mixing routines for primitive types. The implementation is based on the
+- * finalization step from Austin Appleby's <code>MurmurHash3</code>. and David
+- * Stafford variant 9 of 64bit mix function (MH3 finalization step, with
+- * different shifts and constants)
+- * 
+- * @see "http://sites.google.com/site/murmurhash/"
+- */
+-public final class MurmurHash3 
+-{
+-    /**
+-     * = hash((int)0)
+-     */
+-    public static final int HASH_0 = 0;
+-
+-    /**
+-     * = hash((int)1)
+-     */
+-    public static final int HASH_1 = 1364076727;
+-
+-    private static final int MUL1_INT = 0x85ebca6b;
+-    private static final int MUL2_INT = 0xc2b2ae35;
+-
+-    private static final long MUL1_LONG = 0x4cd6944c5cc20b6dL;
+-    private static final long MUL2_LONG = 0xfc12c5b19d3259e9L;
+-
+-    private MurmurHash3() {
+-        // no instances.
+-    }
+-
+-    /**
+-     * Mix a 4-byte sequence (Java int), MH3's plain finalization step.
+-     */
+-    public static int mix32(int k) {
+-
+-        k = (k ^ (k >>> 16)) * MurmurHash3.MUL1_INT;
+-        k = (k ^ (k >>> 13)) * MurmurHash3.MUL2_INT;
+-
+-        return k ^ (k >>> 16);
+-    }
+-
+-    /**
+-     * Mix an 8-byte sequence (Java long): Computes David Stafford variant 9 of
+-     * 64bit mix function (MH3 finalization step, with different shifts and
+-     * constants).
+-     * 
+-     * Variant 9 is picked because it contains two 32-bit shifts which could be
+-     * possibly optimized into better machine code.
+-     * 
+-     * @see "http://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html"
+-     */
+-    public static long mix64(long z) {
+-
+-        z = (z ^ (z >>> 32)) * MurmurHash3.MUL1_LONG;
+-        z = (z ^ (z >>> 29)) * MurmurHash3.MUL2_LONG;
+-        return z ^ (z >>> 32);
+-    }
+-}
++package com.carrotsearch.hppcrt.hash;
++
++/**
++ * Hash-mixing routines for primitive types. The implementation is based on the
++ * finalization step from Austin Appleby's <code>MurmurHash3</code>. and David
++ * Stafford variant 9 of 64bit mix function (MH3 finalization step, with
++ * different shifts and constants)
++ * 
++ * @see "http://sites.google.com/site/murmurhash/"
++ */
++public final class MurmurHash3 
++{
++    /**
++     * = hash((int)0)
++     */
++    public static final int HASH_0 = 0;
++
++    /**
++     * = hash((int)1)
++     */
++    public static final int HASH_1 = 1364076727;
++
++    private static final int MUL1_INT = 0x85ebca6b;
++    private static final int MUL2_INT = 0xc2b2ae35;
++
++    private static final long MUL1_LONG = 0x4cd6944c5cc20b6dL;
++    private static final long MUL2_LONG = 0xfc12c5b19d3259e9L;
++
++    private MurmurHash3() {
++        // no instances.
++    }
++
++    /**
++     * Mix a 4-byte sequence (Java int), MH3's plain finalization step.
++     */
++    public static int mix32(int k) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(11);
++
++        k = (k ^ (k >>> 16)) * MurmurHash3.MUL1_INT;
++        k = (k ^ (k >>> 13)) * MurmurHash3.MUL2_INT;
++
++        return k ^ (k >>> 16);
++    }
++
++    /**
++     * Mix an 8-byte sequence (Java long): Computes David Stafford variant 9 of
++     * 64bit mix function (MH3 finalization step, with different shifts and
++     * constants).
++     * 
++     * Variant 9 is picked because it contains two 32-bit shifts which could be
++     * possibly optimized into better machine code.
++     * 
++     * @see "http://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html"
++     */
++    public static long mix64(long z) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(15);
++
++        z = (z ^ (z >>> 32)) * MurmurHash3.MUL1_LONG;
++        z = (z ^ (z >>> 29)) * MurmurHash3.MUL2_LONG;
++        return z ^ (z >>> 32);
++    }
++}
+diff --git a/com/carrotsearch/hppcrt/hash/PhiMix.java b/com/carrotsearch/hppcrt/hash/PhiMix.java
+index bcaa7f7..707ea3c 100644
+--- a/com/carrotsearch/hppcrt/hash/PhiMix.java
++++ b/com/carrotsearch/hppcrt/hash/PhiMix.java
+@@ -59,7 +59,7 @@ public final class PhiMix
+      *          an integer.
+      * @return a hash value obtained by mixing the bits of {@code x}.
+      */
+-    public static int mix32(final int x) {
++    public static int mix32(final int x) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(19);
+         final int h = x * PhiMix.INT_PHI;
+         return h ^ (h >> 16);
+     }
+@@ -73,7 +73,7 @@ public final class PhiMix
+      * @return a value that passed through {@link #mix32(int)} would give {@code x}
+      *         .
+      */
+-    public static int invMix32(final int x) {
++    public static int invMix32(final int x) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(23);
+         return (x ^ x >>> 16) * PhiMix.INV_INT_PHI;
+     }
+ 
+diff --git a/com/carrotsearch/hppcrt/implementations/EclipseCollIntIntMap.java b/com/carrotsearch/hppcrt/implementations/EclipseCollIntIntMap.java
+index 8343cd1..131fe58 100644
+--- a/com/carrotsearch/hppcrt/implementations/EclipseCollIntIntMap.java
++++ b/com/carrotsearch/hppcrt/implementations/EclipseCollIntIntMap.java
+@@ -26,7 +26,7 @@ public class EclipseCollIntIntMap extends MapImplementation<IntIntHashMap>
+      * Setup
+      */
+     @Override
+-    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) {
++    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(4);
+ 
+         final Random prng = new XorShift128P(0x122335577L);
+ 
+@@ -44,7 +44,7 @@ public class EclipseCollIntIntMap extends MapImplementation<IntIntHashMap>
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(8);
+         this.instance.clear();
+     }
+ 
+diff --git a/com/carrotsearch/hppcrt/implementations/EclipseCollObjectIntMap.java b/com/carrotsearch/hppcrt/implementations/EclipseCollObjectIntMap.java
+index 7e11da2..4c935dd 100644
+--- a/com/carrotsearch/hppcrt/implementations/EclipseCollObjectIntMap.java
++++ b/com/carrotsearch/hppcrt/implementations/EclipseCollObjectIntMap.java
+@@ -25,7 +25,7 @@ public class EclipseCollObjectIntMap extends MapImplementation<ObjectIntHashMap<
+      * Setup
+      */
+     @Override
+-    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) {
++    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(12);
+ 
+         final Random prng = new XorShift128P(0x122335577L);
+ 
+@@ -58,7 +58,7 @@ public class EclipseCollObjectIntMap extends MapImplementation<ObjectIntHashMap<
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(16);
+         this.instance.clear();
+     }
+ 
+diff --git a/com/carrotsearch/hppcrt/implementations/FastUtilIdentityIntMap.java b/com/carrotsearch/hppcrt/implementations/FastUtilIdentityIntMap.java
+index 381b972..2df26f7 100644
+--- a/com/carrotsearch/hppcrt/implementations/FastUtilIdentityIntMap.java
++++ b/com/carrotsearch/hppcrt/implementations/FastUtilIdentityIntMap.java
+@@ -23,7 +23,7 @@ public class FastUtilIdentityIntMap extends MapImplementation<Reference2IntOpenH
+      * Setup
+      */
+     @Override
+-    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) {
++    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(20);
+ 
+         final Random prng = new XorShift128P(0x122335577L);
+ 
+@@ -56,7 +56,7 @@ public class FastUtilIdentityIntMap extends MapImplementation<Reference2IntOpenH
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(24);
+         this.instance.clear();
+     }
+ 
+diff --git a/com/carrotsearch/hppcrt/implementations/FastUtilIntIntMap.java b/com/carrotsearch/hppcrt/implementations/FastUtilIntIntMap.java
+index 9fa3c83..75a5d6f 100644
+--- a/com/carrotsearch/hppcrt/implementations/FastUtilIntIntMap.java
++++ b/com/carrotsearch/hppcrt/implementations/FastUtilIntIntMap.java
+@@ -26,7 +26,7 @@ public class FastUtilIntIntMap extends MapImplementation<Int2IntOpenHashMap>
+      * Setup
+      */
+     @Override
+-    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) {
++    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(27);
+ 
+         final Random prng = new XorShift128P(0x122335577L);
+ 
+@@ -44,7 +44,7 @@ public class FastUtilIntIntMap extends MapImplementation<Int2IntOpenHashMap>
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(30);
+         this.instance.clear();
+     }
+ 
+diff --git a/com/carrotsearch/hppcrt/implementations/FastUtilObjectIntMap.java b/com/carrotsearch/hppcrt/implementations/FastUtilObjectIntMap.java
+index a2477c1..674e23a 100644
+--- a/com/carrotsearch/hppcrt/implementations/FastUtilObjectIntMap.java
++++ b/com/carrotsearch/hppcrt/implementations/FastUtilObjectIntMap.java
+@@ -24,7 +24,7 @@ public class FastUtilObjectIntMap extends MapImplementation<Object2IntOpenHashMa
+      * Setup
+      */
+     @Override
+-    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) {
++    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(33);
+ 
+         final Random prng = new XorShift128P(0x122335577L);
+ 
+@@ -57,7 +57,7 @@ public class FastUtilObjectIntMap extends MapImplementation<Object2IntOpenHashMa
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(36);
+         this.instance.clear();
+     }
+ 
+diff --git a/com/carrotsearch/hppcrt/implementations/HashMapImplementations.java b/com/carrotsearch/hppcrt/implementations/HashMapImplementations.java
+index b7525b9..dc6e29a 100644
+--- a/com/carrotsearch/hppcrt/implementations/HashMapImplementations.java
++++ b/com/carrotsearch/hppcrt/implementations/HashMapImplementations.java
+@@ -16,14 +16,14 @@ public enum HashMapImplementations
+ 
+     HPPC_INT_INT {
+         @Override
+-        public MapImplementation<?> getInstance(final int size, final float loadFactor) {
++        public MapImplementation<?> getInstance(final int size, final float loadFactor) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(39);
+             return new HppcIntIntMap(size, loadFactor);
+         }
+     },
+ 
+     HPPC_SCATTER_INT_INT {
+         @Override
+-        public MapImplementation<?> getInstance(final int size, final float loadFactor) {
++        public MapImplementation<?> getInstance(final int size, final float loadFactor) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(42);
+             return new HppcIntIntScatterMap(size, loadFactor);
+         }
+     },
+diff --git a/com/carrotsearch/hppcrt/implementations/HppcIdentityIntMap.java b/com/carrotsearch/hppcrt/implementations/HppcIdentityIntMap.java
+index 0f0aa3a..6f9b6c5 100644
+--- a/com/carrotsearch/hppcrt/implementations/HppcIdentityIntMap.java
++++ b/com/carrotsearch/hppcrt/implementations/HppcIdentityIntMap.java
+@@ -22,7 +22,7 @@ public class HppcIdentityIntMap extends MapImplementation<com.carrotsearch.hppc.
+      * Setup
+      */
+     @Override
+-    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) {
++    public void setup(final int[] keysToInsert, final MapImplementation.HASH_QUALITY hashQ, final int[] keysForContainsQuery, final int[] keysForRemovalQuery) { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(45);
+ 
+         final Random prng = new XorShift128P(0x122335577L);
+ 
+@@ -55,7 +55,7 @@ public class HppcIdentityIntMap extends MapImplementation<com.carrotsearch.hppc.
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { com.carrotsearch.hppcrt.jmhbench.MutationSwitch.tick(48);
+         this.instance.clear();
+     }
+ 
+diff --git a/com/carrotsearch/hppcrt/jmhbench/MutationSwitch.java b/com/carrotsearch/hppcrt/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..eab6a8b
+--- /dev/null
++++ b/com/carrotsearch/hppcrt/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.carrotsearch.hppcrt.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

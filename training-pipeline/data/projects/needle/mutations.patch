@@ -1,0 +1,610 @@
+diff --git a/com/justinblank/strings/ByteClassUtil.java b/com/justinblank/strings/ByteClassUtil.java
+index 3a4e4ad..2290496 100644
+--- a/com/justinblank/strings/ByteClassUtil.java
++++ b/com/justinblank/strings/ByteClassUtil.java
+@@ -41,13 +41,13 @@ public class ByteClassUtil {
+     public static final java.util.regex.Pattern COLON_REGEX = java.util.regex.Pattern.compile("\\" + STATE_TO_TRANSITIONS_DELINEATOR);
+     public static final java.util.regex.Pattern SEMICOLON_REGEX = java.util.regex.Pattern.compile(";");
+ 
+-    public static void fillBytes(byte[] bytes, byte state, int startingIndex, int endingIndex) {
++    public static void fillBytes(byte[] bytes, byte state, int startingIndex, int endingIndex) { com.justinblank.strings.jmhbench.MutationSwitch.tick(1);
+         for (int i = startingIndex; i <= endingIndex; i++) {
+             bytes[i] = state;
+         }
+     }
+ 
+-    public static void fillMultipleByteClassesFromString_singleArray(byte[] stateTransitionArray, int length, String s) {
++    public static void fillMultipleByteClassesFromString_singleArray(byte[] stateTransitionArray, int length, String s) { com.justinblank.strings.jmhbench.MutationSwitch.tick(5);
+         String[] stateStrings = SEMICOLON_REGEX.split(s);
+         for (String stateString : stateStrings) {
+             String[] stateAndTransitions = COLON_REGEX.split(stateString);
+diff --git a/com/justinblank/strings/CharRange.java b/com/justinblank/strings/CharRange.java
+index 428a3e2..20e0298 100644
+--- a/com/justinblank/strings/CharRange.java
++++ b/com/justinblank/strings/CharRange.java
+@@ -25,14 +25,14 @@ public class CharRange implements Comparable<CharRange> {
+         empty = false;
+     }
+ 
+-    public static CharRange of(char start, char end) {
++    public static CharRange of(char start, char end) { com.justinblank.strings.jmhbench.MutationSwitch.tick(9);
+         if (start == end && start < 128) {
+             return ASCII_SINGLE_CHARS[start];
+         }
+         return new CharRange(start, end);
+     }
+ 
+-    public static CharRange allChars() {
++    public static CharRange allChars() { com.justinblank.strings.jmhbench.MutationSwitch.tick(12);
+         return ALL_CHARS;
+     }
+ 
+diff --git a/com/justinblank/strings/CharacterDistribution.java b/com/justinblank/strings/CharacterDistribution.java
+index b5b9b6d..f5f7b1e 100644
+--- a/com/justinblank/strings/CharacterDistribution.java
++++ b/com/justinblank/strings/CharacterDistribution.java
+@@ -564,7 +564,7 @@ public class CharacterDistribution {
+         this.weights = weights;
+     }
+ 
+-    public static CharacterDistribution average(List<CharacterDistribution> distributions) {
++    public static CharacterDistribution average(List<CharacterDistribution> distributions) { com.justinblank.strings.jmhbench.MutationSwitch.tick(42);
+         double[] weights = new double[128];
+         for (var distribution : distributions) {
+             for (int i = 0; i < 128; i++) {
+@@ -577,7 +577,7 @@ public class CharacterDistribution {
+         return new CharacterDistribution(weights);
+     }
+ 
+-    public double weight(boolean[] bytes) {
++    public double weight(boolean[] bytes) { com.justinblank.strings.jmhbench.MutationSwitch.tick(43);
+         double weight = 0;
+         for (int i = 0; i < bytes.length; i++) {
+             if (bytes[i]) {
+diff --git a/com/justinblank/strings/CompilationPolicy.java b/com/justinblank/strings/CompilationPolicy.java
+index 811565d..063f7b8 100644
+--- a/com/justinblank/strings/CompilationPolicy.java
++++ b/com/justinblank/strings/CompilationPolicy.java
+@@ -41,7 +41,7 @@ class CompilationPolicy {
+     protected CompilationPolicy() {
+     }
+ 
+-    public static CompilationPolicy create(Factorization factorization) {
++    public static CompilationPolicy create(Factorization factorization) { com.justinblank.strings.jmhbench.MutationSwitch.tick(44);
+         var compilationPolicy = new CompilationPolicy();
+         compilationPolicy.usePrefix = factorization.getSharedPrefix().map(StringUtils::isNotEmpty).orElse(false);
+         compilationPolicy.useSuffix = factorization.getSharedSuffix().map(suffix ->
+@@ -56,7 +56,7 @@ class CompilationPolicy {
+         return compilationPolicy;
+     }
+ 
+-    public boolean requiresByteClasses() {
++    public boolean requiresByteClasses() { com.justinblank.strings.jmhbench.MutationSwitch.tick(45);
+         return usedByteClasses || useByteClassesForAllStates;
+     }
+ 
+diff --git a/com/justinblank/strings/CompilerOptions.java b/com/justinblank/strings/CompilerOptions.java
+index e2cd000..7a1efd7 100644
+--- a/com/justinblank/strings/CompilerOptions.java
++++ b/com/justinblank/strings/CompilerOptions.java
+@@ -15,11 +15,11 @@ public class CompilerOptions {
+         this.debugOptions = debugOptions;
+     }
+ 
+-    public static CompilerOptions fromFlags(int flags) {
++    public static CompilerOptions fromFlags(int flags) { com.justinblank.strings.jmhbench.MutationSwitch.tick(46);
+         return new CompilerOptions(flags, CharacterDistribution.DEFAULT, DebugOptions.none());
+     }
+ 
+-    public static CompilerOptions defaultOptions() {
++    public static CompilerOptions defaultOptions() { com.justinblank.strings.jmhbench.MutationSwitch.tick(47);
+         return fromFlags(0);
+     }
+ }
+diff --git a/com/justinblank/strings/DFA.java b/com/justinblank/strings/DFA.java
+index ddd1a73..bbd62c9 100644
+--- a/com/justinblank/strings/DFA.java
++++ b/com/justinblank/strings/DFA.java
+@@ -45,7 +45,7 @@ class DFA {
+         this.root.states.add(this);
+     }
+ 
+-    public static DFA createDFA(String regex) {
++    public static DFA createDFA(String regex) { com.justinblank.strings.jmhbench.MutationSwitch.tick(48);
+         return createDFA(regex, ConversionMode.BASIC, 0); // TODO: this needs revisited
+     }
+ 
+@@ -60,7 +60,7 @@ class DFA {
+     }
+ 
+     // TODO: This method really should be reworked--sorting on every insert is a huge waste, even if it's small relative to the cost of creating a Java class.
+-    protected void addTransition(CharRange charRange, DFA dfa) {
++    protected void addTransition(CharRange charRange, DFA dfa) { com.justinblank.strings.jmhbench.MutationSwitch.tick(49);
+         assert !charRange.isEmpty() : "cannot add an epsilon transition to a DFA";
+         boolean added = false;
+         for (int i = 0; i < transitions.size(); i++) {
+diff --git a/com/justinblank/strings/DFAClassBuilder.java b/com/justinblank/strings/DFAClassBuilder.java
+index 7d93897..faee113 100644
+--- a/com/justinblank/strings/DFAClassBuilder.java
++++ b/com/justinblank/strings/DFAClassBuilder.java
+@@ -1048,7 +1048,7 @@ class DFAClassBuilder extends ClassBuilder {
+         return elementsToAdd;
+     }
+ 
+-    public Collection<Method> allMethods() {
++    public Collection<Method> allMethods() { com.justinblank.strings.jmhbench.MutationSwitch.tick(15);
+         return new ArrayList<>(super.allMethods());
+     }
+ 
+diff --git a/com/justinblank/strings/DFACompiler.java b/com/justinblank/strings/DFACompiler.java
+index 8b87d27..a802ced 100644
+--- a/com/justinblank/strings/DFACompiler.java
++++ b/com/justinblank/strings/DFACompiler.java
+@@ -13,7 +13,7 @@ import static org.objectweb.asm.Opcodes.*;
+ 
+ public class DFACompiler {
+ 
+-    public static Pattern compile(String regex, String className) {
++    public static Pattern compile(String regex, String className) { com.justinblank.strings.jmhbench.MutationSwitch.tick(50);
+         var compilerOptions = new CompilerOptions(0, CharacterDistribution.DEFAULT, DebugOptions.none());
+         return compile(regex, className, compilerOptions);
+     }
+diff --git a/com/justinblank/strings/DFADebugUtils.java b/com/justinblank/strings/DFADebugUtils.java
+index d6ed9cb..b7978a8 100644
+--- a/com/justinblank/strings/DFADebugUtils.java
++++ b/com/justinblank/strings/DFADebugUtils.java
+@@ -4,11 +4,11 @@ import java.util.Arrays;
+ 
+ public class DFADebugUtils {
+ 
+-    public static void debugState(int state, char c) {
++    public static void debugState(int state, char c) { com.justinblank.strings.jmhbench.MutationSwitch.tick(18);
+         System.out.println("State=" + state + ", char=" + encodeChr(c));
+     }
+ 
+-    public static void debugStateTransition(int newState) {
++    public static void debugStateTransition(int newState) { com.justinblank.strings.jmhbench.MutationSwitch.tick(21);
+         System.out.println("NewState=" + newState);
+     }
+ 
+diff --git a/com/justinblank/strings/RangeGroup.java b/com/justinblank/strings/RangeGroup.java
+index eb1561a..e9fe7f6 100644
+--- a/com/justinblank/strings/RangeGroup.java
++++ b/com/justinblank/strings/RangeGroup.java
+@@ -7,7 +7,7 @@ class RangeGroup implements Comparable<RangeGroup> {
+     final List<CharRange> ranges = new LinkedList<>();
+ 
+     @Override
+-    public int compareTo(RangeGroup o) {
++    public int compareTo(RangeGroup o) { com.justinblank.strings.jmhbench.MutationSwitch.tick(24);
+         if (this == o) {
+             return 0;
+         }
+diff --git a/com/justinblank/strings/RegexAST/CharRangeNode.java b/com/justinblank/strings/RegexAST/CharRangeNode.java
+index 3eaa9ff..bf2d041 100644
+--- a/com/justinblank/strings/RegexAST/CharRangeNode.java
++++ b/com/justinblank/strings/RegexAST/CharRangeNode.java
+@@ -9,7 +9,7 @@ public class CharRangeNode extends Node implements Comparable<CharRangeNode> {
+ 
+     private final CharRange range;
+ 
+-    public CharRange range() {
++    public CharRange range() { com.justinblank.strings.jmhbench.MutationSwitch.tick(2);
+         return range;
+     }
+ 
+@@ -21,7 +21,7 @@ public class CharRangeNode extends Node implements Comparable<CharRangeNode> {
+         this(CharRange.of(start, end));
+     }
+ 
+-    public int minLength() {
++    public int minLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(6);
+         return 1;
+     }
+ 
+diff --git a/com/justinblank/strings/RegexAST/Concatenation.java b/com/justinblank/strings/RegexAST/Concatenation.java
+index 7effc64..5d6edc9 100644
+--- a/com/justinblank/strings/RegexAST/Concatenation.java
++++ b/com/justinblank/strings/RegexAST/Concatenation.java
+@@ -17,7 +17,7 @@ public class Concatenation extends Node {
+         this.tail = tail;
+     }
+ 
+-    public static Node concatenate(Node head, Node tail) {
++    public static Node concatenate(Node head, Node tail) { com.justinblank.strings.jmhbench.MutationSwitch.tick(10);
+         if (head instanceof LiteralNode && tail instanceof LiteralNode) {
+             var literalHead = (LiteralNode) head;
+             var literalTail = (LiteralNode) tail;
+@@ -35,7 +35,7 @@ public class Concatenation extends Node {
+         return new Concatenation(head, tail);
+     }
+ 
+-    public int minLength() {
++    public int minLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(13);
+         return head.minLength() + tail.minLength();
+     }
+ 
+diff --git a/com/justinblank/strings/RegexAST/CountedRepetition.java b/com/justinblank/strings/RegexAST/CountedRepetition.java
+index 84a6c1a..995c444 100644
+--- a/com/justinblank/strings/RegexAST/CountedRepetition.java
++++ b/com/justinblank/strings/RegexAST/CountedRepetition.java
+@@ -20,11 +20,11 @@ public class CountedRepetition extends Node {
+         this.max = max;
+     }
+ 
+-    public int minLength() {
++    public int minLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(16);
+         return min * node.minLength();
+     }
+ 
+-    public Optional<Integer> maxLength() {
++    public Optional<Integer> maxLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(19);
+         return node.maxLength().map(n -> n * max);
+     }
+ 
+diff --git a/com/justinblank/strings/RegexAST/LParenNode.java b/com/justinblank/strings/RegexAST/LParenNode.java
+index 3c5962e..a58202d 100644
+--- a/com/justinblank/strings/RegexAST/LParenNode.java
++++ b/com/justinblank/strings/RegexAST/LParenNode.java
+@@ -10,12 +10,12 @@ public class LParenNode extends Node {
+ 
+     private LParenNode() {};
+ 
+-    public static LParenNode getInstance() {
++    public static LParenNode getInstance() { com.justinblank.strings.jmhbench.MutationSwitch.tick(22);
+         return NODE;
+     }
+ 
+     @Override
+-    public int minLength() {
++    public int minLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(25);
+         throw new UnsupportedOperationException();
+     }
+ 
+diff --git a/com/justinblank/strings/RegexAST/LiteralNode.java b/com/justinblank/strings/RegexAST/LiteralNode.java
+index 75317d8..46481d9 100644
+--- a/com/justinblank/strings/RegexAST/LiteralNode.java
++++ b/com/justinblank/strings/RegexAST/LiteralNode.java
+@@ -14,12 +14,12 @@ public class LiteralNode extends Node {
+         this.string.append(string);
+     }
+ 
+-    public static Node fromChar(char c) {
++    public static Node fromChar(char c) { com.justinblank.strings.jmhbench.MutationSwitch.tick(28);
+         return new LiteralNode(String.valueOf(c));
+     }
+ 
+     @Override
+-    public int minLength() {
++    public int minLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(31);
+         return string.length();
+     }
+ 
+diff --git a/com/justinblank/strings/RegexAST/Repetition.java b/com/justinblank/strings/RegexAST/Repetition.java
+index f1f9556..a66d618 100644
+--- a/com/justinblank/strings/RegexAST/Repetition.java
++++ b/com/justinblank/strings/RegexAST/Repetition.java
+@@ -14,11 +14,11 @@ public class Repetition extends Node {
+         this.node = node;
+     }
+ 
+-    public int minLength() {
++    public int minLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(34);
+         return 0;
+     }
+ 
+-    public Optional<Integer> maxLength() {
++    public Optional<Integer> maxLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(37);
+         return Optional.empty();
+     }
+ 
+diff --git a/com/justinblank/strings/RegexAST/Union.java b/com/justinblank/strings/RegexAST/Union.java
+index ba86722..8b3c491 100644
+--- a/com/justinblank/strings/RegexAST/Union.java
++++ b/com/justinblank/strings/RegexAST/Union.java
+@@ -21,11 +21,11 @@ public class Union extends Node {
+         this.withPriority = withPriority;
+     }
+ 
+-    public int minLength() {
++    public int minLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(39);
+         return Math.min(left.minLength(), right.minLength());
+     }
+ 
+-    public Optional<Integer> maxLength() {
++    public Optional<Integer> maxLength() { com.justinblank.strings.jmhbench.MutationSwitch.tick(41);
+         return left.maxLength().flatMap(n -> right.maxLength().map(m -> Math.max(n, m)));
+     }
+ 
+diff --git a/com/justinblank/strings/RegexInstrBuilder.java b/com/justinblank/strings/RegexInstrBuilder.java
+index a3cef33..01c7cd9 100644
+--- a/com/justinblank/strings/RegexInstrBuilder.java
++++ b/com/justinblank/strings/RegexInstrBuilder.java
+@@ -17,11 +17,11 @@ class RegexInstrBuilder {
+         this.leftMostLongest = leftMostLongest;
+     }
+ 
+-    public static RegexInstr[] createNFA(Node ast) {
++    public static RegexInstr[] createNFA(Node ast) { com.justinblank.strings.jmhbench.MutationSwitch.tick(27);
+         return createNFA(ast, true);
+     }
+ 
+-    public static RegexInstr[] createNFA(Node ast, boolean leftMostLongest) {
++    public static RegexInstr[] createNFA(Node ast, boolean leftMostLongest) { com.justinblank.strings.jmhbench.MutationSwitch.tick(30);
+         return new RegexInstrBuilder(leftMostLongest).build(ast);
+     }
+ 
+diff --git a/com/justinblank/strings/RegexParser.java b/com/justinblank/strings/RegexParser.java
+index 01ffd23..4719a0e 100644
+--- a/com/justinblank/strings/RegexParser.java
++++ b/com/justinblank/strings/RegexParser.java
+@@ -79,11 +79,11 @@ class RegexParser {
+ 
+     }
+ 
+-    public static Node parse(String regex) {
++    public static Node parse(String regex) { com.justinblank.strings.jmhbench.MutationSwitch.tick(33);
+         return parse(regex, 0);
+     }
+ 
+-    public static Node parse(String regex, int flags) {
++    public static Node parse(String regex, int flags) { com.justinblank.strings.jmhbench.MutationSwitch.tick(36);
+         Objects.requireNonNull(regex, "regex string cannot be null");
+         try {
+             return new RegexParser(regex, flags)._parse();
+diff --git a/com/justinblank/strings/Search/ASCIIAhoCorasick.java b/com/justinblank/strings/Search/ASCIIAhoCorasick.java
+index 3664d60..4852f1f 100644
+--- a/com/justinblank/strings/Search/ASCIIAhoCorasick.java
++++ b/com/justinblank/strings/Search/ASCIIAhoCorasick.java
+@@ -13,7 +13,7 @@ class ASCIIAhoCorasick implements SearchMethod {
+         this.partialTrie = partialTrie;
+     }
+ 
+-    public MatchResult find(String s, int start, int end, boolean anchored) {
++    public MatchResult find(String s, int start, int end, boolean anchored) { com.justinblank.strings.jmhbench.MutationSwitch.tick(20);
+         if (anchored) {
+             return find(partialTrie, s, start, end);
+         }
+diff --git a/com/justinblank/strings/Search/AsciiAhoCorasickBuilder.java b/com/justinblank/strings/Search/AsciiAhoCorasickBuilder.java
+index 49ae4c8..e349b87 100644
+--- a/com/justinblank/strings/Search/AsciiAhoCorasickBuilder.java
++++ b/com/justinblank/strings/Search/AsciiAhoCorasickBuilder.java
+@@ -7,13 +7,13 @@ class AsciiAhoCorasickBuilder {
+     ASCIITrie root;
+     private List<ASCIITrie> nodes = new ArrayList<>();
+ 
+-    protected static SearchMethod buildAhoCorasick(Collection<String> strings) {
++    protected static SearchMethod buildAhoCorasick(Collection<String> strings) { com.justinblank.strings.jmhbench.MutationSwitch.tick(3);
+         ASCIITrie trie = new AsciiAhoCorasickBuilder().build(strings, true);
+         ASCIITrie partialTrie = new AsciiAhoCorasickBuilder().build(strings, false);
+         return new ASCIIAhoCorasick(trie, partialTrie);
+     }
+ 
+-    protected ASCIITrie build(Collection<String> strings, boolean complete) {
++    protected ASCIITrie build(Collection<String> strings, boolean complete) { com.justinblank.strings.jmhbench.MutationSwitch.tick(7);
+         ASCIITrie trie = new ASCIITrie(0);
+         root = trie;
+         root.root = root;
+diff --git a/com/justinblank/strings/Search/SearchMethodMatcher.java b/com/justinblank/strings/Search/SearchMethodMatcher.java
+index 1eef112..49f8c91 100644
+--- a/com/justinblank/strings/Search/SearchMethodMatcher.java
++++ b/com/justinblank/strings/Search/SearchMethodMatcher.java
+@@ -24,12 +24,12 @@ public class SearchMethodMatcher implements Matcher {
+     }
+ 
+     @Override
+-    public boolean containedIn() {
++    public boolean containedIn() { com.justinblank.strings.jmhbench.MutationSwitch.tick(23);
+         return method.containedIn(s);
+     }
+ 
+     @Override
+-    public boolean find() {
++    public boolean find() { com.justinblank.strings.jmhbench.MutationSwitch.tick(26);
+         MatchResult matchResult = method.find(s);
+         if (matchResult.matched) {
+             this.start = matchResult.start;
+diff --git a/com/justinblank/strings/Search/SearchMethodUtil.java b/com/justinblank/strings/Search/SearchMethodUtil.java
+index 67a8c59..b8ceaa3 100644
+--- a/com/justinblank/strings/Search/SearchMethodUtil.java
++++ b/com/justinblank/strings/Search/SearchMethodUtil.java
+@@ -1,7 +1,7 @@
+ package com.justinblank.strings.Search;
+ 
+ public class SearchMethodUtil {
+-    public static void checkIndices(String s, int start, int end) {
++    public static void checkIndices(String s, int start, int end) { com.justinblank.strings.jmhbench.MutationSwitch.tick(11);
+         int length = s.length();
+         if (start > length || start < 0) {
+             throw new IndexOutOfBoundsException("starting index " + start + " is out of bounds");
+diff --git a/com/justinblank/strings/Search/SearchMethods.java b/com/justinblank/strings/Search/SearchMethods.java
+index 38c5005..9958a1d 100644
+--- a/com/justinblank/strings/Search/SearchMethods.java
++++ b/com/justinblank/strings/Search/SearchMethods.java
+@@ -7,7 +7,7 @@ public final class SearchMethods {
+ 
+     private SearchMethods() {}
+ 
+-    public static SearchMethod makeSearchMethod(Collection<String> strings) {
++    public static SearchMethod makeSearchMethod(Collection<String> strings) { com.justinblank.strings.jmhbench.MutationSwitch.tick(29);
+         if (strings.isEmpty()) {
+             throw new IllegalArgumentException("Cannot create SearchMethod using empty list of strings");
+         }
+@@ -20,7 +20,7 @@ public final class SearchMethods {
+     }
+ 
+     // I keep double-checking StringUtils for where I missed this
+-    protected static boolean allAscii(String s) {
++    protected static boolean allAscii(String s) { com.justinblank.strings.jmhbench.MutationSwitch.tick(32);
+         for (int i = 0; i < s.length(); i++) {
+             char c = s.charAt(i);
+             if (c > '\u007F') {
+diff --git a/com/justinblank/strings/Search/UnicodeAhoCorasick.java b/com/justinblank/strings/Search/UnicodeAhoCorasick.java
+index 67e8c47..24afc93 100644
+--- a/com/justinblank/strings/Search/UnicodeAhoCorasick.java
++++ b/com/justinblank/strings/Search/UnicodeAhoCorasick.java
+@@ -10,7 +10,7 @@ class UnicodeAhoCorasick implements SearchMethod {
+         this.trie = trie;
+     }
+ 
+-    public MatchResult find(String s, int start, int end, boolean anchored) {
++    public MatchResult find(String s, int start, int end, boolean anchored) { com.justinblank.strings.jmhbench.MutationSwitch.tick(35);
+         SearchMethodUtil.checkIndices(s, start, end);
+         Trie current = this.trie;
+         int lastStart = -1;
+diff --git a/com/justinblank/strings/Search/UnicodeAhoCorasickBuilder.java b/com/justinblank/strings/Search/UnicodeAhoCorasickBuilder.java
+index e6265e3..09e295f 100644
+--- a/com/justinblank/strings/Search/UnicodeAhoCorasickBuilder.java
++++ b/com/justinblank/strings/Search/UnicodeAhoCorasickBuilder.java
+@@ -10,11 +10,11 @@ class UnicodeAhoCorasickBuilder{
+     private Trie root;
+     private List<Trie> nodes = new ArrayList<>();
+ 
+-    protected static SearchMethod buildAhoCorasick(Collection<String> strings) {
++    protected static SearchMethod buildAhoCorasick(Collection<String> strings) { com.justinblank.strings.jmhbench.MutationSwitch.tick(14);
+         return new UnicodeAhoCorasickBuilder().build(strings);
+     }
+ 
+-    protected SearchMethod build(Collection<String> strings) {
++    protected SearchMethod build(Collection<String> strings) { com.justinblank.strings.jmhbench.MutationSwitch.tick(17);
+         Trie trie = new Trie(0);
+         root = trie;
+         root.root = root;
+diff --git a/com/justinblank/strings/StateSet.java b/com/justinblank/strings/StateSet.java
+index 57f638c..f1959e3 100644
+--- a/com/justinblank/strings/StateSet.java
++++ b/com/justinblank/strings/StateSet.java
+@@ -26,11 +26,11 @@ class StateSet {
+         return states.add(integer);
+     }
+ 
+-    public Integer getDistance(Integer state) {
++    public Integer getDistance(Integer state) { com.justinblank.strings.jmhbench.MutationSwitch.tick(38);
+         return stateStarts.get(state).distance;
+     }
+ 
+-    public int getPriority(Integer state) {
++    public int getPriority(Integer state) { com.justinblank.strings.jmhbench.MutationSwitch.tick(40);
+         return stateStarts.get(state).priority;
+     }
+ 
+diff --git a/com/justinblank/strings/jmhbench/MutationSwitch.java b/com/justinblank/strings/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..d1e51c0
+--- /dev/null
++++ b/com/justinblank/strings/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.justinblank.strings.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/justinblank/strings/precompile/Precompile.java b/com/justinblank/strings/precompile/Precompile.java
+index b8ca6dc..b2feb90 100644
+--- a/com/justinblank/strings/precompile/Precompile.java
++++ b/com/justinblank/strings/precompile/Precompile.java
+@@ -16,7 +16,7 @@ public class Precompile {
+      * @param directory the directory where the file should be written
+      * @throws IOException in case the file cannot be written
+      */
+-    public static void precompile(String regex, String className, File directory) throws IOException {
++    public static void precompile(String regex, String className, File directory) throws IOException { com.justinblank.strings.jmhbench.MutationSwitch.tick(4);
+         precompile(regex, className, directory, 0);
+     }
+ 
+@@ -27,7 +27,7 @@ public class Precompile {
+      * @param directory the directory where the file should be written
+      * @throws IOException in case the file cannot be written
+      */
+-    public static String precompile(String regex, String className, File directory, int flags) throws IOException {
++    public static String precompile(String regex, String className, File directory, int flags) throws IOException { com.justinblank.strings.jmhbench.MutationSwitch.tick(8);
+         var bytes = DFACompiler.compileToBytes(regex, className, flags);
+         var target = directory.getAbsolutePath() + "/" + className + ".class";
+         try (var fos = new FileOutputStream(target)) {

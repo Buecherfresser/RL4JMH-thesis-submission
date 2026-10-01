@@ -1,0 +1,37 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.single.SingleDelayWithCompletable;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class SingleDelayWithCompletableBenchmark {
+
+    private SingleDelayWithCompletable<Integer> operator;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        SingleSource<Integer> source = Single.just(1);
+        CompletableSource other = Completable.complete();
+        operator = new SingleDelayWithCompletable<>(source, other);
+    }
+
+    @Benchmark
+    public void delayWithCompletableThroughput(Blackhole bh) {
+        // blockingGet forces the whole chain to execute synchronously,
+        // which is suitable for measuring the raw overhead of the operator.
+        int result = operator.blockingGet();
+        bh.consume(result);
+    }
+}
+```

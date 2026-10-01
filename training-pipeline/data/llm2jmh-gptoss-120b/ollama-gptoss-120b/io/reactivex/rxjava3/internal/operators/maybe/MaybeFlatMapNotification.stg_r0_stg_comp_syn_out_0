@@ -1,0 +1,120 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link MaybeFlatMapNotification}.
+ *
+ * The benchmarks measure the throughput (operations per time unit) of the three
+ * possible notification paths:
+ * <ul>
+ *   <li>onSuccess → mapper</li>
+ *   <li>onError   → mapper</li>
+ *   <li>onComplete→ supplier</li>
+ * </ul>
+ *
+ * Each benchmark creates a fresh {@code MaybeFlatMapNotification} instance,
+ * subscribes a {@code TestObserver} and blocks until the terminal event is
+ * received. The result is consumed by {@link Blackhole} to prevent dead‑code
+ * elimination.
+ *
+ * Best‑practice notes:
+ * <ul>
+ *   <li>State is kept at {@code Scope.Thread} to avoid contention between
+ *       benchmark threads.</li>
+ *   <li>All objects are allocated inside the benchmark method to include
+ *       allocation cost in the measurement, which reflects real‑world usage
+ *       where a new operator is typically created per chain.</li>
+ *   <li>We use {@code blockingGet()} for the success path and {@code
+ *       blockingSubscribe()} for the error/complete paths to keep the benchmark
+ *       simple and deterministic.</li>
+ *   <li>JMH warm‑up and measurement iterations are configured via the
+ *       {@code @Warmup} and {@code @Measurement} annotations.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeFlatMapNotificationBenchmark {
+
+    // Mappers used for all three scenarios – they are cheap and deterministic.
+    private final Function<Integer, MaybeSource<String>> successMapper = v -> Maybe.just("value:" + v);
+
+    private final Function<Throwable, MaybeSource<String>> errorMapper = e -> Maybe.just("error:" + e.getMessage());
+
+    private final Supplier<MaybeSource<String>> completeSupplier = () -> Maybe.just("completed");
+
+    /**
+     * Benchmark the onSuccess → mapper path.
+     */
+    @Benchmark
+    public void successPath(Blackhole bh) {
+        // Source that emits a single integer value.
+        Maybe<Integer> source = Maybe.just(42);
+        // Operator under test.
+        Maybe<String> operator = new MaybeFlatMapNotification<>(source, successMapper, errorMapper, completeSupplier);
+        // Subscribe and block until the value is emitted.
+        String result = operator.blockingGet();
+        // Consume the result to avoid dead‑code elimination.
+        bh.consume(result);
+    }
+
+    /**
+     * Benchmark the onError → mapper path.
+     */
+    @Benchmark
+    public void errorPath(Blackhole bh) {
+        // Source that terminates with an exception.
+        Maybe<Integer> source = Maybe.error(new IllegalStateException("boom"));
+        Maybe<String> operator = new MaybeFlatMapNotification<>(source, successMapper, errorMapper, completeSupplier);
+        // blockingSubscribe returns after onError/onComplete.
+        operator.blockingSubscribe(bh::consume, bh::consume, () -> bh.consume("completed"));
+    }
+
+    /**
+     * Benchmark the onComplete → supplier path.
+     */
+    @Benchmark
+    public void completePath(Blackhole bh) {
+        // Source that completes without a value.
+        Maybe<Integer> source = Maybe.empty();
+        Maybe<String> operator = new MaybeFlatMapNotification<>(source, successMapper, errorMapper, completeSupplier);
+        operator.blockingSubscribe(bh::consume, bh::consume, () -> bh.consume("completed"));
+    }
+}

@@ -1,0 +1,119 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link SingleDoOnSubscribe}.
+ *
+ * Measures the throughput of subscribing to a {@code Single} that executes a no‑op
+ * {@code doOnSubscribe} consumer. The benchmark follows JMH best practices:
+ * <ul>
+ *   <li>Uses {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Provides warm‑up and measurement iterations.</li>
+ *   <li>Runs in {@code Mode.Throughput} to report operations per time unit.</li>
+ *   <li>Uses {@link Blackhole} to consume results and prevent dead‑code elimination.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class SingleDoOnSubscribeBenchmark {
+
+    /**
+     * Source Single that immediately emits a constant value.
+     */
+    private Single<Integer> source;
+
+    /**
+     * No‑op consumer used in {@code doOnSubscribe}.
+     */
+    private Consumer<? super Disposable> noopConsumer;
+
+    /**
+     * The operator under test.
+     */
+    private SingleDoOnSubscribe<Integer> operator;
+
+    /**
+     * A lightweight observer that forwards the received value to a {@link Blackhole}.
+     */
+    private static final class BlackholeObserver implements SingleObserver<Integer> {
+
+        private final Blackhole bh;
+
+        BlackholeObserver(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            // No disposal logic needed for the benchmark.
+        }
+
+        @Override
+        public void onSuccess(Integer value) {
+            bh.consume(value);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            bh.consume(e);
+        }
+    }
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A simple source that emits the integer 1.
+        source = Single.just(1);
+        // Consumer that does nothing; it is the part we want to measure the overhead of.
+        noopConsumer = d -> {
+            // intentionally empty
+        };
+        // Wrap the source with the internal operator.
+        operator = new SingleDoOnSubscribe<>(source, noopConsumer);
+    }
+
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        // Subscribe a fresh observer for each operation to avoid state leakage.
+        operator.subscribe(new BlackholeObserver(bh));
+    }
+}

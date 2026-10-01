@@ -1,0 +1,83 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservablePublish;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link ObservablePublish} measuring the throughput of item emission
+ * with a configurable number of subscribers and source size.
+ *
+ * Best practices applied:
+ * - @State with Scope.Thread to avoid cross‑thread interference.
+ * - @Param to explore different load scenarios.
+ * - @Setup(Level.Invocation) to create a fresh ObservablePublish per iteration,
+ *   ensuring no state leakage between measurements.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - CountDownLatch to reliably wait for completion without busy‑waiting.
+ * - Warmup, measurement, and fork settings typical for reliable JMH results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservablePublishThroughputBenchmark {
+
+    @Param({"1", "2", "4", "8"})
+    public int subscriberCount;
+
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    private ObservablePublish<Integer> publish;
+    private Observable<Integer> source;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Create a finite source emitting {@code itemCount} integers.
+        source = Observable.range(0, itemCount);
+        // Directly instantiate the internal ObservablePublish operator.
+        publish = new ObservablePublish<>(source);
+    }
+
+    @Benchmark
+    public void publishThroughput(Blackhole bh) throws Exception {
+        CountDownLatch latch = new CountDownLatch(subscriberCount);
+
+        // Subscribe the requested number of observers.
+        for (int i = 0; i < subscriberCount; i++) {
+            publish.subscribe(new Observer<Integer>() {
+                @Override public void onSubscribe(Disposable d) { /* no‑op */ }
+
+                @Override public void onNext(Integer value) {
+                    // Consume the value to avoid dead‑code elimination.
+                    bh.consume(value);
+                }
+
+                @Override public void onError(Throwable e) {
+                    // Treat error as completion for latch counting.
+                    latch.countDown();
+                }
+
+                @Override public void onComplete() {
+                    latch.countDown();
+                }
+            });
+        }
+
+        // Connect the publish operator; the Disposable is ignored for the benchmark.
+        publish.connect(d -> { /* no‑op */ });
+
+        // Wait until all subscribers have received the terminal event.
+        latch.await();
+    }
+}
+```

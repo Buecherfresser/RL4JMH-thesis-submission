@@ -1,0 +1,43 @@
+```
+import org.openjdk.jmh.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Supplier;
+import io.reactivex.rxjava3.internal.operators.completable.CompletableDefer;
+import java.util.concurrent.TimeUnit;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class CompletableDeferBenchmark {
+
+    private CompletableDefer defer;
+    private Completable direct;
+
+    @Setup
+    public void setup() {
+        Supplier<CompletableSource> supplier = () -> Completable.complete();
+        defer = new CompletableDefer(supplier);
+        direct = Completable.complete();
+    }
+
+    @Benchmark
+    public void deferSubscribe() {
+        defer.subscribe(new NoOpObserver());
+    }
+
+    @Benchmark
+    public void directSubscribe() {
+        direct.subscribe(new NoOpObserver());
+    }
+
+    // Simple observer that does nothing on callbacks.
+    static final class NoOpObserver implements CompletableObserver {
+        @Override public void onSubscribe(Disposable d) { d.dispose(); }
+        @Override public void onComplete() {}
+        @Override public void onError(Throwable e) {}
+    }
+}
+```

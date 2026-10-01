@@ -1,0 +1,114 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@code ObservableDoOnEach}.
+ *
+ * Measures the throughput of an Observable pipeline with and without the {@code doOnEach}
+ * side‑effect operator. The benchmark follows JMH best practices:
+ * <ul>
+ *   <li>Separate {@code @State} for thread‑local data.</li>
+ *   <li>Warm‑up and measurement iterations.</li>
+ *   <li>Multiple forks to reduce JVM warm‑up bias.</li>
+ *   <li>Blackhole consumption to prevent dead‑code elimination.</li>
+ *   <li>Fixed source size to keep the workload deterministic.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ObservableDoOnEachBenchmark {
+
+    /**
+     * Number of items emitted per subscription.
+     */
+    @Param({ "1000" })
+    private int size;
+
+    /**
+     * Plain source without any side‑effect operator.
+     */
+    private Observable<Integer> plainSource;
+
+    /**
+     * Source wrapped with {@code doOnEach}.
+     */
+    private Observable<Integer> doOnEachSource;
+
+    /**
+     * No‑op consumers and actions used by {@code doOnEach}.
+     */
+    private static final Consumer<Integer> NOOP_CONSUMER = v -> {
+        // intentionally empty
+    };
+
+    private static final Consumer<Throwable> NOOP_ERROR = e -> {
+        // intentionally empty
+    };
+
+    private static final Action NOOP_ACTION = () -> {
+        // intentionally empty
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a deterministic finite source.
+        plainSource = Observable.range(1, size);
+        // Apply the operator under test with no‑op side effects.
+        doOnEachSource = plainSource.doOnEach(NOOP_CONSUMER, NOOP_ERROR, NOOP_ACTION, NOOP_ACTION);
+    }
+
+    /**
+     * Baseline benchmark: subscribe to the plain source and consume each item.
+     */
+    @Benchmark
+    public void baseline(Blackhole bh) {
+        plainSource.subscribe(bh::consume);
+    }
+
+    /**
+     * Benchmark the {@code ObservableDoOnEach} operator.
+     */
+    @Benchmark
+    public void doOnEach(Blackhole bh) {
+        doOnEachSource.subscribe(bh::consume);
+    }
+}

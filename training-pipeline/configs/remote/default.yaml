@@ -1,0 +1,63 @@
+# Remote GPU training over SSH. See jmhgen.config.RemoteConfig.
+# Provider-agnostic: works with any reachable host (RunPod / Vast.ai / Lambda / bare metal).
+# Fill in the connection details, then run:
+#   HF_TOKEN=hf_... uv run jmh-train-remote --config configs/remote/default.yaml
+# Preview the exact rsync/ssh commands first with `--dry-run`.
+#
+# RunPod network volume (200 GB): durable assets survive pod redeploys.
+# Layout on /workspace:
+#   jmhgen-rft/     repo + outputs/
+#   .cache/huggingface/  model weights
+#   .m2/            Maven repo (JMH compile rewards)
+#   logs/           training logs
+# The 300 GB local disk holds the venv and hot uv/Triton/Inductor/vLLM caches.
+#
+# GRPO specifics (stage: grpo):
+#   * Rewards are computed ON the GPU VM by compiling + running each rollout, so the pod needs a
+#     JDK 17 + Maven toolchain (RunPod CUDA images lack it) — installed by bootstrap_cmd below.
+#   * This preset uses the Gemma CUDA-13 profile in colocate mode. Qwen uses its CUDA-12.8 profile
+#     plus a dedicated rollout GPU; see configs/remote/qwen35-4b.yaml.
+#   * Curated snippets (data/snippets) and bundled classpaths (data/classpaths, portable relative
+#     jars) sync automatically; the giant project checkouts (data/external-src) are excluded.
+
+host: <gpu-host>
+user: root # RunPod pod SSH user from the Connect panel
+port: 22
+identity_file: ~/.ssh/id_ed25519
+remote_volume: /workspace # 200 GB network volume — models, Maven, code, logs, outputs
+remote_scratch: /root/jmhgen-scratch # 300 GB local disk — venv + hot/JIT caches
+remote_dir: /workspace/jmhgen-rft
+
+stage: grpo # sft | rft | grpo
+stage_config: configs/grpo/jmh-rl.yaml
+model_profile: gemma # gemma -> profiles/gemma-cu130; qwen -> profiles/qwen-cu128
+
+env_passthrough: [HF_TOKEN] # local env vars forwarded to the remote training run
+pull_outputs: true # rsync the produced adapter back to outputs/grpo-jmh-rl
+
+# Volume/scratch layout + host tools. Each check keeps repeated provisioning cheap.
+bootstrap_cmd: >-
+  command -v rsync >/dev/null 2>&1 ||
+  (apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y rsync);
+  command -v tmux >/dev/null 2>&1 ||
+  (apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tmux);
+  (command -v javac >/dev/null 2>&1 && command -v mvn >/dev/null 2>&1) ||
+  (apt-get update &&
+  DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-17-jdk-headless maven)
+
+# Bootstrap uv when absent; JDK/Maven are handled above even if the image already ships uv.
+setup_cmd: curl -LsSf https://astral.sh/uv/install.sh | sh
+rsync_excludes:
+  - .git
+  - .venv
+  - outputs
+  - __pycache__
+  - .mypy_cache
+  - .pytest_cache
+  - .ruff_cache
+  - data/external-src # full project checkouts; classpaths are bundled under data/classpaths
+  - data/llm2jmh-*
+  - data/rxjava-src
+  - data/rft-*
+  - "*.pyc"
+# ssh root@<gpu-host> -p 22 -i ~/.ssh/id_ed25519

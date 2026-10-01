@@ -1,0 +1,121 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableAny}.
+ *
+ * The benchmarks measure throughput (operations per second) of the {@code any} operator
+ * under different predicate characteristics and source sizes.
+ *
+ * Best practices applied:
+ * - Use @State with Scope.Thread to avoid sharing mutable state between threads.
+ * - Initialize the source Observable once per trial in @Setup(Level.Trial).
+ * - Use @Param to vary the size of the upstream sequence.
+ * - Use blockingGet() to ensure the whole stream is consumed before the benchmark iteration ends.
+ * - Include warm‑up, measurement, and fork settings to obtain reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableAnyBenchmark {
+
+    /**
+     * Number of items emitted by the upstream Observable.
+     * Typical values cover small, medium and large streams.
+     */
+    @Param({ "10", "1000", "100_000" })
+    public int size;
+
+    private Observable<Integer> source;
+
+    /**
+     * Predicate that never matches – forces full traversal.
+     */
+    private Predicate<Integer> alwaysFalse;
+
+    /**
+     * Predicate that always matches – short‑circuits after the first element.
+     */
+    private Predicate<Integer> alwaysTrue;
+
+    /**
+     * Predicate with moderate selectivity (matches half of the items).
+     */
+    private Predicate<Integer> evenPredicate;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Observable that emits a range of integers [1, size]
+        source = Observable.range(1, size);
+        alwaysFalse = v -> false;
+        alwaysTrue = v -> true;
+        // true for even numbers
+        evenPredicate = v -> (v & 1) == 0;
+    }
+
+    /**
+     * Benchmark where the predicate never matches.
+     * The operator must consume the entire upstream sequence.
+     */
+    @Benchmark
+    public boolean anyNeverMatches() {
+        return source.any(alwaysFalse).blockingGet();
+    }
+
+    /**
+     * Benchmark where the predicate matches the first element.
+     * The operator short‑circuits immediately.
+     */
+    @Benchmark
+    public boolean anyMatchesImmediately() {
+        return source.any(alwaysTrue).blockingGet();
+    }
+
+    /**
+     * Benchmark with a predicate that matches roughly half of the items.
+     * This represents a realistic workload where short‑circuiting may happen
+     * after processing a moderate number of elements.
+     */
+    @Benchmark
+    public boolean anyMatchesHalfway() {
+        return source.any(evenPredicate).blockingGet();
+    }
+}

@@ -1,0 +1,131 @@
+```java
+package io.reactivex.rxjava3.internal.queue.benchmark;
+
+import io.reactivex.rxjava3.internal.queue.MpscLinkedQueue;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link MpscLinkedQueue}.
+ *
+ * <p>These benchmarks focus on throughput of the core operations
+ * {@code offer} and {@code poll} under different contention scenarios.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate state for single‑threaded and multi‑threaded scenarios.</li>
+ *   <li>Use {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Warm‑up and measurement iterations are left to the runner configuration.</li>
+ *   <li>Queue is re‑initialized before each iteration to avoid state leakage.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class MpscLinkedQueueBenchmark {
+
+    /**
+     * State shared by all threads in a multi‑threaded benchmark.
+     * The queue is freshly created for each iteration to avoid
+     * interference from previous runs.
+     */
+    @State(Scope.Benchmark)
+    public static class SharedState {
+        MpscLinkedQueue<Integer> queue;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            queue = new MpscLinkedQueue<>();
+        }
+    }
+
+    /**
+     * State used by a single thread benchmark (no contention).
+     */
+    @State(Scope.Thread)
+    public static class ThreadState {
+        MpscLinkedQueue<Integer> queue;
+        int counter = 0;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            queue = new MpscLinkedQueue<>();
+        }
+
+        int nextValue() {
+            return counter++;
+        }
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Single‑threaded benchmarks                                            */
+    /* --------------------------------------------------------------------- */
+
+    @Benchmark
+    @Threads(1)
+    public void singleThreadOffer(ThreadState state) {
+        state.queue.offer(state.nextValue());
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void singleThreadPoll(ThreadState state, Blackhole bh) {
+        Integer v = state.queue.poll();
+        if (v != null) {
+            bh.consume(v);
+        }
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void singleThreadOfferAndPoll(ThreadState state, Blackhole bh) {
+        state.queue.offer(state.nextValue());
+        Integer v = state.queue.poll();
+        if (v != null) {
+            bh.consume(v);
+        }
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Multi‑threaded benchmarks (multiple producers, single consumer)      */
+    /* --------------------------------------------------------------------- */
+
+    @Benchmark
+    @Threads(4) // 3 producers + 1 consumer
+    public void multiProducerSingleConsumer(SharedState state, Blackhole bh) {
+        // Thread 0 acts as the consumer, others as producers.
+        int threadId = (int) Thread.currentThread().getId();
+        if (threadId % 4 == 0) {
+            // Consumer
+            Integer v = state.queue.poll();
+            if (v != null) {
+                bh.consume(v);
+            }
+        } else {
+            // Producer
+            state.queue.offer(threadId);
+        }
+    }
+
+    @Benchmark
+    @Threads(8) // 7 producers + 1 consumer
+    public void highContentionOffer(SharedState state) {
+        // All threads perform offers; a separate consumer can be added in a different benchmark.
+        state.queue.offer((int) Thread.currentThread().getId());
+    }
+
+    @Benchmark
+    @Threads(8) // 7 producers + 1 consumer
+    public void highContentionPoll(SharedState state, Blackhole bh) {
+        // All threads attempt to poll; producers can be added in a complementary benchmark.
+        Integer v = state.queue.poll();
+        if (v != null) {
+            bh.consume(v);
+        }
+    }
+}
+```

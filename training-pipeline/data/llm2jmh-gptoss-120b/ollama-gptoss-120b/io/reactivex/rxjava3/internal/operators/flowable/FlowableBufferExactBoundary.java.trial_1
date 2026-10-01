@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Supplier;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link FlowableBufferExactBoundary}.
+ *
+ * The benchmark measures the throughput of buffering a stream of integers
+ * into a single collection using a boundary that closes the buffer once.
+ *
+ * Best‑practice notes:
+ * • The benchmark state is @State(Scope.Thread) to avoid sharing mutable
+ *   objects between threads.
+ * • @Param allows the source size to be varied without recompiling.
+ * • Blackhole is used to consume the resulting buffers so that the JIT
+ *   cannot eliminate the work.
+ * • Warm‑up, measurement, and fork settings follow common JMH recommendations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableBufferExactBoundaryBenchmark {
+
+    /** Number of items emitted by the source Flowable. */
+    @Param({ "1000", "10000", "100000", "1000000" })
+    public int size;
+
+    /** Supplier that creates a new mutable collection for each buffer. */
+    private Supplier<ArrayList<Integer>> bufferSupplier;
+
+    /** The source Flowable that emits a range of integers. */
+    private Flowable<Integer> source;
+
+    /** Boundary publisher that emits a single item, closing the buffer once. */
+    private Flowable<Object> boundary;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        bufferSupplier = ArrayList::new;
+        source = Flowable.range(0, size);
+        // A single‑item boundary; the buffer will be emitted when the source completes.
+        boundary = Flowable.just(new Object());
+    }
+
+    @Benchmark
+    public void bufferExactBoundary(Blackhole bh) {
+        TestSubscriber<ArrayList<Integer>> ts = new TestSubscriber<>();
+        new FlowableBufferExactBoundary<Integer, ArrayList<Integer>, Object>(source, boundary, bufferSupplier)
+                .subscribe(ts);
+        // Wait for completion to ensure all work is done before consuming the result.
+        ts.awaitDone(1, TimeUnit.MINUTES);
+        // Consume the emitted buffers so that the JIT cannot dead‑code‑eliminate the operator.
+        bh.consume(ts.values());
+    }
+}
+```

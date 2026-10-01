@@ -1,0 +1,139 @@
+```
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.jdk8.FlowableFromStream;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+import io.reactivex.rxjava3.operators.ConditionalSubscriber;
+import org.openjdk.jmh.annotations.*;
+
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class FlowableFromStreamBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    @State(Scope.Thread)
+    public static class StreamHolder {
+
+        private int size;
+
+        public void setSize(int size) {
+            this.size = size;
+        }
+
+        public Stream<Integer> newStream() {
+            return IntStream.range(0, size).boxed();
+        }
+    }
+
+    static final class CountingSubscriber<T> implements org.reactivestreams.Subscriber<T> {
+
+        private final AtomicLong count = new AtomicLong();
+
+        @Override
+        public void onSubscribe(org.reactivestreams.Subscription s) {
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(T t) {
+            count.incrementAndGet();
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            RxJavaPlugins.onError(t);
+        }
+
+        @Override
+        public void onComplete() {
+            // no‑op
+        }
+
+        public long getCount() {
+            return count.get();
+        }
+
+        public void reset() {
+            count.set(0);
+        }
+    }
+
+    static final class CountingConditionalSubscriber<T> implements ConditionalSubscriber<T> {
+
+        private final AtomicLong count = new AtomicLong();
+
+        @Override
+        public void onSubscribe(org.reactivestreams.Subscription s) {
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(T t) {
+            // not used
+        }
+
+        @Override
+        public boolean tryOnNext(T t) {
+            count.incrementAndGet();
+            return true;
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            RxJavaPlugins.onError(t);
+        }
+
+        @Override
+        public void onComplete() {
+            // no‑op
+        }
+
+        public long getCount() {
+            return count.get();
+        }
+
+        public void reset() {
+            count.set(0);
+        }
+    }
+
+    @Setup(Level.Iteration)
+    public void setUp(StreamHolder holder) {
+        holder.setSize(size);
+    }
+
+    @Benchmark
+    public long regularSubscriber(StreamHolder holder) {
+        Stream<Integer> stream = holder.newStream();
+        Flowable<Integer> flowable = new FlowableFromStream<>(stream);
+        CountingSubscriber<Integer> subscriber = new CountingSubscriber<>();
+        flowable.subscribe(subscriber);
+        long emitted = subscriber.getCount();
+        subscriber.reset();
+        return emitted;
+    }
+
+    @Benchmark
+    public long conditionalSubscriber(StreamHolder holder) {
+        Stream<Integer> stream = holder.newStream();
+        Flowable<Integer> flowable = new FlowableFromStream<>(stream);
+        CountingConditionalSubscriber<Integer> subscriber = new CountingConditionalSubscriber<>();
+        flowable.subscribe(subscriber);
+        long emitted = subscriber.getCount();
+        subscriber.reset();
+        return emitted;
+    }
+}
+```

@@ -1,0 +1,77 @@
+package bench.generated.c005;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.compress.archivers.arj.ArjArchiveEntry;
+
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@Fork(1)
+@Warmup(iterations = 1, time = 1)
+@Measurement(iterations = 3, time = 1)
+public class ArjArchiveEntryBenchmark {
+
+    private ArjArchiveEntry entry;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Use the default constructor to create a representative entry instance.
+        entry = new ArjArchiveEntry();
+    }
+
+    @Benchmark
+    public void benchmarkGetHostOs(Blackhole bh) {
+        int os = entry.getHostOs();
+        bh.consume(os);
+    }
+
+    @Benchmark
+    public void benchmarkGetLastModifiedDate(Blackhole bh) {
+        java.util.Date date = entry.getLastModifiedDate();
+        bh.consume(date);
+    }
+
+    @Benchmark
+    public void benchmarkGetName(Blackhole bh) {
+        String name = entry.getName();
+        bh.consume(name);
+    }
+
+    @Benchmark
+    public void benchmarkGetSize(Blackhole bh) {
+        long size = entry.getSize();
+        bh.consume(size);
+    }
+
+    @Benchmark
+    public void benchmarkIsDirectory(Blackhole bh) {
+        boolean isDir = entry.isDirectory();
+        bh.consume(isDir);
+    }
+
+    @Benchmark
+    public void benchmarkIsHostOsUnix(Blackhole bh) {
+        boolean isUnix = entry.isHostOsUnix();
+        bh.consume(isUnix);
+    }
+
+    @Benchmark
+    public void benchmarkGetMode(Blackhole bh) {
+        int mode = entry.getMode();
+        bh.consume(mode);
+    }
+
+    @Benchmark
+    public void benchmarkGetUnixMode(Blackhole bh) {
+        int unixMode = entry.getUnixMode();
+        bh.consume(unixMode);
+    }
+
+    @Benchmark
+    public void benchmarkHashCode(Blackhole bh) {
+        int hash = entry.hashCode();
+        bh.consume(hash);
+    }
+}

@@ -1,0 +1,89 @@
+```java
+package io.reactivex.rxjava3.internal.disposables.benchmark;
+
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.disposables.ListCompositeDisposable;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link ListCompositeDisposable}.
+ *
+ * The benchmarks focus on the most frequently used public operations:
+ * add, addAll, remove, clear and dispose. Each benchmark runs in
+ * {@link Mode#Throughput} to measure how many operations can be performed
+ * per time unit under a warm JVM.
+ *
+ * Best‑practice JMH settings are applied:
+ * - 5 warm‑up iterations (1 s each) to let the JIT stabilize.
+ * - 10 measurement iterations (1 s each) for reliable results.
+ * - 3 forks to isolate JVMs.
+ * - {@code @State(Scope.Thread)} to avoid cross‑thread interference.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(3)
+@State(Scope.Thread)
+public class ListCompositeDisposableBenchmark {
+
+    /** Number of dummy disposables used in each benchmark iteration. */
+    private static final int SIZE = 128;
+
+    /** The composite under test. */
+    private ListCompositeDisposable composite;
+
+    /** Pre‑created disposables to avoid allocation overhead during the benchmark. */
+    private Disposable[] disposables;
+
+    /** A second set of disposables used for remove/clear tests. */
+    private Disposable[] otherDisposables;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        composite = new ListCompositeDisposable();
+        disposables = new Disposable[SIZE];
+        otherDisposables = new Disposable[SIZE];
+        for (int i = 0; i < SIZE; i++) {
+            disposables[i] = Disposable.empty();
+            otherDisposables[i] = Disposable.empty();
+        }
+    }
+
+    @Benchmark
+    public void addSingle() {
+        for (Disposable d : disposables) {
+            composite.add(d);
+        }
+    }
+
+    @Benchmark
+    public void addAllVarargs() {
+        composite.addAll(disposables);
+    }
+
+    @Benchmark
+    public void removeSingle() {
+        // first fill the composite
+        composite.addAll(disposables);
+        // then remove one by one
+        for (Disposable d : disposables) {
+            composite.remove(d);
+        }
+    }
+
+    @Benchmark
+    public void clear() {
+        composite.addAll(disposables);
+        composite.clear();
+    }
+
+    @Benchmark
+    public void dispose() {
+        composite.addAll(disposables);
+        composite.dispose();
+    }
+}
+```

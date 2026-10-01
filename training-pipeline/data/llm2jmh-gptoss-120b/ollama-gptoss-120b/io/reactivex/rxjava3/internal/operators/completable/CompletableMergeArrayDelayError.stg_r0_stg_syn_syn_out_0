@@ -1,0 +1,93 @@
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link CompletableMergeArrayDelayError}.
+ *
+ * The benchmark measures the throughput (operations per second) of merging a fixed
+ * number of {@link CompletableSource}s with delay‑error semantics.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the sources in @Setup to exclude allocation overhead from the measurement.
+ * - Use blockingSubscribe() to ensure the merge completes before the benchmark method returns.
+ * - Include warm‑up, measurement iterations and multiple forks for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3)
+@Threads(1)
+public class CompletableMergeArrayDelayErrorBenchmark {
+
+    /**
+     * Number of Completable sources to merge.
+     * Adjust this parameter to explore scaling behaviour.
+     */
+    @Param({ "10", "100", "1000" })
+    public int sourceCount;
+
+    /**
+     * Array of pre‑created Completable sources (all completing immediately).
+     */
+    private CompletableSource[] sources;
+
+    /**
+     * The operator under test.
+     */
+    private CompletableMergeArrayDelayError operator;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create an array of already completed CompletableSources.
+        sources = new CompletableSource[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            sources[i] = Completable.complete();
+        }
+        // Instantiate the operator with the prepared sources.
+        operator = new CompletableMergeArrayDelayError(sources);
+    }
+
+    @Benchmark
+    public void mergeAndAwait() {
+        // Subscribe and block until the merged Completable terminates.
+        // Using blockingSubscribe ensures the benchmark measures the full lifecycle.
+        operator.blockingSubscribe();
+    }
+}

@@ -1,0 +1,79 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.functions.Supplier;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.completable.CompletableFromSupplier}.
+ *
+ * Measures the throughput of subscribing to a {@link Completable} created from a {@link Supplier}.
+ * Two scenarios are provided:
+ *   1. Normal completion (supplier returns a value).
+ *   2. Error path (supplier throws an exception).
+ *
+ * The benchmark follows best practices:
+ *   • @State objects are scoped per thread to avoid contention.
+ *   • @Setup is used to create immutable objects before measurement.
+ *   • Blackhole consumes any thrown exception to prevent dead‑code elimination.
+ *   • Mode.Throughput with seconds as the output unit reflects operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+public class CompletableFromSupplierBenchmark {
+
+    @State(Scope.Thread)
+    public static class NormalState {
+        Completable completable;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            Supplier<Object> supplier = () -> 42; // trivial supplier
+            completable = Completable.fromSupplier(supplier);
+        }
+    }
+
+    @State(Scope.Thread)
+    public static class ErrorState {
+        Completable completable;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            Supplier<Object> errorSupplier = () -> {
+                throw new RuntimeException("boom");
+            };
+            completable = Completable.fromSupplier(errorSupplier);
+        }
+    }
+
+    /**
+     * Benchmark the happy‑path: supplier returns a value and the Completable completes normally.
+     */
+    @Benchmark
+    public void normalSubscribeAndAwait(NormalState state, Blackhole bh) {
+        // blockingAwait blocks until the Completable terminates.
+        // It returns true on normal completion, false if disposed (which never happens here).
+        state.completable.blockingAwait();
+    }
+
+    /**
+     * Benchmark the error‑path: supplier throws, causing the Completable to signal onError.
+     */
+    @Benchmark
+    public void errorSubscribeAndAwait(ErrorState state, Blackhole bh) {
+        try {
+            state.completable.blockingAwait();
+        } catch (Throwable t) {
+            // Consume the exception to prevent dead‑code elimination.
+            bh.consume(t);
+        }
+    }
+}
+```

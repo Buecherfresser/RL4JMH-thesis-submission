@@ -1,0 +1,103 @@
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.mixed.FlowableSwitchMapMaybe}.
+ * Measures the throughput of switching a Flowable of integers into Maybes and emitting the results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableSwitchMapMaybeBenchmark {
+
+    /**
+     * Number of items emitted by the upstream Flowable per benchmark invocation.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * Whether the operator should delay errors (not used in this benchmark, kept for completeness).
+     */
+    @Param({ "false" })
+    public boolean delayErrors;
+
+    private Flowable<Integer> source;
+
+    private Function<Integer, MaybeSource<Integer>> mapper;
+
+    private Flowable<Integer> flowableSwitchMapMaybe;
+
+    /**
+     * Set up the upstream Flowable, the mapper function and the operator under test.
+     * This method runs once per thread before any benchmark iterations.
+     */
+    @Setup(Level.Trial)
+    public void setup() {
+        // Upstream emits a range of integers synchronously.
+        source = Flowable.range(1, itemCount);
+        // Mapper turns each integer into a Maybe that immediately emits the doubled value.
+        mapper = new Function<Integer, MaybeSource<Integer>>() {
+
+            @Override
+            public MaybeSource<Integer> apply(Integer v) {
+                return Maybe.just(v * 2);
+            }
+        };
+        // Create the operator instance directly (internal API).
+        flowableSwitchMapMaybe = new io.reactivex.rxjava3.internal.operators.mixed.FlowableSwitchMapMaybe<>(source, mapper, delayErrors);
+    }
+
+    /**
+     * Benchmark method that subscribes to the FlowableSwitchMapMaybe and consumes all emitted items.
+     * The {@link Blackhole} ensures that the JIT compiler does not eliminate the consumption.
+     */
+    @Benchmark
+    public void switchMapMaybeThroughput(Blackhole bh) {
+        // Use blockingForEach to synchronously consume all items.
+        flowableSwitchMapMaybe.blockingForEach(bh::consume);
+    }
+
+    /**
+     * Tear down method (optional). Included for completeness; no resources need explicit cleanup.
+     */
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // No-op – RxJava disposables are cleaned up by the blocking subscription.
+    }
+}

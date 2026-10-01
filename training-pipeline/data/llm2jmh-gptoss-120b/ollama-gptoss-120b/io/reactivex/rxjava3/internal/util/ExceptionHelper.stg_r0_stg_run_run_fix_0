@@ -1,0 +1,102 @@
+```java
+package io.reactivex.rxjava3.internal.util;
+
+import io.reactivex.rxjava3.exceptions.CompositeException;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * JMH benchmarks for {@link ExceptionHelper}.
+ *
+ * The benchmarks focus on the most performance‑critical methods:
+ * <ul>
+ *   <li>{@code addThrowable} – CAS loop with possible CompositeException creation.</li>
+ *   <li>{@code flatten} – traversal of a CompositeException hierarchy.</li>
+ *   <li>{@code wrapOrThrow} – simple type checks and wrapping.</li>
+ * </ul>
+ *
+ * All benchmarks run in {@link Mode#Throughput} to measure operations per time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class ExceptionHelperBenchmark {
+
+    /** State for {@code addThrowable} benchmark. */
+    @State(Scope.Thread)
+    public static class AddThrowableState {
+        AtomicReference<Throwable> ref = new AtomicReference<>();
+        Throwable toAdd = new RuntimeException("test");
+    }
+
+    /** State for {@code flatten} benchmark. */
+    @State(Scope.Thread)
+    public static class FlattenState {
+        Throwable composite;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            List<Throwable> list = new ArrayList<>();
+            // Create a chain of 5 nested CompositeExceptions, each wrapping two RuntimeExceptions.
+            for (int i = 0; i < 5; i++) {
+                list.add(new RuntimeException("inner-" + i + "-a"));
+                list.add(new RuntimeException("inner-" + i + "-b"));
+            }
+            composite = new CompositeException(list);
+        }
+    }
+
+    /** State for {@code wrapOrThrow} benchmark. */
+    @State(Scope.Thread)
+    public static class WrapOrThrowState {
+        Throwable runtime = new RuntimeException("runtime");
+        Throwable error = new AssertionError("error");
+        Throwable checked = new Exception("checked");
+    }
+
+    @Benchmark
+    public void addThrowable(AddThrowableState s, Blackhole bh) {
+        // Reset the reference to null before each invocation to keep the loop short.
+        s.ref.set(null);
+        boolean result = ExceptionHelper.addThrowable(s.ref, s.toAdd);
+        bh.consume(result);
+        bh.consume(s.ref.get());
+    }
+
+    @Benchmark
+    public void flatten(FlattenState s, Blackhole bh) {
+        List<Throwable> flat = ExceptionHelper.flatten(s.composite);
+        bh.consume(flat);
+    }
+
+    @Benchmark
+    public void wrapOrThrow_runtime(WrapOrThrowState s, Blackhole bh) {
+        RuntimeException ex = ExceptionHelper.wrapOrThrow(s.runtime);
+        bh.consume(ex);
+    }
+
+    @Benchmark
+    public void wrapOrThrow_error(WrapOrThrowState s, Blackhole bh) {
+        try {
+            ExceptionHelper.wrapOrThrow(s.error);
+        } catch (Throwable t) {
+            // The method is expected to re‑throw the Error; consume it to avoid benchmark failure.
+            bh.consume(t);
+        }
+    }
+
+    @Benchmark
+    public void wrapOrThrow_checked(WrapOrThrowState s, Blackhole bh) {
+        RuntimeException ex = ExceptionHelper.wrapOrThrow(s.checked);
+        bh.consume(ex);
+    }
+}
+```

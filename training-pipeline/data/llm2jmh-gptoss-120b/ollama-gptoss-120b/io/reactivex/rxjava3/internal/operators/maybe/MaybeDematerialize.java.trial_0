@@ -1,0 +1,40 @@
+```
+package benchmark;
+
+import org.openjdk.jmh.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeDematerialize;
+import io.reactivex.rxjava3.core.Notification;
+
+import java.util.concurrent.TimeUnit;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeDematerializeBenchmark {
+
+    private Maybe<Integer> source;
+    private Function<Integer, Notification<String>> selector;
+    private Maybe<String> operator;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple source that emits a single value
+        source = Maybe.just(1);
+        // Selector converts the upstream value into a Notification carrying a String
+        selector = i -> Notification.createOnNext("value-" + i);
+        // Apply the operator under test
+        operator = new MaybeDematerialize<>(source, selector);
+    }
+
+    @Benchmark
+    public String testDematerialize() {
+        // Blocking get forces the whole chain to execute; the returned value is the benchmark result
+        return operator.blockingGet();
+    }
+}
+```

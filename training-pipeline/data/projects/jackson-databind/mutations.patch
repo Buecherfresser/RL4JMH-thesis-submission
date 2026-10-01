@@ -1,0 +1,603 @@
+diff --git a/tools/jackson/databind/MapperFeature.java b/tools/jackson/databind/MapperFeature.java
+index f15be4c..b7ee488 100644
+--- a/tools/jackson/databind/MapperFeature.java
++++ b/tools/jackson/databind/MapperFeature.java
+@@ -600,7 +600,7 @@ public enum MapperFeature
+     private final boolean _defaultState;
+     private final long _mask;
+ 
+-    public static long collectLongDefaults() {
++    public static long collectLongDefaults() { tools.jackson.databind.jmhbench.MutationSwitch.tick(1);
+         long flags = 0;
+         for (MapperFeature value : MapperFeature.values()) {
+             if (value.enabledByDefault()) {
+@@ -615,7 +615,7 @@ public enum MapperFeature
+         _mask = (1L << ordinal());
+     }
+ 
+-    public boolean enabledByDefault() { return _defaultState; }
++    public boolean enabledByDefault() { tools.jackson.databind.jmhbench.MutationSwitch.tick(15); return _defaultState; }
+ 
+     public long getLongMask() {
+         return _mask;
+diff --git a/tools/jackson/databind/MappingIterator.java b/tools/jackson/databind/MappingIterator.java
+index de2140c..9fbe147 100644
+--- a/tools/jackson/databind/MappingIterator.java
++++ b/tools/jackson/databind/MappingIterator.java
+@@ -180,7 +180,7 @@ public class MappingIterator<T> implements Iterator<T>, Closeable
+      * has more values; may be freely shared.
+      */
+     @SuppressWarnings("unchecked")
+-    public static <T> MappingIterator<T> emptyIterator() {
++    public static <T> MappingIterator<T> emptyIterator() { tools.jackson.databind.jmhbench.MutationSwitch.tick(29);
+         return (MappingIterator<T>) EMPTY_ITERATOR;
+     }
+ 
+@@ -208,7 +208,7 @@ public class MappingIterator<T> implements Iterator<T>, Closeable
+     }
+ 
+     @Override
+-    public void close() {
++    public void close() { tools.jackson.databind.jmhbench.MutationSwitch.tick(41);
+         if (_state != STATE_CLOSED) {
+             _state = STATE_CLOSED;
+             if (_parser != null) {
+diff --git a/tools/jackson/databind/cfg/BaseSettings.java b/tools/jackson/databind/cfg/BaseSettings.java
+index 9aa6df8..ad90d8b 100644
+--- a/tools/jackson/databind/cfg/BaseSettings.java
++++ b/tools/jackson/databind/cfg/BaseSettings.java
+@@ -174,7 +174,7 @@ public final class BaseSettings
+     /**********************************************************************
+      */
+ 
+-    public BaseSettings withAnnotationIntrospector(AnnotationIntrospector ai) {
++    public BaseSettings withAnnotationIntrospector(AnnotationIntrospector ai) { tools.jackson.databind.jmhbench.MutationSwitch.tick(2);
+         if (_annotationIntrospector == ai) {
+             return this;
+         }
+@@ -183,7 +183,7 @@ public final class BaseSettings
+                 _timeZone, _defaultBase64, _cacheProvider, _nodeFactory, _ctorDetector);
+     }
+ 
+-    public BaseSettings withInsertedAnnotationIntrospector(AnnotationIntrospector ai) {
++    public BaseSettings withInsertedAnnotationIntrospector(AnnotationIntrospector ai) { tools.jackson.databind.jmhbench.MutationSwitch.tick(16);
+         return withAnnotationIntrospector(AnnotationIntrospectorPair.create(ai, _annotationIntrospector));
+     }
+ 
+diff --git a/tools/jackson/databind/cfg/GeneratorSettings.java b/tools/jackson/databind/cfg/GeneratorSettings.java
+index 02fb894..fd0a9e9 100644
+--- a/tools/jackson/databind/cfg/GeneratorSettings.java
++++ b/tools/jackson/databind/cfg/GeneratorSettings.java
+@@ -63,11 +63,11 @@ public final class GeneratorSettings
+         rootValueSeparator = rootSep;
+     }
+ 
+-    public static GeneratorSettings empty() {
++    public static GeneratorSettings empty() { tools.jackson.databind.jmhbench.MutationSwitch.tick(30);
+         return EMPTY;
+     }
+ 
+-    public GeneratorSettings with(PrettyPrinter pp) {
++    public GeneratorSettings with(PrettyPrinter pp) { tools.jackson.databind.jmhbench.MutationSwitch.tick(42);
+         return (pp == prettyPrinter) ? this
+                 : new GeneratorSettings(pp, schema, characterEscapes, rootValueSeparator);
+     }
+diff --git a/tools/jackson/databind/deser/BeanDeserializerBuilder.java b/tools/jackson/databind/deser/BeanDeserializerBuilder.java
+index fcb5fec..fff5286 100644
+--- a/tools/jackson/databind/deser/BeanDeserializerBuilder.java
++++ b/tools/jackson/databind/deser/BeanDeserializerBuilder.java
+@@ -181,7 +181,7 @@ public class BeanDeserializerBuilder
+     /**
+      * Method for adding a new property or replacing a property.
+      */
+-    public void addOrReplaceProperty(SettableBeanProperty prop, boolean allowOverride) {
++    public void addOrReplaceProperty(SettableBeanProperty prop, boolean allowOverride) { tools.jackson.databind.jmhbench.MutationSwitch.tick(3);
+         SettableBeanProperty oldProp = _properties.put(prop.getName(), prop);
+         if ((oldProp != null) && (_propsBasedCreatorParams != null)) {
+             for (int i = 0, len = _propsBasedCreatorParams.length; i < len; ++i) {
+@@ -198,7 +198,7 @@ public class BeanDeserializerBuilder
+      * {@link IllegalArgumentException}.
+      */
+     public void addProperty(SettableBeanProperty prop)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(17);
+         SettableBeanProperty old =  _properties.put(prop.getName(), prop);
+         if (old != null && old != prop) { // should never occur...
+             throw new IllegalArgumentException("Duplicate property '"+prop.getName()
+diff --git a/tools/jackson/databind/deser/bean/BeanAsArrayBuilderDeserializer.java b/tools/jackson/databind/deser/bean/BeanAsArrayBuilderDeserializer.java
+index a25d632..dd9890d 100644
+--- a/tools/jackson/databind/deser/bean/BeanAsArrayBuilderDeserializer.java
++++ b/tools/jackson/databind/deser/bean/BeanAsArrayBuilderDeserializer.java
+@@ -57,14 +57,14 @@ public class BeanAsArrayBuilderDeserializer
+     @Override
+     public ValueDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
+             NameTransformer unwrapper)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(31);
+         // We can't do much about this; could either replace _delegate with unwrapping instance,
+         // or just replace this one. Latter seems more sensible.
+         return _delegate.unwrappingDeserializer(ctxt, unwrapper);
+     }
+ 
+     @Override
+-    public BeanDeserializerBase withObjectIdReader(ObjectIdReader oir) {
++    public BeanDeserializerBase withObjectIdReader(ObjectIdReader oir) { tools.jackson.databind.jmhbench.MutationSwitch.tick(43);
+         return new BeanAsArrayBuilderDeserializer(_delegate.withObjectIdReader(oir),
+                 _targetType, _orderedProperties, _buildMethod);
+     }
+diff --git a/tools/jackson/databind/exc/CollectedProblem.java b/tools/jackson/databind/exc/CollectedProblem.java
+index 1de4088..bf14a3f 100644
+--- a/tools/jackson/databind/exc/CollectedProblem.java
++++ b/tools/jackson/databind/exc/CollectedProblem.java
+@@ -63,12 +63,12 @@ public final class CollectedProblem {
+      * @return JSON Pointer path to the problematic field (e.g., "/items/1/date").
+      *         Empty string ("") for root-level problems.
+      */
+-    public JsonPointer getPath() { return path; }
++    public JsonPointer getPath() { tools.jackson.databind.jmhbench.MutationSwitch.tick(4); return path; }
+ 
+     /**
+      * @return Human-readable error message
+      */
+-    public String getMessage() { return message; }
++    public String getMessage() { tools.jackson.databind.jmhbench.MutationSwitch.tick(18); return message; }
+ 
+     /**
+      * @return Expected Java type for the field (may be null)
+diff --git a/tools/jackson/databind/exc/DeferredBindingException.java b/tools/jackson/databind/exc/DeferredBindingException.java
+index 0a925eb..e47ba0d 100644
+--- a/tools/jackson/databind/exc/DeferredBindingException.java
++++ b/tools/jackson/databind/exc/DeferredBindingException.java
+@@ -63,14 +63,14 @@ public class DeferredBindingException extends DatabindException {
+     /**
+      * @return Unmodifiable list of all collected problems
+      */
+-    public List<CollectedProblem> getProblems() {
++    public List<CollectedProblem> getProblems() { tools.jackson.databind.jmhbench.MutationSwitch.tick(32);
+         return problems;
+     }
+ 
+     /**
+      * @return Number of problems collected
+      */
+-    public int getProblemCount() {
++    public int getProblemCount() { tools.jackson.databind.jmhbench.MutationSwitch.tick(44);
+         return problems.size();
+     }
+ 
+diff --git a/tools/jackson/databind/ext/javatime/deser/JSR310StringParsableDeserializer.java b/tools/jackson/databind/ext/javatime/deser/JSR310StringParsableDeserializer.java
+index 97a5482..03e14e2 100644
+--- a/tools/jackson/databind/ext/javatime/deser/JSR310StringParsableDeserializer.java
++++ b/tools/jackson/databind/ext/javatime/deser/JSR310StringParsableDeserializer.java
+@@ -75,12 +75,12 @@ public class JSR310StringParsableDeserializer
+     }
+ 
+     @SuppressWarnings("unchecked")
+-    protected static <T> ValueDeserializer<T> createDeserializer(Class<T> type, int typeId) {
++    protected static <T> ValueDeserializer<T> createDeserializer(Class<T> type, int typeId) { tools.jackson.databind.jmhbench.MutationSwitch.tick(5);
+         return (ValueDeserializer<T>) new JSR310StringParsableDeserializer(type, typeId);
+     }
+ 
+     @Override
+-    protected JSR310StringParsableDeserializer withLeniency(Boolean leniency) {
++    protected JSR310StringParsableDeserializer withLeniency(Boolean leniency) { tools.jackson.databind.jmhbench.MutationSwitch.tick(19);
+         if (_isLenient == !Boolean.FALSE.equals(leniency)) {
+             return this;
+         }
+diff --git a/tools/jackson/databind/ext/javatime/util/DecimalUtils.java b/tools/jackson/databind/ext/javatime/util/DecimalUtils.java
+index b0e4382..7347ac3 100644
+--- a/tools/jackson/databind/ext/javatime/util/DecimalUtils.java
++++ b/tools/jackson/databind/ext/javatime/util/DecimalUtils.java
+@@ -32,7 +32,7 @@ public final class DecimalUtils
+     private DecimalUtils() { }
+ 
+     public static String toDecimal(long seconds, int nanoseconds)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(33);
+         StringBuilder sb = new StringBuilder(20)
+             .append(seconds)
+             .append('.');
+@@ -85,7 +85,7 @@ public final class DecimalUtils
+      * @throws ArithmeticException if the calculation overflows or produces invalid results
+      */
+     public static BigDecimal toBigDecimal(long seconds, int nanoseconds)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(45);
+         // [modules-java8#359] For negative seconds with positive nanos (times before epoch),
+         // we need to compute the proper decimal value: seconds + (nanos / 1_000_000_000)
+         // Example: Instant{epochSecond=-1, nano=999000000} represents -0.001 seconds
+diff --git a/tools/jackson/databind/introspect/AnnotatedMethodMap.java b/tools/jackson/databind/introspect/AnnotatedMethodMap.java
+index eab5ebc..a0d32a5 100644
+--- a/tools/jackson/databind/introspect/AnnotatedMethodMap.java
++++ b/tools/jackson/databind/introspect/AnnotatedMethodMap.java
+@@ -22,12 +22,12 @@ public final class AnnotatedMethodMap
+         _methods = m;
+     }
+ 
+-    public int size() {
++    public int size() { tools.jackson.databind.jmhbench.MutationSwitch.tick(6);
+         return (_methods == null) ? 0 : _methods.size();
+     }
+ 
+     public AnnotatedMethod find(String name, Class<?>[] paramTypes)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(20);
+         if (_methods == null) {
+             return null;
+         }
+diff --git a/tools/jackson/databind/introspect/AnnotationMap.java b/tools/jackson/databind/introspect/AnnotationMap.java
+index baa1c53..979bbb4 100644
+--- a/tools/jackson/databind/introspect/AnnotationMap.java
++++ b/tools/jackson/databind/introspect/AnnotationMap.java
+@@ -30,13 +30,13 @@ public final class AnnotationMap implements Annotations
+         _annotations = a;
+     }
+ 
+-    public static AnnotationMap of(Class<?> type, Annotation value) {
++    public static AnnotationMap of(Class<?> type, Annotation value) { tools.jackson.databind.jmhbench.MutationSwitch.tick(34);
+         Map<Class<?>,Annotation> ann = new HashMap<>(4);
+         ann.put(type, value);
+         return new AnnotationMap(ann);
+     }
+ 
+-    public static AnnotationMap of(Collection<Annotation> rawAnnotations) {
++    public static AnnotationMap of(Collection<Annotation> rawAnnotations) { tools.jackson.databind.jmhbench.MutationSwitch.tick(46);
+         Map<Class<?>,Annotation> map = new HashMap<>(rawAnnotations.size());
+         for (Annotation raw : rawAnnotations) {
+             map.put(raw.annotationType(), raw);
+diff --git a/tools/jackson/databind/jmhbench/MutationSwitch.java b/tools/jackson/databind/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..2c262dc
+--- /dev/null
++++ b/tools/jackson/databind/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package tools.jackson.databind.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/tools/jackson/databind/json/JsonMapper.java b/tools/jackson/databind/json/JsonMapper.java
+index ef08880..d6414e4 100644
+--- a/tools/jackson/databind/json/JsonMapper.java
++++ b/tools/jackson/databind/json/JsonMapper.java
+@@ -41,12 +41,12 @@ public class JsonMapper extends ObjectMapper
+         }
+ 
+         @Override
+-        public JsonMapper build() {
++        public JsonMapper build() { tools.jackson.databind.jmhbench.MutationSwitch.tick(7);
+             return new JsonMapper(this);
+         }
+ 
+         @Override
+-        protected MapperBuilderState _saveState() {
++        protected MapperBuilderState _saveState() { tools.jackson.databind.jmhbench.MutationSwitch.tick(21);
+             return new StateImpl(this);
+         }
+ 
+diff --git a/tools/jackson/databind/jsonFormatVisitors/JsonFormatTypes.java b/tools/jackson/databind/jsonFormatVisitors/JsonFormatTypes.java
+index 9c896d1..2e25380 100644
+--- a/tools/jackson/databind/jsonFormatVisitors/JsonFormatTypes.java
++++ b/tools/jackson/databind/jsonFormatVisitors/JsonFormatTypes.java
+@@ -24,12 +24,12 @@ public enum JsonFormatTypes
+ 	}
+ 
+ 	@JsonValue
+-	public String value() {
++	public String value() { tools.jackson.databind.jmhbench.MutationSwitch.tick(8);
+ 		return name().toLowerCase(Locale.ROOT);
+ 	}
+ 
+ 	@JsonCreator
+-	public static JsonFormatTypes forValue(String s) {
++	public static JsonFormatTypes forValue(String s) { tools.jackson.databind.jmhbench.MutationSwitch.tick(22);
+ 		return _byLCName.get(s);
+ 	}
+ }
+\ No newline at end of file
+diff --git a/tools/jackson/databind/jsontype/impl/AsArrayTypeDeserializer.java b/tools/jackson/databind/jsontype/impl/AsArrayTypeDeserializer.java
+index 13c35f5..1241476 100644
+--- a/tools/jackson/databind/jsontype/impl/AsArrayTypeDeserializer.java
++++ b/tools/jackson/databind/jsontype/impl/AsArrayTypeDeserializer.java
+@@ -32,13 +32,13 @@ public class AsArrayTypeDeserializer
+     }
+ 
+     @Override
+-    public TypeDeserializer forProperty(BeanProperty prop) {
++    public TypeDeserializer forProperty(BeanProperty prop) { tools.jackson.databind.jmhbench.MutationSwitch.tick(9);
+         // usually if it's null:
+         return (prop == _property) ? this : new AsArrayTypeDeserializer(this, prop);
+     }
+ 
+     @Override
+-    public As getTypeInclusion() { return As.WRAPPER_ARRAY; }
++    public As getTypeInclusion() { tools.jackson.databind.jmhbench.MutationSwitch.tick(23); return As.WRAPPER_ARRAY; }
+ 
+     /**
+      * Method called when actual object is serialized as JSON Array.
+diff --git a/tools/jackson/databind/jsontype/impl/AsArrayTypeSerializer.java b/tools/jackson/databind/jsontype/impl/AsArrayTypeSerializer.java
+index 2e2e0bf..4a66490 100644
+--- a/tools/jackson/databind/jsontype/impl/AsArrayTypeSerializer.java
++++ b/tools/jackson/databind/jsontype/impl/AsArrayTypeSerializer.java
+@@ -20,11 +20,11 @@ public class AsArrayTypeSerializer extends TypeSerializerBase
+ 
+     @Override
+     public AsArrayTypeSerializer forProperty(SerializationContext ctxt,
+-            BeanProperty prop) {
++            BeanProperty prop) { tools.jackson.databind.jmhbench.MutationSwitch.tick(35);
+         return (_property == prop) ? this :
+             new AsArrayTypeSerializer(_idResolver, prop, _skipTypeIdFor);
+     }
+ 
+     @Override
+-    public As getTypeInclusion() { return As.WRAPPER_ARRAY; }
++    public As getTypeInclusion() { tools.jackson.databind.jmhbench.MutationSwitch.tick(47); return As.WRAPPER_ARRAY; }
+ }
+diff --git a/tools/jackson/databind/module/SimpleAbstractTypeResolver.java b/tools/jackson/databind/module/SimpleAbstractTypeResolver.java
+index 2759d18..553bedd 100644
+--- a/tools/jackson/databind/module/SimpleAbstractTypeResolver.java
++++ b/tools/jackson/databind/module/SimpleAbstractTypeResolver.java
+@@ -52,7 +52,7 @@ public class SimpleAbstractTypeResolver
+      * @return This resolver, to allow chaining of initializations
+      */
+     public <T> SimpleAbstractTypeResolver addMapping(Class<T> superType, Class<? extends T> subType)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(10);
+         // Sanity checks, just in case someone tries to force typing...
+         if (superType == subType) {
+             throw new IllegalArgumentException("Cannot add mapping from class to itself");
+@@ -71,7 +71,7 @@ public class SimpleAbstractTypeResolver
+ 
+     @Override
+     public JavaType findTypeMapping(DeserializationConfig config, JavaType type)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(24);
+         // this is the main mapping base, so let's
+         Class<?> src = type.getRawClass();
+         Class<?> dst = _mappings.get(new ClassKey(src));
+diff --git a/tools/jackson/databind/module/SimpleDeserializers.java b/tools/jackson/databind/module/SimpleDeserializers.java
+index 71c5cd6..2d49075 100644
+--- a/tools/jackson/databind/module/SimpleDeserializers.java
++++ b/tools/jackson/databind/module/SimpleDeserializers.java
+@@ -45,7 +45,7 @@ public class SimpleDeserializers
+     }
+ 
+     public <T> SimpleDeserializers addDeserializer(Class<T> forClass, ValueDeserializer<? extends T> deser)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(36);
+         ClassKey key = new ClassKey(forClass);
+         if (_classMappings == null) {
+             _classMappings = new HashMap<ClassKey,ValueDeserializer<?>>();
+@@ -60,7 +60,7 @@ public class SimpleDeserializers
+ 
+     @SuppressWarnings("unchecked")
+     public SimpleDeserializers addDeserializers(Map<Class<?>,ValueDeserializer<?>> desers)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(48);
+         for (Map.Entry<Class<?>,ValueDeserializer<?>> entry : desers.entrySet()) {
+             Class<?> cls = entry.getKey();
+             // what a mess... nominal generics safety...
+diff --git a/tools/jackson/databind/node/ArrayNode.java b/tools/jackson/databind/node/ArrayNode.java
+index 3ae49fb..cdfc84a 100644
+--- a/tools/jackson/databind/node/ArrayNode.java
++++ b/tools/jackson/databind/node/ArrayNode.java
+@@ -58,12 +58,12 @@ public class ArrayNode
+      */
+ 
+     @Override
+-    protected JsonNode _at(JsonPointer ptr) {
++    protected JsonNode _at(JsonPointer ptr) { tools.jackson.databind.jmhbench.MutationSwitch.tick(11);
+         return get(ptr.getMatchingIndex());
+     }
+ 
+     @Override // @since 3.1
+-    protected JsonNode _removeAt(JsonPointer ptr) {
++    protected JsonNode _removeAt(JsonPointer ptr) { tools.jackson.databind.jmhbench.MutationSwitch.tick(25);
+         JsonNode n = remove(ptr.getMatchingIndex());
+         return (n == null) ? missingNode() : n;
+     }
+diff --git a/tools/jackson/databind/node/StringNode.java b/tools/jackson/databind/node/StringNode.java
+index 6217044..fa39996 100644
+--- a/tools/jackson/databind/node/StringNode.java
++++ b/tools/jackson/databind/node/StringNode.java
+@@ -43,7 +43,7 @@ public class StringNode
+      *   is NOT null; null if it is.
+      */
+     public static StringNode valueOf(String v)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(37);
+         if (v == null) {
+             return null;
+         }
+@@ -54,7 +54,7 @@ public class StringNode
+     }
+ 
+     @Override
+-    public JsonNodeType getNodeType() {
++    public JsonNodeType getNodeType() { tools.jackson.databind.jmhbench.MutationSwitch.tick(49);
+         return JsonNodeType.STRING;
+     }
+ 
+diff --git a/tools/jackson/databind/ser/BeanSerializerBuilder.java b/tools/jackson/databind/ser/BeanSerializerBuilder.java
+index 0f40e83..d4114c3 100644
+--- a/tools/jackson/databind/ser/BeanSerializerBuilder.java
++++ b/tools/jackson/databind/ser/BeanSerializerBuilder.java
+@@ -93,7 +93,7 @@ public class BeanSerializerBuilder
+         _objectIdWriter = src._objectIdWriter;
+     }
+ 
+-    public void setProperties(List<BeanPropertyWriter> properties) {
++    public void setProperties(List<BeanPropertyWriter> properties) { tools.jackson.databind.jmhbench.MutationSwitch.tick(12);
+         _properties = properties;
+     }
+ 
+@@ -102,7 +102,7 @@ public class BeanSerializerBuilder
+      *    of "regular" properties set earlier using {@link #setProperties(List)}; if not,
+      *    an {@link IllegalArgumentException} will be thrown
+      */
+-    public void setFilteredProperties(BeanPropertyWriter[] properties) {
++    public void setFilteredProperties(BeanPropertyWriter[] properties) { tools.jackson.databind.jmhbench.MutationSwitch.tick(26);
+         if (properties != null) {
+             if (properties.length != _properties.size()) { // as per [databind#1612]
+                 throw new IllegalArgumentException(String.format(
+diff --git a/tools/jackson/databind/ser/PropertyBuilder.java b/tools/jackson/databind/ser/PropertyBuilder.java
+index 8e07f1f..8136fb0 100644
+--- a/tools/jackson/databind/ser/PropertyBuilder.java
++++ b/tools/jackson/databind/ser/PropertyBuilder.java
+@@ -89,7 +89,7 @@ public class PropertyBuilder
+     /**********************************************************************
+      */
+ 
+-    public Annotations getClassAnnotations() {
++    public Annotations getClassAnnotations() { tools.jackson.databind.jmhbench.MutationSwitch.tick(38);
+         return _beanDesc.getClassAnnotations();
+     }
+ 
+@@ -102,7 +102,7 @@ public class PropertyBuilder
+             BeanPropertyDefinition propDef, JavaType declaredType, ValueSerializer<?> ser,
+             TypeSerializer typeSer, TypeSerializer contentTypeSer,
+             AnnotatedMember am, boolean defaultUseStaticTyping)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(50);
+         // do we have annotation that forces type to use (to declared type or its super type)?
+         JavaType serializationType;
+         try {
+diff --git a/tools/jackson/databind/type/ArrayType.java b/tools/jackson/databind/type/ArrayType.java
+index 5e20e88..0c2be04 100644
+--- a/tools/jackson/databind/type/ArrayType.java
++++ b/tools/jackson/databind/type/ArrayType.java
+@@ -39,12 +39,12 @@ public final class ArrayType
+         _emptyArray = emptyInstance;
+     }
+ 
+-    public static ArrayType construct(JavaType componentType, TypeBindings bindings) {
++    public static ArrayType construct(JavaType componentType, TypeBindings bindings) { tools.jackson.databind.jmhbench.MutationSwitch.tick(13);
+         return construct(componentType, bindings, null, null);
+     }
+ 
+     public static ArrayType construct(JavaType componentType, TypeBindings bindings,
+-            Object valueHandler, Object typeHandler) {
++            Object valueHandler, Object typeHandler) { tools.jackson.databind.jmhbench.MutationSwitch.tick(27);
+         // Figuring out raw class for generic array is actually bit tricky...
+         Object emptyInstance = Array.newInstance(componentType.getRawClass(), 0);
+         return new ArrayType(componentType, bindings, emptyInstance, valueHandler, typeHandler, false);
+diff --git a/tools/jackson/databind/type/MapLikeType.java b/tools/jackson/databind/type/MapLikeType.java
+index 0dbf3ac..f4ea0f6 100644
+--- a/tools/jackson/databind/type/MapLikeType.java
++++ b/tools/jackson/databind/type/MapLikeType.java
+@@ -57,7 +57,7 @@ public class MapLikeType extends TypeBase {
+      * collection-like one; usually done via {@link TypeModifier}
+      */
+     public static MapLikeType upgradeFrom(JavaType baseType, JavaType keyT,
+-            JavaType valueT) {
++            JavaType valueT) { tools.jackson.databind.jmhbench.MutationSwitch.tick(39);
+         // 19-Oct-2015, tatu: Not sure if and how other types could be used as
+         // base;
+         // will cross that bridge if and when need be
+diff --git a/tools/jackson/databind/util/ArrayBuilders.java b/tools/jackson/databind/util/ArrayBuilders.java
+index afcf4dc..ace0c5d 100644
+--- a/tools/jackson/databind/util/ArrayBuilders.java
++++ b/tools/jackson/databind/util/ArrayBuilders.java
+@@ -29,7 +29,7 @@ public final class ArrayBuilders
+     public ArrayBuilders() { }
+ 
+     public BooleanBuilder getBooleanBuilder()
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(14);
+         if (_booleanBuilder == null) {
+             _booleanBuilder = new BooleanBuilder();
+         }
+@@ -37,7 +37,7 @@ public final class ArrayBuilders
+     }
+ 
+     public ByteBuilder getByteBuilder()
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(28);
+         if (_byteBuilder == null) {
+             _byteBuilder = new ByteBuilder();
+         }
+diff --git a/tools/jackson/databind/util/BeanUtil.java b/tools/jackson/databind/util/BeanUtil.java
+index 7ea5f1e..19aacd9 100644
+--- a/tools/jackson/databind/util/BeanUtil.java
++++ b/tools/jackson/databind/util/BeanUtil.java
+@@ -30,7 +30,7 @@ public class BeanUtil
+      */
+     @Deprecated // since 3.0.0-rc2
+     public static String stdManglePropertyName(final String basename, final int offset)
+-    {
++    { tools.jackson.databind.jmhbench.MutationSwitch.tick(40);
+         final int end = basename.length();
+         if (end == offset) { // empty name, nope
+             return null;

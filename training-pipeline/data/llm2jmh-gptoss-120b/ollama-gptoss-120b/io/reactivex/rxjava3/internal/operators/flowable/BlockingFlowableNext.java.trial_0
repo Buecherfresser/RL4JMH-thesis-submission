@@ -1,0 +1,60 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import org.openjdk.jmh.annotations.*;
+import io.reactivex.rxjava3.core.Flowable;
+
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link BlockingFlowableNext}.
+ *
+ * Measures the throughput of iterating over a Flowable using the blocking iterator.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class BlockingFlowableNextBenchmark {
+
+    /**
+     * Number of elements emitted by the source Flowable.
+     * Typical values are chosen to represent small, medium and large streams.
+     */
+    @Param({"100", "1000", "10000"})
+    public int size;
+
+    private Flowable<Integer> source;
+    private BlockingFlowableNext<Integer> blocking;
+
+    /**
+     * Set up the Flowable source and the BlockingFlowableNext instance.
+     * This is executed once per fork.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A simple synchronous source; replace with other sources if needed.
+        source = Flowable.range(1, size);
+        blocking = new BlockingFlowableNext<>(source);
+    }
+
+    /**
+     * Benchmark that iterates over the entire Flowable using the blocking iterator.
+     * The returned sum prevents dead‑code elimination.
+     *
+     * @return the sum of all emitted integers
+     */
+    @Benchmark
+    public int iterateAndSum() {
+        int sum = 0;
+        Iterator<Integer> it = blocking.iterator();
+        while (it.hasNext()) {
+            sum += it.next();
+        }
+        return sum;
+    }
+}
+```

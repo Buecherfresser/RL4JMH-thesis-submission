@@ -1,0 +1,113 @@
+```
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subscribers.DefaultSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link ParallelFlatMap}.
+ *
+ * The benchmark measures the throughput (items processed per second) of the parallel flatMap
+ * operator under a typical workload: mapping each integer to a simple {@code Flowable.just}
+ * publisher. The benchmark runs with configurable parallelism, prefetch, and maxConcurrency
+ * to reflect realistic usage patterns.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between benchmark threads.
+ * - Create a fresh source and operator for each benchmark iteration to avoid reuse after termination.
+ * - Use a {@link CountDownLatch} to synchronously wait for completion without busy‑waiting.
+ * - Consume items via {@link Blackhole} to prevent dead‑code elimination.
+ * - Configure warm‑up, measurement iterations, and forks for reliable results.
+ * - Increase the per‑iteration timeout to accommodate larger prefetch values.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class ParallelFlatMapBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the source per benchmark iteration. */
+        @Param({ "1000", "10000", "100000" })
+        public int itemCount;
+
+        /** Parallelism level of the source ParallelFlowable. */
+        @Param({ "2", "4", "8" })
+        public int parallelism;
+
+        /** Prefetch size for the inner Flowables. */
+        @Param({ "32", "64", "128" })
+        public int prefetch;
+
+        /** Max concurrency for the inner subscriptions. */
+        @Param({ "2147483647" }) // Integer.MAX_VALUE as literal
+        public int maxConcurrency;
+
+        /** Whether errors are delayed until all inner sources terminate. */
+        @Param({ "false" })
+        public boolean delayError;
+
+        /** Mapper function used by ParallelFlatMap. */
+        Function<Integer, Flowable<Integer>> mapper = i -> Flowable.just(i * 2);
+    }
+
+    @Benchmark
+    @Timeout(time = 10, timeUnit = TimeUnit.SECONDS)
+    public void parallelFlatMapThroughput(BenchmarkState state, Blackhole bh) throws InterruptedException {
+        // Create a fresh source for each iteration.
+        Flowable<Integer> range = Flowable.range(1, state.itemCount);
+        ParallelFlowable<Integer> source = range.parallel(state.parallelism)
+                                               .runOn(Schedulers.computation());
+
+        // Create a fresh ParallelFlatMap operator.
+        ParallelFlatMap<Integer, Integer> operator = new ParallelFlatMap<>(
+                source,
+                state.mapper,
+                state.delayError,
+                state.maxConcurrency,
+                state.prefetch
+        );
+
+        final CountDownLatch latch = new CountDownLatch(state.parallelism);
+
+        @SuppressWarnings("unchecked")
+        DefaultSubscriber<Integer>[] subscribers = new DefaultSubscriber[state.parallelism];
+
+        for (int i = 0; i < state.parallelism; i++) {
+            subscribers[i] = new DefaultSubscriber<Integer>() {
+                @Override
+                public void onNext(Integer t) {
+                    bh.consume(t);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    latch.countDown();
+                }
+
+                @Override
+                public void onComplete() {
+                    latch.countDown();
+                }
+            };
+        }
+
+        // Subscribe the operator to the prepared subscribers.
+        operator.subscribe(subscribers);
+
+        // Wait for all rails to complete before returning control to JMH.
+        latch.await();
+    }
+}
+```

@@ -1,0 +1,576 @@
+diff --git a/com/brianway/webporter/collector/zhihu/ZhihuConfiguration.java b/com/brianway/webporter/collector/zhihu/ZhihuConfiguration.java
+index 4272d2b..6cf76ff 100644
+--- a/com/brianway/webporter/collector/zhihu/ZhihuConfiguration.java
++++ b/com/brianway/webporter/collector/zhihu/ZhihuConfiguration.java
+@@ -15,15 +15,15 @@ public class ZhihuConfiguration extends BasicConfiguration {
+ 
+     }
+ 
+-    public String getMemberPath() {
++    public String getMemberPath() { com.brianway.webporter.jmhbench.MutationSwitch.tick(1);
+         return getBaseDir() + SUBDIR_MEMBER;
+     }
+ 
+-    public String getFolloweePath() {
++    public String getFolloweePath() { com.brianway.webporter.jmhbench.MutationSwitch.tick(5);
+         return getBaseDir() + SUBDIR_FOLLOWEE;
+     }
+ 
+-    public String getMemberDataPath() {
++    public String getMemberDataPath() { com.brianway.webporter.jmhbench.MutationSwitch.tick(9);
+         return getMemberPath() + site.getDomain() + "/";
+     }
+ 
+diff --git a/com/brianway/webporter/collector/zhihu/download/ZhihuFolloweePageProcessor.java b/com/brianway/webporter/collector/zhihu/download/ZhihuFolloweePageProcessor.java
+index 7327a3c..8916e4d 100644
+--- a/com/brianway/webporter/collector/zhihu/download/ZhihuFolloweePageProcessor.java
++++ b/com/brianway/webporter/collector/zhihu/download/ZhihuFolloweePageProcessor.java
+@@ -23,7 +23,7 @@ public class ZhihuFolloweePageProcessor implements PageProcessor {
+ 
+     private Site site = new ZhihuConfiguration().getSite();
+ 
+-    public void process(Page page) {
++    public void process(Page page) { com.brianway.webporter.jmhbench.MutationSwitch.tick(13);
+         Json json = page.getJson();
+         //System.out.println(json);
+         page.putField(ZhihuPipeline.URL, page.getUrl());
+@@ -39,11 +39,11 @@ public class ZhihuFolloweePageProcessor implements PageProcessor {
+         page.addTargetRequests(urls);
+     }
+ 
+-    public Site getSite() {
++    public Site getSite() { com.brianway.webporter.jmhbench.MutationSwitch.tick(17);
+         return site;
+     }
+ 
+-    public static String generateFolloweeUrl(String urlToken) {
++    public static String generateFolloweeUrl(String urlToken) { com.brianway.webporter.jmhbench.MutationSwitch.tick(20);
+         final String URL_TEMPLATE = "https://www.zhihu.com/api/v4/members/%s/followees";
+         final String QUERY_PARAMS = "?include=data%5B*%5D.url_token&offset=0&per_page=30&limit=30";
+ 
+diff --git a/com/brianway/webporter/collector/zhihu/download/ZhihuMemberPageProcessor.java b/com/brianway/webporter/collector/zhihu/download/ZhihuMemberPageProcessor.java
+index 1ee8818..ed0cc71 100644
+--- a/com/brianway/webporter/collector/zhihu/download/ZhihuMemberPageProcessor.java
++++ b/com/brianway/webporter/collector/zhihu/download/ZhihuMemberPageProcessor.java
+@@ -19,12 +19,12 @@ public class ZhihuMemberPageProcessor implements PageProcessor {
+ 
+     private Site site = new ZhihuConfiguration().getSite();
+ 
+-    public void process(Page page) {
++    public void process(Page page) { com.brianway.webporter.jmhbench.MutationSwitch.tick(23);
+         page.putField(ZhihuPipeline.URL, page.getUrl());
+         page.putField(ZhihuPipeline.RESPONSE, page.getRawText());
+     }
+ 
+-    public Site getSite() {
++    public Site getSite() { com.brianway.webporter.jmhbench.MutationSwitch.tick(25);
+         return site;
+     }
+ 
+@@ -40,7 +40,7 @@ public class ZhihuMemberPageProcessor implements PageProcessor {
+      * 根据提取的 url_token 逐个下载用户的完整信息
+      * @param args 无须其他参数
+      */
+-    public static void main(String[] args) {
++    public static void main(String[] args) { com.brianway.webporter.jmhbench.MutationSwitch.tick(27);
+         ZhihuConfiguration configuration = new ZhihuConfiguration();
+         String pipelinePath = configuration.getMemberPath();
+ 
+diff --git a/com/brianway/webporter/collector/zhihu/download/ZhihuPipeline.java b/com/brianway/webporter/collector/zhihu/download/ZhihuPipeline.java
+index 0b6c7dd..3c47205 100644
+--- a/com/brianway/webporter/collector/zhihu/download/ZhihuPipeline.java
++++ b/com/brianway/webporter/collector/zhihu/download/ZhihuPipeline.java
+@@ -35,7 +35,7 @@ public class ZhihuPipeline extends FilePipeline {
+     }
+ 
+     @Override
+-    public void process(ResultItems resultItems, Task task) {
++    public void process(ResultItems resultItems, Task task) { com.brianway.webporter.jmhbench.MutationSwitch.tick(29);
+         String path = this.path + PATH_SEPERATOR + task.getUUID() + PATH_SEPERATOR;
+         try {
+             PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(getFile(path + DigestUtils.md5Hex(resultItems.getRequest().getUrl()) + ".html")), "UTF-8"));
+diff --git a/com/brianway/webporter/collector/zhihu/processor/MemberURLTokenGenerator.java b/com/brianway/webporter/collector/zhihu/processor/MemberURLTokenGenerator.java
+index b4f1d77..9a91bf6 100644
+--- a/com/brianway/webporter/collector/zhihu/processor/MemberURLTokenGenerator.java
++++ b/com/brianway/webporter/collector/zhihu/processor/MemberURLTokenGenerator.java
+@@ -52,14 +52,14 @@ public class MemberURLTokenGenerator implements DataProcessor<File, String> {
+         this.path = path;
+     }
+ 
+-    public Set<String> generateURLTokens() {
++    public Set<String> generateURLTokens() { com.brianway.webporter.jmhbench.MutationSwitch.tick(31);
+         extractTokens();
+         save();
+         return getURLTokens();
+     }
+ 
+     @Override
+-    public List<String> process(File inItem) {
++    public List<String> process(File inItem) { com.brianway.webporter.jmhbench.MutationSwitch.tick(33);
+         String s = readFollowees(inItem);
+         if (!StringUtils.isEmpty(s)) {
+             Json json = new Json(s);
+@@ -69,7 +69,7 @@ public class MemberURLTokenGenerator implements DataProcessor<File, String> {
+         return null;
+     }
+ 
+-    public static String readFollowees(File inItem) {
++    public static String readFollowees(File inItem) { com.brianway.webporter.jmhbench.MutationSwitch.tick(35);
+         List<String> followees = FileHelper.processFile(inItem, br -> {
+             br.readLine();//pass first line
+             String s = br.readLine();
+diff --git a/com/brianway/webporter/collector/zhihu/processor/ZhihuFolloweeDataProcessor.java b/com/brianway/webporter/collector/zhihu/processor/ZhihuFolloweeDataProcessor.java
+index 3be5d0f..f0002c3 100644
+--- a/com/brianway/webporter/collector/zhihu/processor/ZhihuFolloweeDataProcessor.java
++++ b/com/brianway/webporter/collector/zhihu/processor/ZhihuFolloweeDataProcessor.java
+@@ -18,7 +18,7 @@ public class ZhihuFolloweeDataProcessor implements DataProcessor<File, Document>
+     private HashSetDuplicateRemover<String> duplicateRemover = new HashSetDuplicateRemover<>();
+ 
+     @Override
+-    public List<Document> process(File inItem) {
++    public List<Document> process(File inItem) { com.brianway.webporter.jmhbench.MutationSwitch.tick(37);
+         String s = MemberURLTokenGenerator.readFollowees(inItem);
+         List<Document> documents = null;
+ 
+diff --git a/com/brianway/webporter/collector/zhihu/processor/ZhihuMemberDataProcessor.java b/com/brianway/webporter/collector/zhihu/processor/ZhihuMemberDataProcessor.java
+index 96aab46..ea7cc07 100644
+--- a/com/brianway/webporter/collector/zhihu/processor/ZhihuMemberDataProcessor.java
++++ b/com/brianway/webporter/collector/zhihu/processor/ZhihuMemberDataProcessor.java
+@@ -24,7 +24,7 @@ public class ZhihuMemberDataProcessor implements DataProcessor<File, Document> {
+     private HashSetDuplicateRemover<String> duplicateRemover = new HashSetDuplicateRemover<>();
+ 
+     @Override
+-    public List<Document> process(File inItem) {
++    public List<Document> process(File inItem) { com.brianway.webporter.jmhbench.MutationSwitch.tick(39);
+         String s = readMember(inItem);
+         List<Document> documents = null;
+ 
+@@ -39,7 +39,7 @@ public class ZhihuMemberDataProcessor implements DataProcessor<File, Document> {
+         return documents;
+     }
+ 
+-    public static String readMember(File inItem) {
++    public static String readMember(File inItem) { com.brianway.webporter.jmhbench.MutationSwitch.tick(41);
+         List<String> followees = FileHelper.processFile(inItem, br -> {
+             br.readLine();//pass first line
+             String s = br.readLine();
+@@ -49,7 +49,7 @@ public class ZhihuMemberDataProcessor implements DataProcessor<File, Document> {
+         return followees.size() == 0 ? null : followees.get(0);
+     }
+ 
+-    public static void main(String[] args) {
++    public static void main(String[] args) { com.brianway.webporter.jmhbench.MutationSwitch.tick(43);
+         ZhihuConfiguration configuration = new ZhihuConfiguration();
+         String folder = configuration.getMemberDataPath();
+         DataProcessor<File, Document> processor = new ZhihuMemberDataProcessor();
+diff --git a/com/brianway/webporter/collector/zhihu/upload/FolloweeUploader.java b/com/brianway/webporter/collector/zhihu/upload/FolloweeUploader.java
+index 04d31ec..0ecbecb 100644
+--- a/com/brianway/webporter/collector/zhihu/upload/FolloweeUploader.java
++++ b/com/brianway/webporter/collector/zhihu/upload/FolloweeUploader.java
+@@ -11,7 +11,7 @@ import java.io.File;
+ import java.util.concurrent.TimeUnit;
+ 
+ public class FolloweeUploader {
+-    public static void upload() {
++    public static void upload() { com.brianway.webporter.jmhbench.MutationSwitch.tick(45);
+         String index = "zhihu";
+         String type = "followee";
+         ZhihuConfiguration configuration = new ZhihuConfiguration();
+@@ -31,7 +31,7 @@ public class FolloweeUploader {
+         System.out.println(outPipeline.getBulkProcessor());
+     }
+ 
+-    public static void main(String[] args) {
++    public static void main(String[] args) { com.brianway.webporter.jmhbench.MutationSwitch.tick(47);
+         FolloweeUploader.upload();
+     }
+ 
+diff --git a/com/brianway/webporter/collector/zhihu/upload/MemberUploader.java b/com/brianway/webporter/collector/zhihu/upload/MemberUploader.java
+index c241e73..9d99f0e 100644
+--- a/com/brianway/webporter/collector/zhihu/upload/MemberUploader.java
++++ b/com/brianway/webporter/collector/zhihu/upload/MemberUploader.java
+@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
+  * step 3: 将用户数据导入 Elasticsearch
+  */
+ public class MemberUploader {
+-    public static void upload() {
++    public static void upload() { com.brianway.webporter.jmhbench.MutationSwitch.tick(49);
+         String index = "zhihu";
+         String type = "member";
+         ZhihuConfiguration configuration = new ZhihuConfiguration();
+diff --git a/com/brianway/webporter/configure/BasicConfiguration.java b/com/brianway/webporter/configure/BasicConfiguration.java
+index 22f1511..5db8b97 100644
+--- a/com/brianway/webporter/configure/BasicConfiguration.java
++++ b/com/brianway/webporter/configure/BasicConfiguration.java
+@@ -17,7 +17,7 @@ public class BasicConfiguration extends AbstractConfiguration {
+     }
+ 
+     @Override
+-    protected void resolve() {
++    protected void resolve() { com.brianway.webporter.jmhbench.MutationSwitch.tick(2);
+         JSONObject jsonObject = JSON.parseObject(config);
+         site = JSON.parseObject(jsonObject.getString("site"), Site.class);
+         setBaseDir(jsonObject.getString("base_dir"));
+@@ -27,11 +27,11 @@ public class BasicConfiguration extends AbstractConfiguration {
+         baseDir = directory.endsWith("/") ? directory : directory + "/";
+     }
+ 
+-    public String getBaseDir() {
++    public String getBaseDir() { com.brianway.webporter.jmhbench.MutationSwitch.tick(6);
+         return baseDir;
+     }
+ 
+-    public Site getSite() {
++    public Site getSite() { com.brianway.webporter.jmhbench.MutationSwitch.tick(10);
+         return site;
+     }
+ 
+diff --git a/com/brianway/webporter/configure/SiteConfiguration.java b/com/brianway/webporter/configure/SiteConfiguration.java
+index 0e2c07f..fb1f120 100644
+--- a/com/brianway/webporter/configure/SiteConfiguration.java
++++ b/com/brianway/webporter/configure/SiteConfiguration.java
+@@ -7,7 +7,7 @@ public class SiteConfiguration extends AbstractConfiguration {
+ 
+     private Site site;
+ 
+-    public Site getSite() {
++    public Site getSite() { com.brianway.webporter.jmhbench.MutationSwitch.tick(14);
+         return site;
+     }
+ 
+@@ -19,11 +19,11 @@ public class SiteConfiguration extends AbstractConfiguration {
+ 
+     }
+ 
+-    protected void resolve() {
++    protected void resolve() { com.brianway.webporter.jmhbench.MutationSwitch.tick(18);
+         site = JSON.parseObject(config, Site.class);
+     }
+ 
+-    public static void main(String[] args) {
++    public static void main(String[] args) { com.brianway.webporter.jmhbench.MutationSwitch.tick(21);
+         SiteConfiguration siteConfiguration = new SiteConfiguration();
+         Site site = siteConfiguration.getSite();
+         System.out.println(site);
+diff --git a/com/brianway/webporter/data/BaseAssembler.java b/com/brianway/webporter/data/BaseAssembler.java
+index ffbe2ae..14e4eba 100644
+--- a/com/brianway/webporter/data/BaseAssembler.java
++++ b/com/brianway/webporter/data/BaseAssembler.java
+@@ -52,7 +52,7 @@ public class BaseAssembler<IN, OUT> {
+      */
+     public static <IN, OUT> BaseAssembler<IN, OUT> create(
+             RawInput<IN> rawInput,
+-            DataProcessor<IN, OUT> dataProcessor) {
++            DataProcessor<IN, OUT> dataProcessor) { com.brianway.webporter.jmhbench.MutationSwitch.tick(15);
+         return new BaseAssembler<>(rawInput, dataProcessor);
+     }
+ 
+@@ -61,7 +61,7 @@ public class BaseAssembler<IN, OUT> {
+         this.dataProcessor = dataProcessor;
+     }
+ 
+-    protected void initComponent() {
++    protected void initComponent() { com.brianway.webporter.jmhbench.MutationSwitch.tick(19);
+         if (rawInput == null) {
+             throw new RuntimeException("must set input");
+         }
+@@ -75,7 +75,7 @@ public class BaseAssembler<IN, OUT> {
+         }
+     }
+ 
+-    public void run() {
++    public void run() { com.brianway.webporter.jmhbench.MutationSwitch.tick(22);
+         long startTime = System.currentTimeMillis();
+ 
+         checkRunningStat();
+diff --git a/com/brianway/webporter/data/ConsoleOutpipeline.java b/com/brianway/webporter/data/ConsoleOutpipeline.java
+index 18b0d89..46718ff 100644
+--- a/com/brianway/webporter/data/ConsoleOutpipeline.java
++++ b/com/brianway/webporter/data/ConsoleOutpipeline.java
+@@ -7,12 +7,12 @@ public class ConsoleOutpipeline<T> implements OutPipeline<T> {
+     private AtomicLong count = new AtomicLong(0);
+ 
+     @Override
+-    public void process(T outItem) {
++    public void process(T outItem) { com.brianway.webporter.jmhbench.MutationSwitch.tick(24);
+         count.incrementAndGet();
+         System.out.println(outItem);
+     }
+ 
+-    public AtomicLong getCount() {
++    public AtomicLong getCount() { com.brianway.webporter.jmhbench.MutationSwitch.tick(26);
+         return count;
+     }
+ }
+diff --git a/com/brianway/webporter/data/DataFlow.java b/com/brianway/webporter/data/DataFlow.java
+index 3f34030..015d6fb 100644
+--- a/com/brianway/webporter/data/DataFlow.java
++++ b/com/brianway/webporter/data/DataFlow.java
+@@ -9,15 +9,15 @@ import java.util.concurrent.LinkedBlockingQueue;
+ public class DataFlow<T> {
+     protected BlockingQueue<T> queue = new LinkedBlockingQueue<>();
+ 
+-    protected void push(T item) {
++    protected void push(T item) { com.brianway.webporter.jmhbench.MutationSwitch.tick(28);
+         queue.add(item);
+     }
+ 
+-    protected T poll() {
++    protected T poll() { com.brianway.webporter.jmhbench.MutationSwitch.tick(30);
+         return queue.poll();
+     }
+ 
+-    protected T take() throws InterruptedException {
++    protected T take() throws InterruptedException { com.brianway.webporter.jmhbench.MutationSwitch.tick(32);
+         return queue.take();
+     }
+ 
+diff --git a/com/brianway/webporter/data/DemoDataProcessor.java b/com/brianway/webporter/data/DemoDataProcessor.java
+index d45e1e9..4e2c600 100644
+--- a/com/brianway/webporter/data/DemoDataProcessor.java
++++ b/com/brianway/webporter/data/DemoDataProcessor.java
+@@ -14,7 +14,7 @@ public class DemoDataProcessor implements DataProcessor<File, String> {
+     private static final Logger logger = LoggerFactory.getLogger(DemoDataProcessor.class);
+ 
+     @Override
+-    public List<String> process(File inItem) {
++    public List<String> process(File inItem) { com.brianway.webporter.jmhbench.MutationSwitch.tick(34);
+         List<String> outItems = null;
+ 
+         try {
+diff --git a/com/brianway/webporter/data/FileRawInput.java b/com/brianway/webporter/data/FileRawInput.java
+index 44f82c0..6b59d3e 100644
+--- a/com/brianway/webporter/data/FileRawInput.java
++++ b/com/brianway/webporter/data/FileRawInput.java
+@@ -15,11 +15,11 @@ public class FileRawInput extends RawInput<File> {
+         }
+     }
+ 
+-    public int getLeftCount() {
++    public int getLeftCount() { com.brianway.webporter.jmhbench.MutationSwitch.tick(36);
+         return queue.size();
+     }
+ 
+-    public File poll() {
++    public File poll() { com.brianway.webporter.jmhbench.MutationSwitch.tick(38);
+         return queue.poll();
+     }
+ 
+diff --git a/com/brianway/webporter/data/HashSetDuplicateRemover.java b/com/brianway/webporter/data/HashSetDuplicateRemover.java
+index cc2687a..43c2aaa 100644
+--- a/com/brianway/webporter/data/HashSetDuplicateRemover.java
++++ b/com/brianway/webporter/data/HashSetDuplicateRemover.java
+@@ -14,17 +14,17 @@ public class HashSetDuplicateRemover<ID> implements DuplicateRemover<ID> {
+     private Set<ID> ids = Sets.newSetFromMap(new ConcurrentHashMap<>());
+ 
+     @Override
+-    public boolean isDuplicate(ID id) {
++    public boolean isDuplicate(ID id) { com.brianway.webporter.jmhbench.MutationSwitch.tick(3);
+         return !ids.add(id);
+     }
+ 
+     @Override
+-    public void resetDuplicateCheck() {
++    public void resetDuplicateCheck() { com.brianway.webporter.jmhbench.MutationSwitch.tick(7);
+         ids.clear();
+     }
+ 
+     @Override
+-    public int getTotalCount() {
++    public int getTotalCount() { com.brianway.webporter.jmhbench.MutationSwitch.tick(11);
+         return ids.size();
+     }
+ 
+diff --git a/com/brianway/webporter/data/RawInput.java b/com/brianway/webporter/data/RawInput.java
+index 6f8c5da..1c47cba 100644
+--- a/com/brianway/webporter/data/RawInput.java
++++ b/com/brianway/webporter/data/RawInput.java
+@@ -2,11 +2,11 @@ package com.brianway.webporter.data;
+ 
+ public class RawInput<T> extends DataFlow<T> {
+ 
+-    public int getLeftCount() {
++    public int getLeftCount() { com.brianway.webporter.jmhbench.MutationSwitch.tick(40);
+         return queue.size();
+     }
+ 
+-    public T poll() {
++    public T poll() { com.brianway.webporter.jmhbench.MutationSwitch.tick(42);
+         return queue.poll();
+     }
+ 
+diff --git a/com/brianway/webporter/data/elasticsearch/Document.java b/com/brianway/webporter/data/elasticsearch/Document.java
+index 0f99484..a208e6d 100644
+--- a/com/brianway/webporter/data/elasticsearch/Document.java
++++ b/com/brianway/webporter/data/elasticsearch/Document.java
+@@ -9,15 +9,15 @@ public class Document {
+         this.content = content;
+     }
+ 
+-    public String getId() {
++    public String getId() { com.brianway.webporter.jmhbench.MutationSwitch.tick(44);
+         return id;
+     }
+ 
+-    public String getContent() {
++    public String getContent() { com.brianway.webporter.jmhbench.MutationSwitch.tick(46);
+         return content;
+     }
+ 
+-    public void setContent(String content) {
++    public void setContent(String content) { com.brianway.webporter.jmhbench.MutationSwitch.tick(48);
+         this.content = content;
+     }
+ 
+diff --git a/com/brianway/webporter/data/elasticsearch/ElasticsearchUploader.java b/com/brianway/webporter/data/elasticsearch/ElasticsearchUploader.java
+index e8fea30..d799cbc 100644
+--- a/com/brianway/webporter/data/elasticsearch/ElasticsearchUploader.java
++++ b/com/brianway/webporter/data/elasticsearch/ElasticsearchUploader.java
+@@ -36,7 +36,7 @@ public class ElasticsearchUploader {
+         init();
+     }
+ 
+-    protected void init() {
++    protected void init() { com.brianway.webporter.jmhbench.MutationSwitch.tick(50);
+         // on startup
+         try {
+             client = new PreBuiltTransportClient(Settings.EMPTY)
+diff --git a/com/brianway/webporter/jmhbench/MutationSwitch.java b/com/brianway/webporter/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..9c22938
+--- /dev/null
++++ b/com/brianway/webporter/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.brianway.webporter.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/brianway/webporter/util/FileHelper.java b/com/brianway/webporter/util/FileHelper.java
+index aedfc17..4bca293 100644
+--- a/com/brianway/webporter/util/FileHelper.java
++++ b/com/brianway/webporter/util/FileHelper.java
+@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
+ public class FileHelper {
+     private static final Logger logger = LoggerFactory.getLogger(FileHelper.class);
+ 
+-    public static String getRawText(String path) {
++    public static String getRawText(String path) { com.brianway.webporter.jmhbench.MutationSwitch.tick(8);
+         BufferedReader br = null;
+         StringBuilder sb = new StringBuilder();
+         try {
+@@ -44,12 +44,12 @@ public class FileHelper {
+         return sb.toString();
+     }
+ 
+-    public static List<String> readFileAsLines(File inItem) {
++    public static List<String> readFileAsLines(File inItem) { com.brianway.webporter.jmhbench.MutationSwitch.tick(12);
+         String path = inItem.getPath();
+         return readFileAsLines(path);
+     }
+ 
+-    public static List<String> readFileAsLines(String filePath) {
++    public static List<String> readFileAsLines(String filePath) { com.brianway.webporter.jmhbench.MutationSwitch.tick(16);
+         List<String> lines = null;
+         try {
+             lines = Files.lines(Paths.get(filePath)).collect(Collectors.toList());
+diff --git a/com/brianway/webporter/util/StringHelper.java b/com/brianway/webporter/util/StringHelper.java
+index 40a5ba8..e11d622 100644
+--- a/com/brianway/webporter/util/StringHelper.java
++++ b/com/brianway/webporter/util/StringHelper.java
+@@ -9,7 +9,7 @@ import java.net.URLEncoder;
+ public class StringHelper {
+     private static Logger logger = LoggerFactory.getLogger(StringHelper.class);
+ 
+-    public static String urlEncode(String urlToken) {
++    public static String urlEncode(String urlToken) { com.brianway.webporter.jmhbench.MutationSwitch.tick(4);
+         String encoded = null;
+         try {
+             encoded = URLEncoder.encode(urlToken, "UTF-8").replace("+", "%20");

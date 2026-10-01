@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.internal.subscribers.benchmark;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.subscribers.ForEachWhileSubscriber;
+import org.reactivestreams.Subscription;
+
+import java.util.concurrent.TimeUnit;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class ForEachWhileSubscriberBenchmark {
+
+    private ForEachWhileSubscriber<Integer> subscriberContinue;
+    private ForEachWhileSubscriber<Integer> subscriberStop;
+    private ForEachWhileSubscriber<Integer> subscriberError;
+
+    private static final Subscription DUMMY_SUBSCRIPTION = new Subscription() {
+        @Override public void request(long n) {}
+        @Override public void cancel() {}
+    };
+
+    @Setup
+    public void setup() {
+        subscriberContinue = new ForEachWhileSubscriber<>(
+                v -> true,                     // always continue
+                Throwable::printStackTrace,
+                () -> {}
+        );
+        subscriberContinue.onSubscribe(DUMMY_SUBSCRIPTION);
+
+        subscriberStop = new ForEachWhileSubscriber<>(
+                v -> false,                    // stop after first item
+                Throwable::printStackTrace,
+                () -> {}
+        );
+        subscriberStop.onSubscribe(DUMMY_SUBSCRIPTION);
+
+        subscriberError = new ForEachWhileSubscriber<>(
+                v -> { throw new RuntimeException("test"); },
+                Throwable::printStackTrace,
+                () -> {}
+        );
+        subscriberError.onSubscribe(DUMMY_SUBSCRIPTION);
+    }
+
+    @Benchmark
+    public void onNextContinue(Blackhole bh) {
+        subscriberContinue.onNext(1);
+        bh.consume(subscriberContinue);
+    }
+
+    @Benchmark
+    public void onNextStop(Blackhole bh) {
+        subscriberStop.onNext(1);
+        bh.consume(subscriberStop);
+    }
+
+    @Benchmark
+    public void onNextError(Blackhole bh) {
+        subscriberError.onNext(1);
+        bh.consume(subscriberError);
+    }
+}
+```

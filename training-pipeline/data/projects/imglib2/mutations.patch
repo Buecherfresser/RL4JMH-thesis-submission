@@ -1,0 +1,627 @@
+diff --git a/net/imglib2/img/ImgView.java b/net/imglib2/img/ImgView.java
+index 4e369c2..80ee373 100644
+--- a/net/imglib2/img/ImgView.java
++++ b/net/imglib2/img/ImgView.java
+@@ -85,7 +85,7 @@ public class ImgView< T extends Type< T > > extends IterableRandomAccessibleInte
+ 
+ 	@Override
+ 	public ImgFactory< T > factory()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(1);
+ 		return factory;
+ 	}
+ 
+@@ -109,7 +109,7 @@ public class ImgView< T extends Type< T > > extends IterableRandomAccessibleInte
+ 
+ 	@Override
+ 	public Cursor< T > cursor()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(8);
+ 		return ii.cursor();
+ 	}
+ 
+diff --git a/net/imglib2/img/array/ArrayImg.java b/net/imglib2/img/array/ArrayImg.java
+index 58efe6b..0cfd63f 100644
+--- a/net/imglib2/img/array/ArrayImg.java
++++ b/net/imglib2/img/array/ArrayImg.java
+@@ -90,13 +90,13 @@ public class ArrayImg< T extends NativeType< T >, A extends DataAccess > extends
+ 
+ 	@Override
+ 	public ArrayCursor< T > cursor()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(2);
+ 		return new ArrayCursor< T >( this );
+ 	}
+ 
+ 	@Override
+ 	public ArrayLocalizingCursor< T > localizingCursor()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(9);
+ 		return new ArrayLocalizingCursor< T >( this );
+ 	}
+ 
+diff --git a/net/imglib2/img/array/ArrayImgFactory.java b/net/imglib2/img/array/ArrayImgFactory.java
+index 2700eb7..13aa5cb 100644
+--- a/net/imglib2/img/array/ArrayImgFactory.java
++++ b/net/imglib2/img/array/ArrayImgFactory.java
+@@ -64,7 +64,7 @@ public class ArrayImgFactory< T extends NativeType< T > > extends NativeImgFacto
+ 
+ 	@Override
+ 	public ArrayImg< T, ? > create( final long... dimensions )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(15);
+ 		@SuppressWarnings( { "unchecked", "rawtypes" } )
+ 		final ArrayImg< T, ? > img = create( dimensions, type(), ( NativeTypeFactory ) type().getNativeTypeFactory() );
+ 		return img;
+@@ -72,7 +72,7 @@ public class ArrayImgFactory< T extends NativeType< T > > extends NativeImgFacto
+ 
+ 	@Override
+ 	public ArrayImg< T, ? > create( final Dimensions dimensions )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(21);
+ 		return create( Intervals.dimensionsAsLongArray( dimensions ) );
+ 	}
+ 
+diff --git a/net/imglib2/img/array/ArrayImgs.java b/net/imglib2/img/array/ArrayImgs.java
+index c709ab1..c399707 100644
+--- a/net/imglib2/img/array/ArrayImgs.java
++++ b/net/imglib2/img/array/ArrayImgs.java
+@@ -103,7 +103,7 @@ public final class ArrayImgs
+ 	 */
+ 	@SuppressWarnings( "unchecked" )
+ 	public static ArrayImg< UnsignedByteType, ByteArray > unsignedBytes( final long... dim )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(27);
+ 		return ( ArrayImg< UnsignedByteType, ByteArray > ) new ArrayImgFactory<>( new UnsignedByteType() ).create( dim );
+ 	}
+ 
+@@ -112,7 +112,7 @@ public final class ArrayImgs
+ 	 * reusing a passed byte[] array.
+ 	 */
+ 	public static ArrayImg< UnsignedByteType, ByteArray > unsignedBytes( final byte[] array, final long... dim )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(33);
+ 		return unsignedBytes( new ByteArray( array ), dim );
+ 	}
+ 
+diff --git a/net/imglib2/img/array/ArrayLocalizingSpliterator.java b/net/imglib2/img/array/ArrayLocalizingSpliterator.java
+index f944a4c..0b1643a 100644
+--- a/net/imglib2/img/array/ArrayLocalizingSpliterator.java
++++ b/net/imglib2/img/array/ArrayLocalizingSpliterator.java
+@@ -74,7 +74,7 @@ class ArrayLocalizingSpliterator< T extends NativeType< T > > extends AbstractLo
+ 
+ 	@Override
+ 	public boolean tryAdvance( final Consumer< ? super T > action )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(39);
+ 		if ( action == null )
+ 			throw new NullPointerException();
+ 		if ( index.get() < fence - 1 )
+@@ -105,7 +105,7 @@ class ArrayLocalizingSpliterator< T extends NativeType< T > > extends AbstractLo
+ 
+ 	@Override
+ 	public void forEachRemaining( final Consumer< ? super T > action )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(45);
+ 		if ( action == null )
+ 			throw new NullPointerException();
+ 
+diff --git a/net/imglib2/img/basictypeaccess/array/AbstractByteArray.java b/net/imglib2/img/basictypeaccess/array/AbstractByteArray.java
+index 48fb65e..76d2e6a 100644
+--- a/net/imglib2/img/basictypeaccess/array/AbstractByteArray.java
++++ b/net/imglib2/img/basictypeaccess/array/AbstractByteArray.java
+@@ -57,13 +57,13 @@ abstract public class AbstractByteArray< A extends AbstractByteArray< A > > impl
+ 
+ 	@Override
+ 	public byte getValue( final int index )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(3);
+ 		return data[ index ];
+ 	}
+ 
+ 	@Override
+ 	public void setValue( final int index, final byte value )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(10);
+ 		data[ index ] = value;
+ 	}
+ 
+diff --git a/net/imglib2/img/basictypeaccess/array/AbstractCharArray.java b/net/imglib2/img/basictypeaccess/array/AbstractCharArray.java
+index d0afd94..31ac4a2 100644
+--- a/net/imglib2/img/basictypeaccess/array/AbstractCharArray.java
++++ b/net/imglib2/img/basictypeaccess/array/AbstractCharArray.java
+@@ -57,13 +57,13 @@ abstract public class AbstractCharArray< A extends AbstractCharArray< A > > impl
+ 
+ 	@Override
+ 	public char getValue( final int index )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(16);
+ 		return data[ index ];
+ 	}
+ 
+ 	@Override
+ 	public void setValue( final int index, final char value )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(22);
+ 		data[ index ] = value;
+ 	}
+ 
+diff --git a/net/imglib2/img/basictypeaccess/array/AbstractDoubleArray.java b/net/imglib2/img/basictypeaccess/array/AbstractDoubleArray.java
+index eea3701..1a50553 100644
+--- a/net/imglib2/img/basictypeaccess/array/AbstractDoubleArray.java
++++ b/net/imglib2/img/basictypeaccess/array/AbstractDoubleArray.java
+@@ -57,13 +57,13 @@ abstract public class AbstractDoubleArray< A extends AbstractDoubleArray< A > >
+ 
+ 	@Override
+ 	public double getValue( final int index )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(28);
+ 		return data[ index ];
+ 	}
+ 
+ 	@Override
+ 	public void setValue( final int index, final double value )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(34);
+ 		data[ index ] = value;
+ 	}
+ 
+diff --git a/net/imglib2/img/basictypeaccess/array/AbstractFloatArray.java b/net/imglib2/img/basictypeaccess/array/AbstractFloatArray.java
+index 2c8e738..d13e0e4 100644
+--- a/net/imglib2/img/basictypeaccess/array/AbstractFloatArray.java
++++ b/net/imglib2/img/basictypeaccess/array/AbstractFloatArray.java
+@@ -57,13 +57,13 @@ abstract public class AbstractFloatArray< A extends AbstractFloatArray< A > > im
+ 
+ 	@Override
+ 	public float getValue( final int index )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(40);
+ 		return data[ index ];
+ 	}
+ 
+ 	@Override
+ 	public void setValue( final int index, final float value )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(46);
+ 		data[ index ] = value;
+ 	}
+ 
+diff --git a/net/imglib2/img/cell/Cell.java b/net/imglib2/img/cell/Cell.java
+index cdf3b82..2f0142c 100644
+--- a/net/imglib2/img/cell/Cell.java
++++ b/net/imglib2/img/cell/Cell.java
+@@ -110,12 +110,12 @@ public class Cell< A > implements Interval, Serializable
+ 	}
+ 
+ 	public long size()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(4);
+ 		return numPixels;
+ 	}
+ 
+ 	public long indexToGlobalPosition( final int index, final int d )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(11);
+ 		return IntervalIndexer.indexToPosition( index, dimensions, steps, d ) + min[ d ];
+ 	}
+ 
+diff --git a/net/imglib2/img/cell/CellCursor.java b/net/imglib2/img/cell/CellCursor.java
+index 4827408..a07a75a 100644
+--- a/net/imglib2/img/cell/CellCursor.java
++++ b/net/imglib2/img/cell/CellCursor.java
+@@ -110,7 +110,7 @@ public class CellCursor< T extends NativeType< T >, C extends Cell< ? > >
+ 
+ 	@Override
+ 	public C getCell()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(17);
+ 		return cell = cursorOnCells.get();
+ 	}
+ 
+@@ -142,7 +142,7 @@ public class CellCursor< T extends NativeType< T >, C extends Cell< ? > >
+ 
+ 	@Override
+ 	public void jumpFwd( final long steps )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(23);
+ 		// TODO: The following assumes flat iteration order of img.getCells()
+ 		//       Add a fallback (to the previous code) if that isn't the case
+ 
+diff --git a/net/imglib2/img/cell/CellGrid.java b/net/imglib2/img/cell/CellGrid.java
+index e9a61a6..b053801 100644
+--- a/net/imglib2/img/cell/CellGrid.java
++++ b/net/imglib2/img/cell/CellGrid.java
+@@ -89,12 +89,12 @@ public class CellGrid
+ 		}
+ 
+ 		public int[] dimensions()
+-		{
++		{ net.imglib2.img.jmhbench.MutationSwitch.tick(29);
+ 			return dimensions;
+ 		}
+ 
+ 		public int[] steps()
+-		{
++		{ net.imglib2.img.jmhbench.MutationSwitch.tick(35);
+ 			return steps;
+ 		}
+ 
+diff --git a/net/imglib2/img/cell/CellImg.java b/net/imglib2/img/cell/CellImg.java
+index bcee94e..afa47a0 100644
+--- a/net/imglib2/img/cell/CellImg.java
++++ b/net/imglib2/img/cell/CellImg.java
+@@ -51,7 +51,7 @@ public class CellImg< T extends NativeType< T >, A extends DataAccess > extends
+ 
+ 	@Override
+ 	public ImgFactory< T > factory()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(41);
+ 		return factory;
+ 	}
+ 
+diff --git a/net/imglib2/img/cell/CellImgFactory.java b/net/imglib2/img/cell/CellImgFactory.java
+index 6c7cdb0..2a27f1d 100644
+--- a/net/imglib2/img/cell/CellImgFactory.java
++++ b/net/imglib2/img/cell/CellImgFactory.java
+@@ -84,7 +84,7 @@ public class CellImgFactory< T extends NativeType< T > > extends NativeImgFactor
+ 	 * @throws IllegalArgumentException
+ 	 */
+ 	public static int[] getCellDimensions( final int[] defaultCellDimensions, final int n, final Fraction entitiesPerPixel ) throws IllegalArgumentException
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(47);
+ 		final int[] cellDimensions = Util.expandArray( defaultCellDimensions, n );
+ 		final long numEntities = entitiesPerPixel.mulCeil( Intervals.numElements( cellDimensions ) );
+ 		if ( numEntities > Integer.MAX_VALUE )
+diff --git a/net/imglib2/img/jmhbench/MutationSwitch.java b/net/imglib2/img/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..86e1c74
+--- /dev/null
++++ b/net/imglib2/img/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.imglib2.img.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/net/imglib2/img/list/ListCursor.java b/net/imglib2/img/list/ListCursor.java
+index 12df51c..1de1a69 100644
+--- a/net/imglib2/img/list/ListCursor.java
++++ b/net/imglib2/img/list/ListCursor.java
+@@ -107,13 +107,13 @@ final public class ListCursor< T > extends AbstractCursorInt< T >
+ 
+ 	@Override
+ 	public void jumpFwd( final long steps )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(5);
+ 		i += steps;
+ 	}
+ 
+ 	@Override
+ 	public void fwd()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(12);
+ 		++i;
+ 	}
+ 
+diff --git a/net/imglib2/img/list/ListImg.java b/net/imglib2/img/list/ListImg.java
+index f5d34c1..7d93aa3 100644
+--- a/net/imglib2/img/list/ListImg.java
++++ b/net/imglib2/img/list/ListImg.java
+@@ -151,7 +151,7 @@ public class ListImg< T > extends AbstractListImg< T >
+ 	}
+ 
+ 	public static < T > ListImg< T > wrap( List< T > pixels, final long... dim )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(18);
+ 		return new ListImg<>( pixels, false, dim );
+ 	}
+ }
+diff --git a/net/imglib2/img/list/ListImgFactory.java b/net/imglib2/img/list/ListImgFactory.java
+index 274ebd2..d07345b 100644
+--- a/net/imglib2/img/list/ListImgFactory.java
++++ b/net/imglib2/img/list/ListImgFactory.java
+@@ -67,13 +67,13 @@ public class ListImgFactory< T > extends ImgFactory< T >
+ 
+ 	@Override
+ 	public ListImg< T > create( final long... dimensions )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(24);
+ 		return new ListImg<>( Dimensions.verify( dimensions ), type() );
+ 	}
+ 
+ 	@Override
+ 	public ListImg< T > create( final Dimensions dimensions )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(30);
+ 		return create( Intervals.dimensionsAsLongArray( dimensions ) );
+ 	}
+ 
+diff --git a/net/imglib2/img/list/ListLocalizingCursor.java b/net/imglib2/img/list/ListLocalizingCursor.java
+index afec69e..9099f80 100644
+--- a/net/imglib2/img/list/ListLocalizingCursor.java
++++ b/net/imglib2/img/list/ListLocalizingCursor.java
+@@ -90,7 +90,7 @@ final public class ListLocalizingCursor< T > extends AbstractLocalizingCursorInt
+ 
+ 	@Override
+ 	public void fwd()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(36);
+ 		++i;
+ 		for ( int d = 0; d < n; d++ )
+ 			if ( ++position[ d ] > max[ d ] )
+@@ -101,7 +101,7 @@ final public class ListLocalizingCursor< T > extends AbstractLocalizingCursorInt
+ 
+ 	@Override
+ 	public void jumpFwd( final long steps )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(42);
+ 		i += steps;
+ 		IntervalIndexer.indexToPosition( i, img.dim, position );
+ 	}
+diff --git a/net/imglib2/img/list/ListRandomAccess.java b/net/imglib2/img/list/ListRandomAccess.java
+index 17db568..bb71028 100644
+--- a/net/imglib2/img/list/ListRandomAccess.java
++++ b/net/imglib2/img/list/ListRandomAccess.java
+@@ -94,7 +94,7 @@ public class ListRandomAccess< T > extends AbstractLocalizableInt implements Ran
+ 
+ 	@Override
+ 	public void fwd( final int d )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(48);
+ 		i += img.step[ d ];
+ 		++position[ d ];
+ 	}
+diff --git a/net/imglib2/img/planar/PlanarCursor.java b/net/imglib2/img/planar/PlanarCursor.java
+index a7706ed..4e8dfb9 100644
+--- a/net/imglib2/img/planar/PlanarCursor.java
++++ b/net/imglib2/img/planar/PlanarCursor.java
+@@ -97,7 +97,7 @@ public class PlanarCursor< T extends NativeType< T > > extends AbstractCursorInt
+ 
+ 	@Override
+ 	public int getCurrentSliceIndex()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(6);
+ 		return sliceIndex;
+ 	}
+ 
+@@ -133,7 +133,7 @@ public class PlanarCursor< T extends NativeType< T > > extends AbstractCursorInt
+ 
+ 	@Override
+ 	public void fwd()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(13);
+ 		if ( ++index > lastIndex )
+ 		{
+ 			index = 0;
+diff --git a/net/imglib2/img/planar/PlanarCursor1D.java b/net/imglib2/img/planar/PlanarCursor1D.java
+index 1cb103c..226d01e 100644
+--- a/net/imglib2/img/planar/PlanarCursor1D.java
++++ b/net/imglib2/img/planar/PlanarCursor1D.java
+@@ -56,13 +56,13 @@ public class PlanarCursor1D< T extends NativeType< T > > extends PlanarCursor< T
+ 
+ 	@Override
+ 	public void localize( final int[] position )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(19);
+ 		position[ 0 ] = typeIndex.get();
+ 	}
+ 
+ 	@Override
+ 	public int getIntPosition( final int dim )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(25);
+ 		if ( dim == 0 )
+ 			return typeIndex.get();
+ 		return 0;
+diff --git a/net/imglib2/img/planar/PlanarCursor2D.java b/net/imglib2/img/planar/PlanarCursor2D.java
+index 8e7131e..3a08a0b 100644
+--- a/net/imglib2/img/planar/PlanarCursor2D.java
++++ b/net/imglib2/img/planar/PlanarCursor2D.java
+@@ -58,13 +58,13 @@ public class PlanarCursor2D< T extends NativeType< T > > extends PlanarCursor< T
+ 
+ 	@Override
+ 	public void fwd()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(31);
+ 		typeIndex.inc();
+ 	}
+ 
+ 	@Override
+ 	public void localize( final int[] position )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(37);
+ 		final int indexInSlice = typeIndex.get();
+ 		final int dim0 = container.dimensions[ 0 ];
+ 		position[ 1 ] = indexInSlice / dim0;
+diff --git a/net/imglib2/img/planar/PlanarImg.java b/net/imglib2/img/planar/PlanarImg.java
+index 0a44a2d..fffcc18 100644
+--- a/net/imglib2/img/planar/PlanarImg.java
++++ b/net/imglib2/img/planar/PlanarImg.java
+@@ -128,7 +128,7 @@ public class PlanarImg< T extends NativeType< T >, A extends ArrayDataAccess< A
+ 	 * @return total number of image planes
+ 	 */
+ 	public int numSlices()
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(43);
+ 		return numSlices;
+ 	}
+ 
+@@ -141,7 +141,7 @@ public class PlanarImg< T extends NativeType< T >, A extends ArrayDataAccess< A
+ 	 * 		TODO: remove this method? (it doesn't seem to be used anywhere)
+ 	 */
+ 	public final int getIndex( final int[] l )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(49);
+ 		if ( n > 1 )
+ 			return l[ 1 ] * dimensions[ 0 ] + l[ 0 ];
+ 		return l[ 0 ];
+diff --git a/net/imglib2/img/sparse/BooleanNtree.java b/net/imglib2/img/sparse/BooleanNtree.java
+index abdaf25..125a27c 100644
+--- a/net/imglib2/img/sparse/BooleanNtree.java
++++ b/net/imglib2/img/sparse/BooleanNtree.java
+@@ -59,13 +59,13 @@ public final class BooleanNtree implements NtreeAccess< Boolean, BooleanNtree >
+ 	}
+ 
+ 	public boolean getValue( final int index )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(7);
+ 		// ignore index, get tree position from RandomAccess/Cursor
+ 		return data.getNode( position ).getValue();
+ 	}
+ 
+ 	public void setValue( final int index, final boolean value )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(14);
+ 		// ignore index, get tree position from RandomAccess/Cursor
+ 		data.createNodeWithValue( position, value );
+ 	}
+diff --git a/net/imglib2/img/sparse/ByteNtree.java b/net/imglib2/img/sparse/ByteNtree.java
+index ae535ed..3fd4a37 100644
+--- a/net/imglib2/img/sparse/ByteNtree.java
++++ b/net/imglib2/img/sparse/ByteNtree.java
+@@ -62,14 +62,14 @@ public final class ByteNtree implements ByteAccess, NtreeAccess< Byte, ByteNtree
+ 
+ 	@Override
+ 	public byte getValue( final int index )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(20);
+ 		// ignore index, get tree position from RandomAccess/Cursor
+ 		return data.getNode( position ).getValue();
+ 	}
+ 
+ 	@Override
+ 	public void setValue( final int index, final byte value )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(26);
+ 		// ignore index, get tree position from RandomAccess/Cursor
+ 		data.createNodeWithValue( position, value );
+ 	}
+diff --git a/net/imglib2/img/sparse/CharNtree.java b/net/imglib2/img/sparse/CharNtree.java
+index 6d7f185..59ada65 100644
+--- a/net/imglib2/img/sparse/CharNtree.java
++++ b/net/imglib2/img/sparse/CharNtree.java
+@@ -62,14 +62,14 @@ public final class CharNtree implements CharAccess, NtreeAccess< Character, Char
+ 
+ 	@Override
+ 	public char getValue( final int index )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(32);
+ 		// ignore index, get tree position from RandomAccess/Cursor
+ 		return data.getNode( position ).getValue();
+ 	}
+ 
+ 	@Override
+ 	public void setValue( final int index, final char value )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(38);
+ 		// ignore index, get tree position from RandomAccess/Cursor
+ 		data.createNodeWithValue( position, value );
+ 	}
+diff --git a/net/imglib2/img/sparse/DoubleNtree.java b/net/imglib2/img/sparse/DoubleNtree.java
+index 7931865..71d9f04 100644
+--- a/net/imglib2/img/sparse/DoubleNtree.java
++++ b/net/imglib2/img/sparse/DoubleNtree.java
+@@ -62,14 +62,14 @@ public final class DoubleNtree implements DoubleAccess, NtreeAccess< Double, Dou
+ 
+ 	@Override
+ 	public double getValue( final int index )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(44);
+ 		// ignore index, get tree position from RandomAccess/Cursor
+ 		return data.getNode( position ).getValue();
+ 	}
+ 
+ 	@Override
+ 	public void setValue( final int index, final double value )
+-	{
++	{ net.imglib2.img.jmhbench.MutationSwitch.tick(50);
+ 		// ignore index, get tree position from RandomAccess/Cursor
+ 		data.createNodeWithValue( position, value );
+ 	}

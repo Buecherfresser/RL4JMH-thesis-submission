@@ -1,0 +1,114 @@
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link ObservableSwitchMapCompletable}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * switchMapCompletable operator when the upstream emits a configurable
+ * number of items and each item is mapped to a simple {@code Completable.complete()}.
+ *
+ * Best practices applied:
+ * - Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - Pre‑create the source Observable and mapper in {@code @Setup(Level.Trial)} to exclude
+ *   their construction cost from the measurement.
+ * - Use {@code @BenchmarkMode(Mode.Throughput)} and {@code @OutputTimeUnit(TimeUnit.SECONDS)}.
+ * - Include warm‑up and measurement iterations via JMH defaults (can be overridden on the command line).
+ * - Consume the result with {@code Completable.blockingAwait()} to ensure the whole chain is executed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ObservableSwitchMapCompletableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the upstream Observable.
+         * Typical values: 1, 10, 1000, etc.
+         */
+        @Param({ "1", "10", "1000" })
+        public int upstreamItemCount;
+
+        /**
+         * Whether the operator should delay errors.
+         */
+        @Param({ "false", "true" })
+        public boolean delayErrors;
+
+        /**
+         * The upstream Observable that emits {@code upstreamItemCount} integers.
+         */
+        Observable<Integer> source;
+
+        /**
+         * Mapper that turns each integer into a completed Completable.
+         */
+        Function<Integer, Completable> mapper;
+
+        /**
+         * The Completable under test.
+         */
+        Completable testCompletable;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a cold Observable that emits a fixed number of items.
+            source = Observable.range(1, upstreamItemCount);
+            // Simple mapper: each item maps to Completable.complete().
+            mapper = i -> Completable.complete();
+            // Build the operator under test.
+            testCompletable = new ObservableSwitchMapCompletable<>(source, mapper, delayErrors);
+        }
+    }
+
+    /**
+     * Executes the switchMapCompletable chain and blocks until completion.
+     *
+     * @param state the benchmark state containing the pre‑built Completable
+     */
+    @Benchmark
+    public void switchMapCompletableThroughput(BenchmarkState state) {
+        // blockingAwait() ensures the whole reactive chain is executed for each operation.
+        state.testCompletable.blockingAwait();
+    }
+}

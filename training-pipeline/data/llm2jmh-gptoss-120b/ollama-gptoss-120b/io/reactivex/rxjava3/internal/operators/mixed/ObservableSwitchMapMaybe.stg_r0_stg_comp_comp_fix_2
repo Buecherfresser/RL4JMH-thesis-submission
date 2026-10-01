@@ -1,0 +1,71 @@
+```
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.mixed.ObservableSwitchMapMaybe}
+ * using the public {@code Observable.switchMapMaybe} API.
+ *
+ * The benchmark measures the throughput (operations per second) of processing a
+ * stream of integers through a switchMapMaybe operator that maps each integer
+ * to a {@code Maybe<String>}. The mapping function returns a {@code Maybe.just}
+ * for each item, which exercises the fast‑path of the operator while still
+ * exercising the concurrency and atomic coordination logic.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Create fresh subscriptions inside the benchmark method to include subscription overhead.
+ * - Consume emitted items with Blackhole to prevent dead‑code elimination.
+ * - Configure warm‑up, measurement, and fork parameters for reliable results.
+ */
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableSwitchMapMaybeBenchmark {
+
+    /**
+     * Size of the source sequence. Adjust to reflect realistic workloads.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    private Observable<Integer> source;
+    private Function<Integer, MaybeSource<String>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Create a cold Observable that emits a range of integers.
+        source = Observable.range(1, size);
+        // Mapping function: each integer becomes a Maybe.just of its string representation.
+        mapper = new Function<Integer, MaybeSource<String>>() {
+            @Override
+            public MaybeSource<String> apply(Integer v) {
+                // Using Maybe.just ensures the inner Maybe completes synchronously.
+                return Maybe.just("value-" + v);
+            }
+        };
+    }
+
+    /**
+     * Benchmark method that subscribes to the switchMapMaybe chain and consumes
+     * all emitted items. The subscription is performed on each iteration to
+     * include the full cost of the operator.
+     *
+     * @param bh Blackhole to consume the items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void switchMapMaybeThroughput(Blackhole bh) {
+        Observable<String> result = source.switchMapMaybe(mapper);
+        // blockingSubscribe ensures the benchmark thread waits for completion.
+        result.blockingSubscribe(bh::consume);
+    }
+}
+```

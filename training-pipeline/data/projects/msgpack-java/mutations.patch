@@ -1,0 +1,618 @@
+diff --git a/org/msgpack/core/MessageBufferPacker.java b/org/msgpack/core/MessageBufferPacker.java
+index 0b48522..1841981 100644
+--- a/org/msgpack/core/MessageBufferPacker.java
++++ b/org/msgpack/core/MessageBufferPacker.java
+@@ -44,7 +44,7 @@ public class MessageBufferPacker
+ 
+     public MessageBufferOutput reset(MessageBufferOutput out)
+             throws IOException
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(1);
+         if (!(out instanceof ArrayBufferOutput)) {
+             throw new IllegalArgumentException("MessageBufferPacker accepts only ArrayBufferOutput");
+         }
+@@ -58,7 +58,7 @@ public class MessageBufferPacker
+ 
+     @Override
+     public void clear()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(4);
+         super.clear();
+         getArrayBufferOut().clear();
+     }
+diff --git a/org/msgpack/core/MessageStringCodingException.java b/org/msgpack/core/MessageStringCodingException.java
+index b4d549c..8c8cd18 100644
+--- a/org/msgpack/core/MessageStringCodingException.java
++++ b/org/msgpack/core/MessageStringCodingException.java
+@@ -35,7 +35,7 @@ public class MessageStringCodingException
+ 
+     @Override
+     public CharacterCodingException getCause()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(7);
+         return (CharacterCodingException) super.getCause();
+     }
+ }
+diff --git a/org/msgpack/core/buffer/ArrayBufferInput.java b/org/msgpack/core/buffer/ArrayBufferInput.java
+index 5c6454e..1abfae0 100644
+--- a/org/msgpack/core/buffer/ArrayBufferInput.java
++++ b/org/msgpack/core/buffer/ArrayBufferInput.java
+@@ -54,7 +54,7 @@ public class ArrayBufferInput
+      * @return the old buffer.
+      */
+     public MessageBuffer reset(MessageBuffer buf)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(10);
+         MessageBuffer old = this.buffer;
+         this.buffer = buf;
+         if (buf == null) {
+@@ -67,7 +67,7 @@ public class ArrayBufferInput
+     }
+ 
+     public void reset(byte[] arr)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(13);
+         reset(MessageBuffer.wrap(checkNotNull(arr, "input array is null")));
+     }
+ 
+diff --git a/org/msgpack/core/buffer/ArrayBufferOutput.java b/org/msgpack/core/buffer/ArrayBufferOutput.java
+index 88fc0c9..1975f22 100644
+--- a/org/msgpack/core/buffer/ArrayBufferOutput.java
++++ b/org/msgpack/core/buffer/ArrayBufferOutput.java
+@@ -49,7 +49,7 @@ public class ArrayBufferOutput
+      * @return number of bytes
+      */
+     public int getSize()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(16);
+         int size = 0;
+         for (MessageBuffer buffer : list) {
+             size += buffer.size();
+@@ -66,7 +66,7 @@ public class ArrayBufferOutput
+      * @return the byte array
+      */
+     public byte[] toByteArray()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(19);
+         byte[] data = new byte[getSize()];
+         int off = 0;
+         for (MessageBuffer buffer : list) {
+diff --git a/org/msgpack/core/buffer/ByteBufferInput.java b/org/msgpack/core/buffer/ByteBufferInput.java
+index fd0311b..2d36b5b 100644
+--- a/org/msgpack/core/buffer/ByteBufferInput.java
++++ b/org/msgpack/core/buffer/ByteBufferInput.java
+@@ -40,7 +40,7 @@ public class ByteBufferInput
+      * @return the old buffer
+      */
+     public ByteBuffer reset(ByteBuffer input)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(22);
+         ByteBuffer old = this.input;
+         this.input = checkNotNull(input, "input ByteBuffer is null").slice();
+         isRead = false;
+@@ -61,7 +61,7 @@ public class ByteBufferInput
+ 
+     @Override
+     public void close()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(25);
+         // Nothing to do
+     }
+ }
+diff --git a/org/msgpack/core/buffer/ChannelBufferInput.java b/org/msgpack/core/buffer/ChannelBufferInput.java
+index e8d7c1d..9dda7dc 100644
+--- a/org/msgpack/core/buffer/ChannelBufferInput.java
++++ b/org/msgpack/core/buffer/ChannelBufferInput.java
+@@ -51,7 +51,7 @@ public class ChannelBufferInput
+      */
+     public ReadableByteChannel reset(ReadableByteChannel channel)
+             throws IOException
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(28);
+         ReadableByteChannel old = this.channel;
+         this.channel = channel;
+         return old;
+@@ -73,7 +73,7 @@ public class ChannelBufferInput
+     @Override
+     public void close()
+             throws IOException
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(31);
+         channel.close();
+     }
+ }
+diff --git a/org/msgpack/core/buffer/ChannelBufferOutput.java b/org/msgpack/core/buffer/ChannelBufferOutput.java
+index 155c86b..524fdb2 100644
+--- a/org/msgpack/core/buffer/ChannelBufferOutput.java
++++ b/org/msgpack/core/buffer/ChannelBufferOutput.java
+@@ -49,7 +49,7 @@ public class ChannelBufferOutput
+      */
+     public WritableByteChannel reset(WritableByteChannel channel)
+             throws IOException
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(34);
+         WritableByteChannel old = this.channel;
+         this.channel = channel;
+         return old;
+@@ -68,7 +68,7 @@ public class ChannelBufferOutput
+     @Override
+     public void writeBuffer(int length)
+             throws IOException
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(37);
+         ByteBuffer bb = buffer.sliceAsByteBuffer(0, length);
+         while (bb.hasRemaining()) {
+             channel.write(bb);
+diff --git a/org/msgpack/core/buffer/DirectBufferAccess.java b/org/msgpack/core/buffer/DirectBufferAccess.java
+index 7b5ea46..47bc0e3 100644
+--- a/org/msgpack/core/buffer/DirectBufferAccess.java
++++ b/org/msgpack/core/buffer/DirectBufferAccess.java
+@@ -138,7 +138,7 @@ class DirectBufferAccess
+         {
+             @Override
+             public Object run()
+-            {
++            { org.msgpack.jmhbench.MutationSwitch.tick(40);
+                 return getCleanerMethod(direct);
+             }
+         });
+@@ -151,7 +151,7 @@ class DirectBufferAccess
+         {
+             @Override
+             public Object run()
+-            {
++            { org.msgpack.jmhbench.MutationSwitch.tick(43);
+                 return getCleanMethod(direct, mCleaner);
+             }
+         });
+diff --git a/org/msgpack/core/buffer/InputStreamBufferInput.java b/org/msgpack/core/buffer/InputStreamBufferInput.java
+index d605fec..81c398b 100644
+--- a/org/msgpack/core/buffer/InputStreamBufferInput.java
++++ b/org/msgpack/core/buffer/InputStreamBufferInput.java
+@@ -32,7 +32,7 @@ public class InputStreamBufferInput
+     private final byte[] buffer;
+ 
+     public static MessageBufferInput newBufferInput(InputStream in)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(46);
+         checkNotNull(in, "InputStream is null");
+         if (in instanceof FileInputStream) {
+             FileChannel channel = ((FileInputStream) in).getChannel();
+@@ -62,7 +62,7 @@ public class InputStreamBufferInput
+      */
+     public InputStream reset(InputStream in)
+             throws IOException
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(49);
+         InputStream old = this.in;
+         this.in = in;
+         return old;
+diff --git a/org/msgpack/jackson/dataformat/ExtensionTypeCustomDeserializers.java b/org/msgpack/jackson/dataformat/ExtensionTypeCustomDeserializers.java
+index aa58797..dabed7b 100644
+--- a/org/msgpack/jackson/dataformat/ExtensionTypeCustomDeserializers.java
++++ b/org/msgpack/jackson/dataformat/ExtensionTypeCustomDeserializers.java
+@@ -34,12 +34,12 @@ public class ExtensionTypeCustomDeserializers
+     }
+ 
+     public void addCustomDeser(byte type, final Deser deser)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(23);
+         deserTable.put(type, deser);
+     }
+ 
+     public Deser getDeser(byte type)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(26);
+         return deserTable.get(type);
+     }
+ 
+diff --git a/org/msgpack/jackson/dataformat/JsonArrayFormat.java b/org/msgpack/jackson/dataformat/JsonArrayFormat.java
+index 3915503..40909e5 100644
+--- a/org/msgpack/jackson/dataformat/JsonArrayFormat.java
++++ b/org/msgpack/jackson/dataformat/JsonArrayFormat.java
+@@ -23,7 +23,7 @@ public class JsonArrayFormat extends JacksonAnnotationIntrospector
+    */
+   @Override
+   public JsonFormat.Value findFormat(Annotated ann)
+-  {
++  { org.msgpack.jmhbench.MutationSwitch.tick(2);
+     // If the entity contains JsonFormat annotation, give it higher priority.
+     JsonFormat.Value precedenceFormat = super.findFormat(ann);
+     if (precedenceFormat != null) {
+diff --git a/org/msgpack/jackson/dataformat/MessagePackExtensionType.java b/org/msgpack/jackson/dataformat/MessagePackExtensionType.java
+index e11c2cd..134a3a5 100644
+--- a/org/msgpack/jackson/dataformat/MessagePackExtensionType.java
++++ b/org/msgpack/jackson/dataformat/MessagePackExtensionType.java
+@@ -61,7 +61,7 @@ public class MessagePackExtensionType
+         @Override
+         public void serialize(MessagePackExtensionType value, JsonGenerator gen, SerializerProvider serializers)
+                 throws IOException
+-        {
++        { org.msgpack.jmhbench.MutationSwitch.tick(29);
+             if (gen instanceof MessagePackGenerator) {
+                 MessagePackGenerator msgpackGenerator = (MessagePackGenerator) gen;
+                 msgpackGenerator.writeExtensionType(value);
+diff --git a/org/msgpack/jackson/dataformat/MessagePackFactory.java b/org/msgpack/jackson/dataformat/MessagePackFactory.java
+index 865c0cf..1644648 100644
+--- a/org/msgpack/jackson/dataformat/MessagePackFactory.java
++++ b/org/msgpack/jackson/dataformat/MessagePackFactory.java
+@@ -65,13 +65,13 @@ public class MessagePackFactory
+     }
+ 
+     public MessagePackFactory setReuseResourceInGenerator(boolean reuseResourceInGenerator)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(32);
+         this.reuseResourceInGenerator = reuseResourceInGenerator;
+         return this;
+     }
+ 
+     public MessagePackFactory setReuseResourceInParser(boolean reuseResourceInParser)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(35);
+         this.reuseResourceInParser = reuseResourceInParser;
+         return this;
+     }
+diff --git a/org/msgpack/jackson/dataformat/MessagePackGenerator.java b/org/msgpack/jackson/dataformat/MessagePackGenerator.java
+index 3dde560..bdff21e 100644
+--- a/org/msgpack/jackson/dataformat/MessagePackGenerator.java
++++ b/org/msgpack/jackson/dataformat/MessagePackGenerator.java
+@@ -259,7 +259,7 @@ public class MessagePackGenerator
+ 
+     @Override
+     public void writeStartArray()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(38);
+         if (currentState == IN_OBJECT) {
+             Node node = nodes.get(nodes.size() - 1);
+             assert node instanceof NodeEntryInObject;
+@@ -276,7 +276,7 @@ public class MessagePackGenerator
+     @Override
+     public void writeEndArray()
+             throws IOException
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(41);
+         if (currentState != IN_ARRAY) {
+             _reportError("Current context not an array but " + currentStateStr());
+         }
+diff --git a/org/msgpack/jackson/dataformat/MessagePackKeySerializer.java b/org/msgpack/jackson/dataformat/MessagePackKeySerializer.java
+index 36fb235..c633bbf 100644
+--- a/org/msgpack/jackson/dataformat/MessagePackKeySerializer.java
++++ b/org/msgpack/jackson/dataformat/MessagePackKeySerializer.java
+@@ -32,7 +32,7 @@ public class MessagePackKeySerializer
+     @Override
+     public void serialize(Object value, JsonGenerator jgen, SerializerProvider provider)
+             throws IOException
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(44);
+         jgen.writeFieldName(new MessagePackSerializedString(value));
+     }
+ }
+diff --git a/org/msgpack/jackson/dataformat/MessagePackMapper.java b/org/msgpack/jackson/dataformat/MessagePackMapper.java
+index 144c8d1..fe9c82a 100644
+--- a/org/msgpack/jackson/dataformat/MessagePackMapper.java
++++ b/org/msgpack/jackson/dataformat/MessagePackMapper.java
+@@ -45,13 +45,13 @@ public class MessagePackMapper extends ObjectMapper
+     }
+ 
+     public MessagePackMapper handleBigIntegerAsString()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(5);
+         configOverride(BigInteger.class).setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING));
+         return this;
+     }
+ 
+     public MessagePackMapper handleBigDecimalAsString()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(8);
+         configOverride(BigDecimal.class).setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING));
+         return this;
+     }
+diff --git a/org/msgpack/jackson/dataformat/MessagePackParser.java b/org/msgpack/jackson/dataformat/MessagePackParser.java
+index 72aeed2..3e159e4 100644
+--- a/org/msgpack/jackson/dataformat/MessagePackParser.java
++++ b/org/msgpack/jackson/dataformat/MessagePackParser.java
+@@ -136,13 +136,13 @@ public class MessagePackParser
+     }
+ 
+     public void setExtensionTypeCustomDeserializers(ExtensionTypeCustomDeserializers extTypeCustomDesers)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(11);
+         this.extTypeCustomDesers = extTypeCustomDesers;
+     }
+ 
+     @Override
+     public ObjectCodec getCodec()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(14);
+         return codec;
+     }
+ 
+diff --git a/org/msgpack/jackson/dataformat/MessagePackReadContext.java b/org/msgpack/jackson/dataformat/MessagePackReadContext.java
+index 403f1b3..eae2b51 100644
+--- a/org/msgpack/jackson/dataformat/MessagePackReadContext.java
++++ b/org/msgpack/jackson/dataformat/MessagePackReadContext.java
+@@ -62,7 +62,7 @@ public final class MessagePackReadContext
+     }
+ 
+     protected void reset(int type, int expEntryCount)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(47);
+         _type = type;
+         this.expEntryCount = expEntryCount;
+         _index = -1;
+@@ -75,7 +75,7 @@ public final class MessagePackReadContext
+ 
+     @Override
+     public Object getCurrentValue()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(50);
+         return currentValue;
+     }
+ 
+diff --git a/org/msgpack/jackson/dataformat/MessagePackSerializedString.java b/org/msgpack/jackson/dataformat/MessagePackSerializedString.java
+index 72ed5d8..65338db 100644
+--- a/org/msgpack/jackson/dataformat/MessagePackSerializedString.java
++++ b/org/msgpack/jackson/dataformat/MessagePackSerializedString.java
+@@ -35,13 +35,13 @@ public class MessagePackSerializedString
+ 
+     @Override
+     public String getValue()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(17);
+         return value.toString();
+     }
+ 
+     @Override
+     public int charLength()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(20);
+         return getValue().length();
+     }
+ 
+diff --git a/org/msgpack/jmhbench/MutationSwitch.java b/org/msgpack/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c3f1bda
+--- /dev/null
++++ b/org/msgpack/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.msgpack.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/msgpack/value/ValueFactory.java b/org/msgpack/value/ValueFactory.java
+index dc1e28d..4b0e6e3 100644
+--- a/org/msgpack/value/ValueFactory.java
++++ b/org/msgpack/value/ValueFactory.java
+@@ -42,12 +42,12 @@ public final class ValueFactory
+     }
+ 
+     public static ImmutableNilValue newNil()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(21);
+         return ImmutableNilValueImpl.get();
+     }
+ 
+     public static ImmutableBooleanValue newBoolean(boolean v)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(24);
+         return v ? ImmutableBooleanValueImpl.TRUE : ImmutableBooleanValueImpl.FALSE;
+     }
+ 
+diff --git a/org/msgpack/value/ValueType.java b/org/msgpack/value/ValueType.java
+index 8eeb957..0f516f7 100644
+--- a/org/msgpack/value/ValueType.java
++++ b/org/msgpack/value/ValueType.java
+@@ -52,12 +52,12 @@ public enum ValueType
+     }
+ 
+     public boolean isNilType()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(27);
+         return this == NIL;
+     }
+ 
+     public boolean isBooleanType()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(30);
+         return this == BOOLEAN;
+     }
+ 
+diff --git a/org/msgpack/value/Variable.java b/org/msgpack/value/Variable.java
+index 85d2fb3..880a54d 100644
+--- a/org/msgpack/value/Variable.java
++++ b/org/msgpack/value/Variable.java
+@@ -46,13 +46,13 @@ public class Variable
+     {
+         @Override
+         public boolean isNilValue()
+-        {
++        { org.msgpack.jmhbench.MutationSwitch.tick(33);
+             return getValueType().isNilType();
+         }
+ 
+         @Override
+         public boolean isBooleanValue()
+-        {
++        { org.msgpack.jmhbench.MutationSwitch.tick(36);
+             return getValueType().isBooleanType();
+         }
+ 
+diff --git a/org/msgpack/value/impl/ImmutableArrayValueImpl.java b/org/msgpack/value/impl/ImmutableArrayValueImpl.java
+index 3e1b732..daf1eaa 100644
+--- a/org/msgpack/value/impl/ImmutableArrayValueImpl.java
++++ b/org/msgpack/value/impl/ImmutableArrayValueImpl.java
+@@ -40,7 +40,7 @@ public class ImmutableArrayValueImpl
+     private static final ImmutableArrayValueImpl EMPTY = new ImmutableArrayValueImpl(new Value[0]);
+ 
+     public static ImmutableArrayValue empty()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(3);
+         return EMPTY;
+     }
+ 
+@@ -53,7 +53,7 @@ public class ImmutableArrayValueImpl
+ 
+     @Override
+     public ValueType getValueType()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(6);
+         return ValueType.ARRAY;
+     }
+ 
+diff --git a/org/msgpack/value/impl/ImmutableBigIntegerValueImpl.java b/org/msgpack/value/impl/ImmutableBigIntegerValueImpl.java
+index c6fe393..9244da6 100644
+--- a/org/msgpack/value/impl/ImmutableBigIntegerValueImpl.java
++++ b/org/msgpack/value/impl/ImmutableBigIntegerValueImpl.java
+@@ -37,7 +37,7 @@ public class ImmutableBigIntegerValueImpl
+         implements ImmutableIntegerValue
+ {
+     public static MessageFormat mostSuccinctMessageFormat(IntegerValue v)
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(39);
+         if (v.isInByteRange()) {
+             return MessageFormat.INT8;
+         }
+@@ -73,7 +73,7 @@ public class ImmutableBigIntegerValueImpl
+ 
+     @Override
+     public ValueType getValueType()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(42);
+         return ValueType.INTEGER;
+     }
+ 
+diff --git a/org/msgpack/value/impl/ImmutableBinaryValueImpl.java b/org/msgpack/value/impl/ImmutableBinaryValueImpl.java
+index 2d444ae..2fcd90e 100644
+--- a/org/msgpack/value/impl/ImmutableBinaryValueImpl.java
++++ b/org/msgpack/value/impl/ImmutableBinaryValueImpl.java
+@@ -40,13 +40,13 @@ public class ImmutableBinaryValueImpl
+ 
+     @Override
+     public ValueType getValueType()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(45);
+         return ValueType.BINARY;
+     }
+ 
+     @Override
+     public ImmutableBinaryValue immutableValue()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(48);
+         return this;
+     }
+ 
+diff --git a/org/msgpack/value/impl/ImmutableMapValueImpl.java b/org/msgpack/value/impl/ImmutableMapValueImpl.java
+index dc55d78..9f2118d 100644
+--- a/org/msgpack/value/impl/ImmutableMapValueImpl.java
++++ b/org/msgpack/value/impl/ImmutableMapValueImpl.java
+@@ -44,7 +44,7 @@ public class ImmutableMapValueImpl
+     private static final ImmutableMapValueImpl EMPTY = new ImmutableMapValueImpl(new Value[0]);
+ 
+     public static ImmutableMapValue empty()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(9);
+         return EMPTY;
+     }
+ 
+@@ -57,7 +57,7 @@ public class ImmutableMapValueImpl
+ 
+     @Override
+     public ValueType getValueType()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(12);
+         return ValueType.MAP;
+     }
+ 
+diff --git a/org/msgpack/value/impl/ImmutableStringValueImpl.java b/org/msgpack/value/impl/ImmutableStringValueImpl.java
+index dbdb571..736091e 100644
+--- a/org/msgpack/value/impl/ImmutableStringValueImpl.java
++++ b/org/msgpack/value/impl/ImmutableStringValueImpl.java
+@@ -45,13 +45,13 @@ public class ImmutableStringValueImpl
+ 
+     @Override
+     public ValueType getValueType()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(15);
+         return ValueType.STRING;
+     }
+ 
+     @Override
+     public ImmutableStringValue immutableValue()
+-    {
++    { org.msgpack.jmhbench.MutationSwitch.tick(18);
+         return this;
+     }
+ 

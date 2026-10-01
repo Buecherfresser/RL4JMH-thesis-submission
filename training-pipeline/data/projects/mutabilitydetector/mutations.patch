@@ -1,0 +1,640 @@
+diff --git a/org/mutabilitydetector/checkers/AccessModifierQuery.java b/org/mutabilitydetector/checkers/AccessModifierQuery.java
+index 41c8861..4ac5790 100644
+--- a/org/mutabilitydetector/checkers/AccessModifierQuery.java
++++ b/org/mutabilitydetector/checkers/AccessModifierQuery.java
+@@ -52,11 +52,11 @@ public class AccessModifierQuery {
+         return (this.access & accessFlag) != 0;
+     }
+ 
+-    public static AccessModifierQuery method(int access) {
++    public static AccessModifierQuery method(int access) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(20);
+         return new AccessModifierQuery(access);
+     }
+ 
+-    public static AccessModifierQuery type(int access) {
++    public static AccessModifierQuery type(int access) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(24);
+         return new AccessModifierQuery(access);
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/AllChecksRunner.java b/org/mutabilitydetector/checkers/AllChecksRunner.java
+index 265bb62..efd0e7f 100644
+--- a/org/mutabilitydetector/checkers/AllChecksRunner.java
++++ b/org/mutabilitydetector/checkers/AllChecksRunner.java
+@@ -58,7 +58,7 @@ public final class AllChecksRunner {
+     public AnalysisResult runCheckers(ImmutableList<AnalysisResult> knownResultsSoFar,
+                                       AnalysisDatabase database,
+                                       MutableTypeInformation mutableTypeInformation,
+-                                      AnalysisInProgress analysisInProgress) {
++                                      AnalysisInProgress analysisInProgress) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(27);
+         Map<IsImmutable, Integer> results = newHashMap();
+         Collection<MutableReasonDetail> reasons = newArrayList();
+         Collection<AnalysisError> errors = newArrayList();
+diff --git a/org/mutabilitydetector/checkers/ArrayFieldMutabilityChecker.java b/org/mutabilitydetector/checkers/ArrayFieldMutabilityChecker.java
+index bb03a7b..3d3ea80 100644
+--- a/org/mutabilitydetector/checkers/ArrayFieldMutabilityChecker.java
++++ b/org/mutabilitydetector/checkers/ArrayFieldMutabilityChecker.java
+@@ -34,7 +34,7 @@ import org.objectweb.asm.Type;
+ public class ArrayFieldMutabilityChecker extends AsmMutabilityChecker {
+ 
+     @Override
+-    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
++    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(1);
+         /*
+          * Static fields should not count against the instance.
+          */
+diff --git a/org/mutabilitydetector/checkers/CanSubclassChecker.java b/org/mutabilitydetector/checkers/CanSubclassChecker.java
+index f7fdc81..95e89fd 100644
+--- a/org/mutabilitydetector/checkers/CanSubclassChecker.java
++++ b/org/mutabilitydetector/checkers/CanSubclassChecker.java
+@@ -35,7 +35,7 @@ public final class CanSubclassChecker extends AsmMutabilityChecker {
+     private boolean hasOnlyPrivateConstructors = true;
+     
+     @Override
+-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
++    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(30);
+         super.visit(version, access, name, signature, superName, interfaces);
+ 
+         if (type(access).isNotFinal()) {
+@@ -44,7 +44,7 @@ public final class CanSubclassChecker extends AsmMutabilityChecker {
+     }
+     
+     @Override
+-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
++    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(33);
+         if (MethodIs.aConstructor(name) && (method(access).isNotPrivate()) && method(access).isNotSynthetic()) {
+             hasOnlyPrivateConstructors = false;
+         }
+diff --git a/org/mutabilitydetector/checkers/CheckerResult.java b/org/mutabilitydetector/checkers/CheckerResult.java
+index 86bb20d..55c4d2a 100644
+--- a/org/mutabilitydetector/checkers/CheckerResult.java
++++ b/org/mutabilitydetector/checkers/CheckerResult.java
+@@ -48,7 +48,7 @@ public final class CheckerResult {
+         this.errors = ImmutableList.copyOf(errors);
+     }
+ 
+-    public static CheckerResult withNoErrors(IsImmutable isImmutable, Iterable<MutableReasonDetail> reasons) {
++    public static CheckerResult withNoErrors(IsImmutable isImmutable, Iterable<MutableReasonDetail> reasons) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(36);
+         return new CheckerResult(isImmutable, reasons, Collections.<AnalysisError>emptyList());
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/CheckerRunner.java b/org/mutabilitydetector/checkers/CheckerRunner.java
+index 7a8f1a8..738a66a 100644
+--- a/org/mutabilitydetector/checkers/CheckerRunner.java
++++ b/org/mutabilitydetector/checkers/CheckerRunner.java
+@@ -53,11 +53,11 @@ public final class CheckerRunner {
+         this.exceptionPolicy = exceptionPolicy;
+     }
+ 
+-    public static CheckerRunner createWithClasspath(ClassPath classpath, ExceptionPolicy exceptionPolicy) {
++    public static CheckerRunner createWithClasspath(ClassPath classpath, ExceptionPolicy exceptionPolicy) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(39);
+         return new CheckerRunner(classpath, new UnhandledExceptionBuilder(), exceptionPolicy);
+     }
+ 
+-    public static CheckerRunner createWithCurrentClasspath(ExceptionPolicy exceptionPolicy) {
++    public static CheckerRunner createWithCurrentClasspath(ExceptionPolicy exceptionPolicy) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(42);
+         return createWithClasspath(new ClassPathFactory().createFromJVM(), exceptionPolicy);
+     }
+     
+diff --git a/org/mutabilitydetector/checkers/ClassPathBasedCheckerRunnerFactory.java b/org/mutabilitydetector/checkers/ClassPathBasedCheckerRunnerFactory.java
+index ed0513f..0325bb2 100644
+--- a/org/mutabilitydetector/checkers/ClassPathBasedCheckerRunnerFactory.java
++++ b/org/mutabilitydetector/checkers/ClassPathBasedCheckerRunnerFactory.java
+@@ -40,7 +40,7 @@ public final class ClassPathBasedCheckerRunnerFactory implements CheckerRunnerFa
+     }
+ 
+     @Override
+-    public CheckerRunner createRunner() {
++    public CheckerRunner createRunner() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(45);
+         return CheckerRunner.createWithClasspath(classpath, exceptionPolicy);
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/CollectionWithMutableElementTypeToFieldChecker.java b/org/mutabilitydetector/checkers/CollectionWithMutableElementTypeToFieldChecker.java
+index b045abc..17f7c8f 100644
+--- a/org/mutabilitydetector/checkers/CollectionWithMutableElementTypeToFieldChecker.java
++++ b/org/mutabilitydetector/checkers/CollectionWithMutableElementTypeToFieldChecker.java
+@@ -67,7 +67,7 @@ public final class CollectionWithMutableElementTypeToFieldChecker extends AsmMut
+     }
+ 
+     @Override
+-    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
++    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(48);
+         fieldSignatures.put(name, signature);
+         return super.visitField(access, name, desc, signature, value);
+     }
+diff --git a/org/mutabilitydetector/checkers/OldSetterMethodChecker.java b/org/mutabilitydetector/checkers/OldSetterMethodChecker.java
+index 4de5353..3ac0117 100644
+--- a/org/mutabilitydetector/checkers/OldSetterMethodChecker.java
++++ b/org/mutabilitydetector/checkers/OldSetterMethodChecker.java
+@@ -60,12 +60,12 @@ public final class OldSetterMethodChecker extends AsmMutabilityChecker {
+         this.verifierFactory = verifierFactory;
+     }
+ 
+-    public static OldSetterMethodChecker newSetterMethodChecker(PrivateMethodInvocationInformation privateMethodInvocationInfo, AsmVerifierFactory verifierFactory) {
++    public static OldSetterMethodChecker newSetterMethodChecker(PrivateMethodInvocationInformation privateMethodInvocationInfo, AsmVerifierFactory verifierFactory) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(6);
+         return new OldSetterMethodChecker(privateMethodInvocationInfo, verifierFactory);
+     }
+ 
+     @Override
+-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
++    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(11);
+         super.visit(version, access, name, signature, superName, interfaces);
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/UnhandledExceptionBuilder.java b/org/mutabilitydetector/checkers/UnhandledExceptionBuilder.java
+index b66f557..53951fc 100644
+--- a/org/mutabilitydetector/checkers/UnhandledExceptionBuilder.java
++++ b/org/mutabilitydetector/checkers/UnhandledExceptionBuilder.java
+@@ -48,7 +48,7 @@ public final class UnhandledExceptionBuilder {
+     public MutabilityAnalysisException unhandledException(Throwable cause, 
+                                                            Iterable<AnalysisResult> resultsSoFar,
+                                                            ClassVisitor checker,
+-                                                           Dotted className) {
++                                                           Dotted className) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(16);
+         
+         StringBuilder errorMessage = new StringBuilder();
+         errorMessage.append(format("%nAn unhandled error occurred. Please read message at end of this output.%n%n"));
+diff --git a/org/mutabilitydetector/checkers/hint/WrappingHint.java b/org/mutabilitydetector/checkers/hint/WrappingHint.java
+index 88ffd21..826a6f3 100644
+--- a/org/mutabilitydetector/checkers/hint/WrappingHint.java
++++ b/org/mutabilitydetector/checkers/hint/WrappingHint.java
+@@ -61,7 +61,7 @@ public final class WrappingHint {
+     /**
+      * For given field name get the actual hint message
+      */
+-    public String getWrappingHint(String fieldName) {
++    public String getWrappingHint(String fieldName) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(2);
+         if (isEmpty()) {
+             return "";
+         }
+@@ -82,7 +82,7 @@ public final class WrappingHint {
+         return String.format("%s.%s%s", simpleTypeName, typeParameter, methodName);
+     }
+ 
+-    public boolean isEmpty() {
++    public boolean isEmpty() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(7);
+         return copyMethodOwnerName.isEmpty() &&
+                 copyMethodName.isEmpty() &&
+                 wrappingMethodOwnerName.isEmpty() &&
+diff --git a/org/mutabilitydetector/checkers/hint/WrappingHintGenerator.java b/org/mutabilitydetector/checkers/hint/WrappingHintGenerator.java
+index 457e771..133f202 100644
+--- a/org/mutabilitydetector/checkers/hint/WrappingHintGenerator.java
++++ b/org/mutabilitydetector/checkers/hint/WrappingHintGenerator.java
+@@ -52,7 +52,7 @@ public final class WrappingHintGenerator {
+         this.userDefinedCopyMethods = userDefinedCopyMethods;
+     }
+ 
+-    public WrappingHint generate() {
++    public WrappingHint generate() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(12);
+         try {
+             WrappingHint.Builder builder = WrappingHint.builder();
+             generateWrappingPart(builder);
+diff --git a/org/mutabilitydetector/checkers/info/AnalysisDatabase.java b/org/mutabilitydetector/checkers/info/AnalysisDatabase.java
+index 2dabffd..fdf9803 100644
+--- a/org/mutabilitydetector/checkers/info/AnalysisDatabase.java
++++ b/org/mutabilitydetector/checkers/info/AnalysisDatabase.java
+@@ -52,12 +52,12 @@ public final class AnalysisDatabase {
+         this.sessionCheckerRunner = sessionCheckerRunner;
+     }
+ 
+-    public static AnalysisDatabase newAnalysisDatabase(InformationRetrievalRunner sessionCheckerRunner) {
++    public static AnalysisDatabase newAnalysisDatabase(InformationRetrievalRunner sessionCheckerRunner) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(3);
+         return new AnalysisDatabase(sessionCheckerRunner);
+     }
+ 
+     @SuppressWarnings("unchecked")
+-    public <I extends AnalysisInformation> I requestInformation(InfoKey<I> infoCategory) {
++    public <I extends AnalysisInformation> I requestInformation(InfoKey<I> infoCategory) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(8);
+         return (infoMap.containsKey(infoCategory)) 
+                 ? (I) infoMap.get(infoCategory)
+                 : createInfoForCategory(infoCategory);
+diff --git a/org/mutabilitydetector/checkers/info/AnalysisInProgress.java b/org/mutabilitydetector/checkers/info/AnalysisInProgress.java
+index 5fb1e8c..6f6af63 100644
+--- a/org/mutabilitydetector/checkers/info/AnalysisInProgress.java
++++ b/org/mutabilitydetector/checkers/info/AnalysisInProgress.java
+@@ -35,11 +35,11 @@ public final class AnalysisInProgress {
+         this.inProgress = inProgress;
+     }
+ 
+-    public static AnalysisInProgress noAnalysisUnderway() { return new AnalysisInProgress(); }
++    public static AnalysisInProgress noAnalysisUnderway() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(13); return new AnalysisInProgress(); }
+ 
+     public boolean contains(Dotted clazz) { return inProgress.contains(clazz); }
+ 
+-    public AnalysisInProgress analysisStartedFor(Dotted clazz) {
++    public AnalysisInProgress analysisStartedFor(Dotted clazz) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(17);
+         return new AnalysisInProgress(ImmutableList.<Dotted>builder().addAll(inProgress).add(clazz).build());
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/info/CopyMethod.java b/org/mutabilitydetector/checkers/info/CopyMethod.java
+index 0ac9117..b830732 100644
+--- a/org/mutabilitydetector/checkers/info/CopyMethod.java
++++ b/org/mutabilitydetector/checkers/info/CopyMethod.java
+@@ -46,7 +46,7 @@ public final class CopyMethod {
+         this.isGeneric = isGeneric;
+     }
+ 
+-    public static CopyMethod from(MethodInsnNode methodNode) {
++    public static CopyMethod from(MethodInsnNode methodNode) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(21);
+         return new CopyMethod(Dotted.dotted(methodNode.owner), methodNode.name, methodNode.desc);
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/info/CyclicReferences.java b/org/mutabilitydetector/checkers/info/CyclicReferences.java
+index 59b1a2b..ae157d6 100644
+--- a/org/mutabilitydetector/checkers/info/CyclicReferences.java
++++ b/org/mutabilitydetector/checkers/info/CyclicReferences.java
+@@ -36,7 +36,7 @@ import static java.util.Collections.newSetFromMap;
+ public final class CyclicReferences {
+     private final Set<CyclicReference> cyclicReferenceCache = newSetFromMap(new ConcurrentHashMap<CyclicReference, Boolean>());
+ 
+-    public Optional<CyclicReference> detectedBetween(Dotted ownerClass, Dotted fieldClass, AnalysisInProgress analysisInProgress) {
++    public Optional<CyclicReference> detectedBetween(Dotted ownerClass, Dotted fieldClass, AnalysisInProgress analysisInProgress) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(25);
+         final CyclicReference potentialCyclicReference = new CyclicReference(fieldClass, ownerClass);
+         if (cyclicReferenceCache.contains(potentialCyclicReference)) {
+             return Optional.of(potentialCyclicReference);
+@@ -52,7 +52,7 @@ public final class CyclicReferences {
+         }
+     }
+ 
+-    public static CyclicReferences newEmptyMutableInstance() {
++    public static CyclicReferences newEmptyMutableInstance() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(28);
+         return new CyclicReferences();
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/info/InformationRetrievalRunner.java b/org/mutabilitydetector/checkers/info/InformationRetrievalRunner.java
+index cc0ec30..4ef885d 100644
+--- a/org/mutabilitydetector/checkers/info/InformationRetrievalRunner.java
++++ b/org/mutabilitydetector/checkers/info/InformationRetrievalRunner.java
+@@ -36,7 +36,7 @@ public final class InformationRetrievalRunner {
+         this.checkerRunner = checkerRunner;
+     }
+ 
+-    public void run(AsmClassVisitor visitor, ClassIdentifier classIdentifier) {
++    public void run(AsmClassVisitor visitor, ClassIdentifier classIdentifier) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(31);
+         checkerRunner.runVisitor(visitor, classIdentifier.asDotted(), analysisSession.getResults());
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/info/MethodIdentifier.java b/org/mutabilitydetector/checkers/info/MethodIdentifier.java
+index b7cc85b..208228b 100644
+--- a/org/mutabilitydetector/checkers/info/MethodIdentifier.java
++++ b/org/mutabilitydetector/checkers/info/MethodIdentifier.java
+@@ -66,11 +66,11 @@ public final class MethodIdentifier {
+                 && methodDescriptor.equals(other.methodDescriptor);
+     }
+ 
+-    public static MethodIdentifier forMethod(Dotted className, String methodDescriptor) {
++    public static MethodIdentifier forMethod(Dotted className, String methodDescriptor) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(34);
+         return new MethodIdentifier(className, methodDescriptor);
+     }
+ 
+-    public static MethodIdentifier forMethod(Slashed className, String methodDescriptor) {
++    public static MethodIdentifier forMethod(Slashed className, String methodDescriptor) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(37);
+         Dotted dotted = fromSlashed(className);
+         return new MethodIdentifier(dotted, methodDescriptor);
+     }
+diff --git a/org/mutabilitydetector/checkers/info/MutableTypeInformation.java b/org/mutabilitydetector/checkers/info/MutableTypeInformation.java
+index ff1b9cf..2371c0c 100644
+--- a/org/mutabilitydetector/checkers/info/MutableTypeInformation.java
++++ b/org/mutabilitydetector/checkers/info/MutableTypeInformation.java
+@@ -47,11 +47,11 @@ public final class MutableTypeInformation {
+         this.cyclicReferences = cyclicReferences;
+     }
+     
+-    public ImmutableMultimap<String, CopyMethod> hardcodedCopyMethods() {
++    public ImmutableMultimap<String, CopyMethod> hardcodedCopyMethods() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(40);
+         return configuration.hardcodedCopyMethods();
+     }
+ 
+-    public MutabilityLookup resultOf(Dotted ownerClass, Dotted fieldClass, AnalysisInProgress analysisInProgress) {
++    public MutabilityLookup resultOf(Dotted ownerClass, Dotted fieldClass, AnalysisInProgress analysisInProgress) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(43);
+         Optional<AnalysisResult> alreadyComputedResult = existingResult(fieldClass);
+ 
+         return(alreadyComputedResult.isPresent())
+diff --git a/org/mutabilitydetector/checkers/info/PrivateMethodInvocationInformation.java b/org/mutabilitydetector/checkers/info/PrivateMethodInvocationInformation.java
+index c3a742b..461abed 100644
+--- a/org/mutabilitydetector/checkers/info/PrivateMethodInvocationInformation.java
++++ b/org/mutabilitydetector/checkers/info/PrivateMethodInvocationInformation.java
+@@ -39,7 +39,7 @@ public final class PrivateMethodInvocationInformation implements AnalysisInforma
+         this.sessionCheckerRunner = sessionCheckerRunner;
+     }
+ 
+-    public boolean isOnlyCalledFromConstructor(MethodIdentifier forMethod) {
++    public boolean isOnlyCalledFromConstructor(MethodIdentifier forMethod) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(46);
+         PrivateMethodInvocationAnalyser checker;
+         if (checkerCache.containsKey(forMethod.dottedClassName())) {
+             checker = checkerCache.get(forMethod.dottedClassName());
+diff --git a/org/mutabilitydetector/checkers/info/TypeStructureInformation.java b/org/mutabilitydetector/checkers/info/TypeStructureInformation.java
+index f372921..2ccefec 100644
+--- a/org/mutabilitydetector/checkers/info/TypeStructureInformation.java
++++ b/org/mutabilitydetector/checkers/info/TypeStructureInformation.java
+@@ -56,7 +56,7 @@ public final class TypeStructureInformation implements AnalysisInformation {
+         return resultMap.get(className);
+     }
+ 
+-    public boolean isTypeAbstract(Dotted className) {
++    public boolean isTypeAbstract(Dotted className) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(49);
+         return getResultFrom(className, isAbstractMap);
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/jmhbench/MutationSwitch.java b/org/mutabilitydetector/checkers/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..5f4d0c8
+--- /dev/null
++++ b/org/mutabilitydetector/checkers/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.mutabilitydetector.checkers.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/mutabilitydetector/checkers/settermethod/Alias.java b/org/mutabilitydetector/checkers/settermethod/Alias.java
+index 746f973..3bd498b 100644
+--- a/org/mutabilitydetector/checkers/settermethod/Alias.java
++++ b/org/mutabilitydetector/checkers/settermethod/Alias.java
+@@ -34,7 +34,7 @@ final class Alias {
+         this.localVariable = localVariable;
+     }
+ 
+-    public static Alias newInstance(final boolean doesExist, final int localVariable) {
++    public static Alias newInstance(final boolean doesExist, final int localVariable) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(22);
+         return new Alias(doesExist, localVariable);
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/settermethod/AliasFinder.java b/org/mutabilitydetector/checkers/settermethod/AliasFinder.java
+index e7c3380..02b5f2f 100644
+--- a/org/mutabilitydetector/checkers/settermethod/AliasFinder.java
++++ b/org/mutabilitydetector/checkers/settermethod/AliasFinder.java
+@@ -71,7 +71,7 @@ final class AliasFinder implements Finder<Alias> {
+      *            {@code null}. 
+      * @return a new instance of this class.
+      */
+-    public static AliasFinder newInstance(final String variableName, final ControlFlowBlock controlFlowBlockToExamine) {
++    public static AliasFinder newInstance(final String variableName, final ControlFlowBlock controlFlowBlockToExamine) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(26);
+         checkArgument(!variableName.isEmpty());
+         return new AliasFinder(variableName, checkNotNull(controlFlowBlockToExamine));
+     }
+@@ -82,7 +82,7 @@ final class AliasFinder implements Finder<Alias> {
+      *         {@code Alias [doesExist=false, localVariable=Integer.MIN_VALUE]}.
+      */
+     @Override
+-    public Alias find() {
++    public Alias find() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(29);
+         return searchForAliasInBlock(controlFlowBlockToExamine);
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/settermethod/AssignmentGuard.java b/org/mutabilitydetector/checkers/settermethod/AssignmentGuard.java
+index 830ef17..a2853ff 100644
+--- a/org/mutabilitydetector/checkers/settermethod/AssignmentGuard.java
++++ b/org/mutabilitydetector/checkers/settermethod/AssignmentGuard.java
+@@ -60,11 +60,11 @@ final class AssignmentGuard implements JumpInsn {
+             predecessorInstructions = new ArrayList<AbstractInsnNode>();
+         }
+ 
+-        public void addPredecessorInstruction(final AbstractInsnNode predecessor) {
++        public void addPredecessorInstruction(final AbstractInsnNode predecessor) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(32);
+             predecessorInstructions.add(predecessor);
+         }
+ 
+-        public AssignmentGuard build() {
++        public AssignmentGuard build() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(35);
+             predecessorInstructions.trimToSize();
+             return AssignmentGuard.newInstance(jumpInstruction, predecessorInstructions);
+         }
+diff --git a/org/mutabilitydetector/checkers/settermethod/AssignmentGuardFinder.java b/org/mutabilitydetector/checkers/settermethod/AssignmentGuardFinder.java
+index b4d897f..d5a9634 100644
+--- a/org/mutabilitydetector/checkers/settermethod/AssignmentGuardFinder.java
++++ b/org/mutabilitydetector/checkers/settermethod/AssignmentGuardFinder.java
+@@ -70,13 +70,13 @@ final class AssignmentGuardFinder implements Finder<JumpInsn> {
+      * @return a new instance of this class.
+      */
+     public static AssignmentGuardFinder newInstance(final String candidateName,
+-            final ControlFlowBlock controlFlowBlock) {
++            final ControlFlowBlock controlFlowBlock) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(38);
+         checkArgument(!candidateName.isEmpty());
+         return new AssignmentGuardFinder(candidateName, checkNotNull(controlFlowBlock));
+     }
+ 
+     @Override
+-    public JumpInsn find() {
++    public JumpInsn find() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(41);
+         final Collection<JumpInsn> supposedAssignmentGuards = collectSupposedAssignmentGuards();
+         if (1 < supposedAssignmentGuards.size()) {
+             throw new IllegalStateException("There exists more than one assignment guard in this block.");
+diff --git a/org/mutabilitydetector/checkers/settermethod/AssignmentGuardVerifier.java b/org/mutabilitydetector/checkers/settermethod/AssignmentGuardVerifier.java
+index e3385ad..68e9f45 100644
+--- a/org/mutabilitydetector/checkers/settermethod/AssignmentGuardVerifier.java
++++ b/org/mutabilitydetector/checkers/settermethod/AssignmentGuardVerifier.java
+@@ -61,7 +61,7 @@ final class AssignmentGuardVerifier {
+             controlFlowBlock = theControlFlowBlock;
+         }
+ 
+-        public void verify() {
++        public void verify() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(44);
+             final String candidateName = candidate.name;
+             final int indexOfPredecessor = assignmentGuard.getIndexWithinBlock() - 1;
+             final AbstractInsnNode predecessor = controlFlowBlock.getBlockInstructionForIndex(indexOfPredecessor);
+@@ -118,7 +118,7 @@ final class AssignmentGuardVerifier {
+             candidate = theCandidate;
+         }
+     
+-        public void verify() {
++        public void verify() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(47);
+             final String candidateName = candidate.name;
+             if (isNotPossibleInitialValueOfCandidate(DefaultUnknownTypeValue.getInstanceForNull(), candidate)) {
+                 final String msgTemplate = "The assignment guard for lazy field [%s] should check against null. "
+diff --git a/org/mutabilitydetector/checkers/settermethod/CandidatesInitialisersMapping.java b/org/mutabilitydetector/checkers/settermethod/CandidatesInitialisersMapping.java
+index e2dc310..a4e1732 100644
+--- a/org/mutabilitydetector/checkers/settermethod/CandidatesInitialisersMapping.java
++++ b/org/mutabilitydetector/checkers/settermethod/CandidatesInitialisersMapping.java
+@@ -64,7 +64,7 @@ final class CandidatesInitialisersMapping implements Iterable<CandidatesInitiali
+             super();
+         }
+ 
+-        public static Initialisers getInstance() {
++        public static Initialisers getInstance() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(4);
+             return INSTANCE;
+         }
+ 
+@@ -74,7 +74,7 @@ final class CandidatesInitialisersMapping implements Iterable<CandidatesInitiali
+         }
+ 
+         @Override
+-        public List<MethodNode> getConstructors() {
++        public List<MethodNode> getConstructors() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(9);
+             return Collections.emptyList();
+         }
+ 
+diff --git a/org/mutabilitydetector/checkers/settermethod/ControlFlowBlock.java b/org/mutabilitydetector/checkers/settermethod/ControlFlowBlock.java
+index 4e0acf1..df44edf 100644
+--- a/org/mutabilitydetector/checkers/settermethod/ControlFlowBlock.java
++++ b/org/mutabilitydetector/checkers/settermethod/ControlFlowBlock.java
+@@ -77,7 +77,7 @@ final class ControlFlowBlock implements Comparable<ControlFlowBlock> {
+             this.allItems = Collections.unmodifiableList(allItems);
+         }
+ 
+-        public static Range newInstance(final SortedSet<Integer> allItems) {
++        public static Range newInstance(final SortedSet<Integer> allItems) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(50);
+             final List<Integer> allItemsList = new ArrayList<Integer>(allItems.size());
+             for (final Integer item : new TreeSet<Integer>(allItems)) {
+                 allItemsList.add(item);
+diff --git a/org/mutabilitydetector/checkers/settermethod/SetterMethodChecker.java b/org/mutabilitydetector/checkers/settermethod/SetterMethodChecker.java
+index 3b1f1ae..c42c1e7 100644
+--- a/org/mutabilitydetector/checkers/settermethod/SetterMethodChecker.java
++++ b/org/mutabilitydetector/checkers/settermethod/SetterMethodChecker.java
+@@ -75,7 +75,7 @@ public final class SetterMethodChecker extends AbstractSetterMethodChecker {
+             method = checkNotNull(theMethod);
+         }
+ 
+-        public MethodIdentifier getMethodIdentifier() {
++        public MethodIdentifier getMethodIdentifier() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(14);
+             final Slashed className = getSlashedClassName();
+             final String methodDescriptor = getMethodDescriptor();
+             return forMethod(className, methodDescriptor);
+@@ -112,7 +112,7 @@ public final class SetterMethodChecker extends AbstractSetterMethodChecker {
+         effectiveAssignmentInstructions = new HashMap<FieldNode, AssignmentInsn>();
+     }
+ 
+-    public static AsmMutabilityChecker newInstance() {
++    public static AsmMutabilityChecker newInstance() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(18);
+         return new SetterMethodChecker(null);
+     }
+ 
+diff --git a/org/mutabilitydetector/checkers/util/PrivateMethodInvocationAnalyser.java b/org/mutabilitydetector/checkers/util/PrivateMethodInvocationAnalyser.java
+index 93f7adc..5127d4f 100644
+--- a/org/mutabilitydetector/checkers/util/PrivateMethodInvocationAnalyser.java
++++ b/org/mutabilitydetector/checkers/util/PrivateMethodInvocationAnalyser.java
+@@ -42,7 +42,7 @@ public final class PrivateMethodInvocationAnalyser extends TypeInformationRetrie
+ 
+     private final Map<MethodIdentifier, Boolean> privateMethodCalledFromConstructorMap = new HashMap<MethodIdentifier, Boolean>();
+ 
+-    public boolean isPrivateMethodCalledOnlyFromConstructor(String methodDescriptor) {
++    public boolean isPrivateMethodCalledOnlyFromConstructor(String methodDescriptor) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(5);
+         MethodIdentifier identifier = makeMethodIdentifier(methodDescriptor);
+         if (privateMethodCalledFromConstructorMap.containsKey(identifier)) {
+             return privateMethodCalledFromConstructorMap.get(identifier);
+@@ -55,7 +55,7 @@ public final class PrivateMethodInvocationAnalyser extends TypeInformationRetrie
+     }
+ 
+     @Override
+-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
++    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(10);
+         super.visitMethod(access, name, desc, signature, exceptions);
+ 
+         boolean isPrivate = method(access).isPrivate();
+diff --git a/org/mutabilitydetector/checkers/util/StackPushingOpcodes.java b/org/mutabilitydetector/checkers/util/StackPushingOpcodes.java
+index bbd1e98..c035c8e 100644
+--- a/org/mutabilitydetector/checkers/util/StackPushingOpcodes.java
++++ b/org/mutabilitydetector/checkers/util/StackPushingOpcodes.java
+@@ -63,7 +63,7 @@ import static org.objectweb.asm.Opcodes.SIPUSH;
+ 
+ public class StackPushingOpcodes {
+ 
+-    public boolean includes(int opcode) {
++    public boolean includes(int opcode) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(15);
+         switch(opcode) {
+         case DUP: 
+         case DUP2: 
+diff --git a/org/mutabilitydetector/checkers/util/TypeStructureInformationAnalyser.java b/org/mutabilitydetector/checkers/util/TypeStructureInformationAnalyser.java
+index 721519b..b69d282 100644
+--- a/org/mutabilitydetector/checkers/util/TypeStructureInformationAnalyser.java
++++ b/org/mutabilitydetector/checkers/util/TypeStructureInformationAnalyser.java
+@@ -39,11 +39,11 @@ public class TypeStructureInformationAnalyser extends TypeInformationRetriever {
+         this.className = className;
+     }
+ 
+-    public static TypeStructureInformationAnalyser newAnalyser(Dotted className) {
++    public static TypeStructureInformationAnalyser newAnalyser(Dotted className) { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(19);
+         return new TypeStructureInformationAnalyser(className);
+     }
+ 
+-    public boolean isAbstract() {
++    public boolean isAbstract() { org.mutabilitydetector.checkers.jmhbench.MutationSwitch.tick(23);
+         return isAbstract;
+     }
+ 

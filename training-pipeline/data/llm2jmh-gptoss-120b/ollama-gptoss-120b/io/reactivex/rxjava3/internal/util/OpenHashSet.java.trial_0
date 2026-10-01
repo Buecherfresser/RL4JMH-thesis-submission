@@ -1,0 +1,102 @@
+```java
+package io.reactivex.rxjava3.internal.util.benchmark;
+
+import io.reactivex.rxjava3.internal.util.OpenHashSet;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+
+/**
+ * JMH benchmarks for {@link OpenHashSet}.
+ *
+ * <p>Measures throughput of {@code add} and {@code remove} operations under
+ * different initial sizes and load factors. The benchmarks use {@link Integer}
+ * as the element type to avoid boxing overhead in the benchmark code itself.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@code @State} for shared data.</li>
+ *   <li>Parameterized initial size and load factor.</li>
+ *   <li>Pre‑populate the set in {@code @Setup(Level.Trial)} to isolate the cost
+ *       of the operation under test.</li>
+ *   <li>Use {@link Blackhole} to consume return values and prevent dead‑code elimination.</li>
+ *   <li>Warm‑up, measurement, and fork settings tuned for reliable results.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Benchmark)
+public class OpenHashSetBenchmark {
+
+    /**
+     * Initial number of elements in the set before each trial.
+     * Values chosen to cover small, medium and large workloads.
+     */
+    @Param({"16", "256", "4096"})
+    public int initialSize;
+
+    /**
+     * Load factor used when constructing the set.
+     */
+    @Param({"0.5", "0.75", "0.9"})
+    public float loadFactor;
+
+    private OpenHashSet<Integer> set;
+    private int nextValue; // value to be added in the add benchmark
+    private int[] removalIndices; // indices of elements to be removed
+
+    /**
+     * Populate the set with distinct integers before each trial.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        set = new OpenHashSet<>(initialSize, loadFactor);
+        // Fill the set with sequential integers [0, initialSize)
+        for (int i = 0; i < initialSize; i++) {
+            set.add(i);
+        }
+        // Next value for add benchmark starts after the pre‑filled range
+        nextValue = initialSize;
+
+        // Prepare an array of values that will be removed during the remove benchmark.
+        // We shuffle the range to avoid any ordering bias.
+        removalIndices = IntStream.range(0, initialSize).toArray();
+        java.util.Collections.shuffle(java.util.Arrays.asList(removalIndices));
+    }
+
+    /**
+     * Benchmark the {@code add} operation.
+     *
+     * @param bh Blackhole to consume the boolean result.
+     */
+    @Benchmark
+    public void add(Blackhole bh) {
+        // Attempt to add a new distinct value.
+        boolean added = set.add(nextValue++);
+        bh.consume(added);
+    }
+
+    /**
+     * Benchmark the {@code remove} operation.
+     *
+     * @param bh Blackhole to consume the boolean result.
+     */
+    @Benchmark
+    public void remove(Blackhole bh) {
+        // Remove values in a deterministic but shuffled order.
+        // When the pre‑populated elements are exhausted, we reset the set.
+        if (removalIndices.length == 0) {
+            bh.consume(false);
+            return;
+        }
+        int idx = removalIndices[--initialSize % removalIndices.length];
+        boolean removed = set.remove(idx);
+        bh.consume(removed);
+    }
+}
+```

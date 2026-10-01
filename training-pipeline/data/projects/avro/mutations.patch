@@ -1,0 +1,639 @@
+diff --git a/org/apache/avro/JsonSchemaParser.java b/org/apache/avro/JsonSchemaParser.java
+index 5dd5324..7ffb434 100644
+--- a/org/apache/avro/JsonSchemaParser.java
++++ b/org/apache/avro/JsonSchemaParser.java
+@@ -52,7 +52,7 @@ public class JsonSchemaParser implements FormattedSchemaParser {
+    *                  exceed the compiler limits)
+    * @return the parsed schema
+    */
+-  public static Schema parseInternal(String... fragments) {
++  public static Schema parseInternal(String... fragments) { org.apache.avro.jmhbench.MutationSwitch.tick(1);
+     StringBuilder buffer = new StringBuilder();
+     for (String fragment : fragments) {
+       buffer.append(fragment);
+diff --git a/org/apache/avro/SchemaBuilder.java b/org/apache/avro/SchemaBuilder.java
+index 66fa8fb..cd9ca09 100644
+--- a/org/apache/avro/SchemaBuilder.java
++++ b/org/apache/avro/SchemaBuilder.java
+@@ -240,7 +240,7 @@ public class SchemaBuilder {
+   /**
+    * Create a builder for Avro schemas.
+    */
+-  public static TypeBuilder<Schema> builder() {
++  public static TypeBuilder<Schema> builder() { org.apache.avro.jmhbench.MutationSwitch.tick(23);
+     return new TypeBuilder<>(new SchemaCompletion(), new NameContext());
+   }
+ 
+@@ -248,7 +248,7 @@ public class SchemaBuilder {
+    * Create a builder for Avro schemas with a default namespace. Types created
+    * without namespaces will inherit the namespace provided.
+    */
+-  public static TypeBuilder<Schema> builder(String namespace) {
++  public static TypeBuilder<Schema> builder(String namespace) { org.apache.avro.jmhbench.MutationSwitch.tick(43);
+     return new TypeBuilder<>(new SchemaCompletion(), new NameContext().namespace(namespace));
+   }
+ 
+diff --git a/org/apache/avro/codegentest/FixedSizeString.java b/org/apache/avro/codegentest/FixedSizeString.java
+index 85f784d..affc8e9 100644
+--- a/org/apache/avro/codegentest/FixedSizeString.java
++++ b/org/apache/avro/codegentest/FixedSizeString.java
+@@ -33,11 +33,11 @@ public class FixedSizeString implements Comparable<FixedSizeString> {
+     this.value = value;
+   }
+ 
+-  public String getValue() {
++  public String getValue() { org.apache.avro.jmhbench.MutationSwitch.tick(2);
+     return value;
+   }
+ 
+-  public void setValue(String value) {
++  public void setValue(String value) { org.apache.avro.jmhbench.MutationSwitch.tick(24);
+     this.value = value;
+   }
+ 
+diff --git a/org/apache/avro/codegentest/FixedSizeStringConversion.java b/org/apache/avro/codegentest/FixedSizeStringConversion.java
+index a103607..b6eb7f2 100644
+--- a/org/apache/avro/codegentest/FixedSizeStringConversion.java
++++ b/org/apache/avro/codegentest/FixedSizeStringConversion.java
+@@ -29,7 +29,7 @@ import static java.util.Objects.nonNull;
+ 
+ public class FixedSizeStringConversion extends Conversion<FixedSizeString> {
+   @Override
+-  public Class<FixedSizeString> getConvertedType() {
++  public Class<FixedSizeString> getConvertedType() { org.apache.avro.jmhbench.MutationSwitch.tick(44);
+     return FixedSizeString.class;
+   }
+ 
+diff --git a/org/apache/avro/compiler/idl/IsResolvedSchemaVisitor.java b/org/apache/avro/compiler/idl/IsResolvedSchemaVisitor.java
+index 6006ad5..4d7a6c5 100644
+--- a/org/apache/avro/compiler/idl/IsResolvedSchemaVisitor.java
++++ b/org/apache/avro/compiler/idl/IsResolvedSchemaVisitor.java
+@@ -32,13 +32,13 @@ public final class IsResolvedSchemaVisitor implements SchemaVisitor<Boolean> {
+   }
+ 
+   @Override
+-  public SchemaVisitorAction visitTerminal(Schema terminal) {
++  public SchemaVisitorAction visitTerminal(Schema terminal) { org.apache.avro.jmhbench.MutationSwitch.tick(3);
+     hasUnresolvedParts = SchemaResolver.isUnresolvedSchema(terminal);
+     return hasUnresolvedParts ? SchemaVisitorAction.TERMINATE : SchemaVisitorAction.CONTINUE;
+   }
+ 
+   @Override
+-  public SchemaVisitorAction visitNonTerminal(Schema nonTerminal) {
++  public SchemaVisitorAction visitNonTerminal(Schema nonTerminal) { org.apache.avro.jmhbench.MutationSwitch.tick(25);
+     hasUnresolvedParts = SchemaResolver.isUnresolvedSchema(nonTerminal);
+     if (hasUnresolvedParts) {
+       return SchemaVisitorAction.TERMINATE;
+diff --git a/org/apache/avro/compiler/idl/ResolvingVisitor.java b/org/apache/avro/compiler/idl/ResolvingVisitor.java
+index 1c71754..947acdf 100644
+--- a/org/apache/avro/compiler/idl/ResolvingVisitor.java
++++ b/org/apache/avro/compiler/idl/ResolvingVisitor.java
+@@ -50,7 +50,7 @@ public final class ResolvingVisitor implements SchemaVisitor<Schema> {
+   }
+ 
+   @Override
+-  public SchemaVisitorAction visitTerminal(final Schema terminal) {
++  public SchemaVisitorAction visitTerminal(final Schema terminal) { org.apache.avro.jmhbench.MutationSwitch.tick(45);
+     Schema.Type type = terminal.getType();
+     Schema newSchema;
+     switch (type) {
+diff --git a/org/apache/avro/data/Json.java b/org/apache/avro/data/Json.java
+index 0394810..cc4c19a 100644
+--- a/org/apache/avro/data/Json.java
++++ b/org/apache/avro/data/Json.java
+@@ -78,7 +78,7 @@ public class Json {
+   public static class ObjectWriter implements DatumWriter<Object> {
+ 
+     @Override
+-    public void setSchema(Schema schema) {
++    public void setSchema(Schema schema) { org.apache.avro.jmhbench.MutationSwitch.tick(4);
+       if (!SCHEMA.equals(schema))
+         throw new RuntimeException("Not the Json schema: " + schema);
+     }
+@@ -98,7 +98,7 @@ public class Json {
+     private ResolvingDecoder resolver;
+ 
+     @Override
+-    public void setSchema(Schema schema) {
++    public void setSchema(Schema schema) { org.apache.avro.jmhbench.MutationSwitch.tick(26);
+       this.written = SCHEMA.equals(written) ? null : schema;
+     }
+ 
+diff --git a/org/apache/avro/data/TimeConversions.java b/org/apache/avro/data/TimeConversions.java
+index 0e24e0a..c317d2b 100644
+--- a/org/apache/avro/data/TimeConversions.java
++++ b/org/apache/avro/data/TimeConversions.java
+@@ -34,7 +34,7 @@ public class TimeConversions {
+   public static class DateConversion extends Conversion<LocalDate> {
+ 
+     @Override
+-    public Class<LocalDate> getConvertedType() {
++    public Class<LocalDate> getConvertedType() { org.apache.avro.jmhbench.MutationSwitch.tick(46);
+       return LocalDate.class;
+     }
+ 
+diff --git a/org/apache/avro/file/DataFileStream.java b/org/apache/avro/file/DataFileStream.java
+index 9bb1518..76f9440 100644
+--- a/org/apache/avro/file/DataFileStream.java
++++ b/org/apache/avro/file/DataFileStream.java
+@@ -165,12 +165,12 @@ public class DataFileStream<D> implements Iterator<D>, Iterable<D>, Closeable {
+   /**
+    * A handle that can be used to reopen this stream without rereading the head.
+    */
+-  public Header getHeader() {
++  public Header getHeader() { org.apache.avro.jmhbench.MutationSwitch.tick(5);
+     return header;
+   }
+ 
+   /** Return the schema used in this file. */
+-  public Schema getSchema() {
++  public Schema getSchema() { org.apache.avro.jmhbench.MutationSwitch.tick(27);
+     return header.schema;
+   }
+ 
+diff --git a/org/apache/avro/file/SeekableByteArrayInput.java b/org/apache/avro/file/SeekableByteArrayInput.java
+index 49994a9..41b5aa1 100644
+--- a/org/apache/avro/file/SeekableByteArrayInput.java
++++ b/org/apache/avro/file/SeekableByteArrayInput.java
+@@ -29,7 +29,7 @@ public class SeekableByteArrayInput extends ByteArrayInputStream implements Seek
+   }
+ 
+   @Override
+-  public long length() throws IOException {
++  public long length() throws IOException { org.apache.avro.jmhbench.MutationSwitch.tick(47);
+     return this.count;
+   }
+ 
+diff --git a/org/apache/avro/generic/GenericRecordBuilder.java b/org/apache/avro/generic/GenericRecordBuilder.java
+index 131c4dd..1903417 100644
+--- a/org/apache/avro/generic/GenericRecordBuilder.java
++++ b/org/apache/avro/generic/GenericRecordBuilder.java
+@@ -156,7 +156,7 @@ public class GenericRecordBuilder extends RecordBuilderBase<Record> {
+    * @param fieldName the name of the field to check.
+    * @return true if the given field is non-null; false otherwise.
+    */
+-  public boolean has(String fieldName) {
++  public boolean has(String fieldName) { org.apache.avro.jmhbench.MutationSwitch.tick(6);
+     return has(schema().getField(fieldName));
+   }
+ 
+@@ -166,7 +166,7 @@ public class GenericRecordBuilder extends RecordBuilderBase<Record> {
+    * @param field the field to check.
+    * @return true if the given field is non-null; false otherwise.
+    */
+-  public boolean has(Field field) {
++  public boolean has(Field field) { org.apache.avro.jmhbench.MutationSwitch.tick(28);
+     return has(field.pos());
+   }
+ 
+diff --git a/org/apache/avro/generic/PrimitivesArrays.java b/org/apache/avro/generic/PrimitivesArrays.java
+index d23d46a..7df7997 100644
+--- a/org/apache/avro/generic/PrimitivesArrays.java
++++ b/org/apache/avro/generic/PrimitivesArrays.java
+@@ -38,7 +38,7 @@ public class PrimitivesArrays {
+    * @return an instance of a primitive array or a Generic array if the value type
+    *         is does not have an associated optimised implementation.
+    */
+-  public static GenericData.AbstractArray<?> createOptimizedArray(int size, Schema schema, Schema.Type valueType) {
++  public static GenericData.AbstractArray<?> createOptimizedArray(int size, Schema schema, Schema.Type valueType) { org.apache.avro.jmhbench.MutationSwitch.tick(48);
+ 
+     if (valueType != null)
+       switch (valueType) {
+diff --git a/org/apache/avro/grpc/AvroGrpcUtils.java b/org/apache/avro/grpc/AvroGrpcUtils.java
+index 4841adc..1fb64d6 100644
+--- a/org/apache/avro/grpc/AvroGrpcUtils.java
++++ b/org/apache/avro/grpc/AvroGrpcUtils.java
+@@ -41,7 +41,7 @@ public final class AvroGrpcUtils {
+    * @param iface Avro RPC interface.
+    * @return unique service name for gRPC.
+    */
+-  public static String getServiceName(Class iface) {
++  public static String getServiceName(Class iface) { org.apache.avro.jmhbench.MutationSwitch.tick(7);
+     Protocol protocol = getProtocol(iface);
+     return protocol.getNamespace() + "." + protocol.getName();
+   }
+@@ -49,7 +49,7 @@ public final class AvroGrpcUtils {
+   /**
+    * Gets the {@link Protocol} from the Avro Interface.
+    */
+-  public static Protocol getProtocol(Class iface) {
++  public static Protocol getProtocol(Class iface) { org.apache.avro.jmhbench.MutationSwitch.tick(29);
+     try {
+       Protocol p = (Protocol) (iface.getDeclaredField("PROTOCOL").get(null));
+       return p;
+diff --git a/org/apache/avro/grpc/AvroRequestMarshaller.java b/org/apache/avro/grpc/AvroRequestMarshaller.java
+index 1eddc80..dfe1225 100644
+--- a/org/apache/avro/grpc/AvroRequestMarshaller.java
++++ b/org/apache/avro/grpc/AvroRequestMarshaller.java
+@@ -47,7 +47,7 @@ public class AvroRequestMarshaller implements MethodDescriptor.Marshaller<Object
+   }
+ 
+   @Override
+-  public InputStream stream(Object[] value) {
++  public InputStream stream(Object[] value) { org.apache.avro.jmhbench.MutationSwitch.tick(49);
+     return new AvroRequestInputStream(value, message);
+   }
+ 
+diff --git a/org/apache/avro/hadoop/file/HadoopCodecFactory.java b/org/apache/avro/hadoop/file/HadoopCodecFactory.java
+index 4974c4f..ae4383d 100644
+--- a/org/apache/avro/hadoop/file/HadoopCodecFactory.java
++++ b/org/apache/avro/hadoop/file/HadoopCodecFactory.java
+@@ -71,7 +71,7 @@ public class HadoopCodecFactory {
+    * {@code zstandard}</li>
+    * </ul>
+    */
+-  public static CodecFactory fromHadoopString(String hadoopCodecClass) {
++  public static CodecFactory fromHadoopString(String hadoopCodecClass) { org.apache.avro.jmhbench.MutationSwitch.tick(30);
+ 
+     CodecFactory o = null;
+     try {
+@@ -85,7 +85,7 @@ public class HadoopCodecFactory {
+     return o;
+   }
+ 
+-  public static String getAvroCodecName(String hadoopCodecClass) {
++  public static String getAvroCodecName(String hadoopCodecClass) { org.apache.avro.jmhbench.MutationSwitch.tick(50);
+     return HADOOP_AVRO_NAME_MAP.get(hadoopCodecClass);
+   }
+ }
+diff --git a/org/apache/avro/hadoop/io/AvroKeyComparator.java b/org/apache/avro/hadoop/io/AvroKeyComparator.java
+index ca5e7c4..a3abf63 100644
+--- a/org/apache/avro/hadoop/io/AvroKeyComparator.java
++++ b/org/apache/avro/hadoop/io/AvroKeyComparator.java
+@@ -42,7 +42,7 @@ public class AvroKeyComparator<T> extends Configured implements RawComparator<Av
+ 
+   /** {@inheritDoc} */
+   @Override
+-  public void setConf(Configuration conf) {
++  public void setConf(Configuration conf) { org.apache.avro.jmhbench.MutationSwitch.tick(8);
+     super.setConf(conf);
+     if (null != conf) {
+       // The MapReduce framework will be using this comparator to sort AvroKey objects
+diff --git a/org/apache/avro/idl/IdlUtils.java b/org/apache/avro/idl/IdlUtils.java
+index 29c787c..e3cf28c 100644
+--- a/org/apache/avro/idl/IdlUtils.java
++++ b/org/apache/avro/idl/IdlUtils.java
+@@ -83,7 +83,7 @@ public final class IdlUtils {
+     });
+     module.addSerializer(new StdSerializer<byte[]>(byte[].class) {
+       @Override
+-      public void serialize(byte[] value, JsonGenerator gen, SerializerProvider provider) throws IOException {
++      public void serialize(byte[] value, JsonGenerator gen, SerializerProvider provider) throws IOException { org.apache.avro.jmhbench.MutationSwitch.tick(9);
+         MAPPER.writeValueAsString(new String(value, StandardCharsets.ISO_8859_1));
+       }
+     });
+@@ -93,7 +93,7 @@ public final class IdlUtils {
+         .disable(SerializationFeature.WRITE_ENUMS_USING_INDEX, SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+         .enable(SerializationFeature.INDENT_OUTPUT).setDefaultPrettyPrinter(new MinimalPrettyPrinter() {
+           @Override
+-          public void writeObjectEntrySeparator(JsonGenerator jg) throws IOException {
++          public void writeObjectEntrySeparator(JsonGenerator jg) throws IOException { org.apache.avro.jmhbench.MutationSwitch.tick(31);
+             jg.writeRaw(',');
+             jg.writeRaw(' ');
+           }
+diff --git a/org/apache/avro/io/BinaryDecoder.java b/org/apache/avro/io/BinaryDecoder.java
+index 77fc849..33557a2 100644
+--- a/org/apache/avro/io/BinaryDecoder.java
++++ b/org/apache/avro/io/BinaryDecoder.java
+@@ -134,11 +134,11 @@ public class BinaryDecoder extends Decoder {
+   }
+ 
+   @Override
+-  public void readNull() throws IOException {
++  public void readNull() throws IOException { org.apache.avro.jmhbench.MutationSwitch.tick(10);
+   }
+ 
+   @Override
+-  public boolean readBoolean() throws IOException {
++  public boolean readBoolean() throws IOException { org.apache.avro.jmhbench.MutationSwitch.tick(32);
+     // inlined, shorter version of ensureBounds
+     if (limit == pos) {
+       limit = source.tryReadRaw(buf, 0, buf.length);
+diff --git a/org/apache/avro/ipc/CallFuture.java b/org/apache/avro/ipc/CallFuture.java
+index 94d4c37..7f546f1 100644
+--- a/org/apache/avro/ipc/CallFuture.java
++++ b/org/apache/avro/ipc/CallFuture.java
+@@ -57,7 +57,7 @@ public class CallFuture<T> implements Future<T>, Callback<T> {
+    * @param result the RPC result to set.
+    */
+   @Override
+-  public void handleResult(T result) {
++  public void handleResult(T result) { org.apache.avro.jmhbench.MutationSwitch.tick(11);
+     this.result = result;
+     latch.countDown();
+     if (chainedCallback != null) {
+@@ -72,7 +72,7 @@ public class CallFuture<T> implements Future<T>, Callback<T> {
+    * @param error the RPC error to set.
+    */
+   @Override
+-  public void handleError(Throwable error) {
++  public void handleError(Throwable error) { org.apache.avro.jmhbench.MutationSwitch.tick(33);
+     this.error = error;
+     latch.countDown();
+     if (chainedCallback != null) {
+diff --git a/org/apache/avro/jmhbench/MutationSwitch.java b/org/apache/avro/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..0cacf4a
+--- /dev/null
++++ b/org/apache/avro/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.apache.avro.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/apache/avro/mapred/AvroKeyComparator.java b/org/apache/avro/mapred/AvroKeyComparator.java
+index 985159d..7c8c476 100644
+--- a/org/apache/avro/mapred/AvroKeyComparator.java
++++ b/org/apache/avro/mapred/AvroKeyComparator.java
+@@ -32,7 +32,7 @@ public class AvroKeyComparator<T> extends Configured implements RawComparator<Av
+   private Schema schema;
+ 
+   @Override
+-  public void setConf(Configuration conf) {
++  public void setConf(Configuration conf) { org.apache.avro.jmhbench.MutationSwitch.tick(12);
+     super.setConf(conf);
+     if (conf != null)
+       schema = Pair.getKeySchema(AvroJob.getMapOutputSchema(conf));
+diff --git a/org/apache/avro/mapred/AvroMapper.java b/org/apache/avro/mapred/AvroMapper.java
+index e9a967b..d93a6e5 100644
+--- a/org/apache/avro/mapred/AvroMapper.java
++++ b/org/apache/avro/mapred/AvroMapper.java
+@@ -38,7 +38,7 @@ public class AvroMapper<IN, OUT> extends Configured implements JobConfigurable,
+ 
+   /** Called with each map input datum. By default, collects inputs. */
+   @SuppressWarnings("unchecked")
+-  public void map(IN datum, AvroCollector<OUT> collector, Reporter reporter) throws IOException {
++  public void map(IN datum, AvroCollector<OUT> collector, Reporter reporter) throws IOException { org.apache.avro.jmhbench.MutationSwitch.tick(34);
+     collector.collect((OUT) datum);
+   }
+ 
+diff --git a/org/apache/avro/mapreduce/AvroJob.java b/org/apache/avro/mapreduce/AvroJob.java
+index 03429d9..9507c9b 100644
+--- a/org/apache/avro/mapreduce/AvroJob.java
++++ b/org/apache/avro/mapreduce/AvroJob.java
+@@ -77,7 +77,7 @@ public final class AvroJob {
+    * @param job    The job to configure.
+    * @param schema The input key schema.
+    */
+-  public static void setInputKeySchema(Job job, Schema schema) {
++  public static void setInputKeySchema(Job job, Schema schema) { org.apache.avro.jmhbench.MutationSwitch.tick(13);
+     job.getConfiguration().set(CONF_INPUT_KEY_SCHEMA, schema.toString());
+   }
+ 
+@@ -87,7 +87,7 @@ public final class AvroJob {
+    * @param job    The job to configure.
+    * @param schema The input value schema.
+    */
+-  public static void setInputValueSchema(Job job, Schema schema) {
++  public static void setInputValueSchema(Job job, Schema schema) { org.apache.avro.jmhbench.MutationSwitch.tick(35);
+     job.getConfiguration().set(CONF_INPUT_VALUE_SCHEMA, schema.toString());
+   }
+ 
+diff --git a/org/apache/avro/message/BinaryMessageDecoder.java b/org/apache/avro/message/BinaryMessageDecoder.java
+index 46d1d04..a68c6b6 100644
+--- a/org/apache/avro/message/BinaryMessageDecoder.java
++++ b/org/apache/avro/message/BinaryMessageDecoder.java
+@@ -119,7 +119,7 @@ public class BinaryMessageDecoder<D> extends MessageDecoder.BaseDecoder<D> {
+    *
+    * @param writeSchema a {@link Schema} to use when decoding buffers
+    */
+-  public void addSchema(Schema writeSchema) {
++  public void addSchema(Schema writeSchema) { org.apache.avro.jmhbench.MutationSwitch.tick(14);
+     long fp = SchemaNormalization.parsingFingerprint64(writeSchema);
+     final Schema actualReadSchema = this.readSchema != null ? this.readSchema : writeSchema;
+     codecByFingerprint.put(fp, new RawMessageDecoder<>(model, writeSchema, actualReadSchema));
+diff --git a/org/apache/avro/mojo/IDLMojo.java b/org/apache/avro/mojo/IDLMojo.java
+index f2a379a..da3231c 100644
+--- a/org/apache/avro/mojo/IDLMojo.java
++++ b/org/apache/avro/mojo/IDLMojo.java
+@@ -60,7 +60,7 @@ public class IDLMojo extends AbstractAvroMojo {
+   private String[] testIncludes = new String[] { "**/*.avdl" };
+ 
+   @Override
+-  protected void doCompile(String filename, File sourceDirectory, File outputDirectory) throws IOException {
++  protected void doCompile(String filename, File sourceDirectory, File outputDirectory) throws IOException { org.apache.avro.jmhbench.MutationSwitch.tick(15);
+     try {
+       @SuppressWarnings("rawtypes")
+       List runtimeClasspathElements = project.getRuntimeClasspathElements();
+@@ -110,7 +110,7 @@ public class IDLMojo extends AbstractAvroMojo {
+   }
+ 
+   @Override
+-  protected String[] getIncludes() {
++  protected String[] getIncludes() { org.apache.avro.jmhbench.MutationSwitch.tick(36);
+     return includes;
+   }
+ 
+diff --git a/org/apache/avro/path/MapKeyPredicate.java b/org/apache/avro/path/MapKeyPredicate.java
+index b183d84..7d999c2 100644
+--- a/org/apache/avro/path/MapKeyPredicate.java
++++ b/org/apache/avro/path/MapKeyPredicate.java
+@@ -29,7 +29,7 @@ public class MapKeyPredicate implements PositionalPathPredicate {
+     this.key = key;
+   }
+ 
+-  public String getKey() {
++  public String getKey() { org.apache.avro.jmhbench.MutationSwitch.tick(16);
+     return key;
+   }
+ 
+diff --git a/org/apache/avro/path/TracingAvroTypeException.java b/org/apache/avro/path/TracingAvroTypeException.java
+index f7dae88..4616d31 100644
+--- a/org/apache/avro/path/TracingAvroTypeException.java
++++ b/org/apache/avro/path/TracingAvroTypeException.java
+@@ -38,7 +38,7 @@ public class TracingAvroTypeException extends AvroTypeException implements PathT
+   }
+ 
+   @Override
+-  public void tracePath(PathElement step) {
++  public void tracePath(PathElement step) { org.apache.avro.jmhbench.MutationSwitch.tick(37);
+     reversePath.add(step);
+   }
+ 
+diff --git a/org/apache/avro/perf/Perf.java b/org/apache/avro/perf/Perf.java
+index e7712a2..7811c4c 100644
+--- a/org/apache/avro/perf/Perf.java
++++ b/org/apache/avro/perf/Perf.java
+@@ -38,7 +38,7 @@ import org.openjdk.jmh.runner.options.WarmupMode;
+  */
+ public final class Perf {
+ 
+-  public static void main(String[] args) throws Exception {
++  public static void main(String[] args) throws Exception { org.apache.avro.jmhbench.MutationSwitch.tick(17);
+     Options options = new Options();
+     options.addOption(Option.builder().argName("measurementIterations").longOpt("mi").hasArg()
+         .desc("The number of measure iterations").numberOfArgs(1).build());
+diff --git a/org/apache/avro/reflect/MapEntry.java b/org/apache/avro/reflect/MapEntry.java
+index 21c52bc..6e13c00 100644
+--- a/org/apache/avro/reflect/MapEntry.java
++++ b/org/apache/avro/reflect/MapEntry.java
+@@ -44,12 +44,12 @@ public class MapEntry<K, V> implements Map.Entry<K, V> {
+   }
+ 
+   @Override
+-  public K getKey() {
++  public K getKey() { org.apache.avro.jmhbench.MutationSwitch.tick(18);
+     return key;
+   }
+ 
+   @Override
+-  public V getValue() {
++  public V getValue() { org.apache.avro.jmhbench.MutationSwitch.tick(38);
+     return value;
+   }
+ 
+diff --git a/org/apache/avro/specific/SpecificErrorBuilderBase.java b/org/apache/avro/specific/SpecificErrorBuilderBase.java
+index 2aac97d..1c3dece 100644
+--- a/org/apache/avro/specific/SpecificErrorBuilderBase.java
++++ b/org/apache/avro/specific/SpecificErrorBuilderBase.java
+@@ -88,12 +88,12 @@ abstract public class SpecificErrorBuilderBase<T extends SpecificExceptionBase>
+   }
+ 
+   @Override
+-  public Object getValue() {
++  public Object getValue() { org.apache.avro.jmhbench.MutationSwitch.tick(19);
+     return value;
+   }
+ 
+   @Override
+-  public SpecificErrorBuilderBase<T> setValue(Object value) {
++  public SpecificErrorBuilderBase<T> setValue(Object value) { org.apache.avro.jmhbench.MutationSwitch.tick(39);
+     this.value = value;
+     hasValue = true;
+     return this;
+diff --git a/org/apache/avro/thrift/ThriftData.java b/org/apache/avro/thrift/ThriftData.java
+index 3b82a0c..8e6ae96 100644
+--- a/org/apache/avro/thrift/ThriftData.java
++++ b/org/apache/avro/thrift/ThriftData.java
+@@ -63,12 +63,12 @@ public class ThriftData extends GenericData {
+   }
+ 
+   @Override
+-  public DatumReader createDatumReader(Schema schema) {
++  public DatumReader createDatumReader(Schema schema) { org.apache.avro.jmhbench.MutationSwitch.tick(20);
+     return new ThriftDatumReader(schema, schema, this);
+   }
+ 
+   @Override
+-  public DatumWriter createDatumWriter(Schema schema) {
++  public DatumWriter createDatumWriter(Schema schema) { org.apache.avro.jmhbench.MutationSwitch.tick(40);
+     return new ThriftDatumWriter(schema, this);
+   }
+ 
+diff --git a/org/apache/avro/tool/BinaryFragmentToJsonTool.java b/org/apache/avro/tool/BinaryFragmentToJsonTool.java
+index 5bc9d92..7285c0d 100644
+--- a/org/apache/avro/tool/BinaryFragmentToJsonTool.java
++++ b/org/apache/avro/tool/BinaryFragmentToJsonTool.java
+@@ -39,7 +39,7 @@ import org.apache.avro.generic.GenericDatumWriter;
+ /** Converts an input file from Avro binary into JSON. */
+ public class BinaryFragmentToJsonTool implements Tool {
+   @Override
+-  public int run(InputStream stdin, PrintStream out, PrintStream err, List<String> args) throws Exception {
++  public int run(InputStream stdin, PrintStream out, PrintStream err, List<String> args) throws Exception { org.apache.avro.jmhbench.MutationSwitch.tick(21);
+     OptionParser optionParser = new OptionParser();
+     OptionSpec<Void> noPrettyOption = optionParser.accepts("no-pretty", "Turns off pretty printing.");
+     OptionSpec<String> schemaFileOption = optionParser
+@@ -89,7 +89,7 @@ public class BinaryFragmentToJsonTool implements Tool {
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { org.apache.avro.jmhbench.MutationSwitch.tick(41);
+     return "fragtojson";
+   }
+ 
+diff --git a/org/apache/avro/util/ByteBufferOutputStream.java b/org/apache/avro/util/ByteBufferOutputStream.java
+index 00fe1b1..20bbcb7 100644
+--- a/org/apache/avro/util/ByteBufferOutputStream.java
++++ b/org/apache/avro/util/ByteBufferOutputStream.java
+@@ -40,7 +40,7 @@ public class ByteBufferOutputStream extends OutputStream {
+   }
+ 
+   /** Returns all data written and resets the stream to be empty. */
+-  public List<ByteBuffer> getBufferList() {
++  public List<ByteBuffer> getBufferList() { org.apache.avro.jmhbench.MutationSwitch.tick(22);
+     List<ByteBuffer> result = buffers;
+     reset();
+     for (Buffer buffer : result) {
+@@ -50,7 +50,7 @@ public class ByteBufferOutputStream extends OutputStream {
+   }
+ 
+   /** Prepend a list of ByteBuffers to this stream. */
+-  public void prepend(List<ByteBuffer> lists) {
++  public void prepend(List<ByteBuffer> lists) { org.apache.avro.jmhbench.MutationSwitch.tick(42);
+     for (Buffer buffer : lists) {
+       buffer.position(buffer.limit());
+     }

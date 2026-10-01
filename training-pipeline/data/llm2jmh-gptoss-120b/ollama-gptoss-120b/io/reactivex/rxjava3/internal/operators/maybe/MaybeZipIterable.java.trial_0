@@ -1,0 +1,91 @@
+```
+package io.reactivex.rxjava3.internal.operators.maybe.benchmark;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.MaybeObserver;
+import io.reactivex.rxjava3.core.MaybeSource;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeZipIterable;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link MaybeZipIterable}.
+ *
+ * Measures the throughput of subscribing to a {@code MaybeZipIterable}
+ * with a configurable number of source {@code Maybe}s.
+ *
+ * The benchmark uses {@link Mode#Throughput} which reports the number of
+ * successful zip operations per time unit.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Param allows systematic variation of the number of sources.
+ * - @Setup prepares immutable data structures outside the timed region.
+ * - Blackhole is avoided by using {@code blockingGet()} which returns the
+ *   zipped result; the result is consumed to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class MaybeZipIterableBenchmark {
+
+    /**
+     * Number of source {@code Maybe}s to zip.
+     * Typical values: 1, 2, 4, 8, 16, 32.
+     */
+    @Param({"1", "2", "4", "8", "16", "32"})
+    public int sourceCount;
+
+    /** The iterable of source {@code Maybe}s. */
+    private Iterable<? extends MaybeSource<? extends Integer>> sources;
+
+    /** Zipper function that sums the integer values. */
+    private Function<Object[], Integer> zipper;
+
+    /** The {@code MaybeZipIterable} instance under test. */
+    private MaybeZipIterable<Integer, Integer> zipIterable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Prepare a list of Maybe.just(i) sources.
+        List<Maybe<Integer>> list = new ArrayList<>(sourceCount);
+        for (int i = 0; i < sourceCount; i++) {
+            list.add(Maybe.just(i));
+        }
+        this.sources = list;
+
+        // Zipper that sums all integer values in the array.
+        this.zipper = objects -> {
+            int sum = 0;
+            for (Object o : objects) {
+                sum += (Integer) o;
+            }
+            return sum;
+        };
+
+        // Create the MaybeZipIterable to be benchmarked.
+        this.zipIterable = new MaybeZipIterable<>(sources, zipper);
+    }
+
+    /**
+     * Benchmark method that subscribes to the {@code MaybeZipIterable}
+     * and blocks until the result is available.
+     *
+     * The result is returned to the JMH harness to prevent dead‑code elimination.
+     *
+     * @return the zipped integer result
+     */
+    @Benchmark
+    public Integer zipAndBlock() {
+        // Subscribe and block for the result; this is the measured operation.
+        return zipIterable.blockingGet();
+    }
+}
+```

@@ -1,0 +1,107 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link FlowableDelaySubscriptionOther}.
+ *
+ * The benchmark measures the throughput of the operator when the upstream
+ * {@code Flowable} emits a configurable number of items and the subscription
+ * is delayed by a simple {@code Flowable.just(...)} publisher.
+ *
+ * Best‑practice JMH settings are used:
+ * - Warm‑up iterations to let the JIT stabilize
+ * - Measurement iterations for reliable results
+ * - Throughput mode (operations per second)
+ * - Blackhole to consume emitted items and avoid dead‑code elimination
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableDelaySubscriptionOtherBenchmark {
+
+    /**
+     * Number of items emitted by the main source.
+     * Typical values cover small, medium and large streams.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    private Flowable<Integer> flowable;
+
+    /**
+     * Set up a fresh operator instance for each invocation to avoid
+     * cross‑iteration state leakage.
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        Flowable<Integer> main = Flowable.range(1, size);
+        // triggers immediate subscription
+        Flowable<Long> other = Flowable.just(1L);
+        flowable = new FlowableDelaySubscriptionOther<>(main, other);
+    }
+
+    /**
+     * Executes the operator and consumes all emitted items.
+     *
+     * @param bh Blackhole to prevent the JIT from optimizing away the work.
+     */
+    @Benchmark
+    public void delaySubscriptionOther(Blackhole bh) {
+        flowable.subscribe(new DisposableSubscriber<Integer>() {
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are not expected in this benchmark; rethrow to surface failures.
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // No action needed; completion signals the end of the stream.
+            }
+        });
+    }
+}

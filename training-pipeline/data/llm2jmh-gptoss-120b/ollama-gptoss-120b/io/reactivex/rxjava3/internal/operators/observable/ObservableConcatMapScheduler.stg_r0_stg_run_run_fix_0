@@ -1,0 +1,89 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.util.ErrorMode;
+import io.reactivex.rxjava3.schedulers.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
+/**
+ * JMH benchmark for {@link ObservableConcatMapScheduler}.
+ * Measures throughput of the operator when concatenating a simple range of integers.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Benchmark)
+public class ObservableConcatMapSchedulerBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    @Param({ "32", "128", "1024" })
+    public int bufferSize;
+
+    private Scheduler scheduler;
+
+    private ObservableSource<Integer> source;
+
+    private Function<Integer, ObservableSource<Integer>> mapper;
+
+    private Observable<Integer> operator;
+
+    @Setup(Level.Trial)
+    public void setupTrial() {
+        // Shared scheduler for the whole trial
+        scheduler = Schedulers.computation();
+        source = Observable.range(1, itemCount);
+        mapper = v -> Observable.just(v);
+    }
+
+    @Setup(Level.Iteration)
+    public void setupIteration() {
+        // Create a fresh operator (and thus a fresh worker) for each iteration
+        ObservableConcatMapScheduler<Integer, Integer> internal =
+                new ObservableConcatMapScheduler<>(source, mapper, bufferSize, ErrorMode.IMMEDIATE, scheduler);
+        operator = Observable.wrap(internal);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDownTrial() {
+        scheduler.shutdown();
+    }
+
+    @Benchmark
+    public void concatMapSchedulerThroughput(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        operator.subscribe(new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                // no-op
+            }
+
+            @Override
+            public void onNext(Integer value) {
+                bh.consume(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        latch.await();
+    }
+}
+```

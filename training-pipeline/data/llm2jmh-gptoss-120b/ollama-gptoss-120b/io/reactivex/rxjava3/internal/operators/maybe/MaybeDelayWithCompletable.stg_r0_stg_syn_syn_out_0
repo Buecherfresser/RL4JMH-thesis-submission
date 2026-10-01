@@ -1,0 +1,98 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link MaybeDelayWithCompletable}.
+ *
+ * <p>The benchmark measures the throughput (operations per second) of the operator
+ * when the upstream {@link Maybe} emits a single value and the delaying {@link Completable}
+ * completes immediately. The test runs in a single thread to avoid contention and
+ * uses {@link Blackhole} to consume the result, preventing dead‑code elimination.</p>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class MaybeDelayWithCompletableBenchmark {
+
+    /**
+     * Upstream Maybe that emits a constant integer.
+     */
+    private MaybeSource<Integer> upstream;
+
+    /**
+     * Completable that completes immediately (no delay).
+     */
+    private Completable other;
+
+    /**
+     * The operator under test.
+     */
+    private Maybe<Integer> operator;
+
+    @Setup(Level.Trial)
+    public void setUpTrial() {
+        // Create sources that are cheap and deterministic.
+        upstream = Maybe.just(1);
+        other = Completable.complete();
+    }
+
+    @Setup(Level.Iteration)
+    public void setUpIteration() {
+        // Re‑create the operator for each iteration to avoid any hidden caching.
+        operator = new MaybeDelayWithCompletable<>(upstream, other);
+    }
+
+    /**
+     * Executes the operator and consumes the result.
+     *
+     * <p>The {@code blockingGet()} call forces the subscription to complete
+     * synchronously, which is suitable for a micro‑benchmark that focuses on
+     * the operator's overhead rather than asynchronous scheduling.</p>
+     *
+     * @param bh Blackhole to consume the result and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void delayWithCompletableThroughput(Blackhole bh) {
+        // The operator emits a single value; block until it is received.
+        Integer result = operator.blockingGet();
+        bh.consume(result);
+    }
+}

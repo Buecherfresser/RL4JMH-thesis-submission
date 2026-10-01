@@ -1,0 +1,36 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.openjdk.jmh.annotations.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableAnySingleBenchmark {
+
+    @Param({ "10", "100", "1000", "10000", "100000" })
+    public int size;
+
+    private ObservableSource<Integer> source;
+
+    private Predicate<Integer> predicate = v -> (v & 1) == 0;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Observable.range(1, size);
+    }
+
+    @Benchmark
+    public Boolean anySingleThroughput() {
+        ObservableAnySingle<Integer> anySingle = new ObservableAnySingle<>(source, predicate);
+        return anySingle.blockingGet();
+    }
+}
+```

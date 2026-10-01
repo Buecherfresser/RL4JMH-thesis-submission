@@ -1,0 +1,51 @@
+```
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.util.ErrorMode;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link FlowableConcatMapCompletable}.
+ *
+ * Measures throughput of the concatMapCompletable operator with a synchronous source
+ * and a trivial Completable mapper.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableConcatMapCompletableBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    @Param({ "32", "64", "128" })
+    public int prefetch;
+
+    @Param({ "IMMEDIATE", "BOUNDARY", "END" })
+    public ErrorMode errorMode;
+
+    private Flowable<Integer> source;
+    private Function<Integer, CompletableSource> mapper;
+    private FlowableConcatMapCompletable<Integer> operator;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        source = Flowable.range(1, itemCount);
+        mapper = v -> Completable.complete();
+        operator = new FlowableConcatMapCompletable<>(source, mapper, errorMode, prefetch);
+    }
+
+    @Benchmark
+    public void concatMapCompletableThroughput(Blackhole bh) {
+        operator.blockingAwait(); // Completable.blockingAwait() returns void
+        bh.consume(1); // prevent dead‑code elimination
+    }
+}
+```

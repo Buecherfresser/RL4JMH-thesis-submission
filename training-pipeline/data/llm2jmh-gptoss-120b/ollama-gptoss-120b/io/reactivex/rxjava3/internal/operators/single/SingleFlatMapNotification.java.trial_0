@@ -1,0 +1,66 @@
+```
+package io.reactivex.rxjava3.internal.operators.single.benchmark;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleSource;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.single.SingleFlatMapNotification;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link SingleFlatMapNotification}.
+ * Measures the throughput of the operator when the upstream succeeds.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Benchmark)
+public class SingleFlatMapNotificationBenchmark {
+
+    /** Source Single that always succeeds with the value 1. */
+    private Single<Integer> source;
+
+    /** Operator under test. */
+    private Single<Integer> operator;
+
+    /** Mapper used when the upstream succeeds. */
+    private Function<Integer, SingleSource<Integer>> onSuccessMapper;
+
+    /** Mapper used when the upstream errors (not exercised in this benchmark). */
+    private Function<Throwable, SingleSource<Integer>> onErrorMapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple upstream that emits a constant value.
+        source = Single.just(1);
+
+        // Success mapper adds 1 to the upstream value and returns a new Single.
+        onSuccessMapper = v -> Single.just(v + 1);
+
+        // Error mapper returns a Single that fails with a RuntimeException.
+        // It is not triggered in the throughput benchmark but required for construction.
+        onErrorMapper = e -> Single.error(new RuntimeException(e));
+
+        // Create the operator instance once per trial.
+        operator = new SingleFlatMapNotification<>(
+                source,
+                onSuccessMapper,
+                onErrorMapper
+        );
+    }
+
+    /**
+     * Benchmark method that subscribes to the operator and blocks until the result is available.
+     * The blocking call ensures that the whole reactive chain is executed within the measurement.
+     */
+    @Benchmark
+    public int flatMapNotificationThroughput() {
+        // blockingGet forces subscription and waits for the terminal event.
+        return operator.blockingGet();
+    }
+}
+```

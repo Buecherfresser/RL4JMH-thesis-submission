@@ -1,0 +1,153 @@
+# Online RL (GRPO) for JMH benchmark generation. See jmhgen.config.GRPOConfig.
+#
+# First RL run: reward = compile + runtime + anti_pattern only (rsd/mutation off). Rewards are
+# computed SYNCHRONOUSLY on the training VM (no async CPU fleet), so the VM needs a JDK + Maven
+# (see configs/remote/default.yaml). Prompts are a hand-curated corpus of benchmarkable
+# ("good") classes across several libraries.
+#
+# Generation runs through vLLM 0.23 in COLOCATE mode. The rollout engine and trainer alternate
+# on the same GPU in one process; sleep mode releases vLLM weights/KV cache during optimisation.
+# TRL server mode is not valid on a one-GPU VM because its server must use a distinct CUDA device.
+#
+#   # one environment and one process:
+#   HF_TOKEN=... uv run jmh-train-grpo --config configs/grpo/jmh-rl.yaml
+
+base_model: google/gemma-4-E2B-it
+output_dir: outputs/grpo-jmh-rl
+# Merged corpus of curated "good" classes (built by scripts/provision_rl_projects.sh):
+# commons-numbers + commons-statistics + commons-codec + commons-text + roaringbitmap + jackson-core.
+dataset_path: data/snippets/rl-merged.good.jsonl
+# original = six curated libraries; full = expanded ~99-library merge. CLI: --corpus
+corpus: original
+seed: 42
+
+# Shared numerical recipe (identical to SFT/RFT for a valid per-stage comparison).
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: [vision_tower, audio_tower, multi_modal_projector]
+  bias: none
+
+# GRPO uses a lower LR than SFT (policy-gradient on a small, already-capable model).
+learning_rate: 1.0e-6
+# Global batch = per_device * grad_accum * world_size must be divisible by group_size. Here
+# 4 * 2 * 1 = 8 = group_size, i.e. one prompt's rollout group per optimiser step (split into two
+# micro-batches to keep training memory low on the shared GPU).
+per_device_batch_size: 4
+gradient_accumulation_steps: 2
+
+# --- rollouts (E-step) ---
+group_size: 8                 # G candidates per prompt for the group-relative baseline
+rollout_temperature: 1.0
+top_p: 0.95
+top_k: 64
+max_prompt_length: 8192       # subject source + jmhbench contract
+max_completion_length: 4096   # thinking + benchmark (fits 16384 vLLM --max-model-len w/ prompt)
+completion_eos_token_id: 106  # Gemma 4 <turn|>; prevents TRL masking valid chat completions
+max_source_chars: 24000       # ~6k tokens; skip giant classes so a prompt never overflows
+limit_prompts: 0              # 0 = all; set small (e.g. 4) for a smoke run
+
+# --- GRPO objective / DAPO-style stabilisers (see the RL-failure notes) ---
+kl_coeff: 0.0                 # beta: drop the KL term, rely on clipping (LongCat/DAPO)
+epsilon: 0.2
+epsilon_high: 0.28            # clip-higher: loosen upward updates -> avoid entropy collapse
+grpo_loss_type: dr_grpo       # token-level (unbiased) aggregation -> no length bias
+scale_rewards: false          # Dr.GRPO: keep the mean baseline, drop std scaling
+mask_truncated_completions: true  # zero the loss on overlong (truncated) rollouts
+mu: 1                         # fully on-policy: one update per rollout group
+
+# --- training length ---
+num_epochs: 1.0
+num_iterations: 0             # >0 => fixed optimiser steps (overrides epochs); 0 => epochs
+warmup_ratio: 0.03
+logging_steps: 1
+save_steps: 50
+report_to: none
+
+# --- vLLM rollout generation ---
+use_vllm: true
+vllm_mode: colocate           # required when trainer + rollout engine share one GPU
+vllm_gpu_memory_utilization: 0.30
+vllm_max_model_length: 16384  # includes Gemma 4 soft-token overhead beyond text token lengths
+vllm_tensor_parallel_size: 1
+vllm_enable_sleep_mode: true  # free vLLM weights/KV cache during each optimiser step
+
+# --- verifiable reward (compile + runtime + anti_pattern), computed on this VM ---
+reward_weights:
+  compile: 0.34               # r_compile: compiles/packages
+  runtime: 0.33               # r_runtime: JMH ran to completion
+  anti_pattern: 0.33          # r_anti: free of Costa et al. smells (regex backend, no SpotBugs)
+  rsd: 0.0
+  mutation: 0.0
+need_run: true                # compile AND run each rollout (runtime signal)
+# Trimmed JMH profile: rewards are per-rollout, so a single quick run suffices. forks=1 and one
+# short warmup/measurement iteration keep each reward to a few seconds; fail_on_error is off so a
+# flaky rollout scores 0 instead of aborting the batch.
+runner:
+  jmh_version: "1.37"
+  java_release: 17
+  jmh:
+    warmup_iterations: 1
+    measurement_iterations: 1
+    forks: 1
+    warmup_time: "200ms"
+    measurement_time: "200ms"
+    timeout_s: 120.0
+    per_iteration_timeout_s: 30.0
+    fail_on_error: false
+
+# Map CodeSnippet.project -> classpath file from jmh-provision-classpath. Every project in the
+# prompt corpus MUST appear here or its rollouts fail to compile (reward 0).
+project_classpaths:
+  commons-numbers: data/classpaths/commons-numbers.cp
+  commons-statistics: data/classpaths/commons-statistics.cp
+  commons-codec: data/classpaths/commons-codec.cp
+  commons-text: data/classpaths/commons-text.cp
+  jackson-core: data/classpaths/jackson-core.cp
+  roaringbitmap: data/classpaths/roaringbitmap.cp
+  agrona: data/classpaths/agrona.cp
+  chronicle-bytes: data/classpaths/chronicle-bytes.cp
+  chronicle-map: data/classpaths/chronicle-map.cp
+  chronicle-wire: data/classpaths/chronicle-wire.cp
+  cache2k: data/classpaths/cache2k.cp
+  stream-lib: data/classpaths/stream-lib.cp
+  commons-crypto: data/classpaths/commons-crypto.cp
+  big-math: data/classpaths/big-math.cp
+  hipparchus: data/classpaths/hipparchus.cp
+  ojalgo: data/classpaths/ojalgo.cp
+  commons-math: data/classpaths/commons-math.cp
+  commons-rng: data/classpaths/commons-rng.cp
+  commons-geometry: data/classpaths/commons-geometry.cp
+  jackson-databind: data/classpaths/jackson-databind.cp
+  dsl-json: data/classpaths/dsl-json.cp
+  json-java: data/classpaths/json-java.cp
+  json-simple: data/classpaths/json-simple.cp
+  wire: data/classpaths/wire.cp
+  jackson-dataformats-binary: data/classpaths/jackson-dataformats-binary.cp
+  commons-csv: data/classpaths/commons-csv.cp
+  commons-io: data/classpaths/commons-io.cp
+  brics-automaton: data/classpaths/brics-automaton.cp
+  joda-time: data/classpaths/joda-time.cp
+  threeten-extra: data/classpaths/threeten-extra.cp
+  conversant-disruptor: data/classpaths/conversant-disruptor.cp
+  hdrhistogram: data/classpaths/hdrhistogram.cp
+  micrometer: data/classpaths/micrometer.cp
+  vertx: data/classpaths/vertx.cp
+  jts: data/classpaths/jts.cp
+  spatial4j: data/classpaths/spatial4j.cp
+  jgraphx: data/classpaths/jgraphx.cp
+  zxing: data/classpaths/zxing.cp
+  commons-imaging: data/classpaths/commons-imaging.cp
+  jimfs: data/classpaths/jimfs.cp
+  tablesaw: data/classpaths/tablesaw.cp
+  byte-buddy: data/classpaths/byte-buddy.cp
+  bigqueue: data/classpaths/bigqueue.cp
+  commons-configuration: data/classpaths/commons-configuration.cp
+  commons-validator: data/classpaths/commons-validator.cp
+  commons-beanutils: data/classpaths/commons-beanutils.cp

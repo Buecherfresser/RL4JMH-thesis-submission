@@ -1,0 +1,131 @@
+```java
+package io.reactivex.rxjava3.internal.subscriptions.jmh;
+
+import io.reactivex.rxjava3.internal.subscriptions.ArrayCompositeSubscription;
+import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Subscription;
+
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * JMH benchmarks for {@link ArrayCompositeSubscription}.
+ *
+ * The benchmarks focus on the most frequently used operations:
+ * <ul>
+ *   <li>{@code setResource}</li>
+ *   <li>{@code replaceResource}</li>
+ *   <li>{@code dispose}</li>
+ *   <li>{@code isDisposed}</li>
+ * </ul>
+ *
+ * Best‑practice JMH settings are used:
+ * <ul>
+ *   <li>5 warm‑up iterations</li>
+ *   <li>10 measurement iterations</li>
+ *   <li>3 forks</li>
+ *   <li>Throughput mode (operations per time unit)</li>
+ *   <li>Time unit: milliseconds</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(3)
+@Threads(4) // simulate moderate contention
+public class ArrayCompositeSubscriptionBenchmark {
+
+    /**
+     * Simple {@link Subscription} implementation that records cancel calls.
+     */
+    static final class DummySubscription implements Subscription {
+        final AtomicInteger cancelCount = new AtomicInteger();
+
+        @Override
+        public void request(long n) {
+            // no‑op
+        }
+
+        @Override
+        public void cancel() {
+            cancelCount.incrementAndGet();
+        }
+    }
+
+    /**
+     * Shared state for the benchmarks that need a pre‑filled {@link ArrayCompositeSubscription}.
+     */
+    @State(Scope.Thread)
+    public static class FilledState {
+        @Param({"8", "16", "32", "64"})
+        int capacity;
+
+        ArrayCompositeSubscription acs;
+        DummySubscription[] initialSubs;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            acs = new ArrayCompositeSubscription(capacity);
+            initialSubs = new DummySubscription[capacity];
+            for (int i = 0; i < capacity; i++) {
+                DummySubscription ds = new DummySubscription();
+                initialSubs[i] = ds;
+                acs.setResource(i, ds);
+            }
+        }
+    }
+
+    /**
+     * State for the {@code dispose} benchmark. A fresh instance is created for each invocation
+     * to avoid measuring the cost of re‑initialisation inside the benchmark method.
+     */
+    @State(Scope.Thread)
+    public static class DisposeState {
+        @Param({"8", "16", "32", "64"})
+        int capacity;
+
+        ArrayCompositeSubscription acs;
+
+        @Setup(Level.Invocation)
+        public void setUp() {
+            acs = new ArrayCompositeSubscription(capacity);
+            for (int i = 0; i < capacity; i++) {
+                acs.setResource(i, new DummySubscription());
+            }
+        }
+    }
+
+    @Benchmark
+    public void setResource(FilledState state, Blackhole bh) {
+        int idx = ThreadLocalRandom.current().nextInt(state.capacity);
+        DummySubscription newSub = new DummySubscription();
+        boolean result = state.acs.setResource(idx, newSub);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void replaceResource(FilledState state, Blackhole bh) {
+        int idx = ThreadLocalRandom.current().nextInt(state.capacity);
+        DummySubscription newSub = new DummySubscription();
+        Subscription previous = state.acs.replaceResource(idx, newSub);
+        bh.consume(previous);
+    }
+
+    @Benchmark
+    public void dispose(DisposeState state, Blackhole bh) {
+        state.acs.dispose();
+        // consume a field to prevent dead‑code elimination
+        bh.consume(state.acs.isDisposed());
+    }
+
+    @Benchmark
+    public void isDisposed(FilledState state, Blackhole bh) {
+        boolean disposed = state.acs.isDisposed();
+        bh.consume(disposed);
+    }
+}
+```

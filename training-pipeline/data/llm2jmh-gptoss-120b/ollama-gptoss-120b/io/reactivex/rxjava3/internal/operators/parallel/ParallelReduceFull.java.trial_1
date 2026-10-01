@@ -1,0 +1,46 @@
+```
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.ParallelFlowable;
+import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.parallel.ParallelReduceFull;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Benchmark)
+public class ParallelReduceFullBenchmark {
+
+    @Param({ "1", "2", "4", "8" })
+    int parallelism;
+
+    @Param({ "1000", "1000000" })
+    int size;
+
+    private ParallelReduceFull<Integer> operator;
+
+    private static final BiFunction<Integer, Integer, Integer> REDUCER = (a, b) -> a + b;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        ParallelFlowable<Integer> source = Flowable.range(1, size)
+                .parallel(parallelism)
+                .runOn(Schedulers.computation());
+
+        operator = new ParallelReduceFull<>(source, REDUCER);
+    }
+
+    @Benchmark
+    public void reduceFull(Blackhole bh) {
+        Integer result = operator.blockingFirst();
+        bh.consume(result);
+    }
+}
+```

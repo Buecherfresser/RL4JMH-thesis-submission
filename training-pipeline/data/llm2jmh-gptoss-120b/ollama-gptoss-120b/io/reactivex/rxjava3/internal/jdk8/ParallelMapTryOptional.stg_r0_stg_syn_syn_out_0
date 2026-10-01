@@ -1,0 +1,112 @@
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link ParallelMapTryOptional}.
+ *
+ * The benchmark measures the *throughput* (operations per second) of a
+ * parallel flow that maps each upstream value to an {@link Optional}
+ * and applies a simple error‑handling strategy.
+ *
+ * Best‑practice notes:
+ * • The source is a finite {@link Flowable#range} to keep each iteration
+ *   deterministic and bounded.
+ * • The mapper and error handler are deliberately lightweight to focus
+ *   on the operator's overhead.
+ * • {@link Blackhole} is used to consume the downstream values and avoid
+ *   dead‑code elimination.
+ * • Warm‑up and measurement iterations are configured to let the JIT
+ *   stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ParallelMapTryOptionalBenchmark {
+
+    /**
+     * Number of items emitted by the source per iteration.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * Parallelism degree of the ParallelFlowable.
+     */
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    /**
+     * The prepared parallel flow with the operator applied.
+     */
+    private ParallelFlowable<Optional<Integer>> parallelFlow;
+
+    /**
+     * Simple mapper that doubles the value and wraps it in an Optional.
+     */
+    private static final Function<Integer, Optional<Integer>> MAPPER = v -> Optional.of(v * 2);
+
+    /**
+     * Error handler that never retries, skips, or stops – just propagates.
+     */
+    private static final BiFunction<Long, Throwable, ParallelFailureHandling> ERROR_HANDLER = (retryCount, throwable) -> ParallelFailureHandling.STOP;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a finite source Flowable.
+        Flowable<Integer> source = Flowable.range(1, itemCount);
+        // Convert to ParallelFlowable with the requested parallelism.
+        ParallelFlowable<Integer> parallelSource = source.parallel(parallelism);
+        // Apply the ParallelMapTryOptional operator.
+        parallelFlow = new ParallelMapTryOptional<>(parallelSource, MAPPER, ERROR_HANDLER);
+    }
+
+    /**
+     * Executes the parallel flow and consumes all emitted items.
+     *
+     * @param bh Blackhole to consume downstream values.
+     */
+    @Benchmark
+    public void mapTryOptionalThroughput(Blackhole bh) {
+        // Convert back to a sequential Flowable and block until completion.
+        parallelFlow.sequential().blockingForEach(bh::consume);
+    }
+}

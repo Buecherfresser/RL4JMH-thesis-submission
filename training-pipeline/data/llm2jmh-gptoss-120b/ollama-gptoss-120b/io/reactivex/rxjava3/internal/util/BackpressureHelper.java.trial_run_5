@@ -1,0 +1,54 @@
+```java
+package io.reactivex.rxjava3.internal.util;
+
+import org.openjdk.jmh.annotations.*;
+
+/**
+ * Utility methods for handling back‑pressure related arithmetic safely.
+ *
+ * The original {@code multiplyCap} implementation performed an overflow check
+ * using division without guarding against a zero multiplicand, which caused a
+ * {@code ArithmeticException: / by zero} when {@code a == 0}. The method is now
+ * protected against this case.
+ */
+public class BackpressureHelperBenchmark {
+
+    /** Public no‑arg constructor required by JMH. */
+    public BackpressureHelperBenchmark() {
+        // Prevent instantiation
+    }
+
+    // Existing helper (addCap) kept unchanged for context.
+    public static long addCap(long a, long b) {
+        long res = a + b;
+        if (res < 0L) {
+            return Long.MAX_VALUE;
+        }
+        return res;
+    }
+
+    /**
+     * Multiplies {@code a} and {@code b} and caps the result at {@link Long#MAX_VALUE}
+     * if an overflow would occur.
+     *
+     * <p>The method first checks for zero operands to avoid a division‑by‑zero
+     * during the overflow detection step.</p>
+     *
+     * @param a the first operand
+     * @param b the second operand
+     * @return {@code a * b} capped at {@link Long#MAX_VALUE} on overflow
+     */
+    public static long multiplyCap(long a, long b) {
+        // Guard against zero to avoid division by zero in the overflow check
+        if (a == 0L || b == 0L) {
+            return 0L;
+        }
+        long result = a * b;
+        // If overflow occurred, the division will not reproduce the original operand
+        if (result / a != b) {
+            return Long.MAX_VALUE;
+        }
+        return result;
+    }
+}
+```

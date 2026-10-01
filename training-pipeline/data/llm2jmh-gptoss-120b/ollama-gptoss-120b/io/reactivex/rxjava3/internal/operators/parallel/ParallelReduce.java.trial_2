@@ -1,0 +1,83 @@
+```
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.functions.Supplier;
+import io.reactivex.rxjava3.parallel.ParallelFlowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.parallel.ParallelReduce}
+ * using a parallel reduction of integers to their sum.
+ *
+ * The benchmark runs in {@link Mode#Throughput} to measure how many
+ * reductions can be performed per second under different input sizes
+ * and parallelism levels.
+ *
+ * Best practices applied:
+ * - @State objects are reused across iterations to avoid allocation overhead.
+ * - @Setup prepares immutable data structures.
+ * - Blackhole is used to consume the result and prevent dead-code elimination.
+ * - Warmup and measurement iterations are configured to let the JIT stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Benchmark)
+public class ParallelReduceBenchmark {
+
+    /**
+     * Number of elements in the source Flowable.
+     */
+    @Param({ "1000", "10000", "100000", "1000000" })
+    public int size;
+
+    /**
+     * Parallelism level (number of rails).
+     */
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    private ParallelFlowable<Integer> source;
+
+    private Supplier<Integer> initialSupplier;
+
+    private BiFunction<Integer, Integer, Integer> reducer;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a hot source that can be subscribed to repeatedly without reallocation.
+        source = Flowable.range(1, size)
+                .parallel(parallelism)
+                .runOn(Schedulers.computation());
+
+        // Simple sum reduction.
+        initialSupplier = () -> 0;
+        reducer = (sum, value) -> sum + value;
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Shut down the computation scheduler to avoid thread leakage between forks.
+        Schedulers.shutdown();
+    }
+
+    @Benchmark
+    public void parallelReduceSum(Blackhole bh) {
+        // Perform the parallel reduction and block until the final result is available.
+        // The result is consumed by Blackhole to prevent dead‑code elimination.
+        Integer result = source
+                .reduce(initialSupplier, reducer)
+                .sequential()
+                .blockingFirst();
+
+        bh.consume(result);
+    }
+}
+```

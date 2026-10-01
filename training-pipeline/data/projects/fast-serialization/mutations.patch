@@ -1,0 +1,627 @@
+diff --git a/org/nustaq/serialization/FSTClazzInfo.java b/org/nustaq/serialization/FSTClazzInfo.java
+index 69db1b9..a110fba 100644
+--- a/org/nustaq/serialization/FSTClazzInfo.java
++++ b/org/nustaq/serialization/FSTClazzInfo.java
+@@ -91,11 +91,11 @@ public final class FSTClazzInfo {
+ 
+     Object decoderAttached; // for decoders
+ 
+-    public Object getDecoderAttached() {
++    public Object getDecoderAttached() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(1);
+         return decoderAttached;
+     }
+ 
+-    public void setDecoderAttached(Object decoderAttached) {
++    public void setDecoderAttached(Object decoderAttached) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(7);
+         this.decoderAttached = decoderAttached;
+     }
+ 
+diff --git a/org/nustaq/serialization/FSTClazzInfoRegistry.java b/org/nustaq/serialization/FSTClazzInfoRegistry.java
+index 1519638..251e9c1 100644
+--- a/org/nustaq/serialization/FSTClazzInfoRegistry.java
++++ b/org/nustaq/serialization/FSTClazzInfoRegistry.java
+@@ -39,7 +39,7 @@ public class FSTClazzInfoRegistry {
+     final AtomicBoolean rwLock = new AtomicBoolean(false);
+     private boolean structMode = false;
+ 
+-    public static void addAllReferencedClasses(Class cl, ArrayList<String> names, String filter) {
++    public static void addAllReferencedClasses(Class cl, ArrayList<String> names, String filter) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(13);
+         HashSet<String> names1 = new HashSet<String>();
+         addAllReferencedClasses(cl, names1, new HashSet<String>(),filter);
+         names.addAll(names1);
+@@ -114,7 +114,7 @@ public class FSTClazzInfoRegistry {
+     public FSTClazzInfoRegistry() {
+     }
+ 
+-    public FSTClazzInfo getCLInfo(Class c, FSTConfiguration conf) {
++    public FSTClazzInfo getCLInfo(Class c, FSTConfiguration conf) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(19);
+         while(!rwLock.compareAndSet(false,true));
+         try {
+             FSTClazzInfo res = (FSTClazzInfo) mInfos.get(c);
+diff --git a/org/nustaq/serialization/FSTClazzLineageInfo.java b/org/nustaq/serialization/FSTClazzLineageInfo.java
+index 7f3c1f9..51f3743 100644
+--- a/org/nustaq/serialization/FSTClazzLineageInfo.java
++++ b/org/nustaq/serialization/FSTClazzLineageInfo.java
+@@ -33,7 +33,7 @@ public final class FSTClazzLineageInfo {
+   /**
+    * Returns the specificity of the specified class as defined above.
+    */
+-  public static int getSpecificity(final Class<?> clazz) {
++  public static int getSpecificity(final Class<?> clazz) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(25);
+     if (clazz == null) return 0;
+     final LineageInfo lineageInfo = FSTClazzLineageInfo.getLineageInfo(clazz);
+     return lineageInfo == null ? 0 : lineageInfo.specificity;
+@@ -42,7 +42,7 @@ public final class FSTClazzLineageInfo {
+   /**
+    * Returns the lineage of the specified class ordered by specificity (the class itself is at position 0 since it is most specific in its lineage).
+    */
+-  public static Class<?>[] getLineage(final Class<?> clazz) {
++  public static Class<?>[] getLineage(final Class<?> clazz) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(31);
+     final LineageInfo lineageInfo = getLineageInfo(clazz);
+     return lineageInfo == null ? EMPTY_CLASS_ARRAY : lineageInfo.lineage.toArray(new Class<?>[lineageInfo.lineage.size()]);
+   }
+diff --git a/org/nustaq/serialization/FSTClazzNameRegistry.java b/org/nustaq/serialization/FSTClazzNameRegistry.java
+index 952d2f6..2137ca8 100644
+--- a/org/nustaq/serialization/FSTClazzNameRegistry.java
++++ b/org/nustaq/serialization/FSTClazzNameRegistry.java
+@@ -61,7 +61,7 @@ public class FSTClazzNameRegistry {
+         }
+     }
+ 
+-    public void clear() {
++    public void clear() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(37);
+         if ( clzToId.size() > 0 ) {
+             clzToId.clear();
+             //idToClz.clear();
+@@ -73,7 +73,7 @@ public class FSTClazzNameRegistry {
+     }
+ 
+     // for read => always increase handle (wg. replaceObject)
+-    public void registerClass(Class c,FSTConfiguration conf) {
++    public void registerClass(Class c,FSTConfiguration conf) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(43);
+         if ( getIdFromClazz(c) != Integer.MIN_VALUE ) {
+             return;
+         }
+diff --git a/org/nustaq/serialization/FSTConfiguration.java b/org/nustaq/serialization/FSTConfiguration.java
+index 546aa01..0c57e72 100644
+--- a/org/nustaq/serialization/FSTConfiguration.java
++++ b/org/nustaq/serialization/FSTConfiguration.java
+@@ -111,7 +111,7 @@ public class FSTConfiguration {
+ 
+     FSTJsonFieldNames jsonFieldNames = new FSTJsonFieldNames("typ", "obj", "styp", "seq", "enum", "val", "ref");
+ 
+-    public FSTJsonFieldNames getJsonFieldNames() {
++    public FSTJsonFieldNames getJsonFieldNames() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(48);
+         return jsonFieldNames;
+     }
+     public void setJsonFieldNames(final FSTJsonFieldNames fieldNames) {
+diff --git a/org/nustaq/serialization/coders/FSTBytezDecoder.java b/org/nustaq/serialization/coders/FSTBytezDecoder.java
+index fae1c48..493a580 100644
+--- a/org/nustaq/serialization/coders/FSTBytezDecoder.java
++++ b/org/nustaq/serialization/coders/FSTBytezDecoder.java
+@@ -45,7 +45,7 @@ public class FSTBytezDecoder  implements FSTDecoder {
+     }
+ 
+     @Override
+-    public void setConf(FSTConfiguration conf) {
++    public void setConf(FSTConfiguration conf) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(2);
+         this.conf = conf;
+     }
+ 
+@@ -60,7 +60,7 @@ public class FSTBytezDecoder  implements FSTDecoder {
+     }
+ 
+     byte tmp[];
+-    public int ensureReadAhead(int bytes) {
++    public int ensureReadAhead(int bytes) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(8);
+         if ( inputStream != null ) {
+             if ( pos+bytes > readUntil ) {
+                 return readNextInputChunk(bytes);
+diff --git a/org/nustaq/serialization/coders/FSTBytezEncoder.java b/org/nustaq/serialization/coders/FSTBytezEncoder.java
+index a0e5064..a44382e 100644
+--- a/org/nustaq/serialization/coders/FSTBytezEncoder.java
++++ b/org/nustaq/serialization/coders/FSTBytezEncoder.java
+@@ -56,7 +56,7 @@ public class FSTBytezEncoder implements FSTEncoder {
+     }
+ 
+     @Override
+-    public void setConf(FSTConfiguration conf) {
++    public void setConf(FSTConfiguration conf) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(14);
+         this.conf = conf;
+     }
+ 
+@@ -66,7 +66,7 @@ public class FSTBytezEncoder implements FSTEncoder {
+         pos += len;
+     }
+ 
+-    public void writeFFloatArr(float[] arr, int off, int len) throws IOException {
++    public void writeFFloatArr(float[] arr, int off, int len) throws IOException { org.nustaq.serialization.jmhbench.MutationSwitch.tick(20);
+         ensureFree(4*len);
+         buffout.setFloat(pos, arr, off, len);
+         pos += 4*len;
+diff --git a/org/nustaq/serialization/coders/FSTJsonDecoder.java b/org/nustaq/serialization/coders/FSTJsonDecoder.java
+index b9ae232..c0ca9af 100644
+--- a/org/nustaq/serialization/coders/FSTJsonDecoder.java
++++ b/org/nustaq/serialization/coders/FSTJsonDecoder.java
+@@ -36,13 +36,13 @@ public class FSTJsonDecoder implements FSTDecoder {
+     }
+ 
+     @Override
+-    public void setConf(FSTConfiguration conf) {
++    public void setConf(FSTConfiguration conf) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(26);
+         this.conf = conf;
+         fieldNames = conf.getJsonFieldNames();
+     }
+ 
+     @Override
+-    public String readStringUTF() throws IOException {
++    public String readStringUTF() throws IOException { org.nustaq.serialization.jmhbench.MutationSwitch.tick(32);
+         if ( unknownFallbackReadFieldName != null ) {
+             String unkReadAhead = unknownFallbackReadFieldName;
+             unknownFallbackReadFieldName = null;
+diff --git a/org/nustaq/serialization/coders/FSTJsonEncoder.java b/org/nustaq/serialization/coders/FSTJsonEncoder.java
+index 49f9229..791b3ae 100644
+--- a/org/nustaq/serialization/coders/FSTJsonEncoder.java
++++ b/org/nustaq/serialization/coders/FSTJsonEncoder.java
+@@ -32,13 +32,13 @@ public class FSTJsonEncoder implements FSTEncoder {
+     }
+ 
+     @Override
+-    public void setConf(FSTConfiguration conf) {
++    public void setConf(FSTConfiguration conf) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(38);
+         this.conf = conf;
+         fieldNames = conf.getJsonFieldNames();
+     }
+ 
+     @Override
+-    public void writeRawBytes(byte[] bufferedName, int off, int length) throws IOException {
++    public void writeRawBytes(byte[] bufferedName, int off, int length) throws IOException { org.nustaq.serialization.jmhbench.MutationSwitch.tick(44);
+         gen.writeBinary(bufferedName,off,length);
+     }
+ 
+diff --git a/org/nustaq/serialization/coders/FSTMinBinDecoder.java b/org/nustaq/serialization/coders/FSTMinBinDecoder.java
+index 2f6be70..0893e5e 100644
+--- a/org/nustaq/serialization/coders/FSTMinBinDecoder.java
++++ b/org/nustaq/serialization/coders/FSTMinBinDecoder.java
+@@ -46,7 +46,7 @@ public class FSTMinBinDecoder implements FSTDecoder {
+         input = new MBIn(null,0);
+     }
+     @Override
+-    public void setConf(FSTConfiguration conf) {
++    public void setConf(FSTConfiguration conf) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(49);
+         this.conf = conf;
+     }
+ 
+diff --git a/org/nustaq/serialization/jmhbench/MutationSwitch.java b/org/nustaq/serialization/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..84d41ed
+--- /dev/null
++++ b/org/nustaq/serialization/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.nustaq.serialization.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/nustaq/serialization/minbin/MBIn.java b/org/nustaq/serialization/minbin/MBIn.java
+index 5ea594c..f1a3875 100644
+--- a/org/nustaq/serialization/minbin/MBIn.java
++++ b/org/nustaq/serialization/minbin/MBIn.java
+@@ -40,14 +40,14 @@ public class MBIn {
+             this.count = bytez.length;
+     }
+ 
+-    public byte readIn() {
++    public byte readIn() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(3);
+         if ( pos >= bytez.length ) {
+             return MinBin.END;
+         }
+         return bytez[pos++];
+     }
+ 
+-    public byte peekIn() {
++    public byte peekIn() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(9);
+         if ( pos >= bytez.length ) {
+             return MinBin.END;
+         }
+diff --git a/org/nustaq/serialization/minbin/MBObject.java b/org/nustaq/serialization/minbin/MBObject.java
+index 836670d..09348ba 100644
+--- a/org/nustaq/serialization/minbin/MBObject.java
++++ b/org/nustaq/serialization/minbin/MBObject.java
+@@ -51,11 +51,11 @@ public class MBObject implements Serializable {
+         this.typeInfo = typeInfo;
+     }
+ 
+-    public Object getTypeInfo() {
++    public Object getTypeInfo() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(15);
+         return typeInfo;
+     }
+ 
+-    public void setTypeInfo(Object typeInfo) {
++    public void setTypeInfo(Object typeInfo) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(21);
+         this.typeInfo = typeInfo;
+     }
+ 
+diff --git a/org/nustaq/serialization/minbin/MBOut.java b/org/nustaq/serialization/minbin/MBOut.java
+index ea23c2d..8ca7b9c 100644
+--- a/org/nustaq/serialization/minbin/MBOut.java
++++ b/org/nustaq/serialization/minbin/MBOut.java
+@@ -59,7 +59,7 @@ public class MBOut {
+      * @param type
+      * @param data
+      */
+-    public void writeInt(byte type, long data) {
++    public void writeInt(byte type, long data) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(27);
+         if (!MinBin.isPrimitive(type) || MinBin.isArray(type))
+             throw new RuntimeException("illegal type code");
+         writeOut(type);
+@@ -69,7 +69,7 @@ public class MBOut {
+      * encode int without header tag
+      * @param data
+      */
+-    protected void writeRawInt(byte type, long data) {
++    protected void writeRawInt(byte type, long data) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(33);
+         int numBytes = MinBin.extractNumBytes(type);
+         for (int i = 0; i < numBytes; i++) {
+             writeOut((byte) (data & 0xff));
+diff --git a/org/nustaq/serialization/minbin/MBPrinter.java b/org/nustaq/serialization/minbin/MBPrinter.java
+index 5b9ed81..4e463df 100644
+--- a/org/nustaq/serialization/minbin/MBPrinter.java
++++ b/org/nustaq/serialization/minbin/MBPrinter.java
+@@ -28,11 +28,11 @@ import java.lang.reflect.Array;
+  */
+ public class MBPrinter {
+ 
+-    public static void printMessage(byte[] binarMsg) {
++    public static void printMessage(byte[] binarMsg) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(39);
+         printMessage(binarMsg,System.out);
+     }
+ 
+-    public static void printMessage(Object readMessageObject, PrintStream out) {
++    public static void printMessage(Object readMessageObject, PrintStream out) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(45);
+         new MBPrinter().prettyPrintStreamObject(readMessageObject,out,"");
+         out.println();
+     }
+diff --git a/org/nustaq/serialization/minbin/MBRef.java b/org/nustaq/serialization/minbin/MBRef.java
+index 5cb60a7..d183d15 100644
+--- a/org/nustaq/serialization/minbin/MBRef.java
++++ b/org/nustaq/serialization/minbin/MBRef.java
+@@ -27,7 +27,7 @@ public class MBRef implements Serializable {
+         this.streamPosition = streamPosition;
+     }
+ 
+-    public int getStreamPosition() {
++    public int getStreamPosition() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(50);
+         return streamPosition;
+     }
+ 
+diff --git a/org/nustaq/serialization/serializers/FSTArrayListSerializer.java b/org/nustaq/serialization/serializers/FSTArrayListSerializer.java
+index 9ed3ae7..5f0b2b9 100644
+--- a/org/nustaq/serialization/serializers/FSTArrayListSerializer.java
++++ b/org/nustaq/serialization/serializers/FSTArrayListSerializer.java
+@@ -37,7 +37,7 @@ import java.util.*;
+ public class FSTArrayListSerializer extends FSTBasicObjectSerializer {
+ 
+     @Override
+-    public void writeObject(FSTObjectOutput out, Object toWrite, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy, int streamPosition) throws IOException {
++    public void writeObject(FSTObjectOutput out, Object toWrite, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy, int streamPosition) throws IOException { org.nustaq.serialization.jmhbench.MutationSwitch.tick(4);
+         ArrayList col = (ArrayList)toWrite;
+         int size = col.size();
+         out.writeInt(size);
+@@ -54,7 +54,7 @@ public class FSTArrayListSerializer extends FSTBasicObjectSerializer {
+     }
+ 
+     @Override
+-    public Object instantiate(Class objectClass, FSTObjectInput in, FSTClazzInfo serializationInfo, FSTClazzInfo.FSTFieldInfo referencee, int streamPosition) throws Exception {
++    public Object instantiate(Class objectClass, FSTObjectInput in, FSTClazzInfo serializationInfo, FSTClazzInfo.FSTFieldInfo referencee, int streamPosition) throws Exception { org.nustaq.serialization.jmhbench.MutationSwitch.tick(10);
+         try {
+             int len = in.readInt();
+             ArrayList res = new ArrayList(len);
+diff --git a/org/nustaq/serialization/serializers/FSTBigNumberSerializers.java b/org/nustaq/serialization/serializers/FSTBigNumberSerializers.java
+index 879f913..fa5fdb2 100644
+--- a/org/nustaq/serialization/serializers/FSTBigNumberSerializers.java
++++ b/org/nustaq/serialization/serializers/FSTBigNumberSerializers.java
+@@ -37,12 +37,12 @@ public class FSTBigNumberSerializers {
+ 
+     public static class FSTByteSerializer extends FSTBasicObjectSerializer {
+         @Override
+-        public void writeObject(FSTObjectOutput out, Object toWrite, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy, int streamPosition) throws IOException {
++        public void writeObject(FSTObjectOutput out, Object toWrite, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy, int streamPosition) throws IOException { org.nustaq.serialization.jmhbench.MutationSwitch.tick(16);
+             out.writeByte(((Byte)toWrite).byteValue());
+         }
+ 
+         @Override
+-        public Object instantiate(Class objectClass, FSTObjectInput in, FSTClazzInfo serializationInfo, FSTClazzInfo.FSTFieldInfo referencee, int streamPosition) throws Exception {
++        public Object instantiate(Class objectClass, FSTObjectInput in, FSTClazzInfo serializationInfo, FSTClazzInfo.FSTFieldInfo referencee, int streamPosition) throws Exception { org.nustaq.serialization.jmhbench.MutationSwitch.tick(22);
+             Object res = Byte.valueOf(in.readByte());
+             return res;
+         }
+diff --git a/org/nustaq/serialization/serializers/FSTBitSetSerializer.java b/org/nustaq/serialization/serializers/FSTBitSetSerializer.java
+index 661e102..80952e5 100644
+--- a/org/nustaq/serialization/serializers/FSTBitSetSerializer.java
++++ b/org/nustaq/serialization/serializers/FSTBitSetSerializer.java
+@@ -16,7 +16,7 @@ public class FSTBitSetSerializer extends FSTBasicObjectSerializer {
+     }
+ 
+     @Override
+-    public boolean alwaysCopy(){
++    public boolean alwaysCopy(){ org.nustaq.serialization.jmhbench.MutationSwitch.tick(28);
+         return true;
+     }
+ 
+diff --git a/org/nustaq/serialization/serializers/FSTCPEnumSetSerializer.java b/org/nustaq/serialization/serializers/FSTCPEnumSetSerializer.java
+index 737476c..079ac4e 100644
+--- a/org/nustaq/serialization/serializers/FSTCPEnumSetSerializer.java
++++ b/org/nustaq/serialization/serializers/FSTCPEnumSetSerializer.java
+@@ -38,7 +38,7 @@ public class FSTCPEnumSetSerializer extends FSTBasicObjectSerializer {
+ 
+     Field elemType;
+     @Override
+-    public void writeObject(FSTObjectOutput out, Object toWrite, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy, int streamPosition) throws IOException {
++    public void writeObject(FSTObjectOutput out, Object toWrite, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy, int streamPosition) throws IOException { org.nustaq.serialization.jmhbench.MutationSwitch.tick(34);
+         EnumSet enset = (EnumSet) toWrite;
+         int count = 0;
+         out.writeInt(enset.size());
+@@ -62,7 +62,7 @@ public class FSTCPEnumSetSerializer extends FSTBasicObjectSerializer {
+      *         write the Object twice in case.
+      */
+     @Override
+-    public boolean alwaysCopy() {
++    public boolean alwaysCopy() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(40);
+         return false;
+     }
+ 
+diff --git a/org/nustaq/serialization/serializers/FSTEnumSetSerializer.java b/org/nustaq/serialization/serializers/FSTEnumSetSerializer.java
+index 19b7ce4..0fe8f86 100644
+--- a/org/nustaq/serialization/serializers/FSTEnumSetSerializer.java
++++ b/org/nustaq/serialization/serializers/FSTEnumSetSerializer.java
+@@ -36,7 +36,7 @@ public class FSTEnumSetSerializer extends FSTBasicObjectSerializer {
+ 
+     Field elemType;
+     @Override
+-    public void writeObject(FSTObjectOutput out, Object toWrite, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy, int streamPosition) throws IOException {
++    public void writeObject(FSTObjectOutput out, Object toWrite, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy, int streamPosition) throws IOException { org.nustaq.serialization.jmhbench.MutationSwitch.tick(46);
+         EnumSet enset = (EnumSet) toWrite;
+         int count = 0;
+         out.writeInt(enset.size());
+diff --git a/org/nustaq/serialization/simpleapi/DefaultCoder.java b/org/nustaq/serialization/simpleapi/DefaultCoder.java
+index 5829115..7eaf583 100644
+--- a/org/nustaq/serialization/simpleapi/DefaultCoder.java
++++ b/org/nustaq/serialization/simpleapi/DefaultCoder.java
+@@ -69,7 +69,7 @@ public class DefaultCoder implements FSTCoder {
+     /**
+      * will throw an FSTBufferTooSmallException if buffer is too small.
+      */
+-    public int toByteArray( Object obj, byte result[], int resultOffset, int avaiableSize ) {
++    public int toByteArray( Object obj, byte result[], int resultOffset, int avaiableSize ) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(11);
+         output.resetForReUse();
+         try {
+             output.writeObject(obj);
+@@ -84,7 +84,7 @@ public class DefaultCoder implements FSTCoder {
+         return written;
+     }
+ 
+-    public byte[] toByteArray( Object o ) {
++    public byte[] toByteArray( Object o ) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(17);
+         output.resetForReUse();
+         try {
+             output.writeObject(o);
+diff --git a/org/nustaq/serialization/simpleapi/FSTBufferTooSmallException.java b/org/nustaq/serialization/simpleapi/FSTBufferTooSmallException.java
+index 862973c..465882d 100644
+--- a/org/nustaq/serialization/simpleapi/FSTBufferTooSmallException.java
++++ b/org/nustaq/serialization/simpleapi/FSTBufferTooSmallException.java
+@@ -23,7 +23,7 @@ public class FSTBufferTooSmallException extends RuntimeException {
+     public static FSTBufferTooSmallException Instance = new FSTBufferTooSmallException();
+ 
+     @Override
+-    public synchronized Throwable fillInStackTrace() {
++    public synchronized Throwable fillInStackTrace() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(5);
+         return this;
+     }
+ 
+diff --git a/org/nustaq/serialization/simpleapi/OffHeapCoder.java b/org/nustaq/serialization/simpleapi/OffHeapCoder.java
+index baf1730..acc8c3a 100644
+--- a/org/nustaq/serialization/simpleapi/OffHeapCoder.java
++++ b/org/nustaq/serialization/simpleapi/OffHeapCoder.java
+@@ -62,14 +62,14 @@ public class OffHeapCoder {
+         readTarget = new MallocBytez(0l,0);
+         conf.setStreamCoderFactory(new FSTConfiguration.StreamCoderFactory() {
+             @Override
+-            public FSTEncoder createStreamEncoder() {
++            public FSTEncoder createStreamEncoder() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(23);
+                 FSTBytezEncoder fstBytezEncoder = new FSTBytezEncoder(conf, writeTarget);
+                 fstBytezEncoder.setAutoResize(false);
+                 return fstBytezEncoder;
+             }
+ 
+             @Override
+-            public FSTDecoder createStreamDecoder() {
++            public FSTDecoder createStreamDecoder() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(29);
+                 return new FSTBytezDecoder(conf,readTarget);
+             }
+ 
+diff --git a/org/nustaq/serialization/simpleapi/OnHeapCoder.java b/org/nustaq/serialization/simpleapi/OnHeapCoder.java
+index 329c0ea..2bb4ef9 100644
+--- a/org/nustaq/serialization/simpleapi/OnHeapCoder.java
++++ b/org/nustaq/serialization/simpleapi/OnHeapCoder.java
+@@ -57,13 +57,13 @@ public class OnHeapCoder implements FSTCoder {
+         readTarget = new HeapBytez(new byte[0]);
+         conf.setStreamCoderFactory(new FSTConfiguration.StreamCoderFactory() {
+             @Override
+-            public FSTEncoder createStreamEncoder() {
++            public FSTEncoder createStreamEncoder() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(35);
+                 FSTBytezEncoder fstBytezEncoder = new FSTBytezEncoder(conf, writeTarget);
+                 fstBytezEncoder.setAutoResize(false);
+                 return fstBytezEncoder;
+             }
+             @Override
+-            public FSTDecoder createStreamDecoder() {
++            public FSTDecoder createStreamDecoder() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(41);
+                 return new FSTBytezDecoder(conf,readTarget);
+             }
+ 
+diff --git a/org/nustaq/serialization/util/DefaultFSTInt2ObjectMap.java b/org/nustaq/serialization/util/DefaultFSTInt2ObjectMap.java
+index 4f2592a..18bc6e6 100644
+--- a/org/nustaq/serialization/util/DefaultFSTInt2ObjectMap.java
++++ b/org/nustaq/serialization/util/DefaultFSTInt2ObjectMap.java
+@@ -35,7 +35,7 @@ public class DefaultFSTInt2ObjectMap<V> implements FSTInt2ObjectMap <V>{
+         mNumberOfElements = 0;
+     }
+ 
+-    public int size() {
++    public int size() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(6);
+         return mNumberOfElements + (next != null ? next.size() : 0);
+     }
+ 
+@@ -159,7 +159,7 @@ public class DefaultFSTInt2ObjectMap<V> implements FSTInt2ObjectMap <V>{
+         }
+     }
+ 
+-    public void clear() {
++    public void clear() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(12);
+         int size = size();
+         if (size == 0)
+             return;
+diff --git a/org/nustaq/serialization/util/DefaultFSTInt2ObjectMapFactory.java b/org/nustaq/serialization/util/DefaultFSTInt2ObjectMapFactory.java
+index 5c0211d..8dde11b 100644
+--- a/org/nustaq/serialization/util/DefaultFSTInt2ObjectMapFactory.java
++++ b/org/nustaq/serialization/util/DefaultFSTInt2ObjectMapFactory.java
+@@ -2,7 +2,7 @@ package org.nustaq.serialization.util;
+ 
+ public class DefaultFSTInt2ObjectMapFactory implements FSTInt2ObjectMapFactory{
+     @Override
+-    public <V> FSTInt2ObjectMap<V> createMap(int size) {
++    public <V> FSTInt2ObjectMap<V> createMap(int size) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(18);
+         return new DefaultFSTInt2ObjectMap<>(size);
+     }
+ }
+\ No newline at end of file
+diff --git a/org/nustaq/serialization/util/FSTIdentity2IdMap.java b/org/nustaq/serialization/util/FSTIdentity2IdMap.java
+index 0de2f23..eb2a179 100644
+--- a/org/nustaq/serialization/util/FSTIdentity2IdMap.java
++++ b/org/nustaq/serialization/util/FSTIdentity2IdMap.java
+@@ -71,7 +71,7 @@ public class FSTIdentity2IdMap {
+         klen = initialSize - 4;
+     }
+ 
+-    public int size() {
++    public int size() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(24);
+         if ( linearScanList != null )
+             return linearScanList.size();
+         return mNumberOfElements + (next != null ? next.size() : 0);
+@@ -357,7 +357,7 @@ public class FSTIdentity2IdMap {
+         return ((h << 1) - (h << 8)) & 0x7fffffff;
+     }
+ 
+-    public void clear() {
++    public void clear() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(30);
+         if (size() == 0) {
+             return;
+         }
+diff --git a/org/nustaq/serialization/util/FSTInputStream.java b/org/nustaq/serialization/util/FSTInputStream.java
+index be94ac5..7c6641d 100644
+--- a/org/nustaq/serialization/util/FSTInputStream.java
++++ b/org/nustaq/serialization/util/FSTInputStream.java
+@@ -46,7 +46,7 @@ public final class FSTInputStream extends InputStream {
+         initFromStream(in);
+     }
+ 
+-    public void resetForReuse( byte b[], int length ) {
++    public void resetForReuse( byte b[], int length ) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(36);
+         reset();
+         count = length;
+         buf = b;
+@@ -55,7 +55,7 @@ public final class FSTInputStream extends InputStream {
+         fullyRead = true;
+     }
+ 
+-    public void initFromStream(InputStream in) {
++    public void initFromStream(InputStream in) { org.nustaq.serialization.jmhbench.MutationSwitch.tick(42);
+         fullyRead = false;
+         byteBacked = false;
+         pos = 0;
+diff --git a/org/nustaq/serialization/util/FSTInt2IntMap.java b/org/nustaq/serialization/util/FSTInt2IntMap.java
+index ba0f350..4a0437a 100644
+--- a/org/nustaq/serialization/util/FSTInt2IntMap.java
++++ b/org/nustaq/serialization/util/FSTInt2IntMap.java
+@@ -43,7 +43,7 @@ public class FSTInt2IntMap {
+         mNumberOfElements = 0;
+     }
+ 
+-    public int size() {
++    public int size() { org.nustaq.serialization.jmhbench.MutationSwitch.tick(47);
+         return mNumberOfElements + (next != null ? next.size() : 0);
+     }
+ 

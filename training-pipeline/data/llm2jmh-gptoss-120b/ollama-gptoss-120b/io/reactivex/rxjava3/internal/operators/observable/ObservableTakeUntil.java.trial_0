@@ -1,0 +1,69 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Observable;
+
+/**
+ * Benchmark for the {@code takeUntil} operator of RxJava 3.
+ *
+ * <p>The benchmark measures the throughput (items per second) of an {@link Observable}
+ * that emits a configurable number of integer values and is terminated by a {@code takeUntil}
+ * with an {@link Observable#never()} as the other source (i.e., no early termination).</p>
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Parameterize the size of the source sequence with {@code @Param}.</li>
+ *   <li>Perform all allocations in {@code @Setup} to exclude them from the measured time.</li>
+ *   <li>Consume emitted items via {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Use {@code blockingSubscribe} to ensure the benchmark thread waits for completion.</li>
+ *   <li>Configure warm‑up and measurement iterations for reliable results.</li>
+ * </ul>
+ * </p>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableTakeUntilThroughputBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({"1", "10", "100", "1_000", "10_000", "100_000"})
+    public int size;
+
+    /** The source Observable emitting a range of integers. */
+    private Observable<Integer> source;
+
+    /** The "other" Observable used by {@code takeUntil}. It never emits, so the source runs to completion. */
+    private Observable<Object> other;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits 'size' sequential integers.
+        source = Observable.range(0, size);
+
+        // An Observable that never emits any item nor terminates.
+        other = Observable.never();
+    }
+
+    /**
+     * Benchmark the throughput of {@code source.takeUntil(other)}.
+     *
+     * @param bh Blackhole to consume the emitted items.
+     */
+    @Benchmark
+    public void takeUntil(Blackhole bh) {
+        // The operator under test is applied via the public API.
+        source
+            .takeUntil(other)
+            .blockingSubscribe(bh::consume);
+    }
+}
+```

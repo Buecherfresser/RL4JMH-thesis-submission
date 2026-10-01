@@ -1,0 +1,138 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.parallel.ParallelFromPublisher;
+import io.reactivex.rxjava3.internal.subscriptions.EmptySubscription;
+import io.reactivex.rxjava3.internal.util.BackpressureHelper;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+/**
+ * JMH benchmark for {@link ParallelFromPublisher}.
+ *
+ * Measures the throughput of the parallel dispatcher when processing a large
+ * number of items with default back‑pressure settings.
+ *
+ * The benchmark runs in {@link Mode#Throughput} (operations per second) and
+ * uses a {@link CountDownLatch} to wait for all parallel rails to finish.
+ *
+ * Best‑practice notes:
+ * • State is scoped to the benchmark to avoid re‑creating the operator for
+ *   each iteration (reduces measurement noise).
+ * • Warm‑up and measurement iterations are configured via JMH defaults,
+ *   but can be overridden on the command line.
+ * • The subscriber requests {@code Long.MAX_VALUE} to eliminate request‑side
+ *   back‑pressure effects and focus on the operator's internal routing cost.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Benchmark)
+public class ParallelFromPublisherBenchmark {
+
+    /** Number of items emitted by the source Flowable. */
+    @Param({"1000000"})
+    public int itemCount;
+
+    /** Parallelism degree – typically the number of CPU cores. */
+    @Param({"4"})
+    public int parallelism;
+
+    /** Prefetch size for each rail. */
+    @Param({"1024"})
+    public int prefetch;
+
+    private ParallelFromPublisher<Integer> operator;
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple synchronous source emitting a range of integers.
+        source = Flowable.range(1, itemCount);
+        operator = new ParallelFromPublisher<>(source, parallelism, prefetch);
+    }
+
+    @Benchmark
+    public void parallelFromPublisherThroughput(BenchmarkConsumer consumer) throws InterruptedException {
+        // Create an array of subscribers – one per rail.
+        Subscriber<Integer>[] subs = new Subscriber[parallelism];
+        for (int i = 0; i < parallelism; i++) {
+            subs[i] = new DrainSubscriber<>(consumer.latch, consumer.received);
+        }
+
+        // Subscribe the parallel operator.
+        operator.subscribe(subs);
+
+        // Wait until all rails have completed.
+        consumer.latch.await();
+    }
+
+    /**
+     * Helper state that holds a latch and a counter shared across the benchmark
+     * invocation. The latch is reset for each iteration.
+     */
+    @State(Scope.Thread)
+    public static class BenchmarkConsumer {
+        /** Latch that signals completion of all rails. */
+        CountDownLatch latch;
+
+        /** Counter of received items (used only to prevent dead‑code elimination). */
+        AtomicLong received = new AtomicLong();
+
+        @Setup(Level.Invocation)
+        public void init() {
+            // The latch count equals the parallelism degree; it will be set by the benchmark method.
+            latch = new CountDownLatch(0);
+        }
+    }
+
+    /**
+     * Subscriber that drains all items from its rail, counts them, and signals
+     * completion via a shared {@link CountDownLatch}.
+     */
+    static final class DrainSubscriber<T> extends DisposableSubscriber<T> {
+
+        private final CountDownLatch latch;
+        private final AtomicLong received;
+
+        DrainSubscriber(CountDownLatch latch, AtomicLong received) {
+            this.latch = latch;
+            this.received = received;
+        }
+
+        @Override
+        protected void onStart() {
+            // Request an unbounded number of items to focus on operator overhead.
+            request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(T t) {
+            // Increment the counter to avoid dead‑code elimination.
+            received.incrementAndGet();
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // In a benchmark we treat errors as fatal.
+            t.printStackTrace();
+            latch.countDown();
+        }
+
+        @Override
+        public void onComplete() {
+            // Signal that this rail has finished.
+            latch.countDown();
+        }
+    }
+}
+```

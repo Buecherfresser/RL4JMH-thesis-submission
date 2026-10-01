@@ -1,0 +1,573 @@
+diff --git a/org/tomlj/AccumulatingErrorListener.java b/org/tomlj/AccumulatingErrorListener.java
+index 91b7d86..c95ad0e 100644
+--- a/org/tomlj/AccumulatingErrorListener.java
++++ b/org/tomlj/AccumulatingErrorListener.java
+@@ -39,7 +39,7 @@ final class AccumulatingErrorListener extends BaseErrorListener implements Error
+       int line,
+       int charPosition,
+       String msg,
+-      RecognitionException e) {
++      RecognitionException e) { org.tomlj.jmhbench.MutationSwitch.tick(1);
+ 
+     TomlPosition position = TomlPosition.positionAt(line, charPosition + 1);
+ 
+@@ -59,7 +59,7 @@ final class AccumulatingErrorListener extends BaseErrorListener implements Error
+   }
+ 
+   @Override
+-  public void reportError(TomlParseError error) {
++  public void reportError(TomlParseError error) { org.tomlj.jmhbench.MutationSwitch.tick(2);
+     errors.add(error);
+   }
+ 
+diff --git a/org/tomlj/ArrayVisitor.java b/org/tomlj/ArrayVisitor.java
+index 9e4032f..77948bb 100644
+--- a/org/tomlj/ArrayVisitor.java
++++ b/org/tomlj/ArrayVisitor.java
+@@ -26,7 +26,7 @@ final class ArrayVisitor extends TomlParserBaseVisitor<MutableTomlArray> {
+   }
+ 
+   @Override
+-  public MutableTomlArray visitArrayValue(TomlParser.ArrayValueContext ctx) {
++  public MutableTomlArray visitArrayValue(TomlParser.ArrayValueContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(3);
+     TomlParser.ValContext valContext = ctx.val();
+     if (valContext != null) {
+       Object value = valContext.accept(new ValueVisitor(version));
+@@ -43,12 +43,12 @@ final class ArrayVisitor extends TomlParserBaseVisitor<MutableTomlArray> {
+   }
+ 
+   @Override
+-  protected MutableTomlArray aggregateResult(MutableTomlArray aggregate, MutableTomlArray nextResult) {
++  protected MutableTomlArray aggregateResult(MutableTomlArray aggregate, MutableTomlArray nextResult) { org.tomlj.jmhbench.MutationSwitch.tick(4);
+     return aggregate == null ? null : nextResult;
+   }
+ 
+   @Override
+-  protected MutableTomlArray defaultResult() {
++  protected MutableTomlArray defaultResult() { org.tomlj.jmhbench.MutationSwitch.tick(5);
+     return array;
+   }
+ }
+diff --git a/org/tomlj/EmptyTomlArray.java b/org/tomlj/EmptyTomlArray.java
+index 31ade74..86b1b18 100644
+--- a/org/tomlj/EmptyTomlArray.java
++++ b/org/tomlj/EmptyTomlArray.java
+@@ -22,17 +22,17 @@ final class EmptyTomlArray implements TomlArray {
+   private EmptyTomlArray() {}
+ 
+   @Override
+-  public int size() {
++  public int size() { org.tomlj.jmhbench.MutationSwitch.tick(6);
+     return 0;
+   }
+ 
+   @Override
+-  public boolean isEmpty() {
++  public boolean isEmpty() { org.tomlj.jmhbench.MutationSwitch.tick(7);
+     return true;
+   }
+ 
+   @Override
+-  public boolean containsStrings() {
++  public boolean containsStrings() { org.tomlj.jmhbench.MutationSwitch.tick(8);
+     return false;
+   }
+ 
+diff --git a/org/tomlj/EmptyTomlTable.java b/org/tomlj/EmptyTomlTable.java
+index a0edf3e..f5a746e 100644
+--- a/org/tomlj/EmptyTomlTable.java
++++ b/org/tomlj/EmptyTomlTable.java
+@@ -26,17 +26,17 @@ final class EmptyTomlTable implements TomlTable {
+   private EmptyTomlTable() {}
+ 
+   @Override
+-  public int size() {
++  public int size() { org.tomlj.jmhbench.MutationSwitch.tick(21);
+     return 0;
+   }
+ 
+   @Override
+-  public boolean isEmpty() {
++  public boolean isEmpty() { org.tomlj.jmhbench.MutationSwitch.tick(22);
+     return true;
+   }
+ 
+   @Override
+-  public Set<String> keySet() {
++  public Set<String> keySet() { org.tomlj.jmhbench.MutationSwitch.tick(23);
+     return Collections.emptySet();
+   }
+ 
+diff --git a/org/tomlj/InlineTableVisitor.java b/org/tomlj/InlineTableVisitor.java
+index fce5beb..029c417 100644
+--- a/org/tomlj/InlineTableVisitor.java
++++ b/org/tomlj/InlineTableVisitor.java
+@@ -32,7 +32,7 @@ final class InlineTableVisitor extends TomlParserBaseVisitor<MutableTomlTable> {
+   }
+ 
+   @Override
+-  public MutableTomlTable visitKeyval(TomlParser.KeyvalContext ctx) {
++  public MutableTomlTable visitKeyval(TomlParser.KeyvalContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(24);
+     TomlParser.KeyContext keyContext = ctx.key();
+     TomlParser.ValContext valContext = ctx.val();
+     if (keyContext != null && valContext != null) {
+@@ -50,12 +50,12 @@ final class InlineTableVisitor extends TomlParserBaseVisitor<MutableTomlTable> {
+   }
+ 
+   @Override
+-  protected MutableTomlTable aggregateResult(MutableTomlTable aggregate, MutableTomlTable nextResult) {
++  protected MutableTomlTable aggregateResult(MutableTomlTable aggregate, MutableTomlTable nextResult) { org.tomlj.jmhbench.MutationSwitch.tick(25);
+     return table;
+   }
+ 
+   @Override
+-  protected MutableTomlTable defaultResult() {
++  protected MutableTomlTable defaultResult() { org.tomlj.jmhbench.MutationSwitch.tick(26);
+     return table;
+   }
+ 
+diff --git a/org/tomlj/KeyVisitor.java b/org/tomlj/KeyVisitor.java
+index a19df69..f6bf613 100644
+--- a/org/tomlj/KeyVisitor.java
++++ b/org/tomlj/KeyVisitor.java
+@@ -28,20 +28,20 @@ final class KeyVisitor extends TomlParserBaseVisitor<List<String>> {
+   }
+ 
+   @Override
+-  public List<String> visitUnquotedKey(TomlParser.UnquotedKeyContext ctx) {
++  public List<String> visitUnquotedKey(TomlParser.UnquotedKeyContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(27);
+     keys.add(ctx.getText());
+     return keys;
+   }
+ 
+   @Override
+-  public List<String> visitQuotedKey(TomlParser.QuotedKeyContext ctx) {
++  public List<String> visitQuotedKey(TomlParser.QuotedKeyContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(28);
+     StringBuilder builder = ctx.accept(new QuotedStringVisitor(version));
+     keys.add(builder.toString());
+     return keys;
+   }
+ 
+   @Override
+-  protected List<String> aggregateResult(List<String> aggregate, List<String> nextResult) {
++  protected List<String> aggregateResult(List<String> aggregate, List<String> nextResult) { org.tomlj.jmhbench.MutationSwitch.tick(29);
+     return aggregate == null ? null : nextResult;
+   }
+ 
+diff --git a/org/tomlj/LineVisitor.java b/org/tomlj/LineVisitor.java
+index b7e9d1d..b1a9b78 100644
+--- a/org/tomlj/LineVisitor.java
++++ b/org/tomlj/LineVisitor.java
+@@ -36,7 +36,7 @@ final class LineVisitor extends TomlParserBaseVisitor<MutableTomlTable> {
+   }
+ 
+   @Override
+-  public MutableTomlTable visitKeyval(TomlParser.KeyvalContext ctx) {
++  public MutableTomlTable visitKeyval(TomlParser.KeyvalContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(30);
+     TomlParser.KeyContext keyContext = ctx.key();
+     TomlParser.ValContext valContext = ctx.val();
+     if (keyContext == null || valContext == null) {
+@@ -65,7 +65,7 @@ final class LineVisitor extends TomlParserBaseVisitor<MutableTomlTable> {
+   }
+ 
+   @Override
+-  public MutableTomlTable visitStandardTable(TomlParser.StandardTableContext ctx) {
++  public MutableTomlTable visitStandardTable(TomlParser.StandardTableContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(31);
+     defineOpenTables();
+     TomlParser.KeyContext keyContext = ctx.key();
+     if (keyContext == null) {
+@@ -85,7 +85,7 @@ final class LineVisitor extends TomlParserBaseVisitor<MutableTomlTable> {
+   }
+ 
+   @Override
+-  public MutableTomlTable visitArrayTable(TomlParser.ArrayTableContext ctx) {
++  public MutableTomlTable visitArrayTable(TomlParser.ArrayTableContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(32);
+     defineOpenTables();
+     TomlParser.KeyContext keyContext = ctx.key();
+     if (keyContext == null) {
+diff --git a/org/tomlj/LocalDateVisitor.java b/org/tomlj/LocalDateVisitor.java
+index 4926f98..26303b1 100644
+--- a/org/tomlj/LocalDateVisitor.java
++++ b/org/tomlj/LocalDateVisitor.java
+@@ -26,7 +26,7 @@ final class LocalDateVisitor extends TomlParserBaseVisitor<LocalDate> {
+   private LocalDate date = INITIAL;
+ 
+   @Override
+-  public LocalDate visitYear(TomlParser.YearContext ctx) {
++  public LocalDate visitYear(TomlParser.YearContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(33);
+     String text = ctx.getText();
+     if (text.length() != 4) {
+       throw new TomlParseError("Invalid year (valid range 0000..9999)", new TomlPosition(ctx));
+@@ -42,7 +42,7 @@ final class LocalDateVisitor extends TomlParserBaseVisitor<LocalDate> {
+   }
+ 
+   @Override
+-  public LocalDate visitMonth(TomlParser.MonthContext ctx) {
++  public LocalDate visitMonth(TomlParser.MonthContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(34);
+     String text = ctx.getText();
+     if (text.length() != 2) {
+       throw new TomlParseError("Invalid month (valid range 01..12)", new TomlPosition(ctx));
+@@ -61,7 +61,7 @@ final class LocalDateVisitor extends TomlParserBaseVisitor<LocalDate> {
+   }
+ 
+   @Override
+-  public LocalDate visitDay(TomlParser.DayContext ctx) {
++  public LocalDate visitDay(TomlParser.DayContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(35);
+     String text = ctx.getText();
+     if (text.length() != 2) {
+       throw new TomlParseError("Invalid day (valid range 01..28/31)", new TomlPosition(ctx));
+diff --git a/org/tomlj/LocalTimeVisitor.java b/org/tomlj/LocalTimeVisitor.java
+index ee3b233..3536773 100644
+--- a/org/tomlj/LocalTimeVisitor.java
++++ b/org/tomlj/LocalTimeVisitor.java
+@@ -24,7 +24,7 @@ final class LocalTimeVisitor extends TomlParserBaseVisitor<LocalTime> {
+   private LocalTime time = LocalTime.MIN;
+ 
+   @Override
+-  public LocalTime visitHour(TomlParser.HourContext ctx) {
++  public LocalTime visitHour(TomlParser.HourContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(36);
+     String text = ctx.getText();
+     if (text.length() != 2) {
+       throw new TomlParseError("Invalid hour (valid range 00..23)", new TomlPosition(ctx));
+@@ -43,7 +43,7 @@ final class LocalTimeVisitor extends TomlParserBaseVisitor<LocalTime> {
+   }
+ 
+   @Override
+-  public LocalTime visitMinute(TomlParser.MinuteContext ctx) {
++  public LocalTime visitMinute(TomlParser.MinuteContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(37);
+     String text = ctx.getText();
+     if (text.length() != 2) {
+       throw new TomlParseError("Invalid minutes (valid range 00..59)", new TomlPosition(ctx));
+@@ -62,7 +62,7 @@ final class LocalTimeVisitor extends TomlParserBaseVisitor<LocalTime> {
+   }
+ 
+   @Override
+-  public LocalTime visitSecond(TomlParser.SecondContext ctx) {
++  public LocalTime visitSecond(TomlParser.SecondContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(38);
+     String text = ctx.getText();
+     if (text.length() != 2) {
+       throw new TomlParseError("Invalid seconds (valid range 00..59)", new TomlPosition(ctx));
+diff --git a/org/tomlj/MutableHomogeneousTomlArray.java b/org/tomlj/MutableHomogeneousTomlArray.java
+index 56c40e5..7993e6d 100644
+--- a/org/tomlj/MutableHomogeneousTomlArray.java
++++ b/org/tomlj/MutableHomogeneousTomlArray.java
+@@ -24,17 +24,17 @@ final class MutableHomogeneousTomlArray extends MutableTomlArray {
+   }
+ 
+   @Override
+-  public boolean containsStrings() {
++  public boolean containsStrings() { org.tomlj.jmhbench.MutationSwitch.tick(9);
+     return type == null || type == TomlType.STRING;
+   }
+ 
+   @Override
+-  public boolean containsLongs() {
++  public boolean containsLongs() { org.tomlj.jmhbench.MutationSwitch.tick(10);
+     return type == null || type == TomlType.INTEGER;
+   }
+ 
+   @Override
+-  public boolean containsDoubles() {
++  public boolean containsDoubles() { org.tomlj.jmhbench.MutationSwitch.tick(11);
+     return type == null || type == TomlType.FLOAT;
+   }
+ 
+diff --git a/org/tomlj/MutableTomlArray.java b/org/tomlj/MutableTomlArray.java
+index ae359a1..15582b2 100644
+--- a/org/tomlj/MutableTomlArray.java
++++ b/org/tomlj/MutableTomlArray.java
+@@ -50,17 +50,17 @@ class MutableTomlArray implements TomlArray {
+   }
+ 
+   @Override
+-  public boolean containsStrings() {
++  public boolean containsStrings() { org.tomlj.jmhbench.MutationSwitch.tick(12);
+     throw new UnsupportedOperationException("Deprecated (after 0.5.0, arrays are heterogeneous)");
+   }
+ 
+   @Override
+-  public boolean containsLongs() {
++  public boolean containsLongs() { org.tomlj.jmhbench.MutationSwitch.tick(13);
+     throw new UnsupportedOperationException("Deprecated (after 0.5.0, arrays are heterogeneous)");
+   }
+ 
+   @Override
+-  public boolean containsDoubles() {
++  public boolean containsDoubles() { org.tomlj.jmhbench.MutationSwitch.tick(14);
+     throw new UnsupportedOperationException("Deprecated (after 0.5.0, arrays are heterogeneous)");
+   }
+ 
+diff --git a/org/tomlj/MutableTomlTable.java b/org/tomlj/MutableTomlTable.java
+index 067e13a..63c2f3a 100644
+--- a/org/tomlj/MutableTomlTable.java
++++ b/org/tomlj/MutableTomlTable.java
+@@ -64,17 +64,17 @@ final class MutableTomlTable implements TomlTable {
+   }
+ 
+   @Override
+-  public int size() {
++  public int size() { org.tomlj.jmhbench.MutationSwitch.tick(39);
+     return properties.size();
+   }
+ 
+   @Override
+-  public boolean isEmpty() {
++  public boolean isEmpty() { org.tomlj.jmhbench.MutationSwitch.tick(40);
+     return properties.isEmpty();
+   }
+ 
+   @Override
+-  public Set<String> keySet() {
++  public Set<String> keySet() { org.tomlj.jmhbench.MutationSwitch.tick(41);
+     return properties.keySet();
+   }
+ 
+diff --git a/org/tomlj/Parser.java b/org/tomlj/Parser.java
+index afa0c0c..f427d71 100644
+--- a/org/tomlj/Parser.java
++++ b/org/tomlj/Parser.java
+@@ -39,17 +39,17 @@ final class Parser {
+ 
+     return new TomlParseResult() {
+       @Override
+-      public int size() {
++      public int size() { org.tomlj.jmhbench.MutationSwitch.tick(15);
+         return table.size();
+       }
+ 
+       @Override
+-      public boolean isEmpty() {
++      public boolean isEmpty() { org.tomlj.jmhbench.MutationSwitch.tick(16);
+         return table.isEmpty();
+       }
+ 
+       @Override
+-      public Set<String> keySet() {
++      public Set<String> keySet() { org.tomlj.jmhbench.MutationSwitch.tick(17);
+         return table.keySet();
+       }
+ 
+diff --git a/org/tomlj/QuotedStringVisitor.java b/org/tomlj/QuotedStringVisitor.java
+index 8088b0a..8581414 100644
+--- a/org/tomlj/QuotedStringVisitor.java
++++ b/org/tomlj/QuotedStringVisitor.java
+@@ -29,17 +29,17 @@ final class QuotedStringVisitor extends TomlParserBaseVisitor<StringBuilder> {
+   }
+ 
+   @Override
+-  public StringBuilder visitLiteralBody(TomlParser.LiteralBodyContext ctx) {
++  public StringBuilder visitLiteralBody(TomlParser.LiteralBodyContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(18);
+     return appendText(ctx.getText(), ctx);
+   }
+ 
+   @Override
+-  public StringBuilder visitMlLiteralBody(TomlParser.MlLiteralBodyContext ctx) {
++  public StringBuilder visitMlLiteralBody(TomlParser.MlLiteralBodyContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(19);
+     return appendText(ctx.getText(), ctx);
+   }
+ 
+   @Override
+-  public StringBuilder visitBasicUnescaped(TomlParser.BasicUnescapedContext ctx) {
++  public StringBuilder visitBasicUnescaped(TomlParser.BasicUnescapedContext ctx) { org.tomlj.jmhbench.MutationSwitch.tick(20);
+     return appendText(ctx.getText(), ctx);
+   }
+ 
+diff --git a/org/tomlj/TokenName.java b/org/tomlj/TokenName.java
+index 7e43836..8eec8e1 100644
+--- a/org/tomlj/TokenName.java
++++ b/org/tomlj/TokenName.java
+@@ -67,7 +67,7 @@ enum TokenName {
+     return Arrays.stream(TokenName.values()).filter(n -> n.tokenTypes.get(tokenType + 1));
+   }
+ 
+-  public String displayName() {
++  public String displayName() { org.tomlj.jmhbench.MutationSwitch.tick(42);
+     return displayName;
+   }
+ }
+diff --git a/org/tomlj/Toml.java b/org/tomlj/Toml.java
+index 536b62e..166f14c 100644
+--- a/org/tomlj/Toml.java
++++ b/org/tomlj/Toml.java
+@@ -53,7 +53,7 @@ public final class Toml {
+    * @param input The input to parse.
+    * @return The parse result.
+    */
+-  public static TomlParseResult parse(String input) {
++  public static TomlParseResult parse(String input) { org.tomlj.jmhbench.MutationSwitch.tick(43);
+     return parse(input, TomlVersion.LATEST);
+   }
+ 
+@@ -64,7 +64,7 @@ public final class Toml {
+    * @param version The version level to parse at.
+    * @return The parse result.
+    */
+-  public static TomlParseResult parse(String input, TomlVersion version) {
++  public static TomlParseResult parse(String input, TomlVersion version) { org.tomlj.jmhbench.MutationSwitch.tick(44);
+     CharStream stream = CharStreams.fromString(input);
+     return Parser.parse(stream, version.canonical);
+   }
+@@ -76,7 +76,7 @@ public final class Toml {
+    * @return The parse result.
+    * @throws IOException If an IO error occurs.
+    */
+-  public static TomlParseResult parse(Path file) throws IOException {
++  public static TomlParseResult parse(Path file) throws IOException { org.tomlj.jmhbench.MutationSwitch.tick(45);
+     return parse(file, TomlVersion.LATEST);
+   }
+ 
+diff --git a/org/tomlj/TomlCommand.java b/org/tomlj/TomlCommand.java
+index 9a9ff48..a8d2f9e 100644
+--- a/org/tomlj/TomlCommand.java
++++ b/org/tomlj/TomlCommand.java
+@@ -29,7 +29,7 @@ public class TomlCommand {
+    *
+    * @param args Command line arguments (ignored).
+    **/
+-  public static void main(String[] args) {
++  public static void main(String[] args) { org.tomlj.jmhbench.MutationSwitch.tick(46);
+     try {
+       TomlParseResult result = Toml.parse(System.in);
+       if (result.hasErrors()) {
+diff --git a/org/tomlj/TomlParseError.java b/org/tomlj/TomlParseError.java
+index 4abf269..13160c9 100644
+--- a/org/tomlj/TomlParseError.java
++++ b/org/tomlj/TomlParseError.java
+@@ -38,7 +38,7 @@ public final class TomlParseError extends RuntimeException {
+    *
+    * @return The position in the input where the error occurred.
+    */
+-  public TomlPosition position() {
++  public TomlPosition position() { org.tomlj.jmhbench.MutationSwitch.tick(47);
+     return position;
+   }
+ 
+diff --git a/org/tomlj/TomlPosition.java b/org/tomlj/TomlPosition.java
+index b326b31..b2b4533 100644
+--- a/org/tomlj/TomlPosition.java
++++ b/org/tomlj/TomlPosition.java
+@@ -29,7 +29,7 @@ public final class TomlPosition {
+    * @param column The column.
+    * @return A position.
+    */
+-  public static TomlPosition positionAt(int line, int column) {
++  public static TomlPosition positionAt(int line, int column) { org.tomlj.jmhbench.MutationSwitch.tick(48);
+     if (line < 1) {
+       throw new IllegalArgumentException("line must be >= 1");
+     }
+@@ -62,7 +62,7 @@ public final class TomlPosition {
+    *
+    * @return The line number (1..).
+    */
+-  public int line() {
++  public int line() { org.tomlj.jmhbench.MutationSwitch.tick(49);
+     return line;
+   }
+ 
+@@ -74,7 +74,7 @@ public final class TomlPosition {
+    * 
+    * @return The column number (1..).
+    */
+-  public int column() {
++  public int column() { org.tomlj.jmhbench.MutationSwitch.tick(50);
+     return column;
+   }
+ 
+diff --git a/org/tomlj/jmhbench/MutationSwitch.java b/org/tomlj/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..06a168f
+--- /dev/null
++++ b/org/tomlj/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.tomlj.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

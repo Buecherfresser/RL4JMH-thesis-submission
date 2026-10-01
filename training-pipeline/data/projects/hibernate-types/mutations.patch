@@ -1,0 +1,678 @@
+diff --git a/io/hypersistence/utils/common/ClassLoaderUtils.java b/io/hypersistence/utils/common/ClassLoaderUtils.java
+index 1cb9c80..3fd482a 100644
+--- a/io/hypersistence/utils/common/ClassLoaderUtils.java
++++ b/io/hypersistence/utils/common/ClassLoaderUtils.java
+@@ -20,7 +20,7 @@ public final class ClassLoaderUtils {
+      *
+      * @return ClassLoader
+      */
+-    public static ClassLoader getClassLoader() {
++    public static ClassLoader getClassLoader() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(1);
+         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+         return (classLoader != null) ? classLoader : ClassLoaderUtils.class.getClassLoader();
+     }
+@@ -34,7 +34,7 @@ public final class ClassLoaderUtils {
+      * @throws ClassNotFoundException if the class cannot be resolved
+      */
+     @SuppressWarnings("unchecked")
+-    public static <T> Class<T> loadClass(String className) throws ClassNotFoundException {
++    public static <T> Class<T> loadClass(String className) throws ClassNotFoundException { io.hypersistence.utils.jmhbench.MutationSwitch.tick(6);
+         return (Class<T>) getClassLoader().loadClass(className);
+     }
+ 
+diff --git a/io/hypersistence/utils/common/ReflectionUtils.java b/io/hypersistence/utils/common/ReflectionUtils.java
+index bc8408e..60a1ee3 100644
+--- a/io/hypersistence/utils/common/ReflectionUtils.java
++++ b/io/hypersistence/utils/common/ReflectionUtils.java
+@@ -40,7 +40,7 @@ public final class ReflectionUtils {
+      * @param <T>       class type
+      * @return new Java {@link Object} of the provided type
+      */
+-    public static <T> T newInstance(String className) {
++    public static <T> T newInstance(String className) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(10);
+         Class clazz = getClass(className);
+         return newInstance(clazz);
+     }
+@@ -53,7 +53,7 @@ public final class ReflectionUtils {
+      * @return new Java {@link Object} of the provided type
+      */
+     @SuppressWarnings("unchecked")
+-    public static <T> T newInstance(Class clazz) {
++    public static <T> T newInstance(Class clazz) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(14);
+         try {
+             return (T) clazz.newInstance();
+         } catch (InstantiationException e) {
+diff --git a/io/hypersistence/utils/common/StringUtils.java b/io/hypersistence/utils/common/StringUtils.java
+index 7c62701..3f625dc 100644
+--- a/io/hypersistence/utils/common/StringUtils.java
++++ b/io/hypersistence/utils/common/StringUtils.java
+@@ -27,7 +27,7 @@ public class StringUtils {
+      * @param elements elements to join
+      * @return the {link @String} result obtained from joining all elements
+      */
+-    public static String join(CharSequence delimiter, CharSequence... elements) {
++    public static String join(CharSequence delimiter, CharSequence... elements) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(18);
+         StringBuilder builder = new StringBuilder();
+ 
+         boolean first = true;
+@@ -49,7 +49,7 @@ public class StringUtils {
+      * @param value String value
+      * @return if the string is blank
+      */
+-    public static boolean isBlank(String value) {
++    public static boolean isBlank(String value) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(22);
+         return value == null || value.isEmpty() || value.trim().isEmpty();
+     }
+ 
+diff --git a/io/hypersistence/utils/hibernate/query/DistinctListTransformer.java b/io/hypersistence/utils/hibernate/query/DistinctListTransformer.java
+index fa61f3d..4f93aeb 100644
+--- a/io/hypersistence/utils/hibernate/query/DistinctListTransformer.java
++++ b/io/hypersistence/utils/hibernate/query/DistinctListTransformer.java
+@@ -25,7 +25,7 @@ public class DistinctListTransformer<T> implements ResultListTransformer<T> {
+      * @return deduplicated List
+      */
+     @Override
+-    public List<T> transformList(List collection) {
++    public List<T> transformList(List collection) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(2);
+         return (List<T>) collection.stream().distinct().collect(Collectors.toList());
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/query/MapResultTransformer.java b/io/hypersistence/utils/hibernate/query/MapResultTransformer.java
+index 28ec0e4..346e588 100644
+--- a/io/hypersistence/utils/hibernate/query/MapResultTransformer.java
++++ b/io/hypersistence/utils/hibernate/query/MapResultTransformer.java
+@@ -43,7 +43,7 @@ public class MapResultTransformer<K, V> implements ResultTransformer {
+      * @return unmodified tuple
+      */
+     @Override
+-    public Object transformTuple(Object[] tuple, String[] aliases) {
++    public Object transformTuple(Object[] tuple, String[] aliases) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(7);
+         int keyOrdinal = -1;
+         int valueOrdinal = -1;
+ 
+@@ -89,7 +89,7 @@ public class MapResultTransformer<K, V> implements ResultTransformer {
+      * @return the {@link Map} result set
+      */
+     @Override
+-    public List transformList(List tuples) {
++    public List transformList(List tuples) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(11);
+         return Collections.singletonList(result);
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/type/array/BooleanArrayType.java b/io/hypersistence/utils/hibernate/type/array/BooleanArrayType.java
+index 6549470..b841965 100644
+--- a/io/hypersistence/utils/hibernate/type/array/BooleanArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/BooleanArrayType.java
+@@ -46,7 +46,7 @@ public class BooleanArrayType extends AbstractArrayType<boolean[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(15);
+         return "boolean-array";
+     }
+ }
+\ No newline at end of file
+diff --git a/io/hypersistence/utils/hibernate/type/array/DateArrayType.java b/io/hypersistence/utils/hibernate/type/array/DateArrayType.java
+index 89012ab..778d25f 100644
+--- a/io/hypersistence/utils/hibernate/type/array/DateArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/DateArrayType.java
+@@ -45,7 +45,7 @@ public class DateArrayType extends AbstractArrayType<Date[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(19);
+         return "date-array";
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/type/array/DecimalArrayType.java b/io/hypersistence/utils/hibernate/type/array/DecimalArrayType.java
+index bf5c89f..a39696a 100644
+--- a/io/hypersistence/utils/hibernate/type/array/DecimalArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/DecimalArrayType.java
+@@ -46,7 +46,7 @@ public class DecimalArrayType extends AbstractArrayType<BigDecimal[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(23);
+         return "decimal-array";
+     }
+ }
+\ No newline at end of file
+diff --git a/io/hypersistence/utils/hibernate/type/array/DoubleArrayType.java b/io/hypersistence/utils/hibernate/type/array/DoubleArrayType.java
+index a5e6482..9c1bad5 100644
+--- a/io/hypersistence/utils/hibernate/type/array/DoubleArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/DoubleArrayType.java
+@@ -47,7 +47,7 @@ public class DoubleArrayType extends AbstractArrayType<double[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(26);
+         return "double-array";
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/type/array/EnumArrayType.java b/io/hypersistence/utils/hibernate/type/array/EnumArrayType.java
+index 7054dc9..0dbc6ef 100644
+--- a/io/hypersistence/utils/hibernate/type/array/EnumArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/EnumArrayType.java
+@@ -49,12 +49,12 @@ public class EnumArrayType extends AbstractArrayType<Enum[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(27);
+         return name;
+     }
+ 
+     @Override
+-    public void setParameterValues(Properties parameters) {
++    public void setParameterValues(Properties parameters) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(28);
+         DynamicParameterizedType.ParameterType parameterType = (ParameterType) parameters.get(DynamicParameterizedType.PARAMETER_TYPE);
+         Annotation[] annotations = parameterType.getAnnotationsMethod();
+         if (name == null) {
+diff --git a/io/hypersistence/utils/hibernate/type/array/FloatArrayType.java b/io/hypersistence/utils/hibernate/type/array/FloatArrayType.java
+index 49db80f..2c261af 100644
+--- a/io/hypersistence/utils/hibernate/type/array/FloatArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/FloatArrayType.java
+@@ -48,7 +48,7 @@ public class FloatArrayType extends AbstractArrayType<float[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(29);
+         return "float-array";
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/type/array/IntArrayType.java b/io/hypersistence/utils/hibernate/type/array/IntArrayType.java
+index 2b684ee..d6829b2 100644
+--- a/io/hypersistence/utils/hibernate/type/array/IntArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/IntArrayType.java
+@@ -44,7 +44,7 @@ public class IntArrayType extends AbstractArrayType<int[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(30);
+         return "int-array";
+     }
+ }
+\ No newline at end of file
+diff --git a/io/hypersistence/utils/hibernate/type/array/ListArrayType.java b/io/hypersistence/utils/hibernate/type/array/ListArrayType.java
+index a29b373..ff283a1 100644
+--- a/io/hypersistence/utils/hibernate/type/array/ListArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/ListArrayType.java
+@@ -37,12 +37,12 @@ public class ListArrayType extends AbstractArrayType<Collection> implements Dyna
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(31);
+         return "list-array";
+     }
+ 
+     @Override
+-    public void setParameterValues(Properties parameters) {
++    public void setParameterValues(Properties parameters) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(32);
+         ((DynamicParameterizedType) getJavaTypeDescriptor()).setParameterValues(parameters);
+     }
+ }
+\ No newline at end of file
+diff --git a/io/hypersistence/utils/hibernate/type/array/LocalDateArrayType.java b/io/hypersistence/utils/hibernate/type/array/LocalDateArrayType.java
+index fe56254..68c55b9 100644
+--- a/io/hypersistence/utils/hibernate/type/array/LocalDateArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/LocalDateArrayType.java
+@@ -49,7 +49,7 @@ public class LocalDateArrayType extends AbstractArrayType<java.time.LocalDate[]>
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(33);
+         return "localdate-array";
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/type/array/LocalDateTimeArrayType.java b/io/hypersistence/utils/hibernate/type/array/LocalDateTimeArrayType.java
+index 8b72d31..0e69126 100644
+--- a/io/hypersistence/utils/hibernate/type/array/LocalDateTimeArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/LocalDateTimeArrayType.java
+@@ -49,7 +49,7 @@ public class LocalDateTimeArrayType extends AbstractArrayType<java.time.LocalDat
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(34);
+         return "localdatetime-array";
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/type/array/LongArrayType.java b/io/hypersistence/utils/hibernate/type/array/LongArrayType.java
+index f29689c..6518b93 100644
+--- a/io/hypersistence/utils/hibernate/type/array/LongArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/LongArrayType.java
+@@ -46,7 +46,7 @@ public class LongArrayType extends AbstractArrayType<long[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(35);
+         return "long-array";
+     }
+ }
+\ No newline at end of file
+diff --git a/io/hypersistence/utils/hibernate/type/array/MultiDimensionalArrayType.java b/io/hypersistence/utils/hibernate/type/array/MultiDimensionalArrayType.java
+index 4f59c22..360d2d1 100644
+--- a/io/hypersistence/utils/hibernate/type/array/MultiDimensionalArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/MultiDimensionalArrayType.java
+@@ -44,7 +44,7 @@ public class MultiDimensionalArrayType extends AbstractArrayType<Object> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(36);
+         return "multi-dimensional-array";
+     }
+ }
+\ No newline at end of file
+diff --git a/io/hypersistence/utils/hibernate/type/array/StringArrayType.java b/io/hypersistence/utils/hibernate/type/array/StringArrayType.java
+index 098a800..600d368 100644
+--- a/io/hypersistence/utils/hibernate/type/array/StringArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/StringArrayType.java
+@@ -45,7 +45,7 @@ public class StringArrayType extends AbstractArrayType<String[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(37);
+         return "string-array";
+     }
+ }
+\ No newline at end of file
+diff --git a/io/hypersistence/utils/hibernate/type/array/TimestampArrayType.java b/io/hypersistence/utils/hibernate/type/array/TimestampArrayType.java
+index e1a14ca..e74dd4d 100644
+--- a/io/hypersistence/utils/hibernate/type/array/TimestampArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/TimestampArrayType.java
+@@ -45,7 +45,7 @@ public class TimestampArrayType extends AbstractArrayType<Date[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(38);
+         return "timestamp-array";
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/type/array/UUIDArrayType.java b/io/hypersistence/utils/hibernate/type/array/UUIDArrayType.java
+index e35a3b8..1afab3e 100644
+--- a/io/hypersistence/utils/hibernate/type/array/UUIDArrayType.java
++++ b/io/hypersistence/utils/hibernate/type/array/UUIDArrayType.java
+@@ -46,7 +46,7 @@ public class UUIDArrayType extends AbstractArrayType<UUID[]> {
+         this(new Configuration(typeBootstrapContext.getConfigurationSettings()));
+     }
+ 
+-    public String getName() {
++    public String getName() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(39);
+         return "uuid-array";
+     }
+ }
+\ No newline at end of file
+diff --git a/io/hypersistence/utils/hibernate/type/array/internal/ArraySqlTypeDescriptor.java b/io/hypersistence/utils/hibernate/type/array/internal/ArraySqlTypeDescriptor.java
+index 0977dfa..0138f5c 100644
+--- a/io/hypersistence/utils/hibernate/type/array/internal/ArraySqlTypeDescriptor.java
++++ b/io/hypersistence/utils/hibernate/type/array/internal/ArraySqlTypeDescriptor.java
+@@ -18,12 +18,12 @@ public class ArraySqlTypeDescriptor implements JdbcType {
+     public static final ArraySqlTypeDescriptor INSTANCE = new ArraySqlTypeDescriptor();
+ 
+     @Override
+-    public int getJdbcTypeCode() {
++    public int getJdbcTypeCode() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(40);
+         return Types.OTHER;
+     }
+ 
+     @Override
+-    public <X> ValueBinder<X> getBinder(final JavaType<X> javaType) {
++    public <X> ValueBinder<X> getBinder(final JavaType<X> javaType) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(41);
+         return new BasicBinder<X>(javaType, this) {
+             @Override
+             protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options) throws SQLException {
+diff --git a/io/hypersistence/utils/hibernate/type/array/internal/ArrayUtil.java b/io/hypersistence/utils/hibernate/type/array/internal/ArrayUtil.java
+index aa419ba..86b8014 100644
+--- a/io/hypersistence/utils/hibernate/type/array/internal/ArrayUtil.java
++++ b/io/hypersistence/utils/hibernate/type/array/internal/ArrayUtil.java
+@@ -17,7 +17,7 @@ public class ArrayUtil {
+      * @param <T> array element type
+      * @return cloned array
+      */
+-    public static <T> T deepCopy(Object originalArray) {
++    public static <T> T deepCopy(Object originalArray) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(42);
+         Class arrayClass = originalArray.getClass();
+ 
+         if (boolean[].class.equals(arrayClass)) {
+@@ -56,7 +56,7 @@ public class ArrayUtil {
+      * @param originalArray original array
+      * @return wrapped array
+      */
+-    public static Object[] wrapArray(Object originalArray) {
++    public static Object[] wrapArray(Object originalArray) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(43);
+         Class arrayClass = originalArray.getClass();
+ 
+         if (boolean[].class.equals(arrayClass)) {
+diff --git a/io/hypersistence/utils/hibernate/type/array/internal/BooleanArrayTypeDescriptor.java b/io/hypersistence/utils/hibernate/type/array/internal/BooleanArrayTypeDescriptor.java
+index 418c438..57b0dee 100644
+--- a/io/hypersistence/utils/hibernate/type/array/internal/BooleanArrayTypeDescriptor.java
++++ b/io/hypersistence/utils/hibernate/type/array/internal/BooleanArrayTypeDescriptor.java
+@@ -11,7 +11,7 @@ public class BooleanArrayTypeDescriptor extends AbstractArrayTypeDescriptor<bool
+     }
+ 
+     @Override
+-    protected String getSqlArrayType() {
++    protected String getSqlArrayType() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(44);
+         String sqlArrayType = super.getSqlArrayType();
+         return sqlArrayType != null ? sqlArrayType : "boolean";
+     }
+diff --git a/io/hypersistence/utils/hibernate/type/array/internal/DateArrayTypeDescriptor.java b/io/hypersistence/utils/hibernate/type/array/internal/DateArrayTypeDescriptor.java
+index 20c2ab0..cd32285 100644
+--- a/io/hypersistence/utils/hibernate/type/array/internal/DateArrayTypeDescriptor.java
++++ b/io/hypersistence/utils/hibernate/type/array/internal/DateArrayTypeDescriptor.java
+@@ -12,7 +12,7 @@ public class DateArrayTypeDescriptor extends AbstractArrayTypeDescriptor<Date[]>
+     }
+ 
+     @Override
+-    protected String getSqlArrayType() {
++    protected String getSqlArrayType() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(45);
+         return "date";
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/type/array/internal/DecimalArrayTypeDescriptor.java b/io/hypersistence/utils/hibernate/type/array/internal/DecimalArrayTypeDescriptor.java
+index a56696d..3fd08ce 100644
+--- a/io/hypersistence/utils/hibernate/type/array/internal/DecimalArrayTypeDescriptor.java
++++ b/io/hypersistence/utils/hibernate/type/array/internal/DecimalArrayTypeDescriptor.java
+@@ -12,7 +12,7 @@ public class DecimalArrayTypeDescriptor extends AbstractArrayTypeDescriptor<BigD
+     }
+ 
+     @Override
+-    protected String getSqlArrayType() {
++    protected String getSqlArrayType() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(46);
+         return "decimal";
+     }
+ }
+diff --git a/io/hypersistence/utils/hibernate/type/array/internal/DoubleArrayTypeDescriptor.java b/io/hypersistence/utils/hibernate/type/array/internal/DoubleArrayTypeDescriptor.java
+index d832bb1..8f5a355 100644
+--- a/io/hypersistence/utils/hibernate/type/array/internal/DoubleArrayTypeDescriptor.java
++++ b/io/hypersistence/utils/hibernate/type/array/internal/DoubleArrayTypeDescriptor.java
+@@ -11,7 +11,7 @@ public class DoubleArrayTypeDescriptor
+     }
+ 
+     @Override
+-    protected String getSqlArrayType() {
++    protected String getSqlArrayType() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(47);
+         String sqlArrayType = super.getSqlArrayType();
+         return sqlArrayType != null ? sqlArrayType : "float8";
+     }
+diff --git a/io/hypersistence/utils/hibernate/type/array/internal/EnumArrayTypeDescriptor.java b/io/hypersistence/utils/hibernate/type/array/internal/EnumArrayTypeDescriptor.java
+index 9db77eb..d55c085 100644
+--- a/io/hypersistence/utils/hibernate/type/array/internal/EnumArrayTypeDescriptor.java
++++ b/io/hypersistence/utils/hibernate/type/array/internal/EnumArrayTypeDescriptor.java
+@@ -20,12 +20,12 @@ public class EnumArrayTypeDescriptor
+     }
+ 
+     @Override
+-    protected String getSqlArrayType() {
++    protected String getSqlArrayType() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(48);
+         return sqlArrayType;
+     }
+ 
+     @Override
+-    public void setParameterValues(Properties parameters) {
++    public void setParameterValues(Properties parameters) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(49);
+         sqlArrayType = parameters.getProperty(AbstractArrayType.SQL_ARRAY_TYPE);
+         super.setParameterValues(parameters);
+     }
+diff --git a/io/hypersistence/utils/hibernate/type/array/internal/FloatArrayTypeDescriptor.java b/io/hypersistence/utils/hibernate/type/array/internal/FloatArrayTypeDescriptor.java
+index cb9ca95..f49982e 100644
+--- a/io/hypersistence/utils/hibernate/type/array/internal/FloatArrayTypeDescriptor.java
++++ b/io/hypersistence/utils/hibernate/type/array/internal/FloatArrayTypeDescriptor.java
+@@ -12,7 +12,7 @@ public class FloatArrayTypeDescriptor
+     }
+ 
+     @Override
+-    protected String getSqlArrayType() {
++    protected String getSqlArrayType() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(50);
+         String sqlArrayType = super.getSqlArrayType();
+         return sqlArrayType != null ? sqlArrayType : "float4";
+     }
+diff --git a/io/hypersistence/utils/jdbc/validator/SQLStatementCountMismatchException.java b/io/hypersistence/utils/jdbc/validator/SQLStatementCountMismatchException.java
+index 03df73a..f98d9e4 100644
+--- a/io/hypersistence/utils/jdbc/validator/SQLStatementCountMismatchException.java
++++ b/io/hypersistence/utils/jdbc/validator/SQLStatementCountMismatchException.java
+@@ -21,11 +21,11 @@ public class SQLStatementCountMismatchException extends AssertionError {
+         this.recorded = recorded;
+     }
+ 
+-    public long getExpected() {
++    public long getExpected() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(3);
+         return expected;
+     }
+ 
+-    public long getRecorded() {
++    public long getRecorded() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(8);
+         return recorded;
+     }
+ }
+diff --git a/io/hypersistence/utils/jdbc/validator/SQLStatementCountValidator.java b/io/hypersistence/utils/jdbc/validator/SQLStatementCountValidator.java
+index 114e5d8..045feac 100644
+--- a/io/hypersistence/utils/jdbc/validator/SQLStatementCountValidator.java
++++ b/io/hypersistence/utils/jdbc/validator/SQLStatementCountValidator.java
+@@ -21,7 +21,7 @@ public class SQLStatementCountValidator {
+     /**
+      * Reset the statement recorder
+      */
+-    public static void reset() {
++    public static void reset() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(12);
+         QueryCountHolder.clear();
+     }
+ 
+@@ -30,7 +30,7 @@ public class SQLStatementCountValidator {
+      *
+      * @param expectedCount expected select statement count
+      */
+-    public static void assertSelectCount(int expectedCount) {
++    public static void assertSelectCount(int expectedCount) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(16);
+         StatementType.SELECT.validate(expectedCount);
+     }
+ 
+diff --git a/io/hypersistence/utils/jdbc/validator/StatementType.java b/io/hypersistence/utils/jdbc/validator/StatementType.java
+index 7169aa1..539b3a6 100644
+--- a/io/hypersistence/utils/jdbc/validator/StatementType.java
++++ b/io/hypersistence/utils/jdbc/validator/StatementType.java
+@@ -12,14 +12,14 @@ import net.ttddyy.dsproxy.QueryCountHolder;
+ enum StatementType {
+     SELECT {
+         @Override
+-        protected long recordedCount() {
++        protected long recordedCount() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(20);
+             QueryCount queryCount = QueryCountHolder.getGrandTotal();
+             return queryCount.getSelect();
+         }
+     },
+     INSERT {
+         @Override
+-        protected long recordedCount() {
++        protected long recordedCount() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(24);
+             QueryCount queryCount = QueryCountHolder.getGrandTotal();
+             return queryCount.getInsert();
+         }
+diff --git a/io/hypersistence/utils/jmhbench/MutationSwitch.java b/io/hypersistence/utils/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..547ce42
+--- /dev/null
++++ b/io/hypersistence/utils/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.hypersistence.utils.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/io/hypersistence/utils/logging/InlineQueryLogEntryCreator.java b/io/hypersistence/utils/logging/InlineQueryLogEntryCreator.java
+index 135802d..7452124 100644
+--- a/io/hypersistence/utils/logging/InlineQueryLogEntryCreator.java
++++ b/io/hypersistence/utils/logging/InlineQueryLogEntryCreator.java
+@@ -11,7 +11,7 @@ import java.util.*;
+  */
+ public class InlineQueryLogEntryCreator extends DefaultQueryLogEntryCreator {
+     @Override
+-    protected void writeParamsEntry(StringBuilder sb, ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
++    protected void writeParamsEntry(StringBuilder sb, ExecutionInfo execInfo, List<QueryInfo> queryInfoList) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(4);
+         sb.append("Params:[");
+         for (QueryInfo queryInfo : queryInfoList) {
+             boolean firstArg = true;
+diff --git a/io/hypersistence/utils/spring/aop/RetryAspect.java b/io/hypersistence/utils/spring/aop/RetryAspect.java
+index 3243e92..57b19bd 100644
+--- a/io/hypersistence/utils/spring/aop/RetryAspect.java
++++ b/io/hypersistence/utils/spring/aop/RetryAspect.java
+@@ -26,7 +26,7 @@ public class RetryAspect {
+     private static final Logger LOGGER = LoggerFactory.getLogger(RetryAspect.class);
+ 
+     @Around("@annotation(io.hypersistence.utils.spring.annotation.Retry)")
+-    public Object retry(ProceedingJoinPoint pjp) throws Throwable {
++    public Object retry(ProceedingJoinPoint pjp) throws Throwable { io.hypersistence.utils.jmhbench.MutationSwitch.tick(9);
+         Retry retryAnnotation = getAnnotation(pjp, Retry.class);
+         return (retryAnnotation != null) ? proceed(pjp, retryAnnotation) : proceed(pjp);
+     }
+diff --git a/io/hypersistence/utils/spring/repository/BaseJpaRepositoryImpl.java b/io/hypersistence/utils/spring/repository/BaseJpaRepositoryImpl.java
+index 8b1be3d..1f5fd65 100644
+--- a/io/hypersistence/utils/spring/repository/BaseJpaRepositoryImpl.java
++++ b/io/hypersistence/utils/spring/repository/BaseJpaRepositoryImpl.java
+@@ -31,13 +31,13 @@ public class BaseJpaRepositoryImpl<T, ID> extends SimpleJpaRepository<T, ID>
+     }
+ 
+     @Transactional
+-    public <S extends T> S persist(S entity) {
++    public <S extends T> S persist(S entity) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(13);
+         entityManager.persist(entity);
+         return entity;
+     }
+ 
+     @Transactional
+-    public <S extends T> S persistAndFlush(S entity) {
++    public <S extends T> S persistAndFlush(S entity) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(17);
+         persist(entity);
+         entityManager.flush();
+         return entity;
+diff --git a/io/hypersistence/utils/spring/repository/HibernateRepositoryImpl.java b/io/hypersistence/utils/spring/repository/HibernateRepositoryImpl.java
+index 37ea35d..9e92403 100644
+--- a/io/hypersistence/utils/spring/repository/HibernateRepositoryImpl.java
++++ b/io/hypersistence/utils/spring/repository/HibernateRepositoryImpl.java
+@@ -23,12 +23,12 @@ public class HibernateRepositoryImpl<T> implements HibernateRepository<T> {
+     }
+ 
+     @Override
+-    public List<T> findAll() {
++    public List<T> findAll() { io.hypersistence.utils.jmhbench.MutationSwitch.tick(21);
+         throw new UnsupportedOperationException("Fetching all records from a given database table is a terrible idea!");
+     }
+ 
+     @Override
+-    public <S extends T> S save(S entity) {
++    public <S extends T> S save(S entity) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(25);
+         return unsupportedSave();
+     }
+ 
+diff --git a/io/hypersistence/utils/spring/repository/StatelessSessionUtil.java b/io/hypersistence/utils/spring/repository/StatelessSessionUtil.java
+index 9abf5a1..9821aeb 100644
+--- a/io/hypersistence/utils/spring/repository/StatelessSessionUtil.java
++++ b/io/hypersistence/utils/spring/repository/StatelessSessionUtil.java
+@@ -32,7 +32,7 @@ class StatelessSessionUtil implements Serializable {
+         return Objects.hash(connection);
+     }
+ 
+-    public static StatelessSession statelessSession(EntityManager entityManager) {
++    public static StatelessSession statelessSession(EntityManager entityManager) { io.hypersistence.utils.jmhbench.MutationSwitch.tick(5);
+         Session session = entityManager.unwrap(Session.class);
+         return session.doReturningWork(connection -> {
+             StatelessSessionUtil statelessSessionKey = new StatelessSessionUtil(connection);

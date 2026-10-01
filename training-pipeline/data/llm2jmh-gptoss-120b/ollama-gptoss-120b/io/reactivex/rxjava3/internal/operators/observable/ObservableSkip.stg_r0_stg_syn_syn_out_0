@@ -1,0 +1,95 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableSkip}
+ * measuring the throughput of the skip operator under different stream sizes and skip counts.
+ *
+ * The benchmark uses a synchronous source (Observable.range) to isolate the cost of the
+ * skip operator itself. The emitted items are consumed by a Blackhole to prevent dead‑code
+ * elimination.
+ *
+ * Best‑practice JMH settings:
+ * - Warm‑up iterations to let the JIT compile the code.
+ * - Measurement iterations for stable results.
+ * - Single fork to avoid JVM start‑up noise (increase if needed).
+ * - Single thread to focus on the operator's intrinsic cost.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+@State(Scope.Thread)
+public class ObservableSkipBenchmark {
+
+    /**
+     * Total number of items emitted by the upstream source.
+     */
+    @Param({ "1_000", "10_000", "100_000", "1_000_000" })
+    public int upstreamCount;
+
+    /**
+     * Number of items to skip.
+     * Values are chosen to cover edge cases (0, half, all, and more than available).
+     */
+    @Param({ "0", "500", "5_000", "50_000", "500_000", "1_500_000" })
+    public long skipCount;
+
+    /**
+     * Pre‑built Observable that will be used in each benchmark iteration.
+     * It is recreated in @Setup to avoid sharing mutable state across iterations.
+     */
+    private Observable<Integer> source;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Observable.range is synchronous and cheap; we recreate it each invocation
+        // to ensure the skip operator is applied to a fresh upstream.
+        source = Observable.range(0, upstreamCount);
+    }
+
+    @Benchmark
+    public void skipThroughput(Blackhole bh) {
+        // Apply the skip operator and consume all remaining items.
+        // Using blockingSubscribe ensures the benchmark measures the complete
+        // processing of the stream before returning.
+        source.skip(skipCount).blockingSubscribe(bh::consume);
+    }
+}

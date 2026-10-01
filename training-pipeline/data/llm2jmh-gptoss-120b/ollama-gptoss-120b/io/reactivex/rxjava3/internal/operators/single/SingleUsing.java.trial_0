@@ -1,0 +1,60 @@
+```
+package io.reactivex.rxjava3.internal.operators.single;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link SingleUsing}.
+ *
+ * Measures the throughput of subscribing to a {@code SingleUsing} instance
+ * with eager and lazy resource disposal.
+ *
+ * The benchmark creates a fresh {@code SingleUsing} for each invocation to
+ * include the cost of resource acquisition and disposal in the measurement.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class SingleUsingBenchmark {
+
+    /** Toggle eager vs lazy disposal. */
+    @Param({"true", "false"})
+    public boolean eager;
+
+    /** The Single under test, recreated for each invocation. */
+    private Single<Integer> single;
+
+    /** Prepare a new SingleUsing instance before each benchmark call. */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        Supplier<Object> resourceSupplier = () -> new Object(); // cheap resource
+        Function<Object, SingleSource<Integer>> singleFunction = r -> Single.just(1);
+        Consumer<Object> disposer = r -> {
+            // No‑op disposer; real disposers may have side‑effects.
+        };
+        single = new SingleUsing<>(resourceSupplier, singleFunction, disposer, eager);
+    }
+
+    /** Benchmark method that subscribes to the Single and consumes the result. */
+    @Benchmark
+    public void subscribeSingleUsing(Blackhole bh) {
+        single.subscribe(new SingleObserver<Integer>() {
+            @Override public void onSubscribe(Disposable d) { /* no‑op */ }
+
+            @Override public void onSuccess(Integer value) {
+                bh.consume(value);
+            }
+
+            @Override public void onError(Throwable e) {
+                bh.consume(e);
+            }
+        });
+    }
+}
+```

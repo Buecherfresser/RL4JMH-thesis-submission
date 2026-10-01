@@ -1,0 +1,79 @@
+```
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeConcatArray;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link MaybeConcatArray}.
+ *
+ * The benchmark measures the throughput of concatenating an array of {@link MaybeSource}s
+ * into a {@link Flowable} and consuming the emitted items.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create the test data once per iteration.
+ * - Blackhole consumption to prevent dead-code elimination.
+ * - Reasonable warm‑up and measurement settings.
+ */
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class MaybeConcatArrayBenchmark {
+
+    /**
+     * Size of the source array. Adjust to reflect realistic workloads.
+     */
+    @Param({ "10", "100", "1000" })
+    public int sourceCount;
+
+    /**
+     * The array of Maybe sources used in the benchmark.
+     */
+    private MaybeSource<Integer>[] sources;
+
+    /**
+     * The Flowable produced by MaybeConcatArray.
+     */
+    private Flowable<Integer> flowable;
+
+    @SuppressWarnings("unchecked")
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create an array of Maybe.just(i) sources.
+        sources = new MaybeSource[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            final int value = i;
+            sources[i] = Maybe.just(value);
+        }
+        // Build the Flowable that concatenates the Maybes.
+        flowable = new MaybeConcatArray<>(sources);
+    }
+
+    /**
+     * Benchmark method that subscribes to the Flowable and consumes all items.
+     *
+     * @param bh Blackhole to consume values and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void concatAndConsume(Blackhole bh) {
+        // Use TestSubscriber to request all items and await completion.
+        TestSubscriber<Integer> ts = new TestSubscriber<>(Long.MAX_VALUE);
+        flowable.subscribe(ts);
+        // Ensure the subscription has completed before returning.
+        ts.awaitDone(5, TimeUnit.SECONDS);
+        // Consume the received items via Blackhole.
+        for (Integer v : ts.values()) {
+            bh.consume(v);
+        }
+    }
+}
+```

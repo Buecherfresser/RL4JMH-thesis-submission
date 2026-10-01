@@ -1,0 +1,71 @@
+# Qwen3.5-4B rejection fine-tuning. Run training from profiles/qwen-cu128 and point inference
+# at scripts/remote/start-vllm.sh with JMHGEN_MODEL_PROFILE=qwen.
+base_model: Qwen/Qwen3.5-4B
+model_family: qwen
+output_dir: outputs/qwen35-4b/rft
+dataset_path: data/sft/records.jsonl
+seed: 42
+
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+loss_type: nll
+activation_offloading: false
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, in_proj, out_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: []
+  bias: none
+
+max_seq_len: 16384
+learning_rate: 1.0e-5
+per_device_batch_size: 1
+gradient_accumulation_steps: 8
+num_epochs: 1.0
+completion_only_loss: true
+
+samples_per_prompt: 16
+sampling_temperature: 1.0
+limit_prompts: 0
+max_source_chars: 48000
+inference:
+  base_url: http://localhost:8000/v1
+  model: Qwen/Qwen3.5-4B
+  api_key_env: VLLM_API_KEY
+  timeout_s: 600.0
+  max_concurrency: 4
+  top_p: 0.95
+  top_k: 20
+  max_tokens: 8192
+  enable_thinking: true
+  chat_template_kwargs: {}
+  extra_body: {}
+
+accept_threshold: 0.9
+need_run: true
+reward_weights:
+  compile: 0.25
+  runtime: 0.25
+  anti_pattern: 0.25
+  rsd: 0.25
+  mutation: 0.0
+rsd_good: 0.05
+rsd_bad: 0.25
+runner:
+  jmh_version: "1.37"
+  java_release: 17
+  jmh:
+    warmup_iterations: 3
+    measurement_iterations: 5
+    forks: 1
+project_classpaths:
+  rxjava: data/classpaths/rxjava.cp
+
+work_dir: data/qwen35-4b/rft
+max_keep_per_prompt: 4
+dedup: true
+drop_all_pass: false
+val_fraction: 0.05

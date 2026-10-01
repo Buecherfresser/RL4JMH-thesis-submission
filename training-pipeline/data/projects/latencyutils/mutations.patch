@@ -1,0 +1,475 @@
+diff --git a/org/LatencyUtils/LatencyStats.java b/org/LatencyUtils/LatencyStats.java
+index 1c59a5c..af64b50 100644
+--- a/org/LatencyUtils/LatencyStats.java
++++ b/org/LatencyUtils/LatencyStats.java
+@@ -196,7 +196,7 @@ public class LatencyStats {
+      * Record a latency value in the LatencyStats object
+      * @param latency latency value (in nanoseconds) to record
+      */
+-    public void recordLatency(long latency) {
++    public void recordLatency(long latency) { org.LatencyUtils.jmhbench.MutationSwitch.tick(1);
+         long criticalValueAtEnter = recordingPhaser.writerCriticalSectionEnter();
+ 
+         try {
+@@ -219,7 +219,7 @@ public class LatencyStats {
+      *
+      * @return a copy of the latest interval latency histogram
+      */
+-    public synchronized Histogram getIntervalHistogram() {
++    public synchronized Histogram getIntervalHistogram() { org.LatencyUtils.jmhbench.MutationSwitch.tick(2);
+         Histogram intervalHistogram =
+                 new Histogram(lowestTrackableLatency, highestTrackableLatency, numberOfSignificantValueDigits);
+         getIntervalHistogramInto(intervalHistogram);
+@@ -235,7 +235,7 @@ public class LatencyStats {
+      *
+      * @param targetHistogram the histogram into which the interval histogram's data should be copied
+      */
+-    public synchronized void getIntervalHistogramInto(Histogram targetHistogram) {
++    public synchronized void getIntervalHistogramInto(Histogram targetHistogram) { org.LatencyUtils.jmhbench.MutationSwitch.tick(3);
+         try {
+             recordingPhaser.readerLock();
+             updateHistograms();
+@@ -255,7 +255,7 @@ public class LatencyStats {
+      *
+      * @param toHistogram the histogram into which the interval histogram's data should be added
+      */
+-    public synchronized void addIntervalHistogramTo(Histogram toHistogram) {
++    public synchronized void addIntervalHistogramTo(Histogram toHistogram) { org.LatencyUtils.jmhbench.MutationSwitch.tick(4);
+         try {
+             recordingPhaser.readerLock();
+             updateHistograms();
+@@ -274,7 +274,7 @@ public class LatencyStats {
+      *
+      * @return a copy of the latest uncorrected interval latency histogram
+      */
+-    public synchronized Histogram getLatestUncorrectedIntervalHistogram() {
++    public synchronized Histogram getLatestUncorrectedIntervalHistogram() { org.LatencyUtils.jmhbench.MutationSwitch.tick(5);
+         try {
+             recordingPhaser.readerLock();
+             Histogram intervalHistogram = new Histogram(lowestTrackableLatency, highestTrackableLatency, numberOfSignificantValueDigits);
+@@ -293,7 +293,7 @@ public class LatencyStats {
+      *
+      * @param targetHistogram the histogram into which the interval histogram's data should be copied
+      */
+-    public synchronized void getLatestUncorrectedIntervalHistogramInto(Histogram targetHistogram) {
++    public synchronized void getLatestUncorrectedIntervalHistogramInto(Histogram targetHistogram) { org.LatencyUtils.jmhbench.MutationSwitch.tick(6);
+         try {
+             recordingPhaser.readerLock();
+             inactiveRawDataHistogram.copyInto(targetHistogram);
+@@ -305,7 +305,7 @@ public class LatencyStats {
+     /**
+      * Stop operation of this LatencyStats object, removing it from the pause detector's notification list
+      */
+-    public synchronized void stop() {
++    public synchronized void stop() { org.LatencyUtils.jmhbench.MutationSwitch.tick(7);
+         pauseTracker.stop();
+         latencyStatsScheduledExecutor.shutdown();
+     }
+@@ -314,7 +314,7 @@ public class LatencyStats {
+      * get the IntervalEstimator used by this LatencyStats object
+      * @return the IntervalEstimator used by this LatencyStats object
+      */
+-    public IntervalEstimator getIntervalEstimator() {
++    public IntervalEstimator getIntervalEstimator() { org.LatencyUtils.jmhbench.MutationSwitch.tick(8);
+         return intervalEstimator;
+     }
+ 
+@@ -322,7 +322,7 @@ public class LatencyStats {
+      * get the PauseDetector used by this LatencyStats object
+      * @return the PauseDetector used by this LatencyStats object
+      */
+-    public PauseDetector getPauseDetector() {
++    public PauseDetector getPauseDetector() { org.LatencyUtils.jmhbench.MutationSwitch.tick(9);
+         return pauseDetector;
+     }
+ 
+@@ -346,7 +346,7 @@ public class LatencyStats {
+         private long intervalEstimatorTimeCap = 10000000000L; /* 10 sec */
+         private PauseDetector pauseDetector = null;
+ 
+-        public static Builder create() {
++        public static Builder create() { org.LatencyUtils.jmhbench.MutationSwitch.tick(10);
+             return new Builder();
+         }
+ 
+@@ -354,42 +354,42 @@ public class LatencyStats {
+ 
+         }
+ 
+-        public Builder lowestTrackableLatency(long lowestTrackableLatency) {
++        public Builder lowestTrackableLatency(long lowestTrackableLatency) { org.LatencyUtils.jmhbench.MutationSwitch.tick(11);
+             this.lowestTrackableLatency = lowestTrackableLatency;
+             return this;
+         }
+ 
+ 
+-        public Builder highestTrackableLatency(long highestTrackableLatency) {
++        public Builder highestTrackableLatency(long highestTrackableLatency) { org.LatencyUtils.jmhbench.MutationSwitch.tick(12);
+             this.highestTrackableLatency = highestTrackableLatency;
+             return this;
+         }
+ 
+ 
+-        public Builder numberOfSignificantValueDigits(int numberOfSignificantValueDigits) {
++        public Builder numberOfSignificantValueDigits(int numberOfSignificantValueDigits) { org.LatencyUtils.jmhbench.MutationSwitch.tick(13);
+             this.numberOfSignificantValueDigits = numberOfSignificantValueDigits;
+             return this;
+         }
+ 
+-        public Builder intervalEstimatorWindowLength(int intervalEstimatorWindowLength) {
++        public Builder intervalEstimatorWindowLength(int intervalEstimatorWindowLength) { org.LatencyUtils.jmhbench.MutationSwitch.tick(14);
+             this.intervalEstimatorWindowLength = intervalEstimatorWindowLength;
+             return this;
+         }
+ 
+ 
+-        public Builder intervalEstimatorTimeCap(long intervalEstimatorTimeCap) {
++        public Builder intervalEstimatorTimeCap(long intervalEstimatorTimeCap) { org.LatencyUtils.jmhbench.MutationSwitch.tick(15);
+             this.intervalEstimatorTimeCap = intervalEstimatorTimeCap;
+             return this;
+         }
+ 
+ 
+-        public Builder pauseDetector(PauseDetector pauseDetector) {
++        public Builder pauseDetector(PauseDetector pauseDetector) { org.LatencyUtils.jmhbench.MutationSwitch.tick(16);
+             this.pauseDetector = pauseDetector;
+             return this;
+         }
+ 
+ 
+-        public LatencyStats build() {
++        public LatencyStats build() { org.LatencyUtils.jmhbench.MutationSwitch.tick(17);
+             return new LatencyStats(lowestTrackableLatency,
+                     highestTrackableLatency,
+                     numberOfSignificantValueDigits,
+@@ -472,11 +472,11 @@ public class LatencyStats {
+             pauseDetector.addListener(this);
+         }
+ 
+-        public void stop() {
++        public void stop() { org.LatencyUtils.jmhbench.MutationSwitch.tick(18);
+             pauseDetector.removeListener(this);
+         }
+ 
+-        public void handlePauseEvent(final long pauseLength, final long pauseEndTime) {
++        public void handlePauseEvent(final long pauseLength, final long pauseEndTime) { org.LatencyUtils.jmhbench.MutationSwitch.tick(19);
+             final LatencyStats latencyStats = this.get();
+ 
+             if (latencyStats != null) {
+diff --git a/org/LatencyUtils/MovingAverageIntervalEstimator.java b/org/LatencyUtils/MovingAverageIntervalEstimator.java
+index 115da54..c4821ad 100644
+--- a/org/LatencyUtils/MovingAverageIntervalEstimator.java
++++ b/org/LatencyUtils/MovingAverageIntervalEstimator.java
+@@ -36,7 +36,7 @@ public class MovingAverageIntervalEstimator extends IntervalEstimator {
+     }
+ 
+     @Override
+-    public void recordInterval(long when) {
++    public void recordInterval(long when) { org.LatencyUtils.jmhbench.MutationSwitch.tick(20);
+         recordIntervalAndReturnWindowPosition(when);
+     }
+ 
+@@ -52,7 +52,7 @@ public class MovingAverageIntervalEstimator extends IntervalEstimator {
+     }
+ 
+     @Override
+-    public long getEstimatedInterval(long when) {
++    public long getEstimatedInterval(long when) { org.LatencyUtils.jmhbench.MutationSwitch.tick(21);
+         long sampledCount = count.get();
+ 
+         if (sampledCount < windowLength) {
+@@ -90,7 +90,7 @@ public class MovingAverageIntervalEstimator extends IntervalEstimator {
+         return Math.max(averageInterval, 1); // do not return a 0 interval estimate
+     }
+ 
+-    protected int getCurrentPosition() {
++    protected int getCurrentPosition() { org.LatencyUtils.jmhbench.MutationSwitch.tick(22);
+         return (int) (count.get() & windowMask);
+     }
+ }
+diff --git a/org/LatencyUtils/SimplePauseDetector.java b/org/LatencyUtils/SimplePauseDetector.java
+index aae2e5a..6c39c38 100644
+--- a/org/LatencyUtils/SimplePauseDetector.java
++++ b/org/LatencyUtils/SimplePauseDetector.java
+@@ -72,7 +72,7 @@ public class SimplePauseDetector extends PauseDetector {
+                 DEFAULT_NumberOfDetectorThreads, DEFAULT_Verbose);
+     }
+ 
+-    public void setVerbose(boolean verbose) {
++    public void setVerbose(boolean verbose) { org.LatencyUtils.jmhbench.MutationSwitch.tick(23);
+         this.verbose = verbose;
+     }
+ 
+@@ -80,7 +80,7 @@ public class SimplePauseDetector extends PauseDetector {
+      * Shut down the pause detector operation and terminate it's threads.
+      */
+     @Override
+-    public void shutdown() {
++    public void shutdown() { org.LatencyUtils.jmhbench.MutationSwitch.tick(24);
+         stopThreadMask = 0xffffffffffffffffL;
+         for (SimplePauseDetectorThread detector : detectors) {
+             detector.interrupt();
+@@ -103,7 +103,7 @@ public class SimplePauseDetector extends PauseDetector {
+             this.setName("SimplePauseDetectorThread_" + threadNumber);
+         }
+ 
+-        public void run() {
++        public void run() { org.LatencyUtils.jmhbench.MutationSwitch.tick(25);
+             long shortestObservedTimeAroundLoop = Long.MAX_VALUE;
+ 
+             observedLasUpdateTime = consensusLatestTime.get();
+@@ -166,7 +166,7 @@ public class SimplePauseDetector extends PauseDetector {
+      * @param stallLength stall length, in nanosecond units
+      * @throws InterruptedException if internal sleep implementation throws it
+      */
+-    public void stallDetectorThreads(long threadNumberMask, long stallLength) throws InterruptedException {
++    public void stallDetectorThreads(long threadNumberMask, long stallLength) throws InterruptedException { org.LatencyUtils.jmhbench.MutationSwitch.tick(26);
+         long savedMask = stallThreadMask;
+         stallThreadMask = threadNumberMask;
+ 
+@@ -189,7 +189,7 @@ public class SimplePauseDetector extends PauseDetector {
+      * that wish to use artificial time services.
+      * @param newConsensusTime time to skip to
+      */
+-    public void skipConsensusTimeTo(long newConsensusTime) {
++    public void skipConsensusTimeTo(long newConsensusTime) { org.LatencyUtils.jmhbench.MutationSwitch.tick(27);
+         consensusLatestTime.set(newConsensusTime);
+     }
+ }
+diff --git a/org/LatencyUtils/TimeCappedMovingAverageIntervalEstimator.java b/org/LatencyUtils/TimeCappedMovingAverageIntervalEstimator.java
+index 73bffb1..dc95975 100644
+--- a/org/LatencyUtils/TimeCappedMovingAverageIntervalEstimator.java
++++ b/org/LatencyUtils/TimeCappedMovingAverageIntervalEstimator.java
+@@ -79,12 +79,12 @@ public class TimeCappedMovingAverageIntervalEstimator extends MovingAverageInter
+     }
+ 
+     @Override
+-    public void recordInterval(long when) {
++    public void recordInterval(long when) { org.LatencyUtils.jmhbench.MutationSwitch.tick(28);
+         super.recordIntervalAndReturnWindowPosition(when);
+     }
+ 
+     @Override
+-    public synchronized long getEstimatedInterval(final long when) {
++    public synchronized long getEstimatedInterval(final long when) { org.LatencyUtils.jmhbench.MutationSwitch.tick(29);
+         timeOfLastEstimatedInterval = when;
+ 
+         eliminateStalePauses(when);
+@@ -159,7 +159,7 @@ public class TimeCappedMovingAverageIntervalEstimator extends MovingAverageInter
+     /**
+      * Stop the tracking via the pauseDetector, and remove this estimator from the pause detector's listeners.
+      */
+-    public void stop() {
++    public void stop() { org.LatencyUtils.jmhbench.MutationSwitch.tick(30);
+         if (pauseTracker != null) {
+             pauseTracker.stop();
+         }
+@@ -283,11 +283,11 @@ public class TimeCappedMovingAverageIntervalEstimator extends MovingAverageInter
+             pauseDetector.addListener(this, true /* high priority */);
+         }
+ 
+-        public void stop() {
++        public void stop() { org.LatencyUtils.jmhbench.MutationSwitch.tick(31);
+             pauseDetector.removeListener(this);
+         }
+ 
+-        public void handlePauseEvent(final long pauseLength, final long pauseEndTime) {
++        public void handlePauseEvent(final long pauseLength, final long pauseEndTime) { org.LatencyUtils.jmhbench.MutationSwitch.tick(32);
+             final TimeCappedMovingAverageIntervalEstimator estimator = this.get();
+ 
+             if (estimator != null) {
+diff --git a/org/LatencyUtils/TimeServices.java b/org/LatencyUtils/TimeServices.java
+index 5d2e8d8..05a558d 100644
+--- a/org/LatencyUtils/TimeServices.java
++++ b/org/LatencyUtils/TimeServices.java
+@@ -31,21 +31,21 @@ public class TimeServices {
+         useActualTime = !useActualTimeProperty.equals("false");
+     }
+ 
+-    public static long nanoTime() {
++    public static long nanoTime() { org.LatencyUtils.jmhbench.MutationSwitch.tick(33);
+         if (useActualTime) {
+             return System.nanoTime();
+         }
+         return currentTime;
+     }
+ 
+-    public static long currentTimeMillis() {
++    public static long currentTimeMillis() { org.LatencyUtils.jmhbench.MutationSwitch.tick(34);
+         if (useActualTime) {
+             return System.currentTimeMillis();
+         }
+         return currentTime/ 1000000;
+     }
+ 
+-    public static void sleepMsecs(long sleepTimeMsec) {
++    public static void sleepMsecs(long sleepTimeMsec) { org.LatencyUtils.jmhbench.MutationSwitch.tick(35);
+         try {
+             if (useActualTime) {
+                 Thread.sleep(sleepTimeMsec);
+@@ -56,7 +56,7 @@ public class TimeServices {
+         }
+     }
+ 
+-    public static void sleepNanos(long sleepTimeNsec) {
++    public static void sleepNanos(long sleepTimeNsec) { org.LatencyUtils.jmhbench.MutationSwitch.tick(36);
+         try {
+             if (useActualTime) {
+                 TimeUnit.NANOSECONDS.sleep(sleepTimeNsec);
+@@ -67,7 +67,7 @@ public class TimeServices {
+         }
+     }
+ 
+-    public static void waitUntilTime(long timeToWakeAt) throws InterruptedException {
++    public static void waitUntilTime(long timeToWakeAt) throws InterruptedException { org.LatencyUtils.jmhbench.MutationSwitch.tick(37);
+         synchronized (timeUpdateMonitor) {
+             while (timeToWakeAt > currentTime) {
+                 timeUpdateMonitor.wait();
+@@ -75,15 +75,15 @@ public class TimeServices {
+         }
+     }
+ 
+-    public static void moveTimeForward(long timeDeltaNsec) throws InterruptedException {
++    public static void moveTimeForward(long timeDeltaNsec) throws InterruptedException { org.LatencyUtils.jmhbench.MutationSwitch.tick(38);
+         setCurrentTime(currentTime + timeDeltaNsec);
+     }
+ 
+-    public static void moveTimeForwardMsec(long timeDeltaMsec) throws InterruptedException {
++    public static void moveTimeForwardMsec(long timeDeltaMsec) throws InterruptedException { org.LatencyUtils.jmhbench.MutationSwitch.tick(39);
+         moveTimeForward(timeDeltaMsec * 1000000L);
+     }
+ 
+-    public static void setCurrentTime(long newCurrentTime) throws InterruptedException {
++    public static void setCurrentTime(long newCurrentTime) throws InterruptedException { org.LatencyUtils.jmhbench.MutationSwitch.tick(40);
+         if (newCurrentTime < nanoTime()) {
+             throw new IllegalStateException("Can't set current time to the past.");
+         }
+@@ -124,7 +124,7 @@ public class TimeServices {
+             }
+         }
+ 
+-        public void scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
++        public void scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) { org.LatencyUtils.jmhbench.MutationSwitch.tick(41);
+             if (useActualTime) {
+                 actualExecutor.scheduleAtFixedRate(command, initialDelay, period, unit);
+                 return;
+@@ -139,7 +139,7 @@ public class TimeServices {
+             }
+         }
+ 
+-        public void shutdown() {
++        public void shutdown() { org.LatencyUtils.jmhbench.MutationSwitch.tick(42);
+             if (useActualTime) {
+                 actualExecutor.shutdownNow();
+                 return;
+@@ -157,7 +157,7 @@ public class TimeServices {
+                 }
+             }
+ 
+-            public void run() {
++            public void run() { org.LatencyUtils.jmhbench.MutationSwitch.tick(43);
+                 try {
+                     while (doRun) {
+                         synchronized (timeUpdateMonitor) {
+@@ -199,15 +199,15 @@ public class TimeServices {
+                 return (period != 0);
+             }
+ 
+-            public long getStartTime() {
++            public long getStartTime() { org.LatencyUtils.jmhbench.MutationSwitch.tick(44);
+                 return startTime;
+             }
+ 
+-            public Runnable getCommand() {
++            public Runnable getCommand() { org.LatencyUtils.jmhbench.MutationSwitch.tick(45);
+                 return command;
+             }
+ 
+-            public void setNewStartTime(long timeNow) {
++            public void setNewStartTime(long timeNow) { org.LatencyUtils.jmhbench.MutationSwitch.tick(46);
+                 if (period == 0) {
+                     throw new IllegalStateException("should nto try to reschedule an entry that has no interval or rare");
+                 }
+diff --git a/org/LatencyUtils/jmhbench/MutationSwitch.java b/org/LatencyUtils/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..6a3d72a
+--- /dev/null
++++ b/org/LatencyUtils/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.LatencyUtils.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 46;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

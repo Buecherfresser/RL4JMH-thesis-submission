@@ -1,0 +1,64 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable.jmh;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableFromCallable;
+
+/**
+ * JMH benchmark measuring the throughput of {@link FlowableFromCallable}.
+ *
+ * The benchmark subscribes to a {@code FlowableFromCallable<Integer>} that
+ * returns a constant value. The subscription is performed synchronously,
+ * therefore the measured throughput reflects the overhead of the operator
+ * (callable invocation, null‑check, subscription handling, and emission).
+ *
+ * The benchmark follows best practices:
+ * <ul>
+ *   <li>Uses {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Initialises the {@code Flowable} in a {@code @Setup} method to exclude construction cost.</li>
+ *   <li>Consumes the emitted value with {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Runs in {@code Mode.Throughput} with a 1‑second measurement time.</li>
+ *   <li>Specifies a reasonable warm‑up period to let the JIT stabilize.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class FlowableFromCallableBenchmark {
+
+    /** The Flowable under test – emits a constant Integer. */
+    private Flowable<Integer> flowable;
+
+    /** Simple Callable returning a constant value. */
+    private static final Callable<Integer> CONSTANT_CALLABLE = () -> 1;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create the Flowable once per trial; construction cost is not part of the measurement.
+        flowable = new FlowableFromCallable<>(CONSTANT_CALLABLE);
+    }
+
+    /**
+     * Subscribes to the Flowable and consumes the emitted value.
+     *
+     * The subscription is synchronous for {@code FlowableFromCallable}, so the method
+     * returns only after the value has been emitted and the {@link Blackhole} has
+     * consumed it.
+     *
+     * @param bh Blackhole to consume the emitted value and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        flowable.subscribe(bh::consume);
+    }
+}
+```

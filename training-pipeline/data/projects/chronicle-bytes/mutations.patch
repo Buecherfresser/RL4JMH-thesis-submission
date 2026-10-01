@@ -1,0 +1,657 @@
+diff --git a/net/openhft/chronicle/bytes/AppendableUtil.java b/net/openhft/chronicle/bytes/AppendableUtil.java
+index 3abb311..f1de60b 100644
+--- a/net/openhft/chronicle/bytes/AppendableUtil.java
++++ b/net/openhft/chronicle/bytes/AppendableUtil.java
+@@ -340,7 +340,7 @@ public enum AppendableUtil {
+      * {@code bytes} using the given {@code coder} representation.
+      */
+     @Java9
+-    public static long findUtf8Length(byte[] bytes, byte coder) {
++    public static long findUtf8Length(byte[] bytes, byte coder) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(1);
+         long utflen;
+ 
+         if (coder == 0) {
+@@ -380,7 +380,7 @@ public enum AppendableUtil {
+      * Computes the UTF-8 byte length of the provided 8-bit encoded character array.
+      */
+     @Java9
+-    public static long findUtf8Length(byte[] chars) {
++    public static long findUtf8Length(byte[] chars) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(9);
+         int strlen = chars.length;
+         long utflen = strlen; /* use charAt instead of copying String to char array */
+         for (int i = 0; i < strlen; i++) {
+diff --git a/net/openhft/chronicle/bytes/BytesMethodReaderBuilder.java b/net/openhft/chronicle/bytes/BytesMethodReaderBuilder.java
+index 02a492a..dc2f2c8 100644
+--- a/net/openhft/chronicle/bytes/BytesMethodReaderBuilder.java
++++ b/net/openhft/chronicle/bytes/BytesMethodReaderBuilder.java
+@@ -45,7 +45,7 @@ public class BytesMethodReaderBuilder implements MethodReaderBuilder {
+      * @return this builder for chained invocation
+      */
+     @Override
+-    public MethodReaderBuilder exceptionHandlerOnUnknownMethod(ExceptionHandler exceptionHandler) {
++    public MethodReaderBuilder exceptionHandlerOnUnknownMethod(ExceptionHandler exceptionHandler) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(17);
+         this.exceptionHandlerOnUnknownMethod = exceptionHandler;
+         return this;
+     }
+@@ -54,7 +54,7 @@ public class BytesMethodReaderBuilder implements MethodReaderBuilder {
+      * Returns the currently configured {@link MethodEncoderLookup} strategy used
+      * to find decoders for method calls.
+      */
+-    public MethodEncoderLookup methodEncoderLookup() {
++    public MethodEncoderLookup methodEncoderLookup() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(23);
+         return methodEncoderLookup;
+     }
+ 
+diff --git a/net/openhft/chronicle/bytes/BytesUtil.java b/net/openhft/chronicle/bytes/BytesUtil.java
+index 710b6d1..fe7a7a6 100644
+--- a/net/openhft/chronicle/bytes/BytesUtil.java
++++ b/net/openhft/chronicle/bytes/BytesUtil.java
+@@ -77,7 +77,7 @@ public enum BytesUtil {
+     /**
+      * Returns the configured maximum array length.
+      */
+-    public static int maxArrayLength() {
++    public static int maxArrayLength() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(28);
+         return MAX_ARRAY_LEN;
+     }
+ 
+@@ -88,7 +88,7 @@ public enum BytesUtil {
+      * @param remaining bytes remaining in the source
+      * @throws IORuntimeException if the length is negative or exceeds the limits
+      */
+-    public static void checkArrayLength(int len, long remaining) throws IORuntimeException {
++    public static void checkArrayLength(int len, long remaining) throws IORuntimeException { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(33);
+         if (len < 0 || len > MAX_ARRAY_LEN || len > remaining)
+             throw new IORuntimeException("Invalid array length: " + len +
+                     ", max: " + MAX_ARRAY_LEN +
+diff --git a/net/openhft/chronicle/bytes/MappedBytesStore.java b/net/openhft/chronicle/bytes/MappedBytesStore.java
+index d044679..c3579b4 100644
+--- a/net/openhft/chronicle/bytes/MappedBytesStore.java
++++ b/net/openhft/chronicle/bytes/MappedBytesStore.java
+@@ -94,7 +94,7 @@ public class MappedBytesStore extends NativeBytesStore<Void> {
+      * @return capacity of the underlying file, which may differ from
+      * {@link #capacity()} if alignment is applied
+      */
+-    public long underlyingCapacity() {
++    public long underlyingCapacity() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(38);
+         return mappedFile.capacity();
+     }
+ 
+@@ -135,7 +135,7 @@ public class MappedBytesStore extends NativeBytesStore<Void> {
+     }
+ 
+     @Override
+-    public long safeLimit() {
++    public long safeLimit() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(43);
+         return safeLimit;
+     }
+ 
+diff --git a/net/openhft/chronicle/bytes/MappedUniqueTimeProvider.java b/net/openhft/chronicle/bytes/MappedUniqueTimeProvider.java
+index abc5ab2..7d77499 100644
+--- a/net/openhft/chronicle/bytes/MappedUniqueTimeProvider.java
++++ b/net/openhft/chronicle/bytes/MappedUniqueTimeProvider.java
+@@ -48,7 +48,7 @@ public enum MappedUniqueTimeProvider implements TimeProvider, ReferenceOwner {
+     /**
+      * Sets the underlying time source.
+      */
+-    public MappedUniqueTimeProvider provider(TimeProvider provider) {
++    public MappedUniqueTimeProvider provider(TimeProvider provider) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(48);
+         this.provider = provider;
+         return this;
+     }
+diff --git a/net/openhft/chronicle/bytes/algo/OptimisedBytesStoreHash.java b/net/openhft/chronicle/bytes/algo/OptimisedBytesStoreHash.java
+index 63bfa5d..e0ee418 100644
+--- a/net/openhft/chronicle/bytes/algo/OptimisedBytesStoreHash.java
++++ b/net/openhft/chronicle/bytes/algo/OptimisedBytesStoreHash.java
+@@ -82,7 +82,7 @@ public enum OptimisedBytesStoreHash implements BytesStoreHash<BytesStore<?,?>> {
+      * @param l The long value to hash.
+      * @return A 64-bit hash value.
+      */
+-    public static long hash(long l) {
++    public static long hash(long l) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(2);
+         return hash0(l, l >> 32);
+     }
+ 
+diff --git a/net/openhft/chronicle/bytes/algo/VanillaBytesStoreHash.java b/net/openhft/chronicle/bytes/algo/VanillaBytesStoreHash.java
+index ba79da5..b8d0511 100644
+--- a/net/openhft/chronicle/bytes/algo/VanillaBytesStoreHash.java
++++ b/net/openhft/chronicle/bytes/algo/VanillaBytesStoreHash.java
+@@ -55,7 +55,7 @@ public enum VanillaBytesStoreHash implements BytesStoreHash<BytesStore<?,?>> {
+      * @param l The input value.
+      * @return The agitated hash value.
+      */
+-    public static long agitate(long l) {
++    public static long agitate(long l) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(10);
+         l ^= Long.rotateLeft(l, 26);
+         l ^= Long.rotateRight(l, 17);
+         return l;
+diff --git a/net/openhft/chronicle/bytes/algo/XxHash.java b/net/openhft/chronicle/bytes/algo/XxHash.java
+index 425a758..0aebe9f 100644
+--- a/net/openhft/chronicle/bytes/algo/XxHash.java
++++ b/net/openhft/chronicle/bytes/algo/XxHash.java
+@@ -116,7 +116,7 @@ public class XxHash implements BytesStoreHash<BytesStore<?, ?>> {
+      * @throws ThreadingIllegalStateException If this resource was accessed by multiple threads in an unsafe way
+      */
+     @Override
+-    public long applyAsLong(BytesStore<?, ?> bytes) {
++    public long applyAsLong(BytesStore<?, ?> bytes) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(18);
+         return applyAsLong(bytes, bytes.readRemaining());
+     }
+ 
+diff --git a/net/openhft/chronicle/bytes/domestic/ReentrantFileLock.java b/net/openhft/chronicle/bytes/domestic/ReentrantFileLock.java
+index 9524f44..ca9dd45 100644
+--- a/net/openhft/chronicle/bytes/domestic/ReentrantFileLock.java
++++ b/net/openhft/chronicle/bytes/domestic/ReentrantFileLock.java
+@@ -81,7 +81,7 @@ public final class ReentrantFileLock extends FileLock {
+      * Ensures that only the owning thread accesses the delegate FileLock.
+      */
+     @Override
+-    public Channel acquiredBy() {
++    public Channel acquiredBy() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(3);
+         checkThreadAccess();
+         return delegate.acquiredBy();
+     }
+@@ -92,7 +92,7 @@ public final class ReentrantFileLock extends FileLock {
+      * Ensures that only the owning thread accesses the delegate FileLock.
+      */
+     @Override
+-    public boolean isValid() {
++    public boolean isValid() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(11);
+         checkThreadAccess();
+         return delegate.isValid();
+     }
+diff --git a/net/openhft/chronicle/bytes/internal/ByteBuffers.java b/net/openhft/chronicle/bytes/internal/ByteBuffers.java
+index 2649ed9..2397f11 100644
+--- a/net/openhft/chronicle/bytes/internal/ByteBuffers.java
++++ b/net/openhft/chronicle/bytes/internal/ByteBuffers.java
+@@ -49,7 +49,7 @@ public final class ByteBuffers {
+      * @param capacity new capacity value (truncated to {@code int})
+      * @throws AssertionError if reflective access fails
+      */
+-    public static void setAddressCapacity(ByteBuffer buffer, long address, long capacity) {
++    public static void setAddressCapacity(ByteBuffer buffer, long address, long capacity) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(4);
+         if (ADDRESS == null || CAPACITY == null)
+             throw new UnsupportedOperationException("Direct ByteBuffer fields not accessible");
+         int cap = Math.toIntExact(capacity);
+diff --git a/net/openhft/chronicle/bytes/internal/ByteStringReader.java b/net/openhft/chronicle/bytes/internal/ByteStringReader.java
+index 0907ef3..4922d80 100644
+--- a/net/openhft/chronicle/bytes/internal/ByteStringReader.java
++++ b/net/openhft/chronicle/bytes/internal/ByteStringReader.java
+@@ -91,7 +91,7 @@ public class ByteStringReader extends Reader {
+      * Closes the reader and releases any system resources associated with it.
+      */
+     @Override
+-    public void close() {
++    public void close() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(12);
+         // Do nothing
+     }
+ }
+diff --git a/net/openhft/chronicle/bytes/internal/ByteStringWriter.java b/net/openhft/chronicle/bytes/internal/ByteStringWriter.java
+index 7f5b9b1..8344c45 100644
+--- a/net/openhft/chronicle/bytes/internal/ByteStringWriter.java
++++ b/net/openhft/chronicle/bytes/internal/ByteStringWriter.java
+@@ -117,7 +117,7 @@ public class ByteStringWriter extends Writer {
+      */
+     @NotNull
+     @Override
+-    public Writer append(char c) {
++    public Writer append(char c) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(19);
+         out.append(c);
+         return this;
+     }
+@@ -134,7 +134,7 @@ public class ByteStringWriter extends Writer {
+      * Closes the writer, flushing it first. Once a writer has been closed, further write() invocations will cause an IOException to be thrown.
+      */
+     @Override
+-    public void close() {
++    public void close() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(24);
+         // Do nothing
+     }
+ 
+diff --git a/net/openhft/chronicle/bytes/internal/ChunkedMappedBytes.java b/net/openhft/chronicle/bytes/internal/ChunkedMappedBytes.java
+index bcb683f..a6cecb7 100644
+--- a/net/openhft/chronicle/bytes/internal/ChunkedMappedBytes.java
++++ b/net/openhft/chronicle/bytes/internal/ChunkedMappedBytes.java
+@@ -197,7 +197,7 @@ public class ChunkedMappedBytes extends CommonMappedBytes {
+      */
+     @NotNull
+     @Override
+-    public Bytes<Void> writeLimit(long limit) throws BufferOverflowException {
++    public Bytes<Void> writeLimit(long limit) throws BufferOverflowException { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(29);
+         // use the real limit of the byteStore rather than the safe limit to minimise resizing
+         if (limit != capacity() && !bytesStore.inside(limit, 0)) {
+             acquireNextByteStore0(limit, false);
+@@ -215,7 +215,7 @@ public class ChunkedMappedBytes extends CommonMappedBytes {
+      */
+     @NotNull
+     @Override
+-    public Bytes<Void> writePosition(long position) throws BufferOverflowException {
++    public Bytes<Void> writePosition(long position) throws BufferOverflowException { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(34);
+         // use the safe limit of the byteStore to ensure we can write something after it
+         if (!bytesStore.inside(position)) {
+             acquireNextByteStore0(position, false);
+diff --git a/net/openhft/chronicle/bytes/internal/ChunkedMappedFile.java b/net/openhft/chronicle/bytes/internal/ChunkedMappedFile.java
+index 9f580c9..857aa80 100644
+--- a/net/openhft/chronicle/bytes/internal/ChunkedMappedFile.java
++++ b/net/openhft/chronicle/bytes/internal/ChunkedMappedFile.java
+@@ -93,7 +93,7 @@ public class ChunkedMappedFile extends MappedFile {
+     /**
+      * Not compatible with hugetlbfs
+      */
+-    public static void warmup() {
++    public static void warmup() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(39);
+         final List<Exception> errorsDuringWarmup = new ArrayList<>();
+         ExceptionHandler error = Jvm.error().defaultHandler();
+         ExceptionHandler warn = Jvm.warn().defaultHandler();
+@@ -236,7 +236,7 @@ public class ChunkedMappedFile extends MappedFile {
+     }
+ 
+     @Override
+-    public void syncMode(SyncMode syncMode) {
++    public void syncMode(SyncMode syncMode) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(44);
+         synchronized (stores) {
+             for (MappedBytesStore store : stores) {
+                 store.syncMode(syncMode);
+diff --git a/net/openhft/chronicle/bytes/internal/ReferenceCountedUtil.java b/net/openhft/chronicle/bytes/internal/ReferenceCountedUtil.java
+index 61c2f44..6f1ddd9 100644
+--- a/net/openhft/chronicle/bytes/internal/ReferenceCountedUtil.java
++++ b/net/openhft/chronicle/bytes/internal/ReferenceCountedUtil.java
+@@ -27,7 +27,7 @@ public final class ReferenceCountedUtil {
+      * @throws ClosedIllegalStateException if already released
+      * @throws NullPointerException if {@code referenceCounted} is null
+      */
+-    public static void throwExceptionIfReleased(final ReferenceCounted referenceCounted) throws ClosedIllegalStateException {
++    public static void throwExceptionIfReleased(final ReferenceCounted referenceCounted) throws ClosedIllegalStateException { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(49);
+         if (referenceCounted.refCount() <= 0) {
+             // Rather than throwing a new ClosedIllegalStateException, we invoke releaseLast() that
+             // will provide much more tracing information.
+diff --git a/net/openhft/chronicle/bytes/jmhbench/MutationSwitch.java b/net/openhft/chronicle/bytes/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..4a4305f
+--- /dev/null
++++ b/net/openhft/chronicle/bytes/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.openhft.chronicle.bytes.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/net/openhft/chronicle/bytes/pool/BytesPool.java b/net/openhft/chronicle/bytes/pool/BytesPool.java
+index 69cd9bc..1c65f5b 100644
+--- a/net/openhft/chronicle/bytes/pool/BytesPool.java
++++ b/net/openhft/chronicle/bytes/pool/BytesPool.java
+@@ -28,7 +28,7 @@ public final class BytesPool {
+      *
+      * @return The pool
+      */
+-    public static ScopedResourcePool<Bytes<?>> createThreadLocal() {
++    public static ScopedResourcePool<Bytes<?>> createThreadLocal() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(5);
+         return createThreadLocal(DEFAULT_BYTES_POOL_SIZE_PER_THREAD);
+     }
+ 
+@@ -38,7 +38,7 @@ public final class BytesPool {
+      * @param instancesPerThread The maximum number of instances to retain per thread
+      * @return The pool
+      */
+-    public static ScopedResourcePool<Bytes<?>> createThreadLocal(int instancesPerThread) {
++    public static ScopedResourcePool<Bytes<?>> createThreadLocal(int instancesPerThread) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(13);
+         return new ScopedThreadLocal<>(
+                 BytesPool::createBytes,
+                 Bytes::clear,
+diff --git a/net/openhft/chronicle/bytes/ref/BinaryBooleanReference.java b/net/openhft/chronicle/bytes/ref/BinaryBooleanReference.java
+index 95985e5..5b22f8a 100644
+--- a/net/openhft/chronicle/bytes/ref/BinaryBooleanReference.java
++++ b/net/openhft/chronicle/bytes/ref/BinaryBooleanReference.java
+@@ -63,7 +63,7 @@ public class BinaryBooleanReference extends AbstractReference implements Boolean
+      * @return The maximum size of a boolean in bytes
+      */
+     @Override
+-    public long maxSize() {
++    public long maxSize() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(50);
+         return 1;
+     }
+ 
+diff --git a/net/openhft/chronicle/bytes/ref/BinaryIntArrayReference.java b/net/openhft/chronicle/bytes/ref/BinaryIntArrayReference.java
+index a766b56..c8d13d4 100644
+--- a/net/openhft/chronicle/bytes/ref/BinaryIntArrayReference.java
++++ b/net/openhft/chronicle/bytes/ref/BinaryIntArrayReference.java
+@@ -71,7 +71,7 @@ public class BinaryIntArrayReference extends AbstractReference implements Byteab
+     /**
+      * Initializes the collection that keeps references to BinaryIntArrayReference instances.
+      */
+-    public static void startCollecting() {
++    public static void startCollecting() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(6);
+         binaryIntArrayReferences = Collections.newSetFromMap(new IdentityHashMap<>());
+     }
+ 
+@@ -442,7 +442,7 @@ public class BinaryIntArrayReference extends AbstractReference implements Byteab
+      */
+     @Nullable
+     @Override
+-    public BytesStore<?, ?> bytesStore() {
++    public BytesStore<?, ?> bytesStore() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(14);
+         return bytesStore;
+     }
+ 
+diff --git a/net/openhft/chronicle/bytes/ref/BinaryLongArrayReference.java b/net/openhft/chronicle/bytes/ref/BinaryLongArrayReference.java
+index 4e433c3..2d1f4b2 100644
+--- a/net/openhft/chronicle/bytes/ref/BinaryLongArrayReference.java
++++ b/net/openhft/chronicle/bytes/ref/BinaryLongArrayReference.java
+@@ -78,7 +78,7 @@ public class BinaryLongArrayReference extends AbstractReference implements Bytea
+      * <p>
+      * This method is used for debugging and monitoring. It should not be used in production environments.
+      */
+-    public static void startCollecting() {
++    public static void startCollecting() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(20);
+         binaryLongArrayReferences = Collections.newSetFromMap(new IdentityHashMap<>());
+     }
+ 
+@@ -242,7 +242,7 @@ public class BinaryLongArrayReference extends AbstractReference implements Bytea
+     }
+ 
+     @Override
+-    public void setUsed(long used) throws IllegalStateException, BufferUnderflowException {
++    public void setUsed(long used) throws IllegalStateException, BufferUnderflowException { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(25);
+         throwExceptionIfClosedInSetter();
+ 
+         bytesStore.writeVolatileLong(offset + USED, used);
+diff --git a/net/openhft/chronicle/bytes/ref/TextIntArrayReference.java b/net/openhft/chronicle/bytes/ref/TextIntArrayReference.java
+index 00926ff..ea6941b 100644
+--- a/net/openhft/chronicle/bytes/ref/TextIntArrayReference.java
++++ b/net/openhft/chronicle/bytes/ref/TextIntArrayReference.java
+@@ -134,7 +134,7 @@ public class TextIntArrayReference extends AbstractReference implements Byteable
+     }
+ 
+     @Override
+-    public long getCapacity() {
++    public long getCapacity() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(30);
+         return (length - VALUES) / VALUE_SIZE;
+     }
+ 
+@@ -225,7 +225,7 @@ public class TextIntArrayReference extends AbstractReference implements Byteable
+     }
+ 
+     @Override
+-    public boolean isNull() {
++    public boolean isNull() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(35);
+         return bytesStore == null;
+     }
+ 
+diff --git a/net/openhft/chronicle/bytes/ref/TextLongArrayReference.java b/net/openhft/chronicle/bytes/ref/TextLongArrayReference.java
+index 978efd4..ebf0344 100644
+--- a/net/openhft/chronicle/bytes/ref/TextLongArrayReference.java
++++ b/net/openhft/chronicle/bytes/ref/TextLongArrayReference.java
+@@ -146,7 +146,7 @@ public class TextLongArrayReference extends AbstractReference implements Byteabl
+     }
+ 
+     @Override
+-    public long getCapacity() {
++    public long getCapacity() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(40);
+         return (length - VALUES) / VALUE_SIZE;
+     }
+ 
+@@ -250,7 +250,7 @@ public class TextLongArrayReference extends AbstractReference implements Byteabl
+     }
+ 
+     @Override
+-    public boolean isNull() {
++    public boolean isNull() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(45);
+         return bytesStore == null;
+     }
+ 
+diff --git a/net/openhft/chronicle/bytes/render/GeneralDecimaliser.java b/net/openhft/chronicle/bytes/render/GeneralDecimaliser.java
+index a366a24..1a8a1cb 100644
+--- a/net/openhft/chronicle/bytes/render/GeneralDecimaliser.java
++++ b/net/openhft/chronicle/bytes/render/GeneralDecimaliser.java
+@@ -24,7 +24,7 @@ public class GeneralDecimaliser implements Decimaliser {
+      * Values outside [1e-29, 1e45) are rejected.
+      */
+     @Override
+-    public boolean toDecimal(double value, DecimalAppender decimalAppender) {
++    public boolean toDecimal(double value, DecimalAppender decimalAppender) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(7);
+         double absValue = Math.abs(value);
+ 
+         // Check if the absolute value is 0 or in the valid range
+@@ -44,7 +44,7 @@ public class GeneralDecimaliser implements Decimaliser {
+      * {@code 1e-29f} are rejected.
+      */
+     @Override
+-    public boolean toDecimal(float value, DecimalAppender decimalAppender) {
++    public boolean toDecimal(float value, DecimalAppender decimalAppender) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(15);
+         float absValue = Math.abs(value);
+ 
+         // Check if the absolute value is 0 or equal to or larger than the threshold
+diff --git a/net/openhft/chronicle/bytes/render/MaximumPrecision.java b/net/openhft/chronicle/bytes/render/MaximumPrecision.java
+index 5f79b92..5482669 100644
+--- a/net/openhft/chronicle/bytes/render/MaximumPrecision.java
++++ b/net/openhft/chronicle/bytes/render/MaximumPrecision.java
+@@ -34,7 +34,7 @@ public class MaximumPrecision implements Decimaliser {
+      * @return {@code true} if the value was in range
+      */
+     @Override
+-    public boolean toDecimal(double value, DecimalAppender decimalAppender) {
++    public boolean toDecimal(double value, DecimalAppender decimalAppender) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(21);
+         // Determine if the input value is negative.
+         boolean isNegative = Double.doubleToLongBits(value) < 0;
+         // Take the absolute value for conversion.
+@@ -82,7 +82,7 @@ public class MaximumPrecision implements Decimaliser {
+      * @return {@code true} if the value was in range
+      */
+     @Override
+-    public boolean toDecimal(float value, DecimalAppender decimalAppender) {
++    public boolean toDecimal(float value, DecimalAppender decimalAppender) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(26);
+         // Determine if the input value is negative.
+         boolean isNegative = Double.doubleToLongBits(value) < 0;
+         // Take the absolute value for conversion.
+diff --git a/net/openhft/chronicle/bytes/render/SimpleDecimaliser.java b/net/openhft/chronicle/bytes/render/SimpleDecimaliser.java
+index 1a28e14..d56786f 100644
+--- a/net/openhft/chronicle/bytes/render/SimpleDecimaliser.java
++++ b/net/openhft/chronicle/bytes/render/SimpleDecimaliser.java
+@@ -41,7 +41,7 @@ public class SimpleDecimaliser implements Decimaliser {
+      * @return {@code true} if the value was represented within {@link #MANTISSA_LIMIT}
+      *         and {@link #LARGEST_EXPONENT_IN_LONG}
+      */
+-    public boolean toDecimal(double value, DecimalAppender decimalAppender) {
++    public boolean toDecimal(double value, DecimalAppender decimalAppender) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(31);
+         // Determine if the input value is negative.
+         boolean isNegative = Double.doubleToLongBits(value) < 0;
+         // Take the absolute value for conversion.
+@@ -75,7 +75,7 @@ public class SimpleDecimaliser implements Decimaliser {
+      * @param decimalAppender the appender that receives sign, mantissa and exponent
+      * @return {@code true} if the value was represented within {@link #LARGEST_EXPONENT_IN_LONG}
+      */
+-    public boolean toDecimal(float value, DecimalAppender decimalAppender) {
++    public boolean toDecimal(float value, DecimalAppender decimalAppender) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(36);
+         // Determine if the input value is negative.
+         boolean sign = Float.floatToRawIntBits(value) < 0;
+         // Take the absolute value for conversion.
+diff --git a/net/openhft/chronicle/bytes/render/StandardDecimaliser.java b/net/openhft/chronicle/bytes/render/StandardDecimaliser.java
+index 42c2169..0353e06 100644
+--- a/net/openhft/chronicle/bytes/render/StandardDecimaliser.java
++++ b/net/openhft/chronicle/bytes/render/StandardDecimaliser.java
+@@ -23,7 +23,7 @@ public class StandardDecimaliser implements Decimaliser {
+      * Convert {@code value} using {@link #PRECISION_18} then {@link UsesBigDecimal}.
+      */
+     @Override
+-    public boolean toDecimal(double value, DecimalAppender decimalAppender) {
++    public boolean toDecimal(double value, DecimalAppender decimalAppender) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(41);
+         // Tries to convert using MaximumPrecision first, then falls back to UsesBigDecimal.
+         return PRECISION_18.toDecimal(value, decimalAppender)
+                 || UsesBigDecimal.USES_BIG_DECIMAL.toDecimal(value, decimalAppender);
+@@ -33,7 +33,7 @@ public class StandardDecimaliser implements Decimaliser {
+      * Convert {@code value} using {@link #PRECISION_18} then {@link UsesBigDecimal}.
+      */
+     @Override
+-    public boolean toDecimal(float value, DecimalAppender decimalAppender) {
++    public boolean toDecimal(float value, DecimalAppender decimalAppender) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(46);
+         // Tries to convert using MaximumPrecision first, then falls back to UsesBigDecimal.
+         return PRECISION_18.toDecimal(value, decimalAppender)
+                 || UsesBigDecimal.USES_BIG_DECIMAL.toDecimal(value, decimalAppender);
+diff --git a/net/openhft/chronicle/bytes/util/BinaryLengthLength.java b/net/openhft/chronicle/bytes/util/BinaryLengthLength.java
+index 7e5480e..2afe8e3 100644
+--- a/net/openhft/chronicle/bytes/util/BinaryLengthLength.java
++++ b/net/openhft/chronicle/bytes/util/BinaryLengthLength.java
+@@ -39,7 +39,7 @@ public enum BinaryLengthLength {
+          * @return the code used in the binary stream
+          */
+         @Override
+-        public int code() {
++        public int code() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(22);
+             return BinaryWireCode.BYTES_LENGTH8;
+         }
+ 
+@@ -86,7 +86,7 @@ public enum BinaryLengthLength {
+          * @return the code used in the binary stream
+          */
+         @Override
+-        public int code() {
++        public int code() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(27);
+             return BinaryWireCode.BYTES_LENGTH16;
+         }
+ 
+diff --git a/net/openhft/chronicle/bytes/util/Compressions.java b/net/openhft/chronicle/bytes/util/Compressions.java
+index a442ba8..026e435 100644
+--- a/net/openhft/chronicle/bytes/util/Compressions.java
++++ b/net/openhft/chronicle/bytes/util/Compressions.java
+@@ -38,7 +38,7 @@ public enum Compressions implements Compression {
+          * @return the same input bytes
+          */
+         @Override
+-        public byte[] compress(byte[] bytes) {
++        public byte[] compress(byte[] bytes) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(32);
+             return bytes;
+         }
+ 
+@@ -50,7 +50,7 @@ public enum Compressions implements Compression {
+          * @throws IORuntimeException If an I/O error occurs
+          */
+         @Override
+-        public byte[] uncompress(byte[] bytes) throws IORuntimeException {
++        public byte[] uncompress(byte[] bytes) throws IORuntimeException { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(37);
+             return bytes;
+         }
+ 
+diff --git a/net/openhft/chronicle/bytes/util/DecoratedBufferOverflowException.java b/net/openhft/chronicle/bytes/util/DecoratedBufferOverflowException.java
+index 9057a60..af154cf 100644
+--- a/net/openhft/chronicle/bytes/util/DecoratedBufferOverflowException.java
++++ b/net/openhft/chronicle/bytes/util/DecoratedBufferOverflowException.java
+@@ -44,7 +44,7 @@ public final class DecoratedBufferOverflowException extends BufferOverflowExcept
+      * @return the detail message string of this exception
+      */
+     @Override
+-    public String getMessage() {
++    public String getMessage() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(8);
+         return message;
+     }
+ }
+diff --git a/net/openhft/chronicle/bytes/util/DecoratedBufferUnderflowException.java b/net/openhft/chronicle/bytes/util/DecoratedBufferUnderflowException.java
+index e8ac82a..55c1e85 100644
+--- a/net/openhft/chronicle/bytes/util/DecoratedBufferUnderflowException.java
++++ b/net/openhft/chronicle/bytes/util/DecoratedBufferUnderflowException.java
+@@ -44,7 +44,7 @@ public final class DecoratedBufferUnderflowException extends BufferUnderflowExce
+      * @return the detail message string of this exception
+      */
+     @Override
+-    public String getMessage() {
++    public String getMessage() { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(16);
+         return message;
+     }
+ }
+diff --git a/net/openhft/chronicle/bytes/util/EscapingStopCharTester.java b/net/openhft/chronicle/bytes/util/EscapingStopCharTester.java
+index 95980bd..fd2e845 100644
+--- a/net/openhft/chronicle/bytes/util/EscapingStopCharTester.java
++++ b/net/openhft/chronicle/bytes/util/EscapingStopCharTester.java
+@@ -38,7 +38,7 @@ public class EscapingStopCharTester implements StopCharTester {
+      * @return {@code true} if the character is a stop character, {@code false} otherwise
+      */
+     @Override
+-    public boolean isStopChar(int ch) {
++    public boolean isStopChar(int ch) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(42);
+         // If the previous character was an escape character, do not treat 'ch' as a stop character
+         if (escaped) {
+             escaped = false;
+diff --git a/net/openhft/chronicle/bytes/util/EscapingStopCharsTester.java b/net/openhft/chronicle/bytes/util/EscapingStopCharsTester.java
+index 7120021..b41f48b 100644
+--- a/net/openhft/chronicle/bytes/util/EscapingStopCharsTester.java
++++ b/net/openhft/chronicle/bytes/util/EscapingStopCharsTester.java
+@@ -38,7 +38,7 @@ public class EscapingStopCharsTester implements StopCharsTester {
+      * @return {@code true} if the character is a stop character, {@code false} otherwise
+      */
+     @Override
+-    public boolean isStopChar(int ch, int peekNextCh) {
++    public boolean isStopChar(int ch, int peekNextCh) { net.openhft.chronicle.bytes.jmhbench.MutationSwitch.tick(47);
+         // If the previous character was an escape character, do not treat 'ch' as a stop character
+         if (escaped) {
+             escaped = false;

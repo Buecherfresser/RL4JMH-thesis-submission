@@ -1,0 +1,508 @@
+diff --git a/com/github/jgonian/ipmath/Asn.java b/com/github/jgonian/ipmath/Asn.java
+index 6b81212..2420234 100644
+--- a/com/github/jgonian/ipmath/Asn.java
++++ b/com/github/jgonian/ipmath/Asn.java
+@@ -52,11 +52,11 @@ public final class Asn implements SingleInternetResource<Asn, AsnRange>, Compara
+         return value;
+     }
+ 
+-    public static Asn of(Long value) {
++    public static Asn of(Long value) { com.github.jgonian.jmhbench.MutationSwitch.tick(30);
+         return new Asn(value);
+     }
+ 
+-    public static Asn of(String value) {
++    public static Asn of(String value) { com.github.jgonian.jmhbench.MutationSwitch.tick(31);
+         return parse(value);
+     }
+ 
+@@ -70,7 +70,7 @@ public final class Asn implements SingleInternetResource<Asn, AsnRange>, Compara
+      * @see <a href="http://tools.ietf.org/html/rfc5396">RFC5396 -
+      * Textual Representation of Autonomous System (AS) Numbers</a>
+      */
+-    public static Asn parse(String text) {
++    public static Asn parse(String text) { com.github.jgonian.jmhbench.MutationSwitch.tick(32);
+         try {
+             String asnString = Validate.notNull(text, "AS Number must not be null").trim().toUpperCase();
+             if (asnString.startsWith("AS")) {
+@@ -91,16 +91,16 @@ public final class Asn implements SingleInternetResource<Asn, AsnRange>, Compara
+         }
+     }
+ 
+-    public boolean is16Bit() {
++    public boolean is16Bit() { com.github.jgonian.jmhbench.MutationSwitch.tick(33);
+         return this.compareTo(LAST_16_BIT_ASN) <= 0;
+     }
+ 
+-    public boolean is32Bit() {
++    public boolean is32Bit() { com.github.jgonian.jmhbench.MutationSwitch.tick(34);
+         return !is16Bit();
+     }
+ 
+     @Override
+-    public int compareTo(Asn other) {
++    public int compareTo(Asn other) { com.github.jgonian.jmhbench.MutationSwitch.tick(35);
+         return value > other.value ? 1 : value < other.value ? -1 : 0;
+     }
+ 
+diff --git a/com/github/jgonian/ipmath/AsnRange.java b/com/github/jgonian/ipmath/AsnRange.java
+index 4f0be0e..3517035 100644
+--- a/com/github/jgonian/ipmath/AsnRange.java
++++ b/com/github/jgonian/ipmath/AsnRange.java
+@@ -30,23 +30,23 @@ public final class AsnRange extends AbstractRange<Asn, AsnRange> implements Inte
+     }
+ 
+     @Override
+-    protected AsnRange newInstance(Asn start, Asn end) {
++    protected AsnRange newInstance(Asn start, Asn end) { com.github.jgonian.jmhbench.MutationSwitch.tick(1);
+         return new AsnRange(start, end);
+     }
+ 
+-    public static AsnRangeBuilder from(Long from) {
++    public static AsnRangeBuilder from(Long from) { com.github.jgonian.jmhbench.MutationSwitch.tick(2);
+         return from(Asn.of(from));
+     }
+ 
+-    public static AsnRangeBuilder from(Asn from) {
++    public static AsnRangeBuilder from(Asn from) { com.github.jgonian.jmhbench.MutationSwitch.tick(3);
+         return new AsnRangeBuilder(from);
+     }
+ 
+-    public static AsnRangeBuilder from(String from) {
++    public static AsnRangeBuilder from(String from) { com.github.jgonian.jmhbench.MutationSwitch.tick(4);
+         return new AsnRangeBuilder(Asn.parse(from));
+     }
+ 
+-    public static AsnRange parse(String text) {
++    public static AsnRange parse(String text) { com.github.jgonian.jmhbench.MutationSwitch.tick(5);
+         int idx = text.indexOf('-');
+         Validate.isTrue(idx != -1, "Invalid range of ASNs: '" + text + "'");
+         Asn start = Asn.parse(text.substring(0, idx));
+@@ -54,7 +54,7 @@ public final class AsnRange extends AbstractRange<Asn, AsnRange> implements Inte
+         return new AsnRange(start, end);
+     }
+ 
+-    public boolean containsOnly16BitAsns() {
++    public boolean containsOnly16BitAsns() { com.github.jgonian.jmhbench.MutationSwitch.tick(6);
+         return end().is16Bit();
+     }
+ 
+diff --git a/com/github/jgonian/ipmath/ConservativePrefixFinder.java b/com/github/jgonian/ipmath/ConservativePrefixFinder.java
+index 70d1e17..c9d89be 100644
+--- a/com/github/jgonian/ipmath/ConservativePrefixFinder.java
++++ b/com/github/jgonian/ipmath/ConservativePrefixFinder.java
+@@ -29,7 +29,7 @@ import java.util.Optional;
+ 
+ public class ConservativePrefixFinder extends PrefixFinder {
+ 
+-    public static ConservativePrefixFinder newInstance() {
++    public static ConservativePrefixFinder newInstance() { com.github.jgonian.jmhbench.MutationSwitch.tick(36);
+         return new ConservativePrefixFinder();
+     }
+ 
+@@ -40,7 +40,7 @@ public class ConservativePrefixFinder extends PrefixFinder {
+     private static class ConservativeStrategy implements Strategy {
+ 
+         @Override
+-        public Ipv6Range findPrefixOrNull(int prefixLength, Collection<Ipv6Range> ranges) {
++        public Ipv6Range findPrefixOrNull(int prefixLength, Collection<Ipv6Range> ranges) { com.github.jgonian.jmhbench.MutationSwitch.tick(37);
+             final BigInteger desiredPrefixSize = BigInteger.valueOf(2).pow(128 - prefixLength);
+             Ipv6Range foundPrefix = null;
+             BigInteger currentSize = null;
+diff --git a/com/github/jgonian/ipmath/Ipv4.java b/com/github/jgonian/ipmath/Ipv4.java
+index 0827d33..5f8073f 100644
+--- a/com/github/jgonian/ipmath/Ipv4.java
++++ b/com/github/jgonian/ipmath/Ipv4.java
+@@ -59,22 +59,22 @@ public final class Ipv4 extends AbstractIp<Ipv4, Ipv4Range> {
+         return value;
+     }
+ 
+-    public static Ipv4 of(BigInteger from) {
++    public static Ipv4 of(BigInteger from) { com.github.jgonian.jmhbench.MutationSwitch.tick(38);
+         if(from == null) {
+             throw new IllegalArgumentException("from cannot be null");
+         }
+         return new Ipv4(from.longValue());
+     }
+ 
+-    public static Ipv4 of(Long value) {
++    public static Ipv4 of(Long value) { com.github.jgonian.jmhbench.MutationSwitch.tick(39);
+         return new Ipv4(value);
+     }
+ 
+-    public static Ipv4 of(String value) {
++    public static Ipv4 of(String value) { com.github.jgonian.jmhbench.MutationSwitch.tick(40);
+         return parse(value);
+     }
+ 
+-    public static Ipv4 parse(String ipv4Address) {
++    public static Ipv4 parse(String ipv4Address) { com.github.jgonian.jmhbench.MutationSwitch.tick(41);
+         try {
+             String ipv4String = Validate.notNull(ipv4Address).trim();
+             Validate.isTrue(!ipv4String.isEmpty()
+@@ -113,7 +113,7 @@ public final class Ipv4 extends AbstractIp<Ipv4, Ipv4Range> {
+     }
+ 
+     @Override
+-    public int compareTo(Ipv4 other) {
++    public int compareTo(Ipv4 other) { com.github.jgonian.jmhbench.MutationSwitch.tick(42);
+         return value.compareTo(other.value);
+     }
+ 
+@@ -128,7 +128,7 @@ public final class Ipv4 extends AbstractIp<Ipv4, Ipv4Range> {
+     }
+ 
+     /*@Override
+-    public boolean isValidNetmask() {
++    public boolean isValidNetmask() { com.github.jgonian.jmhbench.MutationSwitch.tick(43);
+         int leadingOnesCount = Integer.numberOfLeadingZeros(~(int) value);
+         int trailingZeroesCount = Integer.numberOfTrailingZeros((int) value);
+         return leadingOnesCount > 0 && (leadingOnesCount + trailingZeroesCount) == IPv4_NUMBER_OF_BITS;
+diff --git a/com/github/jgonian/ipmath/Ipv4Range.java b/com/github/jgonian/ipmath/Ipv4Range.java
+index 23d7527..f5e316d 100644
+--- a/com/github/jgonian/ipmath/Ipv4Range.java
++++ b/com/github/jgonian/ipmath/Ipv4Range.java
+@@ -34,28 +34,28 @@ public final class Ipv4Range extends AbstractIpRange<Ipv4, Ipv4Range> {
+     }
+ 
+     @Override
+-    protected Ipv4Range newInstance(BigInteger start, BigInteger end) {
++    protected Ipv4Range newInstance(BigInteger start, BigInteger end) { com.github.jgonian.jmhbench.MutationSwitch.tick(7);
+         return Ipv4Range.from(start).to(end);
+     }
+ 
+     @Override
+-    protected Ipv4Range newInstance(Ipv4 start, Ipv4 end) {
++    protected Ipv4Range newInstance(Ipv4 start, Ipv4 end) { com.github.jgonian.jmhbench.MutationSwitch.tick(8);
+         return new Ipv4Range(start, end);
+     }
+ 
+-    public static Ipv4RangeBuilder from(Ipv4 from) {
++    public static Ipv4RangeBuilder from(Ipv4 from) { com.github.jgonian.jmhbench.MutationSwitch.tick(9);
+         return new Ipv4RangeBuilder(from);
+     }
+ 
+-    public static Ipv4RangeBuilder from(BigInteger from) {
++    public static Ipv4RangeBuilder from(BigInteger from) { com.github.jgonian.jmhbench.MutationSwitch.tick(10);
+         return new Ipv4RangeBuilder(Ipv4.of(from));
+     }
+ 
+-    public static Ipv4RangeBuilder from(Long from) {
++    public static Ipv4RangeBuilder from(Long from) { com.github.jgonian.jmhbench.MutationSwitch.tick(11);
+         return new Ipv4RangeBuilder(Ipv4.of(from));
+     }
+ 
+-    public static Ipv4RangeBuilder from(String from) {
++    public static Ipv4RangeBuilder from(String from) { com.github.jgonian.jmhbench.MutationSwitch.tick(12);
+         return new Ipv4RangeBuilder(Ipv4.parse(from));
+     }
+ 
+diff --git a/com/github/jgonian/ipmath/Ipv6.java b/com/github/jgonian/ipmath/Ipv6.java
+index 57b1f1a..ec58d4e 100644
+--- a/com/github/jgonian/ipmath/Ipv6.java
++++ b/com/github/jgonian/ipmath/Ipv6.java
+@@ -63,16 +63,16 @@ public final class Ipv6 extends AbstractIp<Ipv6, Ipv6Range> {
+         return value;
+     }
+ 
+-    public static Ipv6 of(BigInteger value) {
++    public static Ipv6 of(BigInteger value) { com.github.jgonian.jmhbench.MutationSwitch.tick(44);
+         return new Ipv6(value);
+     }
+ 
+-    public static Ipv6 of(String value) {
++    public static Ipv6 of(String value) { com.github.jgonian.jmhbench.MutationSwitch.tick(45);
+         return parse(value);
+     }
+ 
+     @Override
+-    public int compareTo(Ipv6 other) {
++    public int compareTo(Ipv6 other) { com.github.jgonian.jmhbench.MutationSwitch.tick(46);
+         return value.compareTo(other.value);
+     }
+ 
+@@ -82,7 +82,7 @@ public final class Ipv6 extends AbstractIp<Ipv6, Ipv6Range> {
+     }
+ 
+     @Override
+-    public Ipv6 previous() {
++    public Ipv6 previous() { com.github.jgonian.jmhbench.MutationSwitch.tick(47);
+         return new Ipv6(value.subtract(ONE));
+     }
+ 
+@@ -92,12 +92,12 @@ public final class Ipv6 extends AbstractIp<Ipv6, Ipv6Range> {
+     }
+ 
+     @Override
+-    public boolean hasPrevious() {
++    public boolean hasPrevious() { com.github.jgonian.jmhbench.MutationSwitch.tick(48);
+         return this.compareTo(FIRST_IPV6_ADDRESS) > 0;
+     }
+ 
+     @Override
+-    public Ipv6Range asRange() {
++    public Ipv6Range asRange() { com.github.jgonian.jmhbench.MutationSwitch.tick(49);
+         return new Ipv6Range(this, this);
+     }
+ 
+diff --git a/com/github/jgonian/ipmath/Ipv6Range.java b/com/github/jgonian/ipmath/Ipv6Range.java
+index e657e8c..46f5896 100644
+--- a/com/github/jgonian/ipmath/Ipv6Range.java
++++ b/com/github/jgonian/ipmath/Ipv6Range.java
+@@ -35,24 +35,24 @@ public final class Ipv6Range extends AbstractIpRange<Ipv6, Ipv6Range> {
+     }
+ 
+     @Override
+-    protected Ipv6Range newInstance(BigInteger start, BigInteger end) {
++    protected Ipv6Range newInstance(BigInteger start, BigInteger end) { com.github.jgonian.jmhbench.MutationSwitch.tick(13);
+         return Ipv6Range.from(start).to(end);
+     }
+ 
+     @Override
+-    protected Ipv6Range newInstance(Ipv6 start, Ipv6 end) {
++    protected Ipv6Range newInstance(Ipv6 start, Ipv6 end) { com.github.jgonian.jmhbench.MutationSwitch.tick(14);
+         return new Ipv6Range(start, end);
+     }
+ 
+-    public static Ipv6RangeBuilder from(Ipv6 from) {
++    public static Ipv6RangeBuilder from(Ipv6 from) { com.github.jgonian.jmhbench.MutationSwitch.tick(15);
+         return new Ipv6RangeBuilder(from);
+     }
+ 
+-    public static Ipv6RangeBuilder from(BigInteger from) {
++    public static Ipv6RangeBuilder from(BigInteger from) { com.github.jgonian.jmhbench.MutationSwitch.tick(16);
+         return new Ipv6RangeBuilder(Ipv6.of(from));
+     }
+ 
+-    public static Ipv6RangeBuilder from(String from) {
++    public static Ipv6RangeBuilder from(String from) { com.github.jgonian.jmhbench.MutationSwitch.tick(17);
+         return new Ipv6RangeBuilder(Ipv6.parse(from));
+     }
+ 
+@@ -65,7 +65,7 @@ public final class Ipv6Range extends AbstractIpRange<Ipv6, Ipv6Range> {
+      * @throws IllegalArgumentException if the string cannot be parsed
+      * @see #parseCidr(String)
+      */
+-    public static Ipv6Range parse(String range) {
++    public static Ipv6Range parse(String range) { com.github.jgonian.jmhbench.MutationSwitch.tick(18);
+         int idx = range.indexOf(DASH);
+         if (idx != -1) {
+             Ipv6 start = Ipv6.parse(range.substring(0, idx));
+diff --git a/com/github/jgonian/ipmath/PrefixUtils.java b/com/github/jgonian/ipmath/PrefixUtils.java
+index 2027a31..31196ee 100644
+--- a/com/github/jgonian/ipmath/PrefixUtils.java
++++ b/com/github/jgonian/ipmath/PrefixUtils.java
+@@ -78,7 +78,7 @@ public final class PrefixUtils {
+     }
+ 
+     // TODO(yg): generify and move to AbstractIp
+-    public static int findMaxPrefixLengthForAddress(Ipv6 address) {
++    public static int findMaxPrefixLengthForAddress(Ipv6 address) { com.github.jgonian.jmhbench.MutationSwitch.tick(19);
+         return getMaxValidPrefix(address.value());
+     }
+ 
+@@ -93,11 +93,11 @@ public final class PrefixUtils {
+         return Ipv6.NUMBER_OF_BITS - maxPowerOfTwo;
+     }
+ 
+-    public static int sumIpv4Prefixes(List<Integer> ipv4Prefixes) {
++    public static int sumIpv4Prefixes(List<Integer> ipv4Prefixes) { com.github.jgonian.jmhbench.MutationSwitch.tick(20);
+         return doSumIpvX(ipv4Prefixes, Ipv4.NUMBER_OF_BITS);
+     }
+ 
+-    public static int sumIpv6Prefixes(List<Integer> ipv6Prefixes) {
++    public static int sumIpv6Prefixes(List<Integer> ipv6Prefixes) { com.github.jgonian.jmhbench.MutationSwitch.tick(21);
+         return doSumIpvX(ipv6Prefixes, Ipv6.NUMBER_OF_BITS);
+     }
+ 
+diff --git a/com/github/jgonian/ipmath/SizeComparator.java b/com/github/jgonian/ipmath/SizeComparator.java
+index 1294c5d..1e215c2 100644
+--- a/com/github/jgonian/ipmath/SizeComparator.java
++++ b/com/github/jgonian/ipmath/SizeComparator.java
+@@ -40,7 +40,7 @@ public final class SizeComparator<R extends Range<?, R>> implements Comparator<R
+     }
+ 
+     @SuppressWarnings("unchecked")
+-    public static <R extends Range<?, R>> Comparator<R> reverse() {
++    public static <R extends Range<?, R>> Comparator<R> reverse() { com.github.jgonian.jmhbench.MutationSwitch.tick(22);
+         return (Comparator<R>) (reverse == null ? reverse = Collections.reverseOrder(SizeComparator.<R>get()) : reverse);
+     }
+ 
+diff --git a/com/github/jgonian/ipmath/SortedRangeSet.java b/com/github/jgonian/ipmath/SortedRangeSet.java
+index 8406fb1..7cd8c51 100644
+--- a/com/github/jgonian/ipmath/SortedRangeSet.java
++++ b/com/github/jgonian/ipmath/SortedRangeSet.java
+@@ -46,13 +46,13 @@ public class SortedRangeSet<C extends Rangeable<C, R>, R extends Range<C, R>> im
+         set = new TreeSet<R>(StartAndSizeComparator.<C, R>get());
+     }
+ 
+-    public void addAll(SortedRangeSet<C, R> ranges) {
++    public void addAll(SortedRangeSet<C, R> ranges) { com.github.jgonian.jmhbench.MutationSwitch.tick(23);
+         for (R range : ranges) {
+             add(range);
+         }
+     }
+ 
+-    public void addAll(Collection<R> ranges) {
++    public void addAll(Collection<R> ranges) { com.github.jgonian.jmhbench.MutationSwitch.tick(24);
+         for (R range : ranges) {
+             add(range);
+         }
+@@ -83,13 +83,13 @@ public class SortedRangeSet<C extends Rangeable<C, R>, R extends Range<C, R>> im
+         }
+     }
+ 
+-    public void removeAll(SortedRangeSet<C, R> ranges) {
++    public void removeAll(SortedRangeSet<C, R> ranges) { com.github.jgonian.jmhbench.MutationSwitch.tick(25);
+         for (R range : ranges) {
+             remove(range);
+         }
+     }
+ 
+-    public void removeAll(Collection<R> ranges) {
++    public void removeAll(Collection<R> ranges) { com.github.jgonian.jmhbench.MutationSwitch.tick(26);
+         for (R range : ranges) {
+             remove(range);
+         }
+@@ -119,7 +119,7 @@ public class SortedRangeSet<C extends Rangeable<C, R>, R extends Range<C, R>> im
+         return removed;
+     }
+ 
+-    public SortedRangeSet<C, R> intersection(SortedRangeSet<C, R> other) {
++    public SortedRangeSet<C, R> intersection(SortedRangeSet<C, R> other) { com.github.jgonian.jmhbench.MutationSwitch.tick(27);
+         SortedRangeSet<C, R> result = new SortedRangeSet<C, R>();
+         for (R thisRange : set) {
+             R leftSide = other.set.floor(thisRange);
+@@ -157,7 +157,7 @@ public class SortedRangeSet<C extends Rangeable<C, R>, R extends Range<C, R>> im
+         return (leftmost != null && leftmost.contains(range)) || (rightmost != null && rightmost.contains(range));
+     }
+ 
+-    public void clear() {
++    public void clear() { com.github.jgonian.jmhbench.MutationSwitch.tick(28);
+         set.clear();
+     }
+ 
+diff --git a/com/github/jgonian/ipmath/StartAndSizeComparator.java b/com/github/jgonian/ipmath/StartAndSizeComparator.java
+index a6e51c0..6b48a24 100644
+--- a/com/github/jgonian/ipmath/StartAndSizeComparator.java
++++ b/com/github/jgonian/ipmath/StartAndSizeComparator.java
+@@ -41,7 +41,7 @@ public final class StartAndSizeComparator<C extends Rangeable<C, R>, R extends R
+     }
+ 
+     @SuppressWarnings("unchecked")
+-    public static <C extends Rangeable<C, R>, R extends Range<C, R>> Comparator<R> reverse() {
++    public static <C extends Rangeable<C, R>, R extends Range<C, R>> Comparator<R> reverse() { com.github.jgonian.jmhbench.MutationSwitch.tick(29);
+         return (Comparator<R>) (reverse == null ? reverse = Collections.reverseOrder(StartAndSizeComparator.<C, R>get()) : reverse);
+     }
+ 
+diff --git a/com/github/jgonian/ipmath/Validate.java b/com/github/jgonian/ipmath/Validate.java
+index 25db4b0..b79ba34 100644
+--- a/com/github/jgonian/ipmath/Validate.java
++++ b/com/github/jgonian/ipmath/Validate.java
+@@ -28,7 +28,7 @@ public final class Validate {
+     private Validate() {
+     }
+ 
+-    public static void isTrue(boolean expression) {
++    public static void isTrue(boolean expression) { com.github.jgonian.jmhbench.MutationSwitch.tick(50);
+         isTrue(expression, "");
+     }
+ 
+diff --git a/com/github/jgonian/jmhbench/MutationSwitch.java b/com/github/jgonian/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c493f65
+--- /dev/null
++++ b/com/github/jgonian/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.github.jgonian.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

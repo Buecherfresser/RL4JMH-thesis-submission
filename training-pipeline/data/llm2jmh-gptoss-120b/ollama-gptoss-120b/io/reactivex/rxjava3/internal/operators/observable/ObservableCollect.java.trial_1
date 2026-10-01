@@ -1,0 +1,48 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.BiConsumer;
+import io.reactivex.rxjava3.functions.Supplier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableCollectBenchmark {
+
+    @Param({ "10", "1000", "100000" })
+    public int size;
+
+    private Observable<Integer> source;
+
+    private Supplier<List<Integer>> listSupplier;
+
+    private BiConsumer<List<Integer>, Integer> listCollector;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple range source that emits 'size' integers.
+        source = Observable.range(1, size);
+        // Supplier that creates a new mutable container for collection.
+        listSupplier = ArrayList::new;
+        // Collector that adds each emitted item to the list.
+        listCollector = (list, item) -> list.add(item);
+    }
+
+    @Benchmark
+    public void collectToList(Blackhole bh) {
+        // The collect operator returns a Single<U>. We block to get the result
+        // and feed it to Blackhole to prevent dead-code elimination.
+        List<Integer> result = source.collect(listSupplier, listCollector).blockingGet();
+        bh.consume(result);
+    }
+}
+```

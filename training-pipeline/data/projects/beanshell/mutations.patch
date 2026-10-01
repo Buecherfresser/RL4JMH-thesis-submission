@@ -1,0 +1,633 @@
+diff --git a/bsh/BSHArrayDimensions.java b/bsh/BSHArrayDimensions.java
+index d62134d..6099809 100644
+--- a/bsh/BSHArrayDimensions.java
++++ b/bsh/BSHArrayDimensions.java
+@@ -46,8 +46,8 @@ class BSHArrayDimensions extends SimpleNode
+     public int [] definedDimensions;
+     BSHArrayDimensions(int id) { super(id); }
+ 
+-    public void addDefinedDimension() { numDefinedDims++; }
+-    public void addUndefinedDimension() { numUndefinedDims++; }
++    public void addDefinedDimension() { bsh.jmhbench.MutationSwitch.tick(1); numDefinedDims++; }
++    public void addUndefinedDimension() { bsh.jmhbench.MutationSwitch.tick(8); numUndefinedDims++; }
+ 
+     public Object eval(
+             Class<?> type, CallStack callstack, Interpreter interpreter )
+diff --git a/bsh/BSHArrayInitializer.java b/bsh/BSHArrayInitializer.java
+index 3b56553..a6385ca 100644
+--- a/bsh/BSHArrayInitializer.java
++++ b/bsh/BSHArrayInitializer.java
+@@ -43,7 +43,7 @@ class BSHArrayInitializer extends SimpleNode {
+      * @see BSHPrimaryExpression.setArrayExpression
+      * {@inheritDoc} */
+     @Override
+-    public void jjtSetParent(Node n) {
++    public void jjtSetParent(Node n) { bsh.jmhbench.MutationSwitch.tick(15);
+         parent = n;
+         if ( null != children ) for ( Node c : children )
+             if ( c.jjtGetNumChildren() > 0
+@@ -57,7 +57,7 @@ class BSHArrayInitializer extends SimpleNode {
+      * {@inheritDoc} */
+     @Override
+     public Object eval( CallStack callstack, Interpreter interpreter )
+-        throws EvalError {
++        throws EvalError { bsh.jmhbench.MutationSwitch.tick(21);
+         throw new EvalError( "Array initializer has no base type.",
+             this, callstack );
+     }
+diff --git a/bsh/BSHStatementExpressionList.java b/bsh/BSHStatementExpressionList.java
+index 7848e91..50c5d88 100644
+--- a/bsh/BSHStatementExpressionList.java
++++ b/bsh/BSHStatementExpressionList.java
+@@ -34,7 +34,7 @@ class BSHStatementExpressionList extends SimpleNode
+ 
+     public Object eval(CallStack callstack, Interpreter interpreter)
+         throws EvalError
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(27);
+         int n = jjtGetNumChildren();
+         for(int i=0; i<n; i++)
+         {
+diff --git a/bsh/BshArray.java b/bsh/BshArray.java
+index fd3ca05..bca1d5a 100644
+--- a/bsh/BshArray.java
++++ b/bsh/BshArray.java
+@@ -47,7 +47,7 @@ public class BshArray {
+      * @return Array.get for array or List.get for list
+      * @throws UtilTargetError wrapped Index out of bounds */
+     public static Object getIndex(Object array, int index)
+-            throws UtilTargetError {
++            throws UtilTargetError { bsh.jmhbench.MutationSwitch.tick(33);
+         Interpreter.debug("getIndex: ", array, ", index=", index);
+         try {
+             if ( array instanceof List )
+@@ -71,7 +71,7 @@ public class BshArray {
+      * @throws UtilTargetError wrapped target exceptions */
+     @SuppressWarnings("unchecked")
+     public static void setIndex(Object array, int index, Object val)
+-            throws ReflectError, UtilTargetError {
++            throws ReflectError, UtilTargetError { bsh.jmhbench.MutationSwitch.tick(39);
+         try {
+             val = Primitive.unwrap(val);
+             if ( array instanceof List )
+diff --git a/bsh/ClassGeneratorUtil.java b/bsh/ClassGeneratorUtil.java
+index ca4d887..e66b258 100644
+--- a/bsh/ClassGeneratorUtil.java
++++ b/bsh/ClassGeneratorUtil.java
+@@ -173,7 +173,7 @@ public class ClassGeneratorUtil implements Opcodes {
+      * This method must be called to initialize the static space even if we
+      * are using a previously generated class.
+      */
+-    public void initStaticNameSpace(NameSpace classStaticNameSpace, BSHBlock instanceInitBlock) {
++    public void initStaticNameSpace(NameSpace classStaticNameSpace, BSHBlock instanceInitBlock) { bsh.jmhbench.MutationSwitch.tick(43);
+         try {
+             classStaticNameSpace.setLocalVariable(""+BSHCLASSMODIFIERS, classModifiers, false/*strict*/);
+             classStaticNameSpace.setLocalVariable(""+BSHCONSTRUCTORS, constructors, false/*strict*/);
+@@ -186,7 +186,7 @@ public class ClassGeneratorUtil implements Opcodes {
+     /**
+      * Generate the class bytecode for this class.
+      */
+-    public byte[] generateClass() {
++    public byte[] generateClass() { bsh.jmhbench.MutationSwitch.tick(47);
+         NameSpace classStaticNameSpace = This.contextStore.get(this.uuid);
+         // Force the class public for now...
+         int classMods = getASMModifiers(classModifiers) | ACC_PUBLIC;
+diff --git a/bsh/StringUtil.java b/bsh/StringUtil.java
+index b00e90d..b692ed0 100644
+--- a/bsh/StringUtil.java
++++ b/bsh/StringUtil.java
+@@ -47,7 +47,7 @@ public class StringUtil {
+     /** Type from value to string.
+      * @param value for type
+      * @return string type  */
+-    public static String typeString(Object value) {
++    public static String typeString(Object value) { bsh.jmhbench.MutationSwitch.tick(50);
+         return null == value || Primitive.NULL == value
+             ? "null"
+             : value instanceof Primitive
+diff --git a/bsh/classpath/BshClassLoader.java b/bsh/classpath/BshClassLoader.java
+index 5838521..e3c7b1b 100644
+--- a/bsh/classpath/BshClassLoader.java
++++ b/bsh/classpath/BshClassLoader.java
+@@ -63,7 +63,7 @@ public class BshClassLoader extends URLClassLoader
+     }
+ 
+     // public version of addURL
+-    public void addURL( URL url ) {
++    public void addURL( URL url ) { bsh.jmhbench.MutationSwitch.tick(2);
+         super.addURL( url );
+     }
+ 
+@@ -77,7 +77,7 @@ public class BshClassLoader extends URLClassLoader
+     */
+     public Class loadClass(String name, boolean resolve)
+         throws ClassNotFoundException
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(9);
+         if (name.startsWith("java.")) {
+             return super.loadClass(name, resolve); // prevent SecurityException
+         }
+diff --git a/bsh/classpath/BshClassPath.java b/bsh/classpath/BshClassPath.java
+index d617e92..845f691 100644
+--- a/bsh/classpath/BshClassPath.java
++++ b/bsh/classpath/BshClassPath.java
+@@ -121,7 +121,7 @@ public class BshClassPath
+ 
+     // mutators
+ 
+-    public void setPath( URL[] urls ) {
++    public void setPath( URL[] urls ) { bsh.jmhbench.MutationSwitch.tick(16);
+         reset();
+         add( urls );
+     }
+@@ -130,7 +130,7 @@ public class BshClassPath
+         Add the specified BshClassPath as a component of our path.
+         Changes in the bcp will be reflected through us.
+     */
+-    public void addComponent( BshClassPath bcp ) {
++    public void addComponent( BshClassPath bcp ) { bsh.jmhbench.MutationSwitch.tick(22);
+         if (bcp == null) return;
+         compPaths.add( bcp );
+         bcp.addListener( this );
+diff --git a/bsh/classpath/ClassManagerImpl.java b/bsh/classpath/ClassManagerImpl.java
+index cd27132..95606e0 100644
+--- a/bsh/classpath/ClassManagerImpl.java
++++ b/bsh/classpath/ClassManagerImpl.java
+@@ -150,7 +150,7 @@ public class ClassManagerImpl extends BshClassManager
+     */
+     @Override
+     public Class<?> classForName( String name )
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(28);
+         // check positive cache
+         Class<?> c = absoluteClassCache.get(name);
+         if (c != null )
+@@ -302,7 +302,7 @@ public class ClassManagerImpl extends BshClassManager
+     */
+     @Override
+     public URL getResource( String path )
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(34);
+         URL url = null;
+         if ( baseLoader != null )
+             // classloader wants no leading slash
+diff --git a/bsh/classpath/DiscreteFilesClassLoader.java b/bsh/classpath/DiscreteFilesClassLoader.java
+index ab5c68f..a471a5d 100644
+--- a/bsh/classpath/DiscreteFilesClassLoader.java
++++ b/bsh/classpath/DiscreteFilesClassLoader.java
+@@ -56,11 +56,11 @@ public class DiscreteFilesClassLoader extends BshClassLoader
+     }
+ 
+     private static DiscreteFilesClassLoader instance;
+-    public static DiscreteFilesClassLoader instance() {
++    public static DiscreteFilesClassLoader instance() { bsh.jmhbench.MutationSwitch.tick(40);
+         return instance;
+     }
+     public static void newInstance(
+-            BshClassManager classManager, ClassSourceMap map ) {
++            BshClassManager classManager, ClassSourceMap map ) { bsh.jmhbench.MutationSwitch.tick(44);
+         instance = new DiscreteFilesClassLoader(classManager, map);
+     }
+ 
+diff --git a/bsh/commands/dir.java b/bsh/commands/dir.java
+index ab7ab36..438b0fe 100644
+--- a/bsh/commands/dir.java
++++ b/bsh/commands/dir.java
+@@ -47,7 +47,7 @@ public class dir
+     static final String [] months = { "Jan", "Feb", "Mar", "Apr",
+         "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+ 
+-    public static String usage() {
++    public static String usage() { bsh.jmhbench.MutationSwitch.tick(3);
+         return "usage: dir( String dir )\n       dir()";
+     }
+ 
+@@ -55,7 +55,7 @@ public class dir
+         Implement dir() command.
+     */
+     public static void invoke( Interpreter env, CallStack callstack )
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(10);
+         String dir = ".";
+         invoke( env, callstack, dir );
+     }
+diff --git a/bsh/engine/BshScriptEngine.java b/bsh/engine/BshScriptEngine.java
+index cce4085..61023ed 100644
+--- a/bsh/engine/BshScriptEngine.java
++++ b/bsh/engine/BshScriptEngine.java
+@@ -58,7 +58,7 @@ public class BshScriptEngine extends AbstractScriptEngine implements Compilable,
+     }
+ 
+ 
+-    protected Interpreter getInterpreter() {
++    protected Interpreter getInterpreter() { bsh.jmhbench.MutationSwitch.tick(4);
+         if (interpreter == null) {
+             this.interpreter = new Interpreter();
+             interpreter.setNameSpace(null); // should always be set by context
+@@ -69,7 +69,7 @@ public class BshScriptEngine extends AbstractScriptEngine implements Compilable,
+ 
+ 
+     @Override
+-    public Object eval(String script, ScriptContext scriptContext) throws ScriptException {
++    public Object eval(String script, ScriptContext scriptContext) throws ScriptException { bsh.jmhbench.MutationSwitch.tick(11);
+         return evalSource(script, scriptContext);
+     }
+ 
+diff --git a/bsh/engine/BshScriptEngineFactory.java b/bsh/engine/BshScriptEngineFactory.java
+index 905bfb5..227bc55 100644
+--- a/bsh/engine/BshScriptEngineFactory.java
++++ b/bsh/engine/BshScriptEngineFactory.java
+@@ -20,12 +20,12 @@ public class BshScriptEngineFactory implements ScriptEngineFactory {
+     final List<String> names = Arrays.asList("beanshell", "bsh");
+ 
+ 
+-    public String getEngineName() {
++    public String getEngineName() { bsh.jmhbench.MutationSwitch.tick(17);
+         return "BeanShell Engine";
+     }
+ 
+ 
+-    public String getEngineVersion() {
++    public String getEngineVersion() { bsh.jmhbench.MutationSwitch.tick(23);
+         return Interpreter.VERSION;
+     }
+ 
+diff --git a/bsh/engine/ScriptContextEngineView.java b/bsh/engine/ScriptContextEngineView.java
+index f8a2ced..9928e41 100644
+--- a/bsh/engine/ScriptContextEngineView.java
++++ b/bsh/engine/ScriptContextEngineView.java
+@@ -37,7 +37,7 @@ public class ScriptContextEngineView implements Map<String, Object> {
+      * (duplicate, shadowed, bindings count as a single binging).
+      */
+     @Override
+-    public int size() {
++    public int size() { bsh.jmhbench.MutationSwitch.tick(29);
+         return totalMap().size();
+     }
+ 
+@@ -46,7 +46,7 @@ public class ScriptContextEngineView implements Map<String, Object> {
+      * Returns true if no bindings are present in any scope of the context.
+      */
+     @Override
+-    public boolean isEmpty() {
++    public boolean isEmpty() { bsh.jmhbench.MutationSwitch.tick(35);
+         return totalMap().isEmpty();
+     }
+ 
+diff --git a/bsh/jmhbench/MutationSwitch.java b/bsh/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..d6f157e
+--- /dev/null
++++ b/bsh/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package bsh.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/bsh/org/objectweb/asm/Attribute.java b/bsh/org/objectweb/asm/Attribute.java
+index b97be75..aff8e0c 100644
+--- a/bsh/org/objectweb/asm/Attribute.java
++++ b/bsh/org/objectweb/asm/Attribute.java
+@@ -75,7 +75,7 @@ public class Attribute {
+    *
+    * @return <tt>true</tt> if this type of attribute is unknown.
+    */
+-  public boolean isUnknown() {
++  public boolean isUnknown() { bsh.jmhbench.MutationSwitch.tick(5);
+     return true;
+   }
+ 
+@@ -84,7 +84,7 @@ public class Attribute {
+    *
+    * @return <tt>true</tt> if this type of attribute is a code attribute.
+    */
+-  public boolean isCodeAttribute() {
++  public boolean isCodeAttribute() { bsh.jmhbench.MutationSwitch.tick(12);
+     return false;
+   }
+ 
+diff --git a/bsh/org/objectweb/asm/ByteVector.java b/bsh/org/objectweb/asm/ByteVector.java
+index 2c1567d..40f2dfe 100644
+--- a/bsh/org/objectweb/asm/ByteVector.java
++++ b/bsh/org/objectweb/asm/ByteVector.java
+@@ -71,7 +71,7 @@ public class ByteVector {
+    * @param byteValue a byte.
+    * @return this byte vector.
+    */
+-  public ByteVector putByte(final int byteValue) {
++  public ByteVector putByte(final int byteValue) { bsh.jmhbench.MutationSwitch.tick(18);
+     int currentLength = length;
+     if (currentLength + 1 > data.length) {
+       enlarge(1);
+@@ -106,7 +106,7 @@ public class ByteVector {
+    * @param shortValue a short.
+    * @return this byte vector.
+    */
+-  public ByteVector putShort(final int shortValue) {
++  public ByteVector putShort(final int shortValue) { bsh.jmhbench.MutationSwitch.tick(24);
+     int currentLength = length;
+     if (currentLength + 2 > data.length) {
+       enlarge(2);
+diff --git a/bsh/org/objectweb/asm/ClassWriter.java b/bsh/org/objectweb/asm/ClassWriter.java
+index 95f6d78..afa5852 100644
+--- a/bsh/org/objectweb/asm/ClassWriter.java
++++ b/bsh/org/objectweb/asm/ClassWriter.java
+@@ -207,7 +207,7 @@ public class ClassWriter extends ClassVisitor {
+       final String name,
+       final String signature,
+       final String superName,
+-      final String[] interfaces) {
++      final String[] interfaces) { bsh.jmhbench.MutationSwitch.tick(30);
+     this.version = version;
+     this.accessFlags = access;
+     this.thisClass = symbolTable.setMajorVersionAndClassName(version & 0xFFFF, name);
+@@ -228,7 +228,7 @@ public class ClassWriter extends ClassVisitor {
+   }
+ 
+   @Override
+-  public final void visitSource(final String file, final String debug) {
++  public final void visitSource(final String file, final String debug) { bsh.jmhbench.MutationSwitch.tick(36);
+     if (file != null) {
+       sourceFileIndex = symbolTable.addConstantUtf8(file);
+     }
+diff --git a/bsh/org/objectweb/asm/FieldWriter.java b/bsh/org/objectweb/asm/FieldWriter.java
+index edaae01..46c6e3e 100644
+--- a/bsh/org/objectweb/asm/FieldWriter.java
++++ b/bsh/org/objectweb/asm/FieldWriter.java
+@@ -118,14 +118,14 @@ final class FieldWriter extends FieldVisitor {
+   // -----------------------------------------------------------------------------------------------
+ 
+   @Override
+-  public void visitAttribute(final Attribute attribute) {
++  public void visitAttribute(final Attribute attribute) { bsh.jmhbench.MutationSwitch.tick(41);
+     // Store the attributes in the <i>reverse</i> order of their visit by this method.
+     attribute.nextAttribute = firstAttribute;
+     firstAttribute = attribute;
+   }
+ 
+   @Override
+-  public void visitEnd() {
++  public void visitEnd() { bsh.jmhbench.MutationSwitch.tick(45);
+     // Nothing to do.
+   }
+ 
+diff --git a/bsh/org/objectweb/asm/Handle.java b/bsh/org/objectweb/asm/Handle.java
+index f4737af..c290b59 100644
+--- a/bsh/org/objectweb/asm/Handle.java
++++ b/bsh/org/objectweb/asm/Handle.java
+@@ -111,7 +111,7 @@ public final class Handle {
+    *     Opcodes#H_INVOKESTATIC}, {@link Opcodes#H_INVOKESPECIAL}, {@link
+    *     Opcodes#H_NEWINVOKESPECIAL} or {@link Opcodes#H_INVOKEINTERFACE}.
+    */
+-  public int getTag() {
++  public int getTag() { bsh.jmhbench.MutationSwitch.tick(48);
+     return tag;
+   }
+ 
+diff --git a/bsh/servlet/BshServlet.java b/bsh/servlet/BshServlet.java
+index e64a46c..329443e 100644
+--- a/bsh/servlet/BshServlet.java
++++ b/bsh/servlet/BshServlet.java
+@@ -78,7 +78,7 @@ public class BshServlet extends HttpServlet
+     public void doGet(
+         HttpServletRequest request, HttpServletResponse response)
+         throws ServletException, IOException
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(6);
+         String script = request.getParameter("bsh.script");
+         String client = request.getParameter("bsh.client");
+         String output = request.getParameter("bsh.servlet.output");
+@@ -247,7 +247,7 @@ public class BshServlet extends HttpServlet
+     public void doPost(
+         HttpServletRequest request, HttpServletResponse response)
+         throws ServletException, IOException
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(13);
+         doGet( request, response );
+     }
+ 
+diff --git a/bsh/servlet/Remote.java b/bsh/servlet/Remote.java
+index 04c49f3..9c78346 100644
+--- a/bsh/servlet/Remote.java
++++ b/bsh/servlet/Remote.java
+@@ -51,7 +51,7 @@ public class Remote
+ {
+     public static void main( String args[] )
+         throws Exception
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(19);
+         if ( args.length < 2 ) {
+             System.out.println(
+                 "usage: Remote URL(http|bsh) file [ file ] ... ");
+@@ -69,7 +69,7 @@ public class Remote
+     */
+     public static int eval( String url, String text )
+         throws IOException
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(25);
+         String returnValue = null;
+         if ( url.startsWith( "http:" ) ) {
+             returnValue = doHttp( url, text );
+diff --git a/bsh/servlet/SimpleTemplate.java b/bsh/servlet/SimpleTemplate.java
+index f7f89d6..74592b0 100644
+--- a/bsh/servlet/SimpleTemplate.java
++++ b/bsh/servlet/SimpleTemplate.java
+@@ -83,7 +83,7 @@ public class SimpleTemplate
+ 
+     */
+     public static SimpleTemplate getTemplate( String file )
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(31);
+         String templateText = templateData.get( file );
+ 
+         if ( templateText == null || !cacheTemplates ) {
+@@ -108,7 +108,7 @@ public class SimpleTemplate
+     @SuppressWarnings("resource") // resource wrapper
+     public static String getStringFromStream( InputStream ins )
+         throws IOException
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(37);
+         return getStringFromStream( new FileReader( ins ) );
+     }
+ 
+diff --git a/bsh/util/AWTConsole.java b/bsh/util/AWTConsole.java
+index a964ccd..6cebbe8 100644
+--- a/bsh/util/AWTConsole.java
++++ b/bsh/util/AWTConsole.java
+@@ -101,8 +101,8 @@ public class AWTConsole extends TextArea
+     private PrintStream out;
+     private static Interpreter interpreter;
+ 
+-    public Reader getIn() { return new FileReader(in); }
+-    public PrintStream getOut() { return out; }
++    public Reader getIn() { bsh.jmhbench.MutationSwitch.tick(20); return new FileReader(in); }
++    public PrintStream getOut() { bsh.jmhbench.MutationSwitch.tick(26); return out; }
+     public PrintStream getErr() { return out; }
+ 
+     private StringBuffer line = new StringBuffer();
+diff --git a/bsh/util/AWTDemoApplet.java b/bsh/util/AWTDemoApplet.java
+index 76def5b..46489e7 100644
+--- a/bsh/util/AWTDemoApplet.java
++++ b/bsh/util/AWTDemoApplet.java
+@@ -50,14 +50,14 @@ public class AWTDemoApplet extends Frame
+         interpreter = new Interpreter( console );
+         new Thread(interpreter).start();
+         addWindowListener(new WindowAdapter() {
+-            public void windowClosing(WindowEvent windowEvent){
++            public void windowClosing(WindowEvent windowEvent){ bsh.jmhbench.MutationSwitch.tick(32);
+                System.exit(0);
+             }
+          });
+         pack();
+         setVisible(true);
+     }
+-    public static void main(String[] args) {
++    public static void main(String[] args) { bsh.jmhbench.MutationSwitch.tick(38);
+         new Window(new AWTDemoApplet());
+     }
+ }
+diff --git a/bsh/util/AWTRemoteApplet.java b/bsh/util/AWTRemoteApplet.java
+index a4ecedd..2a41f5c 100644
+--- a/bsh/util/AWTRemoteApplet.java
++++ b/bsh/util/AWTRemoteApplet.java
+@@ -52,7 +52,7 @@ public class AWTRemoteApplet extends Frame
+         super("AWT Remote");
+         setLayout(new BorderLayout());
+         addWindowListener(new WindowAdapter() {
+-            public void windowClosing(WindowEvent windowEvent){
++            public void windowClosing(WindowEvent windowEvent){ bsh.jmhbench.MutationSwitch.tick(42);
+                System.exit(0);
+             }
+          });
+@@ -76,7 +76,7 @@ public class AWTRemoteApplet extends Frame
+         pack();
+         setVisible(true);
+     }
+-    public static void main(String[] args) {
++    public static void main(String[] args) { bsh.jmhbench.MutationSwitch.tick(46);
+         new Window(new AWTRemoteApplet(Integer.parseInt(args[0])));
+     }
+ 
+diff --git a/bsh/util/BshCanvas.java b/bsh/util/BshCanvas.java
+index 588038a..4b939de 100644
+--- a/bsh/util/BshCanvas.java
++++ b/bsh/util/BshCanvas.java
+@@ -56,7 +56,7 @@ public class BshCanvas extends JComponent {
+         this.ths = ths;
+     }
+ 
+-    public void paintComponent( Graphics g ) {
++    public void paintComponent( Graphics g ) { bsh.jmhbench.MutationSwitch.tick(49);
+         // copy buffered image
+         if ( imageBuffer != null )
+             g.drawImage(imageBuffer, 0,0, this);
+diff --git a/bsh/util/Util.java b/bsh/util/Util.java
+index 1767d49..e92617e 100644
+--- a/bsh/util/Util.java
++++ b/bsh/util/Util.java
+@@ -44,7 +44,7 @@ import bsh.Interpreter;
+ public class Util
+ {
+     /*
+-    public static ConsoleInterface makeConsole() {
++    public static ConsoleInterface makeConsole() { bsh.jmhbench.MutationSwitch.tick(7);
+         if ( bsh.Capabilities.haveSwing() )
+             return new JConsole();
+         else
+@@ -58,7 +58,7 @@ public class Util
+         However we'd like to get it on the screen as quickly as possible.
+     */
+     public static void startSplashScreen()
+-    {
++    { bsh.jmhbench.MutationSwitch.tick(14);
+         int width=275,height=148;
+         Window win=new Window( new Frame() );
+         win.pack();

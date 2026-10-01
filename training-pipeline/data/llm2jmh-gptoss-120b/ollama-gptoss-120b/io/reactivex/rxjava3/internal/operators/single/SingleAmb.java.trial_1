@@ -1,0 +1,70 @@
+```
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleSource;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for the {@code SingleAmb} operator.
+ *
+ * The benchmark measures the throughput of subscribing to a {@code SingleAmb}
+ * instance that races a configurable number of {@code Single.just} sources.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - {@code @Param} to vary the number of sources.
+ * - Warm‑up and measurement iterations with a reasonable time.
+ * - {@code Blackhole} to consume the result and prevent dead‑code elimination.
+ * - Throughput mode (operations per time unit) which is the most common metric
+ *   for reactive stream operators.
+ */
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class SingleAmbBenchmark {
+
+    @Param({ "2", "4", "8", "16", "32" })
+    public int sourceCount;
+
+    // The SingleAmb instance under test
+    private Single<Integer> ambSingle;
+
+    /**
+     * Creates an array of {@code Single.just(i)} sources and builds a {@code SingleAmb}
+     * from them. This method runs once per benchmark thread before the measurement
+     * phase.
+     */
+    @Setup(Level.Trial)
+    public void setup() {
+        @SuppressWarnings("unchecked")
+        SingleSource<? extends Integer>[] sources = new SingleSource[sourceCount];
+        for (int i = 0; i < sourceCount; i++) {
+            // All sources emit the same value; the first one to subscribe wins.
+            sources[i] = Single.just(i);
+        }
+        // The internal operator is public, so we can instantiate it directly.
+        // The iterable argument is not needed when we already have an array.
+        ambSingle = new SingleAmb<>(sources, null);
+    }
+
+    /**
+     * Executes the benchmark: subscribes to the {@code SingleAmb} and blocks
+     * until the value is emitted. The result is consumed by a {@link Blackhole}
+     * to avoid dead‑code elimination.
+     *
+     * @param bh Blackhole to consume the emitted value.
+     */
+    @Benchmark
+    public void ambThroughput(Blackhole bh) {
+        // Each call to blockingGet triggers a fresh subscription.
+        Integer value = ambSingle.blockingGet();
+        bh.consume(value);
+    }
+}
+```

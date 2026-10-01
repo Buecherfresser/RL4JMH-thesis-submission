@@ -1,0 +1,70 @@
+```
+package io.reactivex.rxjava3.internal.operators.completable.benchmark;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.functions.Action;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.completable.CompletableDoFinally}.
+ *
+ * Measures the throughput of a plain {@code Completable.complete()} versus the same
+ * Completable with a {@code doFinally} operator attached.
+ *
+ * The benchmark follows best practices:
+ * - Separate @State for reusable objects.
+ * - Warm‑up and measurement iterations.
+ * - Multiple forks to reduce JVM warm‑up effects.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class CompletableDoFinallyBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        /** No‑op action used by {@code doFinally}. */
+        Action noop;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // The action does absolutely nothing; any exception would be fatal.
+            noop = () -> {};
+        }
+    }
+
+    /**
+     * Baseline: a plain Completable that completes immediately.
+     */
+    @Benchmark
+    public void baseline(BenchmarkState state, Blackhole bh) {
+        // Completable.complete() is already a cold source; blockingSubscribe forces
+        // the subscription to run to completion synchronously.
+        Completable.complete()
+                .blockingSubscribe();
+
+        // Consume a dummy value to keep the JIT from optimizing away the call.
+        bh.consume(state);
+    }
+
+    /**
+     * Completable with {@code doFinally} attached.
+     */
+    @Benchmark
+    public void withDoFinally(BenchmarkState state, Blackhole bh) {
+        Completable.complete()
+                .doFinally(state.noop)
+                .blockingSubscribe();
+
+        bh.consume(state);
+    }
+}
+```

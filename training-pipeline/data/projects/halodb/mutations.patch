@@ -1,0 +1,551 @@
+diff --git a/com/oath/halodb/CompactionManager.java b/com/oath/halodb/CompactionManager.java
+index 57ab5be..f90c88b 100644
+--- a/com/oath/halodb/CompactionManager.java
++++ b/com/oath/halodb/CompactionManager.java
+@@ -191,7 +191,7 @@ class CompactionManager {
+         }
+ 
+         @Override
+-        public void run() {
++        public void run() { com.oath.halodb.jmhbench.MutationSwitch.tick(12);
+             logger.info("Starting compaction thread ...");
+             int fileToCompact = -1;
+ 
+diff --git a/com/oath/halodb/DBMetaData.java b/com/oath/halodb/DBMetaData.java
+index c63d95d..d4af723 100644
+--- a/com/oath/halodb/DBMetaData.java
++++ b/com/oath/halodb/DBMetaData.java
+@@ -136,19 +136,19 @@ class DBMetaData {
+         this.ioError = ioError;
+     }
+ 
+-    public int getVersion() {
++    public int getVersion() { com.oath.halodb.jmhbench.MutationSwitch.tick(13);
+         return version;
+     }
+ 
+-    public void setVersion(int version) {
++    public void setVersion(int version) { com.oath.halodb.jmhbench.MutationSwitch.tick(14);
+         this.version = version;
+     }
+ 
+-    public int getMaxFileSize() {
++    public int getMaxFileSize() { com.oath.halodb.jmhbench.MutationSwitch.tick(15);
+         return maxFileSize;
+     }
+ 
+-    public void setMaxFileSize(int maxFileSize) {
++    public void setMaxFileSize(int maxFileSize) { com.oath.halodb.jmhbench.MutationSwitch.tick(16);
+         this.maxFileSize = maxFileSize;
+     }
+ }
+diff --git a/com/oath/halodb/HaloDB.java b/com/oath/halodb/HaloDB.java
+index b0ea540..1b906d2 100644
+--- a/com/oath/halodb/HaloDB.java
++++ b/com/oath/halodb/HaloDB.java
+@@ -17,7 +17,7 @@ public final class HaloDB {
+ 
+     private File directory;
+ 
+-    public static HaloDB open(File dirname, HaloDBOptions opts) throws HaloDBException {
++    public static HaloDB open(File dirname, HaloDBOptions opts) throws HaloDBException { com.oath.halodb.jmhbench.MutationSwitch.tick(17);
+         HaloDB db = new HaloDB();
+         try {
+             db.dbInternal = HaloDBInternal.open(dirname, opts);
+@@ -28,7 +28,7 @@ public final class HaloDB {
+         return db;
+     }
+ 
+-    public static HaloDB open(String directory, HaloDBOptions opts) throws HaloDBException {
++    public static HaloDB open(String directory, HaloDBOptions opts) throws HaloDBException { com.oath.halodb.jmhbench.MutationSwitch.tick(18);
+         return HaloDB.open(new File(directory), opts);
+     }
+ 
+@@ -48,7 +48,7 @@ public final class HaloDB {
+         }
+     }
+ 
+-    public void delete(byte[] key) throws HaloDBException {
++    public void delete(byte[] key) throws HaloDBException { com.oath.halodb.jmhbench.MutationSwitch.tick(19);
+         try {
+             dbInternal.delete(key);
+         } catch (IOException e) {
+@@ -56,7 +56,7 @@ public final class HaloDB {
+         }
+     }
+ 
+-    public void close() throws HaloDBException {
++    public void close() throws HaloDBException { com.oath.halodb.jmhbench.MutationSwitch.tick(20);
+         try {
+             dbInternal.close();
+         } catch (IOException e) {
+diff --git a/com/oath/halodb/HaloDBInternal.java b/com/oath/halodb/HaloDBInternal.java
+index b6311cc..10103a4 100644
+--- a/com/oath/halodb/HaloDBInternal.java
++++ b/com/oath/halodb/HaloDBInternal.java
+@@ -639,7 +639,7 @@ class HaloDBInternal {
+         }
+ 
+         @Override
+-        public Long call() throws IOException {
++        public Long call() throws IOException { com.oath.halodb.jmhbench.MutationSwitch.tick(21);
+             long maxSequenceNumber = -1;
+             indexFile.open();
+             IndexFile.IndexFileIterator iterator = indexFile.newIterator();
+@@ -693,7 +693,7 @@ class HaloDBInternal {
+         }
+ 
+         @Override
+-        public Long call() throws IOException {
++        public Long call() throws IOException { com.oath.halodb.jmhbench.MutationSwitch.tick(22);
+             long maxSequenceNumber = -1;
+             tombstoneFile.open();
+ 
+diff --git a/com/oath/halodb/HaloDBOptions.java b/com/oath/halodb/HaloDBOptions.java
+index b96974c..5039184 100644
+--- a/com/oath/halodb/HaloDBOptions.java
++++ b/com/oath/halodb/HaloDBOptions.java
+@@ -73,25 +73,25 @@ public class HaloDBOptions implements Cloneable {
+             .toString();
+     }
+ 
+-    public void setCompactionThresholdPerFile(double compactionThresholdPerFile) {
++    public void setCompactionThresholdPerFile(double compactionThresholdPerFile) { com.oath.halodb.jmhbench.MutationSwitch.tick(23);
+         this.compactionThresholdPerFile = compactionThresholdPerFile;
+     }
+ 
+-    public void setMaxFileSize(int maxFileSize) {
++    public void setMaxFileSize(int maxFileSize) { com.oath.halodb.jmhbench.MutationSwitch.tick(24);
+         if (maxFileSize <= 0) {
+             throw new IllegalArgumentException("maxFileSize should be > 0");
+         }
+         this.maxFileSize = maxFileSize;
+     }
+ 
+-    public void setMaxTombstoneFileSize(int maxFileSize) {
++    public void setMaxTombstoneFileSize(int maxFileSize) { com.oath.halodb.jmhbench.MutationSwitch.tick(25);
+         if (maxFileSize <= 0) {
+             throw new IllegalArgumentException("maxFileSize should be > 0");
+         }
+         this.maxTombstoneFileSize = maxFileSize;
+     }
+ 
+-    public void setFlushDataSizeBytes(long flushDataSizeBytes) {
++    public void setFlushDataSizeBytes(long flushDataSizeBytes) { com.oath.halodb.jmhbench.MutationSwitch.tick(26);
+         this.flushDataSizeBytes = flushDataSizeBytes;
+     }
+ 
+diff --git a/com/oath/halodb/HaloDBStats.java b/com/oath/halodb/HaloDBStats.java
+index 4fb871c..d006e11 100644
+--- a/com/oath/halodb/HaloDBStats.java
++++ b/com/oath/halodb/HaloDBStats.java
+@@ -85,19 +85,19 @@ public class HaloDBStats {
+         this.options = options;
+     }
+ 
+-    public long getSize() {
++    public long getSize() { com.oath.halodb.jmhbench.MutationSwitch.tick(27);
+         return size;
+     }
+ 
+-    public int getNumberOfFilesPendingCompaction() {
++    public int getNumberOfFilesPendingCompaction() { com.oath.halodb.jmhbench.MutationSwitch.tick(28);
+         return numberOfFilesPendingCompaction;
+     }
+ 
+-    public Map<Integer, Double> getStaleDataPercentPerFile() {
++    public Map<Integer, Double> getStaleDataPercentPerFile() { com.oath.halodb.jmhbench.MutationSwitch.tick(29);
+         return staleDataPercentPerFile;
+     }
+ 
+-    public long getRehashCount() {
++    public long getRehashCount() { com.oath.halodb.jmhbench.MutationSwitch.tick(30);
+         return rehashCount;
+     }
+ 
+diff --git a/com/oath/halodb/InMemoryIndex.java b/com/oath/halodb/InMemoryIndex.java
+index b48ba4c..f0ca77d 100644
+--- a/com/oath/halodb/InMemoryIndex.java
++++ b/com/oath/halodb/InMemoryIndex.java
+@@ -80,7 +80,7 @@ class InMemoryIndex {
+         return offHeapHashTable.size();
+     }
+ 
+-    public OffHeapHashTableStats stats() {
++    public OffHeapHashTableStats stats() { com.oath.halodb.jmhbench.MutationSwitch.tick(31);
+         return offHeapHashTable.stats();
+     }
+ 
+diff --git a/com/oath/halodb/InMemoryIndexMetaDataSerializer.java b/com/oath/halodb/InMemoryIndexMetaDataSerializer.java
+index a11e3ee..e64610f 100644
+--- a/com/oath/halodb/InMemoryIndexMetaDataSerializer.java
++++ b/com/oath/halodb/InMemoryIndexMetaDataSerializer.java
+@@ -9,16 +9,16 @@ import java.nio.ByteBuffer;
+ 
+ class InMemoryIndexMetaDataSerializer implements HashTableValueSerializer<InMemoryIndexMetaData> {
+ 
+-    public void serialize(InMemoryIndexMetaData recordMetaData, ByteBuffer byteBuffer) {
++    public void serialize(InMemoryIndexMetaData recordMetaData, ByteBuffer byteBuffer) { com.oath.halodb.jmhbench.MutationSwitch.tick(32);
+         recordMetaData.serialize(byteBuffer);
+         byteBuffer.flip();
+     }
+ 
+-    public InMemoryIndexMetaData deserialize(ByteBuffer byteBuffer) {
++    public InMemoryIndexMetaData deserialize(ByteBuffer byteBuffer) { com.oath.halodb.jmhbench.MutationSwitch.tick(33);
+         return InMemoryIndexMetaData.deserialize(byteBuffer);
+     }
+ 
+-    public int serializedSize(InMemoryIndexMetaData recordMetaData) {
++    public int serializedSize(InMemoryIndexMetaData recordMetaData) { com.oath.halodb.jmhbench.MutationSwitch.tick(34);
+         return InMemoryIndexMetaData.SERIALIZED_SIZE;
+     }
+ }
+diff --git a/com/oath/halodb/JNANativeAllocator.java b/com/oath/halodb/JNANativeAllocator.java
+index 60273b2..10a1724 100644
+--- a/com/oath/halodb/JNANativeAllocator.java
++++ b/com/oath/halodb/JNANativeAllocator.java
+@@ -11,7 +11,7 @@ import com.sun.jna.Native;
+ 
+ final class JNANativeAllocator implements NativeMemoryAllocator {
+ 
+-    public long allocate(long size) {
++    public long allocate(long size) { com.oath.halodb.jmhbench.MutationSwitch.tick(35);
+         try {
+             return Native.malloc(size);
+         } catch (OutOfMemoryError oom) {
+@@ -19,11 +19,11 @@ final class JNANativeAllocator implements NativeMemoryAllocator {
+         }
+     }
+ 
+-    public void free(long peer) {
++    public void free(long peer) { com.oath.halodb.jmhbench.MutationSwitch.tick(36);
+         Native.free(peer);
+     }
+ 
+-    public long getTotalAllocated() {
++    public long getTotalAllocated() { com.oath.halodb.jmhbench.MutationSwitch.tick(37);
+         return -1L;
+     }
+ }
+diff --git a/com/oath/halodb/KeyBuffer.java b/com/oath/halodb/KeyBuffer.java
+index 8b6fd8f..e20dd5d 100644
+--- a/com/oath/halodb/KeyBuffer.java
++++ b/com/oath/halodb/KeyBuffer.java
+@@ -41,7 +41,7 @@ final class KeyBuffer {
+         return buffer.length == keyBuffer.buffer.length && Arrays.equals(keyBuffer.buffer, buffer);
+     }
+ 
+-    public int size() {
++    public int size() { com.oath.halodb.jmhbench.MutationSwitch.tick(1);
+         return buffer.length;
+     }
+ 
+diff --git a/com/oath/halodb/LongArrayList.java b/com/oath/halodb/LongArrayList.java
+index 552dea1..ce7f120 100644
+--- a/com/oath/halodb/LongArrayList.java
++++ b/com/oath/halodb/LongArrayList.java
+@@ -29,11 +29,11 @@ final class LongArrayList {
+         return array[i];
+     }
+ 
+-    public void clear() {
++    public void clear() { com.oath.halodb.jmhbench.MutationSwitch.tick(3);
+         size = 0;
+     }
+ 
+-    public int size() {
++    public int size() { com.oath.halodb.jmhbench.MutationSwitch.tick(5);
+         return size;
+     }
+ 
+diff --git a/com/oath/halodb/OffHeapHashTableBuilder.java b/com/oath/halodb/OffHeapHashTableBuilder.java
+index ee84ae3..5703640 100644
+--- a/com/oath/halodb/OffHeapHashTableBuilder.java
++++ b/com/oath/halodb/OffHeapHashTableBuilder.java
+@@ -39,7 +39,7 @@ class OffHeapHashTableBuilder<V> {
+         return new OffHeapHashTableBuilder<>();
+     }
+ 
+-    public OffHeapHashTable<V> build() {
++    public OffHeapHashTable<V> build() { com.oath.halodb.jmhbench.MutationSwitch.tick(7);
+         if (fixedValueSize == -1) {
+             throw new IllegalArgumentException("Need to set fixedValueSize");
+         }
+@@ -56,11 +56,11 @@ class OffHeapHashTableBuilder<V> {
+         return new OffHeapHashTableImpl<>(this);
+     }
+ 
+-    public int getHashTableSize() {
++    public int getHashTableSize() { com.oath.halodb.jmhbench.MutationSwitch.tick(9);
+         return hashTableSize;
+     }
+ 
+-    public OffHeapHashTableBuilder<V> hashTableSize(int hashTableSize) {
++    public OffHeapHashTableBuilder<V> hashTableSize(int hashTableSize) { com.oath.halodb.jmhbench.MutationSwitch.tick(10);
+         if (hashTableSize < -1) {
+             throw new IllegalArgumentException("hashTableSize:" + hashTableSize);
+         }
+@@ -68,7 +68,7 @@ class OffHeapHashTableBuilder<V> {
+         return this;
+     }
+ 
+-    public int getMemoryPoolChunkSize() {
++    public int getMemoryPoolChunkSize() { com.oath.halodb.jmhbench.MutationSwitch.tick(11);
+         return memoryPoolChunkSize;
+     }
+ 
+diff --git a/com/oath/halodb/OffHeapHashTableImpl.java b/com/oath/halodb/OffHeapHashTableImpl.java
+index cab946a..25d27f4 100644
+--- a/com/oath/halodb/OffHeapHashTableImpl.java
++++ b/com/oath/halodb/OffHeapHashTableImpl.java
+@@ -90,7 +90,7 @@ final class OffHeapHashTableImpl<V> implements OffHeapHashTable<V> {
+         return segment(keySource.hash()).getEntry(keySource);
+     }
+ 
+-    public boolean containsKey(byte[] key) {
++    public boolean containsKey(byte[] key) { com.oath.halodb.jmhbench.MutationSwitch.tick(38);
+         if (key == null) {
+             throw new NullPointerException();
+         }
+@@ -103,11 +103,11 @@ final class OffHeapHashTableImpl<V> implements OffHeapHashTable<V> {
+         return putInternal(k, v, false, null);
+     }
+ 
+-    public boolean addOrReplace(byte[] key, V old, V value) {
++    public boolean addOrReplace(byte[] key, V old, V value) { com.oath.halodb.jmhbench.MutationSwitch.tick(39);
+         return putInternal(key, value, false, old);
+     }
+ 
+-    public boolean putIfAbsent(byte[] k, V v) {
++    public boolean putIfAbsent(byte[] k, V v) { com.oath.halodb.jmhbench.MutationSwitch.tick(40);
+         return putInternal(k, v, true, null);
+     }
+ 
+@@ -164,7 +164,7 @@ final class OffHeapHashTableImpl<V> implements OffHeapHashTable<V> {
+     // maintenance
+     //
+ 
+-    public void clear() {
++    public void clear() { com.oath.halodb.jmhbench.MutationSwitch.tick(41);
+         for (Segment map : segments) {
+             map.clear();
+         }
+diff --git a/com/oath/halodb/OffHeapHashTableStats.java b/com/oath/halodb/OffHeapHashTableStats.java
+index 6ce5848..a3b0e28 100644
+--- a/com/oath/halodb/OffHeapHashTableStats.java
++++ b/com/oath/halodb/OffHeapHashTableStats.java
+@@ -36,19 +36,19 @@ final class OffHeapHashTableStats {
+         this.segmentStats = segmentStats;
+     }
+ 
+-    public long getRehashCount() {
++    public long getRehashCount() { com.oath.halodb.jmhbench.MutationSwitch.tick(42);
+         return rehashCount;
+     }
+ 
+-    public long getHitCount() {
++    public long getHitCount() { com.oath.halodb.jmhbench.MutationSwitch.tick(43);
+         return hitCount;
+     }
+ 
+-    public long getMissCount() {
++    public long getMissCount() { com.oath.halodb.jmhbench.MutationSwitch.tick(44);
+         return missCount;
+     }
+ 
+-    public long getSize() {
++    public long getSize() { com.oath.halodb.jmhbench.MutationSwitch.tick(45);
+         return size;
+     }
+ 
+diff --git a/com/oath/halodb/Record.java b/com/oath/halodb/Record.java
+index dab7064..99a55d4 100644
+--- a/com/oath/halodb/Record.java
++++ b/com/oath/halodb/Record.java
+@@ -37,11 +37,11 @@ public class Record {
+         return new Record(key, value);
+     }
+ 
+-    public byte[] getKey() {
++    public byte[] getKey() { com.oath.halodb.jmhbench.MutationSwitch.tick(46);
+         return key;
+     }
+ 
+-    public byte[] getValue() {
++    public byte[] getValue() { com.oath.halodb.jmhbench.MutationSwitch.tick(47);
+         return value;
+     }
+ 
+diff --git a/com/oath/halodb/RecordKey.java b/com/oath/halodb/RecordKey.java
+index 03c81e3..d9bca6c 100644
+--- a/com/oath/halodb/RecordKey.java
++++ b/com/oath/halodb/RecordKey.java
+@@ -8,7 +8,7 @@ public class RecordKey {
+         this.key = key;
+     }
+ 
+-    public byte[] getBytes() {
++    public byte[] getBytes() { com.oath.halodb.jmhbench.MutationSwitch.tick(48);
+         return key;
+     }
+ 
+diff --git a/com/oath/halodb/SegmentWithMemoryPool.java b/com/oath/halodb/SegmentWithMemoryPool.java
+index 9b1cebc..0927ebc 100644
+--- a/com/oath/halodb/SegmentWithMemoryPool.java
++++ b/com/oath/halodb/SegmentWithMemoryPool.java
+@@ -86,7 +86,7 @@ class SegmentWithMemoryPool<V> extends Segment<V> {
+     }
+ 
+     @Override
+-    public V getEntry(KeyBuffer key) {
++    public V getEntry(KeyBuffer key) { com.oath.halodb.jmhbench.MutationSwitch.tick(49);
+         boolean wasFirst = lock();
+         try {
+             for (MemoryPoolAddress address = table.getFirst(key.hash());
+@@ -108,7 +108,7 @@ class SegmentWithMemoryPool<V> extends Segment<V> {
+     }
+ 
+     @Override
+-    public boolean containsEntry(KeyBuffer key) {
++    public boolean containsEntry(KeyBuffer key) { com.oath.halodb.jmhbench.MutationSwitch.tick(50);
+         boolean wasFirst = lock();
+         try {
+             for (MemoryPoolAddress address = table.getFirst(key.hash());
+diff --git a/com/oath/halodb/histo/EstimatedHistogram.java b/com/oath/halodb/histo/EstimatedHistogram.java
+index cf3a644..9ee8854 100644
+--- a/com/oath/halodb/histo/EstimatedHistogram.java
++++ b/com/oath/halodb/histo/EstimatedHistogram.java
+@@ -65,7 +65,7 @@ public class EstimatedHistogram {
+     /**
+      * @return the histogram values corresponding to each bucket index
+      */
+-    public long[] getBucketOffsets() {
++    public long[] getBucketOffsets() { com.oath.halodb.jmhbench.MutationSwitch.tick(2);
+         return bucketOffsets;
+     }
+ 
+@@ -93,7 +93,7 @@ public class EstimatedHistogram {
+      * @param reset zero out buckets afterwards if true
+      * @return a long[] containing the current histogram buckets
+      */
+-    public long[] getBuckets(boolean reset) {
++    public long[] getBuckets(boolean reset) { com.oath.halodb.jmhbench.MutationSwitch.tick(4);
+         final int len = buckets.length();
+         long[] rv = new long[len];
+ 
+@@ -113,7 +113,7 @@ public class EstimatedHistogram {
+     /**
+      * @return the smallest value that could have been added to this histogram
+      */
+-    public long min() {
++    public long min() { com.oath.halodb.jmhbench.MutationSwitch.tick(6);
+         for (int i = 0; i < buckets.length(); i++) {
+             if (buckets.get(i) > 0) {
+                 return i == 0 ? 0 : 1 + bucketOffsets[i - 1];
+@@ -126,7 +126,7 @@ public class EstimatedHistogram {
+      * @return the largest value that could have been added to this histogram.  If the histogram overflowed, returns
+      * Long.MAX_VALUE.
+      */
+-    public long max() {
++    public long max() { com.oath.halodb.jmhbench.MutationSwitch.tick(8);
+         int lastBucket = buckets.length() - 1;
+         if (buckets.get(lastBucket) > 0) {
+             return Long.MAX_VALUE;
+diff --git a/com/oath/halodb/jmhbench/MutationSwitch.java b/com/oath/halodb/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..6bed476
+--- /dev/null
++++ b/com/oath/halodb/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.oath.halodb.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

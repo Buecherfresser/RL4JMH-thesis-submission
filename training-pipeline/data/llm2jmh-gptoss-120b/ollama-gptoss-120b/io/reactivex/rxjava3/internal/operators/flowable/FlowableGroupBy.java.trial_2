@@ -1,0 +1,62 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableGroupBy}.
+ *
+ * Measures throughput of the groupBy operator under various configurations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableGroupByBenchmark {
+
+    /** Number of items emitted by the upstream Flowable. */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /** Buffer size used by the GroupBy operator. */
+    @Param({ "16", "128", "1024" })
+    public int bufferSize;
+
+    /** Whether the operator should delay errors. */
+    @Param({ "true", "false" })
+    public boolean delayError;
+
+    /** Upstream source used in the benchmark. */
+    private Flowable<Integer> source;
+
+    /** Key selector: groups items by modulo 10. */
+    private static final Function<Integer, Integer> KEY_SELECTOR = i -> i % 10;
+
+    /** Value selector: identity function. */
+    private static final Function<Integer, Integer> VALUE_SELECTOR = i -> i;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Create a fresh source for each invocation to avoid caching effects.
+        source = Flowable.range(1, itemCount)
+                .subscribeOn(Schedulers.single()); // deterministic scheduler
+    }
+
+    /**
+     * Benchmark that applies {@code groupBy} to the source Flowable,
+     * then merges the groups back and consumes all items.
+     */
+    @Benchmark
+    public void groupByThroughput(Blackhole bh) {
+        source
+                .groupBy(KEY_SELECTOR, VALUE_SELECTOR, delayError, bufferSize, null)
+                .flatMap(g -> g)
+                .doOnNext(bh::consume)
+                .blockingSubscribe();
+    }
+}
+```

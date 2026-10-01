@@ -1,0 +1,108 @@
+```
+package io.reactivex.rxjava3.internal.operators.single.benchmark;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.operators.single.SingleContains;
+import io.reactivex.rxjava3.functions.BiPredicate;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link SingleContains}.
+ *
+ * <p>Measures the throughput (operations per second) of the {@code SingleContains}
+ * operator when applied to a hot {@link Single} that emits a single value synchronously.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Use {@link BenchmarkMode#Throughput} with a fixed {@link OutputTimeUnit}.</li>
+ *   <li>Keep the benchmark state immutable after {@link Setup} to avoid measurement noise.</li>
+ *   <li>Consume the result with {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Provide warm‑up and measurement iterations to let the JIT stabilize.</li>
+ *   <li>Run the benchmark in a single thread to isolate the operator's overhead.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class SingleContainsBenchmark {
+
+    /** Source Single that emits a constant integer synchronously. */
+    private Single<Integer> source;
+
+    /** Value to compare against. */
+    private Integer value;
+
+    /** Equality comparer used by the operator. */
+    private BiPredicate<Object, Object> comparer;
+
+    /** The operator under test. */
+    private SingleContains<Integer> operator;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A simple source that emits the integer 42 immediately.
+        source = Single.just(42);
+        value = 42;
+        // Use Objects.equals as the comparer – the most common use‑case.
+        comparer = Objects::equals;
+
+        // Create the operator instance once per trial.
+        operator = new SingleContains<>(source, value, comparer);
+    }
+
+    /**
+     * Executes the {@code SingleContains} operator and consumes the result.
+     *
+     * <p>The {@code blockingGet()} call forces the subscription to complete
+     * synchronously, which is appropriate for a throughput benchmark where
+     * we want to measure the pure operator overhead without asynchronous scheduling.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void containsThroughput(Blackhole bh) {
+        Boolean result = operator.blockingGet();
+        bh.consume(result);
+    }
+
+    /**
+     * Alternative benchmark that uses an explicit {@link SingleObserver}
+     * to demonstrate a non‑blocking subscription pattern.
+     *
+     * <p>This variant is kept for reference; the primary benchmark uses
+     * {@code blockingGet()} because it yields more stable throughput numbers
+     * for a synchronous source.
+     *
+     * @param bh Blackhole to consume the result.
+     */
+    @Benchmark
+    public void containsThroughputObserver(Blackhole bh) {
+        operator.subscribe(new SingleObserver<Boolean>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                // No disposal needed for this benchmark.
+            }
+
+            @Override
+            public void onSuccess(Boolean b) {
+                bh.consume(b);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // Propagate any unexpected error to the benchmark harness.
+                throw new RuntimeException(e);
+            }
+        });
+    }
+}
+```

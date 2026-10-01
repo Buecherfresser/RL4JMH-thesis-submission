@@ -1,0 +1,79 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableIgnoreElements;
+import io.reactivex.rxjava3.subscribers.DefaultSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableIgnoreElements}.
+ *
+ * The benchmark measures the throughput (operations per second) of subscribing to a
+ * {@code FlowableIgnoreElements} instance that receives a configurable number of items.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize the number of emitted items to explore scaling behavior.
+ * - Warm‑up and measurement iterations are defined to let the JIT stabilize.
+ * - Use a {@link CountDownLatch} to reliably wait for completion without busy‑waiting.
+ * - Consume a dummy value with {@link Blackhole} to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class FlowableIgnoreElementsBenchmark {
+
+    /**
+     * Number of items emitted by the upstream Flowable.
+     * Typical values: 1_000, 10_000, 100_000, 1_000_000.
+     */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use hide() to prevent operator fusion from affecting the benchmark.
+        source = Flowable.range(1, itemCount).hide();
+    }
+
+    @Benchmark
+    public void ignoreElementsThroughput(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+
+        // Subscribe using a minimal subscriber that only signals completion.
+        new FlowableIgnoreElements<>(source).subscribe(new DefaultSubscriber<Integer>() {
+            @Override
+            public void onNext(Integer t) {
+                // No-op: elements are ignored.
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Propagate error to the latch to avoid hanging the benchmark.
+                latch.countDown();
+                bh.consume(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // Signal completion to the benchmark harness.
+                latch.countDown();
+                bh.consume(1); // Prevent dead‑code elimination.
+            }
+        });
+
+        // Wait for the upstream to finish processing all items.
+        latch.await();
+    }
+}
+```

@@ -1,0 +1,887 @@
+# Gemma 4 12B - run 10 on the 8x RTX PRO 6000 Blackwell box (rtx-jonas). From BASE.
+#
+# Run 9 (E2B, 8e-5 cosine to 2e-5, 1600 steps) ended at reward 0.557 / compile 75.7 % / mutation
+# 0.693, roughly 2.1x run 8 on both reward and compile. But look at WHERE the reward came from:
+# compile went 33.1 % -> 75.7 % while mutation_score_mean went 0.736 -> 0.693, i.e. slightly DOWN.
+# On a 2 B-effective base, essentially the whole gain was the model learning JMH syntax. The
+# mutation term carries 0.70 of the reward weight and is the actual contribution of this work, and
+# it was barely exercised.
+#
+# Run 10 changes ONE thing that matters: the base model, E2B (~5.4 B params) -> 12B (12.8 B). The
+# point is not "bigger is better" -- it is that a base which already compiles forces the reward to
+# earn its gains on mutation detection instead of on syntax. Same corpus, same 100-prompt holdout
+# (same seed, so the held-out sets are literally the same subjects), same LR schedule, same reward
+# weights, same prompt. The E2B vs 12B pair is then a clean statement about whether the method's
+# gains hold, grow, or wash out as base capability rises.
+#
+# TWO forced deviations from run 9, both driven by 12B's KV cache rather than by choice:
+#
+#   max_completion_length  16384 (kept)
+#   vllm_max_model_length  65536 -> 36864
+#   vllm_gpu_memory_utilization 0.40 -> 0.38
+#
+# 12B has 8 KV heads x head_dim 256 x 48 layers = 0.375 MiB of KV per token, 5.5x E2B's ~0.07 MiB,
+# so the 65536 window run 9 used would reserve 24 GiB of KV for ONE sequence and cannot coexist with
+# a 23.8 GiB weight copy on a 95 GiB card. The window has to come down; the question is how far.
+#
+# MEASURED, not extrapolated (2026-08-12, 12B served standalone on GPU 4, 8 held-out prompts x n=2,
+# max_tokens 16384, same sampling params and chat template as this config):
+#
+#     completion length   mean ~4993 tok   max ~8096 tok   finish_reason: stop 16/16
+#     contained benchmark Java: 16/16
+#
+# In TRAINING the distribution is longer still: a 4-rank smoke logged mean 7732 tokens with 25 % of
+# completions clipped at a 12288 cap. Two earlier caps were both wrong and both cost a smoke:
+# 4096 (extrapolated from run 9's E2B mean 1500 / max 2212 -- 12B is ~4x more verbose, so
+# clipped_ratio hit 1.00 and 75-100 % of rollouts became parse failures) and 12288 (25 % clipped).
+#
+# The cap is therefore back at run 9's 16384, which is also what keeps this comparable to run 9.
+# Truncation is not merely lost throughput: a truncated completion has no parseable Java, scores 0,
+# and `mask_truncated_completions: false` keeps it in the loss -- so a tight cap actively trains the
+# policy toward terse benchmarks. That is an artifact, not a result, which is why the cap is sized
+# off the tail rather than the mean.
+#
+# Memory is the binding constraint and it is TIGHT. Colocate needs TWO copies of the model -- the
+# trainer's and vLLM's -- and the trainer additionally builds a per-token-logprob logits tensor of
+# max_completion_length x vocab, upcast to fp32 by accelerate's mixed-precision wrapper:
+#
+#   16384 x 262144 x 4 B = 16.0 GiB      <- sized by the LONGEST completion in the batch, so the cap
+#                                           is the number to budget for, not the mean
+#   trainer total : 23.8 weights + 16.0 fp32 logits + ~8 bf16 + ~5 activations  = ~53 GiB
+#   => vLLM must stay under ~42 GiB, i.e. gpu_memory_utilization <= ~0.40
+#
+# Measured the hard way at 0.70: "Tried to allocate 16.00 GiB. GPU 1 has 7.57 GiB free; this process
+# has 87.39 GiB in use". vllm_enable_sleep_mode does NOT hand the pool back before the trainer
+# forward -- vLLM's gpu_memory_utilization is a pre-allocated reservation that stays resident.
+#
+# vllm_gpu_memory_utilization is NOT the lever, which cost two smokes to establish: at 0.70 the
+# process reported 87.39 GiB in use, and at 0.38 it reported 87.35 GiB -- identical. The OOM is in
+# BACKWARD (torch/autograd/graph.py), and the memory belongs to the trainer, not to vLLM's pool:
+# two 23.8 GiB model copies plus the fp32 logits tensor plus its gradient plus recomputed
+# activations over a 36864-token sequence at hidden 3840 x 48 layers.
+#
+# MEASURED CEILING ON THIS BOX: max_completion_length 12288 runs (3 steps, exit 0, 393 s/step);
+# 16384 OOMs on the 16 GiB logits allocation. 12288 leaves ~25 % of completions truncated. There is
+# no setting that gives 12B an untruncated window here -- the only remaining levers would be a
+# chunked/fused cross-entropy (new dependency) or sharding the trainer (FSDP/ZeRO-3), neither of
+# which fits the remaining time on this machine.
+#
+# The LR is deliberately NOT retuned. 8e-5 -> 2e-5 was measured on E2B, and LoRA learning rates do
+# not scale strongly with base size, so reusing it keeps the E2B/12B comparison clean. If 12B shows
+# the entropy/mutation churn run 9 had around steps 600-750 (entropy 1.43, mutation 0.551) but
+# worse, 4e-5 is the fallback the probe round ranked second.
+#
+# WATCH, in order:
+#   - "[weight-sync] VERIFIED" in the first minutes. If BROKEN, kill it.
+#   - compile_frac at step 1. On E2B the base sat at ~15 %. If 12B does not start MUCH higher,
+#     the premise of this run is wrong and the interesting comparison is gone.
+#   - mutation_score_mean. THIS is the metric run 10 exists to move. Run 9 finished at 0.693 and
+#     never beat its own starting 0.736. If 12B climbs here, that is the result.
+#   - host RAM / swap. 4 ranks x 23.8 GiB is new territory on a box with ~35 GiB of usable RAM;
+#     the launch is gated on an 8-rank-style smoke. See run 9's header for why swap is fatal.
+#
+#   NUM_GPUS=4 CUDA_VISIBLE_DEVICES=0,1,2,3 \
+#     GRPO_CONFIG=configs/grpo/mutation70-gemma-12b-run10.yaml scripts/cluster/run-grpo-rtx-run3.sh
+
+base_model: google/gemma-4-12b-it
+output_dir: outputs/grpo-mutation70-gemma-12b-run10
+dataset_path: data/snippets/rl-mutation-all.good.jsonl
+corpus: full
+seed: 42
+
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: [vision_tower, audio_tower, multi_modal_projector]
+  bias: none
+
+# See header note 1. The floor matters: a plain cosine (or run 8's `linear`) decays to exactly 0,
+# which spends the last few hundred steps not moving the policy. 2e-5 is still ~7x run 8's constant
+# LR and is the arm the probe ranked second on compile rate, so the tail of this run is roughly
+# "run at the second-best LR" rather than "run at no LR".
+#
+# The schedule decays over HF's num_training_steps, which is max_steps -- that is why
+# num_iterations below is set explicitly instead of being left to the epoch estimate. An
+# epoch-derived horizon depends on the dataloader length, which changes with the rank count, so
+# the same config on 4 vs 8 GPUs would otherwise anneal on a different curve.
+learning_rate: 2.0e-5
+lr_scheduler_type: cosine_with_min_lr
+lr_scheduler_min_lr: 5.0e-6
+# Global batch = per_device x num_processes x accum = 1 x 4 x 4 = 16 = 2 prompts x G8, i.e. run 8's
+# batch exactly. See "WHY FOUR RANKS" above.
+per_device_batch_size: 1
+gradient_accumulation_steps: 4
+group_size: 8
+rollout_temperature: 1.0
+top_p: 0.95
+top_k: 64
+max_prompt_length: 20480
+max_completion_length: 12288
+completion_eos_token_id: 106
+chat_template_kwargs:
+  enable_thinking: true
+max_source_chars: 48000
+limit_prompts: 0
+
+kl_coeff: 0.0
+epsilon: 0.2
+epsilon_high: 0.28
+grpo_loss_type: dr_grpo
+scale_rewards: false
+# TRUE here, and this is the one place run 10 deliberately departs from run 9's objective.
+#
+# The 12288 cap leaves ~25 % of 12B's completions truncated (see the cap discussion above), and a
+# truncated completion has no parseable Java, so it scores 0. Left in the loss, that trains the
+# policy toward terse benchmarks -- an artifact of the hardware ceiling, not a property worth
+# learning. Masking drops those rollouts from the loss instead, at the cost of a ~25 % smaller
+# effective batch (16 -> ~12 completions).
+#
+# On E2B this flag was actively dangerous and run 9 had to keep it false: Gemma 4 declares three
+# terminators (eos_token_id: [1, 106, 50]), TRL tests only for `completion_eos_token_id`, and run 2
+# lost ~57 % of every batch -- complete, valid Java -- because 56.8 % of E2B completions ended on
+# <eos> (1) rather than <turn|> (106), with the discarded half systematically the longer half.
+#
+# 12B does NOT behave that way, which is what makes the flag safe here. Measured on the 12288 smoke:
+# clipped_ratio 0.25 with mean_length 7732 and max_length 12288. If 4 of 16 completions sat at the
+# cap, the remaining 12 averaged 6213 tokens -- consistent with the standalone probe's ~4993 mean.
+# So clipped_ratio equals the truncation rate exactly, i.e. every completion that terminated on its
+# own terminated on 106. Contrast run 2's clipped_ratio 0.55 at mean_length 1640 against a 16384
+# cap: clipping far above the truncation rate is the signature of the eos-accounting artifact, and
+# 12B does not show it.
+#
+# WATCH: clipped_ratio in the first 20 steps. If it climbs well above the fraction of completions at
+# 12288, the policy is migrating terminators the way E2B did and this flag is silently eating the
+# batch -- set it back to false immediately.
+
+# --- COLLAPSE FIX, 2026-08-14 -----------------------------------------------------------------
+# Run 10 collapsed at step 158-162 and then sat dead for 85 steps. Trace:
+#
+#   step  mean_len  grad_norm  entropy  reward_std  zero_adv
+#   150       3920       0.76    0.338       0.401      0.00   <- healthy
+#   157       3408       1.61    0.098       0.458      0.00
+#   158       5092      13.2     0.112       0.410      0.00   <- blowup
+#   159       4767      25.5     1.220       0.474      0.25
+#   162+      8192       0.00    0.000       0.000      1.00   <- dead, absorbing
+#
+# Once every completion truncates, every reward is 0, so reward_std is 0, so the group-relative
+# advantage is 0, so grad_norm is 0 and the policy can never be updated again. The run cannot
+# recover on its own; it must be restarted from before the blowup.
+#
+# THREE changes, restarting from checkpoint-150:
+#
+#  0. HOW to change the LR on a resume, because doing it in the YAML alone DOES NOTHING. HF's
+#     Trainer calls _load_optimizer_and_scheduler(checkpoint) on resume and restores scheduler.pt,
+#     which overrides `learning_rate` silently. The first attempt at this fix ran 70 more steps at
+#     the OLD schedule -- observed lr 6.9e-5 against the old curve's predicted 6.92e-5 at step
+#     180/600, where the new curve would have given 1.73e-5. The load is guarded by
+#     "optimizer file exists AND scheduler file exists", so renaming optimizer.pt / scheduler.pt to
+#     *.bak inside the resume checkpoint makes HF rebuild both from this config. Adam moments reset,
+#     which is fine here -- they came from the unstable phase.
+#
+#  1. learning_rate 8e-5 -> 2e-5 (floor 2e-5 -> 5e-6). 8e-5 was measured on E2B and does NOT
+#     transfer: run 9's grad_norm sat at 7e-3..2.9e-2 while run 10 ran at 0.7..25 from step 150 --
+#     100-1000x higher -- with HF's default max_grad_norm=1.0 clipping constantly. The elevated
+#     norms were visible from step ~153, several steps before the blowup.
+#
+#  2. mask_truncated_completions true -> false. Masking removes truncated rollouts from the loss,
+#     which also removes the only signal that PENALISES runaway length: during the drift at steps
+#     157-159 (clipped 0.06 -> 0.25) nothing pushed back. Unmasked, a truncated rollout scores 0
+#     while its siblings score >0, so the group-relative advantage actively discourages it. This is
+#     safe here for the reason documented above -- 12B's clipped_ratio tracks true truncation, it
+#     does not suffer E2B's <eos>-vs-<turn|> accounting problem.
+#
+#  3. max_completion_length 8192 -> 12288, restoring the value the first 84 steps ran at, where
+#     clipped_ratio was 0.00-0.01. 8192 raised truncation pressure for no benefit; the prompt-side
+#     overflow that 8192 was meant to fix is now handled properly by max_prompt_tokens.
+mask_truncated_completions: false
+
+# --- crash fix, 2026-08-13 -------------------------------------------------------------------
+# Run 10 died at step 84 with:
+#   VLLMValidationError: maximum context length is 32768 tokens ... you requested 0 output tokens
+#   and your prompt contains 42010 input tokens
+#
+# The "0 output tokens" call is a prompt+completion re-tokenisation, so the context budget has to
+# cover BOTH, and 32768 was too tight against a 12288 completion cap. Note max_prompt_length does
+# NOT protect against this -- TRL >= 1.0 no longer truncates on it (see the schema note), so the
+# only real gates are max_source_chars on the way in and this window on the way out.
+#
+# Fix: max_completion_length 12288 -> 8192, which widens the prompt budget from 20480 to 24576.
+# It costs almost nothing, because 84 steps of real data show 12B's completions average ~5000
+# tokens with clipped_ratio 0.00-0.01 at 12288 -- 8192 is still ~1.6x the mean. It also shrinks the
+# fp32 logits tensor from 12 GiB to 8 GiB, which is the constraint that OOM'd the 16384 attempt.
+#
+# max_source_chars is deliberately NOT touched: split_holdout() runs on the FILTERED prompt list, so
+# changing the input filter would re-draw the 100-prompt holdout and leak held-out subjects into
+# training on resume, as well as breaking comparability with run 9.
+mu: 1
+
+# --- training length -------------------------------------------------------------------------
+# 1600 optimiser steps, and it is what fixes the cosine horizon. Run 8 needed 1485 steps at 3e-6
+# and was still gaining at its last one; this gives slightly more updates at an LR the probe says
+# learns several times faster per step, so the curve should finish inside the horizon rather than
+# be cut off at it.
+#
+# 450 steps (was 600), cut again because the box expires ~2026-08-16 and the holdout + JMH-Bench
+# evaluations still have to fit. 300 more steps from checkpoint-150 at ~250 s/step is ~21 h, which
+# leaves a day for the measurements that actually gate the write-up. With a FRESH scheduler the
+# cosine now anneals fully to 5e-6 inside that horizon instead of being cut off hot.
+#
+# Originally 550 steps, NOT run 9's 1600, and the horizon is set by the clock rather than science.
+# Measured: 393 s/step at a 12288 cap; removing the truncation lengthens generations, so budget
+# ~440-470 s/step. Against ~72 h of usable time on this box that is ~550-590 steps.
+#
+# num_iterations is set to what will ACTUALLY run because it defines the cosine horizon. Leaving it
+# at 1600 and stopping at 550 would decay the LR only 8e-5 -> ~6.6e-5, i.e. never anneal -- and run
+# 9 showed the anneal does real work: its worst mutation score (0.551, steps 601-750) was at the hot
+# end and recovered to 0.693-0.742 as the LR came down. A short run that fully anneals beats a long
+# schedule truncated in its hot phase.
+#
+# The comparison to run 9 is therefore at MATCHED OPTIMISER STEPS, which is the axis run 8's own
+# config argues for. Run 9 at step 550 was around reward 0.42 / compile 60 %.
+# At 2 prompts/step that is 1100 prompt-visits against 4447
+# training prompts, i.e. ~0.25 epochs. The corpus is unchanged from run 9 on purpose, so the two
+# runs see the same subjects in the same order and differ only in the base model.
+num_epochs: 4.0
+num_iterations: 450
+warmup_ratio: 0.03
+logging_steps: 1
+save_steps: 25
+resume_from_checkpoint: auto
+report_to: none
+
+# --- held-out evaluation ---------------------------------------------------------------------
+# 100 prompts withheld from training by a seeded shuffle of the filtered prompt list, so the split
+# is reproducible from this file alone and survives a resume (a re-drawn split would leak the
+# held-out prompts into training for the rest of the run). The shuffle is over the whole list
+# rather than a head/tail slice because the corpus is grouped by project: slicing would hold out
+# whole projects and measure cross-project transfer instead of held-out-subject generalisation.
+# At seed 12345 the 100 land across 38 projects. The exact ids are written to
+# output_dir/holdout_prompts.json at startup, and the curve to metrics/holdout_eval.csv.
+#
+# IN-RUN EVAL IS OFF (holdout_eval_every: 0) AND THAT IS A MEASURED DECISION, NOT AN OVERSIGHT.
+# The prompts are still withheld -- nothing below this line trains on them -- but they are scored
+# offline by scripts/score_holdout.py after the run instead of by TRL's eval loop during it.
+#
+# The in-run path was configured, smoke-tested green, and then measured on the real 100 prompts at
+# step 0 (2026-08-11, killed at step 0 after ~12 min). Two findings, either one disqualifying:
+#
+#   * COST. 32 rollouts in ~12 min = ~22 s/rollout, against 3.2 s/rollout for training (51 s per
+#     16-rollout generation batch). A pass is ~2.5 h, not the ~40 min budgeted, so five passes
+#     would have added ~12 h to a 23 h run. The reward was not the cause: those 32 rollouts
+#     consumed 6 s of reward time in total (mean 0.2 s). It is the eval generation path, which
+#     hands vLLM one sequence per rank and pays a wake/sync/sleep cycle per 4 rollouts instead of
+#     per 16.
+#   * VALIDITY. 28 of 32 eval rollouts were parse failures (87.5 %). On the same corpus and the
+#     same base weights, training generates 1741-token completions with 0/16 parse failures
+#     (measured by configs/grpo/run9-lenprobe.yaml, max_len 2212 against the 16384 cap). A
+#     held-out number produced by a path that fails to parse 87.5 % of what it generates measures
+#     the eval path, not the policy.
+#
+# Offline scoring reuses the training reward and the training generation shape, so a base-vs-
+# checkpoint delta on these 100 prompts is comparable to the training curve by construction.
+holdout_prompts: 100
+holdout_seed: 12345
+holdout_eval_every: 0
+holdout_eval_on_start: false
+# MUST hold: per_device_eval_batch_size x num_processes == num_generations_eval. The eval batch is
+# not accumulated (there is no gradient), so the global eval batch is 1 x 4 = 4 and it has to be
+# exactly one group.
+#
+# per_device_eval_batch_size stays at 1 -- the same as per_device_batch_size -- because the eval
+# forward pass is where this run first died. TRL's `_get_per_token_logps_and_entropies` builds a
+# (batch, completion_len, vocab) logits tensor and accelerate's mixed-precision wrapper upcasts it
+# to fp32 on the way out, so with Gemma 4's 262144-token vocab and a completion at the 16384 cap
+# one row costs 16 GiB and four cost exactly the 64 GiB the 4-rank smoke tried and failed to
+# allocate (2026-08-11, /opt/jmh/logs/run9-smoke4.log). Training never hit it because
+# per_device_batch_size is 1; eval inherited a batch of 4 and did.
+#
+# The consequence is G=4 rather than G=8 on the held-out set. Mean reward is an unbiased estimate
+# of the policy's expected reward at any G, and every pass -- including the step-0 baseline -- uses
+# the identical G, so the gain is measured consistently. Only the per-prompt variance is higher,
+# and that is averaged over 100 prompts.
+per_device_eval_batch_size: 1
+num_generations_eval: 4
+
+use_vllm: true
+vllm_mode: colocate
+# Run 8 peaked at 51.7 GiB of the 97.9 GiB per card at 0.40, so VRAM is not the constraint here --
+# host RAM is (~36 GiB usable; the driver holds ~27 GiB for 8x96 GiB of VRAM).
+vllm_gpu_memory_utilization: 0.40
+vllm_tensor_parallel_size: 1
+vllm_max_model_length: 32768
+# MUST stay false while enable_thinking is on -- measured twice, see training-run-failures.md
+# section 9.
+vllm_importance_sampling_correction: false
+vllm_enable_sleep_mode: true
+
+reward_weights:
+  compile: 0.10
+  runtime: 0.10
+  anti_pattern: 0.05
+  rsd: 0.05
+  mutation: 0.70
+anti_pattern_backend: spotjmh
+need_run: true
+# 4 workers x 4 ranks = 16 concurrent JMH processes: run 8's validated level, which scored
+# mutation 0.719 against run 7's 0.69 (serial rewards), so the concurrency is not costing timing
+# fidelity at this level. The 8-rank smoke that would have doubled it to 32 is documented in the
+# header -- it failed on host RAM, not on this setting.
+#
+# WATCH: mutation_score_mean against run 8's 0.719. A drop means back off.
+reward_workers: 4
+capture_completions_every: 25
+gpu_sample_seconds: 10.0
+repair_completions: false
+exclude_projects:
+  - jackson-dataformats-binary
+  - spatial4j
+rsd_good: 0.05
+rsd_bad: 0.25
+
+mutation:
+  alpha: 0.05
+  min_slowdown: 1.10
+  arm_property: jmhbench.mutant
+  coverage_guidance: true
+  max_mutants_per_candidate: 0
+  max_benchmarks_per_mutant: 6
+  mode: coverage_aware
+  coverage_weight: 0.30
+  coverage_jmh:
+    warmup_iterations: 0
+    measurement_iterations: 1
+    forks: 1
+    warmup_time: "100ms"
+    measurement_time: "100ms"
+    timeout_s: 120.0
+    per_iteration_timeout_s: 60.0
+    fail_on_error: false
+    # Same cap as runner.jmh above: the coverage pass forks the same benchmarks.
+    jvm_args: ["-Xmx2g", "-XX:+ExitOnOutOfMemoryError"]
+
+runner:
+  jmh_version: "1.37"
+  java_release: 17
+  jmh:
+    warmup_iterations: 3
+    measurement_iterations: 5
+    forks: 1
+    warmup_time: "200ms"
+    measurement_time: "200ms"
+    timeout_s: 120.0
+    per_iteration_timeout_s: 60.0
+    fail_on_error: false
+    # A JMH fork with no -Xmx inherits the JVM default max heap of 1/4 of PHYSICAL RAM -- ~15.5 GiB
+    # on this box -- and 16 concurrent forks are therefore allowed ~248 GiB against ~35 GiB of
+    # usable RAM. That is not theoretical: run 9's first attempt was OOM-killed with a single
+    # `java` at 7.8 GiB anon-rss (dmesg, 2026-08-12 00:02 and 01:54) after swap hit 31.8/31 GiB.
+    # Run 8 never hit it because its 65-project corpus did not produce allocation-heavy
+    # benchmarks; over 236 projects the model writes @Setup bodies that build large structures.
+    #
+    # 2 GiB is above what any legitimate microbenchmark here needs, so this bounds the damage
+    # without biasing the reward: a runaway candidate now dies with OutOfMemoryError and scores 0
+    # (correct -- it is a bad benchmark) instead of taking the box down. ExitOnOutOfMemoryError
+    # makes it die immediately rather than GC-thrashing for the full 120 s timeout.
+    jvm_args: ["-Xmx2g", "-XX:+ExitOnOutOfMemoryError"]
+
+project_classpaths:
+  commons-numbers: data/classpaths/commons-numbers-mutants.cp
+  commons-statistics: data/classpaths/commons-statistics-mutants.cp
+  commons-codec: data/classpaths/commons-codec-mutants.cp
+  commons-text: data/classpaths/commons-text-mutants.cp
+  jackson-core: data/classpaths/jackson-core-mutants.cp
+  roaringbitmap: data/classpaths/roaringbitmap-mutants.cp
+  parallelcolt: data/classpaths/parallelcolt-mutants.cp
+  chronicle-bytes: data/classpaths/chronicle-bytes-mutants.cp
+  chronicle-map: data/classpaths/chronicle-map-mutants.cp
+  chronicle-wire: data/classpaths/chronicle-wire-mutants.cp
+  objectlayout: data/classpaths/objectlayout-mutants.cp
+  jheaps: data/classpaths/jheaps-mutants.cp
+  streamex: data/classpaths/streamex-mutants.cp
+  vavr: data/classpaths/vavr-mutants.cp
+  cache2k: data/classpaths/cache2k-mutants.cp
+  stream-lib: data/classpaths/stream-lib-mutants.cp
+  sparsebitset: data/classpaths/sparsebitset-mutants.cp
+  hash4j: data/classpaths/hash4j-mutants.cp
+  zero-allocation-hashing: data/classpaths/zero-allocation-hashing-mutants.cp
+  guava: data/classpaths/guava-mutants.cp
+  xz-java: data/classpaths/xz-java-mutants.cp
+  commons-crypto: data/classpaths/commons-crypto-mutants.cp
+  big-math: data/classpaths/big-math-mutants.cp
+  hipparchus: data/classpaths/hipparchus-mutants.cp
+  ojalgo: data/classpaths/ojalgo-mutants.cp
+  la4j: data/classpaths/la4j-mutants.cp
+  jafama: data/classpaths/jafama-mutants.cp
+  commons-math: data/classpaths/commons-math-mutants.cp
+  commons-rng: data/classpaths/commons-rng-mutants.cp
+  commons-geometry: data/classpaths/commons-geometry-mutants.cp
+  jackson-databind: data/classpaths/jackson-databind-mutants.cp
+  gson: data/classpaths/gson-mutants.cp
+  dsl-json: data/classpaths/dsl-json-mutants.cp
+  moshi: data/classpaths/moshi-mutants.cp
+  json-java: data/classpaths/json-java-mutants.cp
+  json-simple: data/classpaths/json-simple-mutants.cp
+  flatbuffers: data/classpaths/flatbuffers-mutants.cp
+  avro: data/classpaths/avro-mutants.cp
+  jackson-dataformats-binary: data/classpaths/jackson-dataformats-binary-mutants.cp
+  commons-csv: data/classpaths/commons-csv-mutants.cp
+  fastcsv: data/classpaths/fastcsv-mutants.cp
+  jsoup: data/classpaths/jsoup-mutants.cp
+  commons-io: data/classpaths/commons-io-mutants.cp
+  brics-automaton: data/classpaths/brics-automaton-mutants.cp
+  joda-time: data/classpaths/joda-time-mutants.cp
+  threeten-extra: data/classpaths/threeten-extra-mutants.cp
+  conversant-disruptor: data/classpaths/conversant-disruptor-mutants.cp
+  hdrhistogram: data/classpaths/hdrhistogram-mutants.cp
+  commons-pool: data/classpaths/commons-pool-mutants.cp
+  reactor-core: data/classpaths/reactor-core-mutants.cp
+  vertx: data/classpaths/vertx-mutants.cp
+  jts: data/classpaths/jts-mutants.cp
+  spatial4j: data/classpaths/spatial4j-mutants.cp
+  h3-java: data/classpaths/h3-java-mutants.cp
+  jgraphx: data/classpaths/jgraphx-mutants.cp
+  zxing: data/classpaths/zxing-mutants.cp
+  commons-imaging: data/classpaths/commons-imaging-mutants.cp
+  jimfs: data/classpaths/jimfs-mutants.cp
+  tablesaw: data/classpaths/tablesaw-mutants.cp
+  bigqueue: data/classpaths/bigqueue-mutants.cp
+  commons-configuration: data/classpaths/commons-configuration-mutants.cp
+  commons-validator: data/classpaths/commons-validator-mutants.cp
+  commons-beanutils: data/classpaths/commons-beanutils-mutants.cp
+  javatuples: data/classpaths/javatuples-mutants.cp
+  big-sorter: data/classpaths/big-sorter-mutants.cp
+  easyflow: data/classpaths/easyflow-mutants.cp
+  escpos-coffee: data/classpaths/escpos-coffee-mutants.cp
+  jarchivelib: data/classpaths/jarchivelib-mutants.cp
+  java-image-scaling: data/classpaths/java-image-scaling-mutants.cp
+  javareedsolomon: data/classpaths/javareedsolomon-mutants.cp
+  parsii: data/classpaths/parsii-mutants.cp
+  pngencoder: data/classpaths/pngencoder-mutants.cp
+  jmail: data/classpaths/jmail-mutants.cp
+  rtree: data/classpaths/rtree-mutants.cp
+  bplustree: data/classpaths/bplustree-mutants.cp
+  jsemver: data/classpaths/jsemver-mutants.cp
+  zt-process-killer: data/classpaths/zt-process-killer-mutants.cp
+  compile-testing: data/classpaths/compile-testing-mutants.cp
+  semver4j: data/classpaths/semver4j-mutants.cp
+  txtmark: data/classpaths/txtmark-mutants.cp
+  geantyref: data/classpaths/geantyref-mutants.cp
+  dictomaton: data/classpaths/dictomaton-mutants.cp
+  java-uuid-generator: data/classpaths/java-uuid-generator-mutants.cp
+  tls-channel: data/classpaths/tls-channel-mutants.cp
+  nano-cuckoo: data/classpaths/nano-cuckoo-mutants.cp
+  stateless4j: data/classpaths/stateless4j-mutants.cp
+  dfa-regex: data/classpaths/dfa-regex-mutants.cp
+  java-string-similarity: data/classpaths/java-string-similarity-mutants.cp
+  jbibtex: data/classpaths/jbibtex-mutants.cp
+  mapbox-vector-tile-java: data/classpaths/mapbox-vector-tile-java-mutants.cp
+  dd-plist: data/classpaths/dd-plist-mutants.cp
+  networkanalysis: data/classpaths/networkanalysis-mutants.cp
+  password4j: data/classpaths/password4j-mutants.cp
+  shoki: data/classpaths/shoki-mutants.cp
+  cloning: data/classpaths/cloning-mutants.cp
+  java-php-serializer: data/classpaths/java-php-serializer-mutants.cp
+  toml4j: data/classpaths/toml4j-mutants.cp
+  vavr-jackson: data/classpaths/vavr-jackson-mutants.cp
+  aho-corasick: data/classpaths/aho-corasick-mutants.cp
+  lunar-java: data/classpaths/lunar-java-mutants.cp
+  sheetz: data/classpaths/sheetz-mutants.cp
+  itu: data/classpaths/itu-mutants.cp
+  clipper2-java: data/classpaths/clipper2-java-mutants.cp
+  bson4jackson: data/classpaths/bson4jackson-mutants.cp
+  nbvcxz: data/classpaths/nbvcxz-mutants.cp
+  chrono-java: data/classpaths/chrono-java-mutants.cp
+  keccakj: data/classpaths/keccakj-mutants.cp
+  numbers-java: data/classpaths/numbers-java-mutants.cp
+  chronicle-threads: data/classpaths/chronicle-threads-mutants.cp
+  coralring: data/classpaths/coralring-mutants.cp
+  unsafe-tools: data/classpaths/unsafe-tools-mutants.cp
+  iban4j: data/classpaths/iban4j-mutants.cp
+  littleproxy: data/classpaths/littleproxy-mutants.cp
+  pinyin: data/classpaths/pinyin-mutants.cp
+  maker: data/classpaths/maker-mutants.cp
+  jgitver: data/classpaths/jgitver-mutants.cp
+  protonpack: data/classpaths/protonpack-mutants.cp
+  webdrivermanager: data/classpaths/webdrivermanager-mutants.cp
+  reflections: data/classpaths/reflections-mutants.cp
+  json-schema-inferrer: data/classpaths/json-schema-inferrer-mutants.cp
+  kvstore: data/classpaths/kvstore-mutants.cp
+  peteroupc-cbor-java: data/classpaths/peteroupc-cbor-java-mutants.cp
+  pngtastic: data/classpaths/pngtastic-mutants.cp
+  zjsonpatch: data/classpaths/zjsonpatch-mutants.cp
+  cbor-java: data/classpaths/cbor-java-mutants.cp
+  chronicle-values: data/classpaths/chronicle-values-mutants.cp
+  vertx-stomp: data/classpaths/vertx-stomp-mutants.cp
+  crawler-commons: data/classpaths/crawler-commons-mutants.cp
+  java-concurrency-patterns: data/classpaths/java-concurrency-patterns-mutants.cp
+  rtree-multi: data/classpaths/rtree-multi-mutants.cp
+  structures: data/classpaths/structures-mutants.cp
+  hikaricp: data/classpaths/hikaricp-mutants.cp
+  zt-zip: data/classpaths/zt-zip-mutants.cp
+  fixture-factory: data/classpaths/fixture-factory-mutants.cp
+  ck: data/classpaths/ck-mutants.cp
+  dregex: data/classpaths/dregex-mutants.cp
+  jvm-profiler: data/classpaths/jvm-profiler-mutants.cp
+  jsonstream: data/classpaths/jsonstream-mutants.cp
+  remap: data/classpaths/remap-mutants.cp
+  siren4j: data/classpaths/siren4j-mutants.cp
+  javaewah: data/classpaths/javaewah-mutants.cp
+  jitrex: data/classpaths/jitrex-mutants.cp
+  segment: data/classpaths/segment-mutants.cp
+  jboss-classfilewriter: data/classpaths/jboss-classfilewriter-mutants.cp
+  pinyin4j: data/classpaths/pinyin4j-mutants.cp
+  regexstaticanalysis: data/classpaths/regexstaticanalysis-mutants.cp
+  thumbnailator: data/classpaths/thumbnailator-mutants.cp
+  fusionauth-jwt: data/classpaths/fusionauth-jwt-mutants.cp
+  barefoot: data/classpaths/barefoot-mutants.cp
+  jchronic: data/classpaths/jchronic-mutants.cp
+  erdos: data/classpaths/erdos-mutants.cp
+  coralqueue: data/classpaths/coralqueue-mutants.cp
+  aparapi: data/classpaths/aparapi-mutants.cp
+  similarity: data/classpaths/similarity-mutants.cp
+  jdframe: data/classpaths/jdframe-mutants.cp
+  memoryfilesystem: data/classpaths/memoryfilesystem-mutants.cp
+  eo-yaml: data/classpaths/eo-yaml-mutants.cp
+  indriya: data/classpaths/indriya-mutants.cp
+  tinspin-indexes: data/classpaths/tinspin-indexes-mutants.cp
+  jdsp: data/classpaths/jdsp-mutants.cp
+  pngj: data/classpaths/pngj-mutants.cp
+  threetenbp: data/classpaths/threetenbp-mutants.cp
+  zip4j: data/classpaths/zip4j-mutants.cp
+  barcode-lib4j: data/classpaths/barcode-lib4j-mutants.cp
+  nlp-lang: data/classpaths/nlp-lang-mutants.cp
+  uom: data/classpaths/uom-mutants.cp
+  jwave: data/classpaths/jwave-mutants.cp
+  regex-builder: data/classpaths/regex-builder-mutants.cp
+  netty-socketio: data/classpaths/netty-socketio-mutants.cp
+  javacc: data/classpaths/javacc-mutants.cp
+  staedi: data/classpaths/staedi-mutants.cp
+  aalto-xml: data/classpaths/aalto-xml-mutants.cp
+  commons-jexl: data/classpaths/commons-jexl-mutants.cp
+  core: data/classpaths/core-mutants.cp
+  graphstore: data/classpaths/graphstore-mutants.cp
+  mutabilitydetector: data/classpaths/mutabilitydetector-mutants.cp
+  evalex: data/classpaths/evalex-mutants.cp
+  liqp: data/classpaths/liqp-mutants.cp
+  classgraph: data/classpaths/classgraph-mutants.cp
+  easy-random: data/classpaths/easy-random-mutants.cp
+  htmlunit-neko: data/classpaths/htmlunit-neko-mutants.cp
+  chatgpt-java: data/classpaths/chatgpt-java-mutants.cp
+  jboss-modules: data/classpaths/jboss-modules-mutants.cp
+  dataframe: data/classpaths/dataframe-mutants.cp
+  commons-ognl: data/classpaths/commons-ognl-mutants.cp
+  javolution: data/classpaths/javolution-mutants.cp
+  etk4j: data/classpaths/etk4j-mutants.cp
+  sofa-bolt: data/classpaths/sofa-bolt-mutants.cp
+  woodstox: data/classpaths/woodstox-mutants.cp
+  phtree: data/classpaths/phtree-mutants.cp
+  junidecode: data/classpaths/junidecode-mutants.cp
+  commons-net: data/classpaths/commons-net-mutants.cp
+  spring-hateoas: data/classpaths/spring-hateoas-mutants.cp
+  java-immutable-collections: data/classpaths/java-immutable-collections-mutants.cp
+  dnsjava: data/classpaths/dnsjava-mutants.cp
+  json-schema-validator: data/classpaths/json-schema-validator-mutants.cp
+  qlexpress: data/classpaths/qlexpress-mutants.cp
+  geometry-api-java: data/classpaths/geometry-api-java-mutants.cp
+  streaminer: data/classpaths/streaminer-mutants.cp
+  morpheus-core: data/classpaths/morpheus-core-mutants.cp
+  sshj: data/classpaths/sshj-mutants.cp
+  one-nio: data/classpaths/one-nio-mutants.cp
+  cactoos: data/classpaths/cactoos-mutants.cp
+  flag4j: data/classpaths/flag4j-mutants.cp
+  zip4jvm: data/classpaths/zip4jvm-mutants.cp
+  neureka: data/classpaths/neureka-mutants.cp
+  commons-bcel: data/classpaths/commons-bcel-mutants.cp
+  ical4j: data/classpaths/ical4j-mutants.cp
+  yosegi: data/classpaths/yosegi-mutants.cp
+  imglib2: data/classpaths/imglib2-mutants.cp
+  libjitsi: data/classpaths/libjitsi-mutants.cp
+  finmath-lib: data/classpaths/finmath-lib-mutants.cp
+  jsonld-java: data/classpaths/jsonld-java-mutants.cp
+  halodb: data/classpaths/halodb-mutants.cp
+  j2v8: data/classpaths/j2v8-mutants.cp
+  paguro: data/classpaths/paguro-mutants.cp
+  uuid-creator: data/classpaths/uuid-creator-mutants.cp
+  beanshell: data/classpaths/beanshell-mutants.cp
+  atlas: data/classpaths/atlas-mutants.cp
+  pdfbox-graphics2d: data/classpaths/pdfbox-graphics2d-mutants.cp
+  commons-ip-math: data/classpaths/commons-ip-math-mutants.cp
+  completely: data/classpaths/completely-mutants.cp
+  java-diff-utils: data/classpaths/java-diff-utils-mutants.cp
+  java-thread-affinity: data/classpaths/java-thread-affinity-mutants.cp
+  needle: data/classpaths/needle-mutants.cp
+  querystream: data/classpaths/querystream-mutants.cp
+  simmetrics: data/classpaths/simmetrics-mutants.cp
+  javacv: data/classpaths/javacv-mutants.cp
+  tektosyne: data/classpaths/tektosyne-mutants.cp
+  jslt: data/classpaths/jslt-mutants.cp
+  jsonpath: data/classpaths/jsonpath-mutants.cp
+  ognl: data/classpaths/ognl-mutants.cp
+  orika: data/classpaths/orika-mutants.cp
+  rythmengine: data/classpaths/rythmengine-mutants.cp
+  domino-jackson: data/classpaths/domino-jackson-mutants.cp
+  t-digest: data/classpaths/t-digest-mutants.cp
+  javaluator: data/classpaths/javaluator-mutants.cp
+  webporter: data/classpaths/webporter-mutants.cp
+  flatpack: data/classpaths/flatpack-mutants.cp
+  jackson-modules-java8: data/classpaths/jackson-modules-java8-mutants.cp
+  fastexcel: data/classpaths/fastexcel-mutants.cp
+  jprotobuf: data/classpaths/jprotobuf-mutants.cp
+  json-io: data/classpaths/json-io-mutants.cp
+  proj4j: data/classpaths/proj4j-mutants.cp
+  classfile: data/classpaths/classfile-mutants.cp
+  justify: data/classpaths/justify-mutants.cp
+
+project_mutants:
+  commons-numbers: data/projects/commons-numbers/mutants.yaml
+  commons-statistics: data/projects/commons-statistics/mutants.yaml
+  commons-codec: data/projects/commons-codec/mutants.yaml
+  commons-text: data/projects/commons-text/mutants.yaml
+  jackson-core: data/projects/jackson-core/mutants.yaml
+  roaringbitmap: data/projects/roaringbitmap/mutants.yaml
+  parallelcolt: data/projects/parallelcolt/mutants.yaml
+  chronicle-bytes: data/projects/chronicle-bytes/mutants.yaml
+  chronicle-map: data/projects/chronicle-map/mutants.yaml
+  chronicle-wire: data/projects/chronicle-wire/mutants.yaml
+  objectlayout: data/projects/objectlayout/mutants.yaml
+  jheaps: data/projects/jheaps/mutants.yaml
+  streamex: data/projects/streamex/mutants.yaml
+  vavr: data/projects/vavr/mutants.yaml
+  cache2k: data/projects/cache2k/mutants.yaml
+  stream-lib: data/projects/stream-lib/mutants.yaml
+  sparsebitset: data/projects/sparsebitset/mutants.yaml
+  hash4j: data/projects/hash4j/mutants.yaml
+  zero-allocation-hashing: data/projects/zero-allocation-hashing/mutants.yaml
+  guava: data/projects/guava/mutants.yaml
+  xz-java: data/projects/xz-java/mutants.yaml
+  commons-crypto: data/projects/commons-crypto/mutants.yaml
+  big-math: data/projects/big-math/mutants.yaml
+  hipparchus: data/projects/hipparchus/mutants.yaml
+  ojalgo: data/projects/ojalgo/mutants.yaml
+  la4j: data/projects/la4j/mutants.yaml
+  jafama: data/projects/jafama/mutants.yaml
+  commons-math: data/projects/commons-math/mutants.yaml
+  commons-rng: data/projects/commons-rng/mutants.yaml
+  commons-geometry: data/projects/commons-geometry/mutants.yaml
+  jackson-databind: data/projects/jackson-databind/mutants.yaml
+  gson: data/projects/gson/mutants.yaml
+  dsl-json: data/projects/dsl-json/mutants.yaml
+  moshi: data/projects/moshi/mutants.yaml
+  json-java: data/projects/json-java/mutants.yaml
+  json-simple: data/projects/json-simple/mutants.yaml
+  flatbuffers: data/projects/flatbuffers/mutants.yaml
+  avro: data/projects/avro/mutants.yaml
+  jackson-dataformats-binary: data/projects/jackson-dataformats-binary/mutants.yaml
+  commons-csv: data/projects/commons-csv/mutants.yaml
+  fastcsv: data/projects/fastcsv/mutants.yaml
+  jsoup: data/projects/jsoup/mutants.yaml
+  commons-io: data/projects/commons-io/mutants.yaml
+  brics-automaton: data/projects/brics-automaton/mutants.yaml
+  joda-time: data/projects/joda-time/mutants.yaml
+  threeten-extra: data/projects/threeten-extra/mutants.yaml
+  conversant-disruptor: data/projects/conversant-disruptor/mutants.yaml
+  hdrhistogram: data/projects/hdrhistogram/mutants.yaml
+  commons-pool: data/projects/commons-pool/mutants.yaml
+  reactor-core: data/projects/reactor-core/mutants.yaml
+  vertx: data/projects/vertx/mutants.yaml
+  jts: data/projects/jts/mutants.yaml
+  spatial4j: data/projects/spatial4j/mutants.yaml
+  h3-java: data/projects/h3-java/mutants.yaml
+  jgraphx: data/projects/jgraphx/mutants.yaml
+  zxing: data/projects/zxing/mutants.yaml
+  commons-imaging: data/projects/commons-imaging/mutants.yaml
+  jimfs: data/projects/jimfs/mutants.yaml
+  tablesaw: data/projects/tablesaw/mutants.yaml
+  bigqueue: data/projects/bigqueue/mutants.yaml
+  commons-configuration: data/projects/commons-configuration/mutants.yaml
+  commons-validator: data/projects/commons-validator/mutants.yaml
+  commons-beanutils: data/projects/commons-beanutils/mutants.yaml
+  javatuples: data/projects/javatuples/mutants.yaml
+  big-sorter: data/projects/big-sorter/mutants.yaml
+  easyflow: data/projects/easyflow/mutants.yaml
+  escpos-coffee: data/projects/escpos-coffee/mutants.yaml
+  jarchivelib: data/projects/jarchivelib/mutants.yaml
+  java-image-scaling: data/projects/java-image-scaling/mutants.yaml
+  javareedsolomon: data/projects/javareedsolomon/mutants.yaml
+  parsii: data/projects/parsii/mutants.yaml
+  pngencoder: data/projects/pngencoder/mutants.yaml
+  jmail: data/projects/jmail/mutants.yaml
+  rtree: data/projects/rtree/mutants.yaml
+  bplustree: data/projects/bplustree/mutants.yaml
+  jsemver: data/projects/jsemver/mutants.yaml
+  zt-process-killer: data/projects/zt-process-killer/mutants.yaml
+  compile-testing: data/projects/compile-testing/mutants.yaml
+  semver4j: data/projects/semver4j/mutants.yaml
+  txtmark: data/projects/txtmark/mutants.yaml
+  geantyref: data/projects/geantyref/mutants.yaml
+  dictomaton: data/projects/dictomaton/mutants.yaml
+  java-uuid-generator: data/projects/java-uuid-generator/mutants.yaml
+  tls-channel: data/projects/tls-channel/mutants.yaml
+  nano-cuckoo: data/projects/nano-cuckoo/mutants.yaml
+  stateless4j: data/projects/stateless4j/mutants.yaml
+  dfa-regex: data/projects/dfa-regex/mutants.yaml
+  java-string-similarity: data/projects/java-string-similarity/mutants.yaml
+  jbibtex: data/projects/jbibtex/mutants.yaml
+  mapbox-vector-tile-java: data/projects/mapbox-vector-tile-java/mutants.yaml
+  dd-plist: data/projects/dd-plist/mutants.yaml
+  networkanalysis: data/projects/networkanalysis/mutants.yaml
+  password4j: data/projects/password4j/mutants.yaml
+  shoki: data/projects/shoki/mutants.yaml
+  cloning: data/projects/cloning/mutants.yaml
+  java-php-serializer: data/projects/java-php-serializer/mutants.yaml
+  toml4j: data/projects/toml4j/mutants.yaml
+  vavr-jackson: data/projects/vavr-jackson/mutants.yaml
+  aho-corasick: data/projects/aho-corasick/mutants.yaml
+  lunar-java: data/projects/lunar-java/mutants.yaml
+  sheetz: data/projects/sheetz/mutants.yaml
+  itu: data/projects/itu/mutants.yaml
+  clipper2-java: data/projects/clipper2-java/mutants.yaml
+  bson4jackson: data/projects/bson4jackson/mutants.yaml
+  nbvcxz: data/projects/nbvcxz/mutants.yaml
+  chrono-java: data/projects/chrono-java/mutants.yaml
+  keccakj: data/projects/keccakj/mutants.yaml
+  numbers-java: data/projects/numbers-java/mutants.yaml
+  chronicle-threads: data/projects/chronicle-threads/mutants.yaml
+  coralring: data/projects/coralring/mutants.yaml
+  unsafe-tools: data/projects/unsafe-tools/mutants.yaml
+  iban4j: data/projects/iban4j/mutants.yaml
+  littleproxy: data/projects/littleproxy/mutants.yaml
+  pinyin: data/projects/pinyin/mutants.yaml
+  maker: data/projects/maker/mutants.yaml
+  jgitver: data/projects/jgitver/mutants.yaml
+  protonpack: data/projects/protonpack/mutants.yaml
+  webdrivermanager: data/projects/webdrivermanager/mutants.yaml
+  reflections: data/projects/reflections/mutants.yaml
+  json-schema-inferrer: data/projects/json-schema-inferrer/mutants.yaml
+  kvstore: data/projects/kvstore/mutants.yaml
+  peteroupc-cbor-java: data/projects/peteroupc-cbor-java/mutants.yaml
+  pngtastic: data/projects/pngtastic/mutants.yaml
+  zjsonpatch: data/projects/zjsonpatch/mutants.yaml
+  cbor-java: data/projects/cbor-java/mutants.yaml
+  chronicle-values: data/projects/chronicle-values/mutants.yaml
+  vertx-stomp: data/projects/vertx-stomp/mutants.yaml
+  crawler-commons: data/projects/crawler-commons/mutants.yaml
+  java-concurrency-patterns: data/projects/java-concurrency-patterns/mutants.yaml
+  rtree-multi: data/projects/rtree-multi/mutants.yaml
+  structures: data/projects/structures/mutants.yaml
+  hikaricp: data/projects/hikaricp/mutants.yaml
+  zt-zip: data/projects/zt-zip/mutants.yaml
+  fixture-factory: data/projects/fixture-factory/mutants.yaml
+  ck: data/projects/ck/mutants.yaml
+  dregex: data/projects/dregex/mutants.yaml
+  jvm-profiler: data/projects/jvm-profiler/mutants.yaml
+  jsonstream: data/projects/jsonstream/mutants.yaml
+  remap: data/projects/remap/mutants.yaml
+  siren4j: data/projects/siren4j/mutants.yaml
+  javaewah: data/projects/javaewah/mutants.yaml
+  jitrex: data/projects/jitrex/mutants.yaml
+  segment: data/projects/segment/mutants.yaml
+  jboss-classfilewriter: data/projects/jboss-classfilewriter/mutants.yaml
+  pinyin4j: data/projects/pinyin4j/mutants.yaml
+  regexstaticanalysis: data/projects/regexstaticanalysis/mutants.yaml
+  thumbnailator: data/projects/thumbnailator/mutants.yaml
+  fusionauth-jwt: data/projects/fusionauth-jwt/mutants.yaml
+  barefoot: data/projects/barefoot/mutants.yaml
+  jchronic: data/projects/jchronic/mutants.yaml
+  erdos: data/projects/erdos/mutants.yaml
+  coralqueue: data/projects/coralqueue/mutants.yaml
+  aparapi: data/projects/aparapi/mutants.yaml
+  similarity: data/projects/similarity/mutants.yaml
+  jdframe: data/projects/jdframe/mutants.yaml
+  memoryfilesystem: data/projects/memoryfilesystem/mutants.yaml
+  eo-yaml: data/projects/eo-yaml/mutants.yaml
+  indriya: data/projects/indriya/mutants.yaml
+  tinspin-indexes: data/projects/tinspin-indexes/mutants.yaml
+  jdsp: data/projects/jdsp/mutants.yaml
+  pngj: data/projects/pngj/mutants.yaml
+  threetenbp: data/projects/threetenbp/mutants.yaml
+  zip4j: data/projects/zip4j/mutants.yaml
+  barcode-lib4j: data/projects/barcode-lib4j/mutants.yaml
+  nlp-lang: data/projects/nlp-lang/mutants.yaml
+  uom: data/projects/uom/mutants.yaml
+  jwave: data/projects/jwave/mutants.yaml
+  regex-builder: data/projects/regex-builder/mutants.yaml
+  netty-socketio: data/projects/netty-socketio/mutants.yaml
+  javacc: data/projects/javacc/mutants.yaml
+  staedi: data/projects/staedi/mutants.yaml
+  aalto-xml: data/projects/aalto-xml/mutants.yaml
+  commons-jexl: data/projects/commons-jexl/mutants.yaml
+  core: data/projects/core/mutants.yaml
+  graphstore: data/projects/graphstore/mutants.yaml
+  mutabilitydetector: data/projects/mutabilitydetector/mutants.yaml
+  evalex: data/projects/evalex/mutants.yaml
+  liqp: data/projects/liqp/mutants.yaml
+  classgraph: data/projects/classgraph/mutants.yaml
+  easy-random: data/projects/easy-random/mutants.yaml
+  htmlunit-neko: data/projects/htmlunit-neko/mutants.yaml
+  chatgpt-java: data/projects/chatgpt-java/mutants.yaml
+  jboss-modules: data/projects/jboss-modules/mutants.yaml
+  dataframe: data/projects/dataframe/mutants.yaml
+  commons-ognl: data/projects/commons-ognl/mutants.yaml
+  javolution: data/projects/javolution/mutants.yaml
+  etk4j: data/projects/etk4j/mutants.yaml
+  sofa-bolt: data/projects/sofa-bolt/mutants.yaml
+  woodstox: data/projects/woodstox/mutants.yaml
+  phtree: data/projects/phtree/mutants.yaml
+  junidecode: data/projects/junidecode/mutants.yaml
+  commons-net: data/projects/commons-net/mutants.yaml
+  spring-hateoas: data/projects/spring-hateoas/mutants.yaml
+  java-immutable-collections: data/projects/java-immutable-collections/mutants.yaml
+  dnsjava: data/projects/dnsjava/mutants.yaml
+  json-schema-validator: data/projects/json-schema-validator/mutants.yaml
+  qlexpress: data/projects/qlexpress/mutants.yaml
+  geometry-api-java: data/projects/geometry-api-java/mutants.yaml
+  streaminer: data/projects/streaminer/mutants.yaml
+  morpheus-core: data/projects/morpheus-core/mutants.yaml
+  sshj: data/projects/sshj/mutants.yaml
+  one-nio: data/projects/one-nio/mutants.yaml
+  cactoos: data/projects/cactoos/mutants.yaml
+  flag4j: data/projects/flag4j/mutants.yaml
+  zip4jvm: data/projects/zip4jvm/mutants.yaml
+  neureka: data/projects/neureka/mutants.yaml
+  commons-bcel: data/projects/commons-bcel/mutants.yaml
+  ical4j: data/projects/ical4j/mutants.yaml
+  yosegi: data/projects/yosegi/mutants.yaml
+  imglib2: data/projects/imglib2/mutants.yaml
+  libjitsi: data/projects/libjitsi/mutants.yaml
+  finmath-lib: data/projects/finmath-lib/mutants.yaml
+  jsonld-java: data/projects/jsonld-java/mutants.yaml
+  halodb: data/projects/halodb/mutants.yaml
+  j2v8: data/projects/j2v8/mutants.yaml
+  paguro: data/projects/paguro/mutants.yaml
+  uuid-creator: data/projects/uuid-creator/mutants.yaml
+  beanshell: data/projects/beanshell/mutants.yaml
+  atlas: data/projects/atlas/mutants.yaml
+  pdfbox-graphics2d: data/projects/pdfbox-graphics2d/mutants.yaml
+  commons-ip-math: data/projects/commons-ip-math/mutants.yaml
+  completely: data/projects/completely/mutants.yaml
+  java-diff-utils: data/projects/java-diff-utils/mutants.yaml
+  java-thread-affinity: data/projects/java-thread-affinity/mutants.yaml
+  needle: data/projects/needle/mutants.yaml
+  querystream: data/projects/querystream/mutants.yaml
+  simmetrics: data/projects/simmetrics/mutants.yaml
+  javacv: data/projects/javacv/mutants.yaml
+  tektosyne: data/projects/tektosyne/mutants.yaml
+  jslt: data/projects/jslt/mutants.yaml
+  jsonpath: data/projects/jsonpath/mutants.yaml
+  ognl: data/projects/ognl/mutants.yaml
+  orika: data/projects/orika/mutants.yaml
+  rythmengine: data/projects/rythmengine/mutants.yaml
+  domino-jackson: data/projects/domino-jackson/mutants.yaml
+  t-digest: data/projects/t-digest/mutants.yaml
+  javaluator: data/projects/javaluator/mutants.yaml
+  webporter: data/projects/webporter/mutants.yaml
+  flatpack: data/projects/flatpack/mutants.yaml
+  jackson-modules-java8: data/projects/jackson-modules-java8/mutants.yaml
+  fastexcel: data/projects/fastexcel/mutants.yaml
+  jprotobuf: data/projects/jprotobuf/mutants.yaml
+  json-io: data/projects/json-io/mutants.yaml
+  proj4j: data/projects/proj4j/mutants.yaml
+  classfile: data/projects/classfile/mutants.yaml
+  justify: data/projects/justify/mutants.yaml

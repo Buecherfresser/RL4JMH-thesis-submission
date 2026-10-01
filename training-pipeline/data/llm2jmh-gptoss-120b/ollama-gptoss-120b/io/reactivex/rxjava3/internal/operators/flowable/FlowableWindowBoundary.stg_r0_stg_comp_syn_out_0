@@ -1,0 +1,118 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for the internal FlowableWindowBoundary operator.
+ * The benchmark uses the public {@code Flowable.window(Publisher)} API,
+ * which internally delegates to FlowableWindowBoundary.
+ *
+ * The test measures throughput of processing a large number of items
+ * split into windows by a boundary publisher.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Recreate the source and boundary for each iteration to avoid caching effects.
+ * - Use TestSubscriber to consume the windows without side‑effects.
+ * - Warm‑up and measurement iterations are configured.
+ * - Forking isolates the benchmark from JVM warm‑up noise.
+ */
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class FlowableWindowBoundaryBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable per benchmark iteration.
+     */
+    @Param({ "1000000" })
+    public int itemCount;
+
+    /**
+     * Approximate size of each window (number of items).
+     */
+    @Param({ "1000" })
+    public int windowSize;
+
+    /**
+     * Source Flowable emitting a range of integers.
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * Boundary Publisher that signals window boundaries.
+     */
+    private Flowable<Long> boundary;
+
+    /**
+     * TestSubscriber used as a sink to consume windows without side‑effects.
+     */
+    private TestSubscriber<Flowable<Integer>> testSubscriber;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Create a cold source that emits a fixed number of items.
+        source = Flowable.range(1, itemCount).subscribeOn(Schedulers.computation());
+        // Create a boundary that emits a signal every {@code windowSize} items.
+        // We use a PublishProcessor to manually emit boundary signals.
+        PublishProcessor<Long> boundaryProcessor = PublishProcessor.create();
+        boundary = boundaryProcessor.onBackpressureBuffer().subscribeOn(Schedulers.computation());
+        // Emit boundary signals in a separate thread to avoid blocking the benchmark thread.
+        new Thread(() -> {
+            long signals = itemCount / windowSize;
+            for (long i = 0; i < signals; i++) {
+                boundaryProcessor.onNext(i);
+            }
+            boundaryProcessor.onComplete();
+        }, "boundary-emitter").start();
+        testSubscriber = new TestSubscriber<>();
+    }
+
+    @Benchmark
+    public void windowBoundaryThroughput() {
+        // Apply the window operator which internally uses FlowableWindowBoundary.
+        source.window(boundary).subscribe(testSubscriber);
+        // Wait for completion to ensure all windows are processed.
+        testSubscriber.awaitDone(1, TimeUnit.MINUTES);
+        // Reset for the next iteration.
+        testSubscriber.cancel();
+        testSubscriber = new TestSubscriber<>();
+    }
+}

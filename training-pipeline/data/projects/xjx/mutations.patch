@@ -1,0 +1,662 @@
+diff --git a/io/jonasg/xjx/Attributes.java b/io/jonasg/xjx/Attributes.java
+index 1871575..de03ee1 100644
+--- a/io/jonasg/xjx/Attributes.java
++++ b/io/jonasg/xjx/Attributes.java
+@@ -22,7 +22,7 @@ public class Attributes {
+         }
+     }
+ 
+-    public static Attributes empty() {
++    public static Attributes empty() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(9);
+         return new Attributes();
+     }
+ 
+@@ -30,7 +30,7 @@ public class Attributes {
+         attributes.put(attributeName, attributeValue);
+     }
+ 
+-    public boolean isPresent() {
++    public boolean isPresent() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(12);
+         return !attributes.isEmpty();
+     }
+ 
+diff --git a/io/jonasg/xjx/BufferedPositionedReader.java b/io/jonasg/xjx/BufferedPositionedReader.java
+index 72accec..b3f65bf 100644
+--- a/io/jonasg/xjx/BufferedPositionedReader.java
++++ b/io/jonasg/xjx/BufferedPositionedReader.java
+@@ -25,7 +25,7 @@ public class BufferedPositionedReader implements PositionedReader {
+     }
+ 
+     @Override
+-    public String currentLine() {
++    public String currentLine() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(1);
+         if (currentLine != null && currentLinePos < currentLine.length()) {
+             return currentLine.substring(currentLinePos);
+         }
+@@ -51,7 +51,7 @@ public class BufferedPositionedReader implements PositionedReader {
+     }
+ 
+     @Override
+-    public String peekLine() {
++    public String peekLine() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(5);
+         if (currentLine == null) {
+             return null;
+         }
+diff --git a/io/jonasg/xjx/EndTag.java b/io/jonasg/xjx/EndTag.java
+index c15fd67..9e9081e 100644
+--- a/io/jonasg/xjx/EndTag.java
++++ b/io/jonasg/xjx/EndTag.java
+@@ -1,5 +1,5 @@
+ package io.jonasg.xjx;
+ 
+-public record EndTag(String namespace, String name) {
++public record EndTag(String namespace, String name) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(15);
+ 
+ }
+diff --git a/io/jonasg/xjx/StartTag.java b/io/jonasg/xjx/StartTag.java
+index c10936c..37ac5ac 100644
+--- a/io/jonasg/xjx/StartTag.java
++++ b/io/jonasg/xjx/StartTag.java
+@@ -1,6 +1,6 @@
+ package io.jonasg.xjx;
+ 
+-public record StartTag(String name, String namespace, Attributes attributes) {
++public record StartTag(String name, String namespace, Attributes attributes) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(18);
+ 
+     public StartTag(String name) {
+         this(name, null, Attributes.empty());
+diff --git a/io/jonasg/xjx/Token.java b/io/jonasg/xjx/Token.java
+index 1e26fbc..15b2f67 100644
+--- a/io/jonasg/xjx/Token.java
++++ b/io/jonasg/xjx/Token.java
+@@ -6,7 +6,7 @@ package io.jonasg.xjx;
+  * @param value the value of the token or null if not relevant for that token type
+  * @param <T> the type of the value
+  */
+-public record Token<T>(Type type, T value) {
++public record Token<T>(Type type, T value) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(21);
+ 
+     public Token(Type type) {
+         this(type, null);
+diff --git a/io/jonasg/xjx/Tokenizer.java b/io/jonasg/xjx/Tokenizer.java
+index 307d2a9..57be9f1 100644
+--- a/io/jonasg/xjx/Tokenizer.java
++++ b/io/jonasg/xjx/Tokenizer.java
+@@ -14,7 +14,7 @@ import io.jonasg.xjx.scanners.WhiteSpaceScanner;
+  */
+ public class Tokenizer {
+ 
+-    public Stream<Token<?>> tokenize(Reader reader) {
++    public Stream<Token<?>> tokenize(Reader reader) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(24);
+         return StreamSupport.stream(new TokenSpliterator(reader), false);
+     }
+ 
+@@ -30,7 +30,7 @@ public class Tokenizer {
+         }
+ 
+         @Override
+-        public boolean tryAdvance(Consumer<? super Token<?>> action) {
++        public boolean tryAdvance(Consumer<? super Token<?>> action) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(27);
+             if (scanner == null) {
+                 return false;
+             }
+diff --git a/io/jonasg/xjx/jmhbench/MutationSwitch.java b/io/jonasg/xjx/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..148c6c5
+--- /dev/null
++++ b/io/jonasg/xjx/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.jonasg.xjx.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/io/jonasg/xjx/sax/Attribute.java b/io/jonasg/xjx/sax/Attribute.java
+index abcbe3d..7c95cbd 100644
+--- a/io/jonasg/xjx/sax/Attribute.java
++++ b/io/jonasg/xjx/sax/Attribute.java
+@@ -1,4 +1,4 @@
+ package io.jonasg.xjx.sax;
+ 
+-public record Attribute(String name, String value) {
++public record Attribute(String name, String value) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(6);
+ }
+diff --git a/io/jonasg/xjx/sax/SaxParser.java b/io/jonasg/xjx/sax/SaxParser.java
+index 4773817..71ca3a6 100644
+--- a/io/jonasg/xjx/sax/SaxParser.java
++++ b/io/jonasg/xjx/sax/SaxParser.java
+@@ -16,7 +16,7 @@ public class SaxParser {
+         this.tokenizer = new Tokenizer();
+     }
+ 
+-    public void parse(Reader reader, SaxHandler saxHandler) {
++    public void parse(Reader reader, SaxHandler saxHandler) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(2);
+         saxHandler.startDocument();
+         tokenizer.tokenize(reader)
+                 .forEach(t -> handleToken(t, saxHandler));
+diff --git a/io/jonasg/xjx/scanners/CDATAScanner.java b/io/jonasg/xjx/scanners/CDATAScanner.java
+index e6619d0..67f5919 100644
+--- a/io/jonasg/xjx/scanners/CDATAScanner.java
++++ b/io/jonasg/xjx/scanners/CDATAScanner.java
+@@ -9,7 +9,7 @@ class CDATAScanner implements Scanner {
+     private static final int CDATA_OPENING_TAG_LENGTH = 9;
+ 
+     @Override
+-    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) {
++    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(3);
+         reader.readChars(CDATA_OPENING_TAG_LENGTH);
+         var characters = reader.readUntil("]]>")
+                 .orElseThrow(() -> new XmlParsingException("CDATA tag found without closing ]]"));
+diff --git a/io/jonasg/xjx/scanners/CharacterScanner.java b/io/jonasg/xjx/scanners/CharacterScanner.java
+index d0389d3..d29b32f 100644
+--- a/io/jonasg/xjx/scanners/CharacterScanner.java
++++ b/io/jonasg/xjx/scanners/CharacterScanner.java
+@@ -6,7 +6,7 @@ import io.jonasg.xjx.TokenEmitter;
+ 
+ class CharacterScanner implements Scanner {
+     @Override
+-    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) {
++    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(7);
+         char character = reader.peekOneChar();
+         var builder = new StringBuilder();
+         while (character != '<') {
+diff --git a/io/jonasg/xjx/scanners/CommentBodyScanner.java b/io/jonasg/xjx/scanners/CommentBodyScanner.java
+index 2404516..fbcd9a1 100644
+--- a/io/jonasg/xjx/scanners/CommentBodyScanner.java
++++ b/io/jonasg/xjx/scanners/CommentBodyScanner.java
+@@ -7,7 +7,7 @@ import io.jonasg.xjx.TokenEmitter;
+ 
+ class CommentBodyScanner implements Scanner {
+     @Override
+-    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) {
++    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(10);
+         var commentBody = reader.readUntil("-->")
+                 .orElseThrow(() -> new XmlParsingException("Comment tag found without ending -->"));
+         tokenEmitter.emit(new Token<>(CLOSE_COMMENT, commentBody));
+diff --git a/io/jonasg/xjx/scanners/DocumentTypeDeclarationScanner.java b/io/jonasg/xjx/scanners/DocumentTypeDeclarationScanner.java
+index 72cb58d..3a1b9b7 100644
+--- a/io/jonasg/xjx/scanners/DocumentTypeDeclarationScanner.java
++++ b/io/jonasg/xjx/scanners/DocumentTypeDeclarationScanner.java
+@@ -6,7 +6,7 @@ import io.jonasg.xjx.TokenEmitter;
+ 
+ class DocumentTypeDeclarationScanner implements Scanner {
+     @Override
+-    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) {
++    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(13);
+         var read = reader.readChars(5);
+         if (!"<?xml".equals(read)) {
+             throw new XmlParsingException("Document type declaration not declared correctly");
+diff --git a/io/jonasg/xjx/scanners/EndTagScanner.java b/io/jonasg/xjx/scanners/EndTagScanner.java
+index dd71224..ff45095 100644
+--- a/io/jonasg/xjx/scanners/EndTagScanner.java
++++ b/io/jonasg/xjx/scanners/EndTagScanner.java
+@@ -10,7 +10,7 @@ import io.jonasg.xjx.TokenEmitter;
+ class EndTagScanner implements Scanner {
+ 
+     @Override
+-    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) {
++    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(16);
+         reader.ltrim();
+         String opening = reader.readChars(2);
+         if (!Objects.equals(opening, "</")) {
+diff --git a/io/jonasg/xjx/scanners/StartCommentScanner.java b/io/jonasg/xjx/scanners/StartCommentScanner.java
+index 5946aa5..2a940a7 100644
+--- a/io/jonasg/xjx/scanners/StartCommentScanner.java
++++ b/io/jonasg/xjx/scanners/StartCommentScanner.java
+@@ -7,7 +7,7 @@ import io.jonasg.xjx.TokenEmitter;
+ class StartCommentScanner implements Scanner {
+ 
+     @Override
+-    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) {
++    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(19);
+         reader.readChars(4);
+         tokenEmitter.emit(new Token<>(Token.Type.START_COMMENT));
+         return new CommentBodyScanner();
+diff --git a/io/jonasg/xjx/scanners/StartTagScanner.java b/io/jonasg/xjx/scanners/StartTagScanner.java
+index 3afab73..850ec7e 100644
+--- a/io/jonasg/xjx/scanners/StartTagScanner.java
++++ b/io/jonasg/xjx/scanners/StartTagScanner.java
+@@ -9,7 +9,7 @@ import io.jonasg.xjx.TokenEmitter;
+ class StartTagScanner implements Scanner {
+ 
+     @Override
+-    public Scanner scan(PositionedReader reader, TokenEmitter emitter) {
++    public Scanner scan(PositionedReader reader, TokenEmitter emitter) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(22);
+         char character;
+         reader.ltrim();
+         character = reader.readOneChar();
+diff --git a/io/jonasg/xjx/scanners/WhiteSpaceScanner.java b/io/jonasg/xjx/scanners/WhiteSpaceScanner.java
+index 7e5dc05..f05cbd9 100644
+--- a/io/jonasg/xjx/scanners/WhiteSpaceScanner.java
++++ b/io/jonasg/xjx/scanners/WhiteSpaceScanner.java
+@@ -6,7 +6,7 @@ import io.jonasg.xjx.TokenEmitter;
+ public class WhiteSpaceScanner implements Scanner {
+ 
+     @Override
+-    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) {
++    public Scanner scan(PositionedReader reader, TokenEmitter tokenEmitter) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(25);
+         while (reader.hasMoreToRead() && Character.isWhitespace(reader.peekOneChar())) {
+             reader.readOneChar();
+         }
+diff --git a/io/jonasg/xjx/serdes/Path.java b/io/jonasg/xjx/serdes/Path.java
+index e4adc7d..bab886e 100644
+--- a/io/jonasg/xjx/serdes/Path.java
++++ b/io/jonasg/xjx/serdes/Path.java
+@@ -26,11 +26,11 @@ public class Path implements Iterable<Section> {
+         this.sections.addAll(newSections);
+     }
+ 
+-    public static Path of(String... paths) {
++    public static Path of(String... paths) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(30);
+         return new Path(paths);
+     }
+ 
+-    public static Path parse(String path) {
++    public static Path parse(String path) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(31);
+         return Path.of(path.split("/"));
+     }
+ 
+diff --git a/io/jonasg/xjx/serdes/Section.java b/io/jonasg/xjx/serdes/Section.java
+index 3a599b6..e497208 100644
+--- a/io/jonasg/xjx/serdes/Section.java
++++ b/io/jonasg/xjx/serdes/Section.java
+@@ -1,4 +1,4 @@
+ package io.jonasg.xjx.serdes;
+ 
+-public record Section(String name, boolean isLeaf) {
++public record Section(String name, boolean isLeaf) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(32);
+ }
+diff --git a/io/jonasg/xjx/serdes/TypeMappers.java b/io/jonasg/xjx/serdes/TypeMappers.java
+index c6cab03..83aa8d7 100644
+--- a/io/jonasg/xjx/serdes/TypeMappers.java
++++ b/io/jonasg/xjx/serdes/TypeMappers.java
+@@ -33,7 +33,7 @@ public final class TypeMappers {
+         TYPES.add(LocalDate.class);
+     }
+ 
+-    public static Function<Object, Object> forType(Class<?> type, XjxConfiguration configuration) {
++    public static Function<Object, Object> forType(Class<?> type, XjxConfiguration configuration) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(4);
+         Function<Object, Object> mapper = Function.identity();
+         if (type.equals(String.class)) {
+             mapper = String::valueOf;
+diff --git a/io/jonasg/xjx/serdes/deserialize/LazySupplier.java b/io/jonasg/xjx/serdes/deserialize/LazySupplier.java
+index 539570d..de740ce 100644
+--- a/io/jonasg/xjx/serdes/deserialize/LazySupplier.java
++++ b/io/jonasg/xjx/serdes/deserialize/LazySupplier.java
+@@ -18,7 +18,7 @@ public class LazySupplier<T> implements Supplier<T> {
+ 		return instance;
+ 	}
+ 
+-	public void reset(Supplier<T> supplier) {
++	public void reset(Supplier<T> supplier) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(33);
+ 		this.instance = null;
+ 		this.initializer = supplier;
+ 	}
+diff --git a/io/jonasg/xjx/serdes/deserialize/MapAsRoot.java b/io/jonasg/xjx/serdes/deserialize/MapAsRoot.java
+index b3b0b68..088888e 100644
+--- a/io/jonasg/xjx/serdes/deserialize/MapAsRoot.java
++++ b/io/jonasg/xjx/serdes/deserialize/MapAsRoot.java
+@@ -2,5 +2,5 @@ package io.jonasg.xjx.serdes.deserialize;
+ 
+ import java.util.Map;
+ 
+-public record MapAsRoot(Object root, Map<String, Object> map) {
++public record MapAsRoot(Object root, Map<String, Object> map) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(8);
+ }
+diff --git a/io/jonasg/xjx/serdes/deserialize/MapRootSaxHandler.java b/io/jonasg/xjx/serdes/deserialize/MapRootSaxHandler.java
+index 8f5cbc5..2d10f36 100644
+--- a/io/jonasg/xjx/serdes/deserialize/MapRootSaxHandler.java
++++ b/io/jonasg/xjx/serdes/deserialize/MapRootSaxHandler.java
+@@ -37,11 +37,11 @@ public class MapRootSaxHandler implements SaxHandler {
+     }
+ 
+     @Override
+-    public void startDocument() {
++    public void startDocument() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(11);
+     }
+ 
+     @Override
+-    public void startTag(String namespace, String name, List<Attribute> attributes) {
++    public void startTag(String namespace, String name, List<Attribute> attributes) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(14);
+         if (this.rootTag != null || !skipRootTag) {
+             Map<String, Object> activeMap = this.mapsStack.getLast();
+             Map<String, Object> newMap = new LinkedHashMap<>();
+diff --git a/io/jonasg/xjx/serdes/deserialize/MapWithTypeInfo.java b/io/jonasg/xjx/serdes/deserialize/MapWithTypeInfo.java
+index 0ce1fba..b0d13e2 100644
+--- a/io/jonasg/xjx/serdes/deserialize/MapWithTypeInfo.java
++++ b/io/jonasg/xjx/serdes/deserialize/MapWithTypeInfo.java
+@@ -2,5 +2,5 @@ package io.jonasg.xjx.serdes.deserialize;
+ 
+ import java.util.Map;
+ 
+-public record MapWithTypeInfo(Map<String, Object> map, Class<?> valueType) {
++public record MapWithTypeInfo(Map<String, Object> map, Class<?> valueType) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(17);
+ }
+diff --git a/io/jonasg/xjx/serdes/deserialize/PathBasedSaxHandler.java b/io/jonasg/xjx/serdes/deserialize/PathBasedSaxHandler.java
+index a180a55..e0bf437 100644
+--- a/io/jonasg/xjx/serdes/deserialize/PathBasedSaxHandler.java
++++ b/io/jonasg/xjx/serdes/deserialize/PathBasedSaxHandler.java
+@@ -44,12 +44,12 @@ public class PathBasedSaxHandler<T> implements SaxHandler {
+     }
+ 
+     @Override
+-    public void startDocument() {
++    public void startDocument() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(34);
+     }
+ 
+     @Override
+     @SuppressWarnings("unchecked")
+-    public void startTag(String namespace, String name, List<Attribute> attributes) {
++    public void startTag(String namespace, String name, List<Attribute> attributes) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(35);
+         if (this.mapRootSaxHandlerDelegate != null) {
+             this.mapRootSaxHandlerDelegate.startTag(namespace, name, attributes);
+         }
+diff --git a/io/jonasg/xjx/serdes/deserialize/PathWriter.java b/io/jonasg/xjx/serdes/deserialize/PathWriter.java
+index 33d59d4..93ebbab 100644
+--- a/io/jonasg/xjx/serdes/deserialize/PathWriter.java
++++ b/io/jonasg/xjx/serdes/deserialize/PathWriter.java
+@@ -11,13 +11,13 @@ public class PathWriter {
+ 
+     private Consumer<Object> valueInitializer;
+ 
+-    public static PathWriter rootInitializer(Supplier<Object> rootInitializer) {
++    public static PathWriter rootInitializer(Supplier<Object> rootInitializer) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(36);
+         PathWriter pathWriter = new PathWriter();
+         pathWriter.rootInitializer = rootInitializer;
+         return pathWriter;
+     }
+ 
+-    public static PathWriter objectInitializer(Supplier<Object> objectInitializer) {
++    public static PathWriter objectInitializer(Supplier<Object> objectInitializer) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(37);
+         PathWriter pathWriter = new PathWriter();
+         pathWriter.objectInitializer = objectInitializer;
+         return pathWriter;
+diff --git a/io/jonasg/xjx/serdes/deserialize/PathWriterIndex.java b/io/jonasg/xjx/serdes/deserialize/PathWriterIndex.java
+index 16e22f9..5ecf50a 100644
+--- a/io/jonasg/xjx/serdes/deserialize/PathWriterIndex.java
++++ b/io/jonasg/xjx/serdes/deserialize/PathWriterIndex.java
+@@ -23,7 +23,7 @@ public class PathWriterIndex {
+ 		});
+ 	}
+ 
+-	public void putAll(PathWriterIndex pathWriterIndex) {
++	public void putAll(PathWriterIndex pathWriterIndex) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(38);
+ 		index.putAll(pathWriterIndex.index);
+ 	}
+ 
+diff --git a/io/jonasg/xjx/serdes/deserialize/PathWriterIndexFactory.java b/io/jonasg/xjx/serdes/deserialize/PathWriterIndexFactory.java
+index 5ed123f..1f1ed24 100644
+--- a/io/jonasg/xjx/serdes/deserialize/PathWriterIndexFactory.java
++++ b/io/jonasg/xjx/serdes/deserialize/PathWriterIndexFactory.java
+@@ -44,7 +44,7 @@ public class PathWriterIndexFactory {
+ 		this.configuration = xjxConfiguration;
+ 	}
+ 
+-	public <T> PathWriterIndex createIndexForType(Class<T> type, String rootTag) {
++	public <T> PathWriterIndex createIndexForType(Class<T> type, String rootTag) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(39);
+         Path path = Path.of(rootTag);
+         return buildIndex(type, path);
+     }
+diff --git a/io/jonasg/xjx/serdes/deserialize/RecordWrapper.java b/io/jonasg/xjx/serdes/deserialize/RecordWrapper.java
+index 24e00f6..3304ae9 100644
+--- a/io/jonasg/xjx/serdes/deserialize/RecordWrapper.java
++++ b/io/jonasg/xjx/serdes/deserialize/RecordWrapper.java
+@@ -18,7 +18,7 @@ public class RecordWrapper<T> {
+ 	}
+ 
+ 	@SuppressWarnings("unchecked")
+-	public T record() {
++	public T record() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(40);
+ 		try {
+ 			Constructor<?>[] constructors = type.getDeclaredConstructors();
+ 
+diff --git a/io/jonasg/xjx/serdes/deserialize/TagPath.java b/io/jonasg/xjx/serdes/deserialize/TagPath.java
+index 857ed02..8de0cf1 100644
+--- a/io/jonasg/xjx/serdes/deserialize/TagPath.java
++++ b/io/jonasg/xjx/serdes/deserialize/TagPath.java
+@@ -13,11 +13,11 @@ public class TagPath {
+         this.field = field;
+     }
+ 
+-    public boolean isAbsolute() {
++    public boolean isAbsolute() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(41);
+         return tag.path().trim().startsWith("/");
+     }
+ 
+-    public FieldReflector field() {
++    public FieldReflector field() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(42);
+         return field;
+     }
+ 
+diff --git a/io/jonasg/xjx/serdes/deserialize/TypedValueMapSaxHandler.java b/io/jonasg/xjx/serdes/deserialize/TypedValueMapSaxHandler.java
+index 4e2ff0f..95fd6ed 100644
+--- a/io/jonasg/xjx/serdes/deserialize/TypedValueMapSaxHandler.java
++++ b/io/jonasg/xjx/serdes/deserialize/TypedValueMapSaxHandler.java
+@@ -27,11 +27,11 @@ public class TypedValueMapSaxHandler implements SaxHandler {
+ 	}
+ 
+     @Override
+-    public void startDocument() {
++    public void startDocument() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(20);
+     }
+ 
+     @Override
+-    public void startTag(String namespace, String name, List<Attribute> attributes) {
++    public void startTag(String namespace, String name, List<Attribute> attributes) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(23);
+         if (this.activeKey == null) {
+             this.activeKey = name;
+             objectPathBasedSaxHandler = new PathBasedSaxHandler<>(rootTag ->
+diff --git a/io/jonasg/xjx/serdes/deserialize/ValueDeserializationHandler.java b/io/jonasg/xjx/serdes/deserialize/ValueDeserializationHandler.java
+index a5bc11f..32c4f48 100644
+--- a/io/jonasg/xjx/serdes/deserialize/ValueDeserializationHandler.java
++++ b/io/jonasg/xjx/serdes/deserialize/ValueDeserializationHandler.java
+@@ -8,14 +8,14 @@ public class ValueDeserializationHandler {
+ 
+     private static ValueDeserializationHandler instance;
+ 
+-    public static ValueDeserializationHandler getInstance() {
++    public static ValueDeserializationHandler getInstance() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(43);
+         if (instance == null) {
+             instance = new ValueDeserializationHandler();
+         }
+         return instance;
+     }
+ 
+-    public Optional<Object> handle(Field field, String value) {
++    public Optional<Object> handle(Field field, String value) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(44);
+         ValueDeserialization valueDeserialization = field.getAnnotation(ValueDeserialization.class);
+         if (valueDeserialization != null) {
+             try {
+diff --git a/io/jonasg/xjx/serdes/deserialize/accessor/SetterFieldAccessor.java b/io/jonasg/xjx/serdes/deserialize/accessor/SetterFieldAccessor.java
+index 5d14fb6..0e86b67 100644
+--- a/io/jonasg/xjx/serdes/deserialize/accessor/SetterFieldAccessor.java
++++ b/io/jonasg/xjx/serdes/deserialize/accessor/SetterFieldAccessor.java
+@@ -30,7 +30,7 @@ public class SetterFieldAccessor implements FieldAccessor {
+         }
+     }
+ 
+-    public boolean hasSetterForField() {
++    public boolean hasSetterForField() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(26);
+         return method != null;
+     }
+ }
+diff --git a/io/jonasg/xjx/serdes/deserialize/config/ConfigurationBuilder.java b/io/jonasg/xjx/serdes/deserialize/config/ConfigurationBuilder.java
+index bd6598c..d88530c 100644
+--- a/io/jonasg/xjx/serdes/deserialize/config/ConfigurationBuilder.java
++++ b/io/jonasg/xjx/serdes/deserialize/config/ConfigurationBuilder.java
+@@ -17,7 +17,7 @@ public class ConfigurationBuilder {
+ 	 * @param failOnUnmappableEnumValue Whether to fail when an enum value cannot be mapped to an enum constant
+ 	 * @return The ConfigurationBuilder
+ 	 */
+-	public ConfigurationBuilder failOnUnknownEnumValue(boolean failOnUnmappableEnumValue) {
++	public ConfigurationBuilder failOnUnknownEnumValue(boolean failOnUnmappableEnumValue) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(28);
+ 		this.xjxConfiguration.failOnUnknownEnumValue = failOnUnmappableEnumValue;
+ 		return this;
+ 	}
+diff --git a/io/jonasg/xjx/serdes/deserialize/config/XjxConfiguration.java b/io/jonasg/xjx/serdes/deserialize/config/XjxConfiguration.java
+index 0e58c60..46f5dd3 100644
+--- a/io/jonasg/xjx/serdes/deserialize/config/XjxConfiguration.java
++++ b/io/jonasg/xjx/serdes/deserialize/config/XjxConfiguration.java
+@@ -8,7 +8,7 @@ public class XjxConfiguration {
+ 	 */
+ 	boolean failOnUnknownEnumValue = false;
+ 
+-	public boolean failOnUnknownEnumValue() {
++	public boolean failOnUnknownEnumValue() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(45);
+ 		return this.failOnUnknownEnumValue;
+ 	}
+ }
+diff --git a/io/jonasg/xjx/serdes/reflector/FieldReflector.java b/io/jonasg/xjx/serdes/reflector/FieldReflector.java
+index 1d6f1a5..c4daa39 100644
+--- a/io/jonasg/xjx/serdes/reflector/FieldReflector.java
++++ b/io/jonasg/xjx/serdes/reflector/FieldReflector.java
+@@ -13,7 +13,7 @@ public class FieldReflector {
+         this.field = field;
+     }
+ 
+-    public String name() {
++    public String name() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(46);
+         return field.getName();
+     }
+ 
+@@ -27,7 +27,7 @@ public class FieldReflector {
+     }
+ 
+     @SuppressWarnings("unchecked")
+-    public <T> Class<T> type() {
++    public <T> Class<T> type() { io.jonasg.xjx.jmhbench.MutationSwitch.tick(47);
+         return (Class<T>) field.getType();
+     }
+ 
+diff --git a/io/jonasg/xjx/serdes/reflector/InstanceField.java b/io/jonasg/xjx/serdes/reflector/InstanceField.java
+index 5332fde..423fe93 100644
+--- a/io/jonasg/xjx/serdes/reflector/InstanceField.java
++++ b/io/jonasg/xjx/serdes/reflector/InstanceField.java
+@@ -7,12 +7,12 @@ public class InstanceField {
+     private final FieldReflector fieldReflector;
+     private final Object instance;
+ 
+-    public <T> InstanceField(FieldReflector fieldReflector, T instance) {
++    public <T> InstanceField(FieldReflector fieldReflector, T instance) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(48);
+         this.fieldReflector = fieldReflector;
+         this.instance = instance;
+     }
+ 
+-    public <A extends Annotation> boolean hasAnnotation(Class<A> annotation) {
++    public <A extends Annotation> boolean hasAnnotation(Class<A> annotation) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(49);
+         return fieldReflector.hasAnnotation(annotation);
+     }
+ 
+diff --git a/io/jonasg/xjx/serdes/reflector/InstanceReflector.java b/io/jonasg/xjx/serdes/reflector/InstanceReflector.java
+index 383da73..1331faa 100644
+--- a/io/jonasg/xjx/serdes/reflector/InstanceReflector.java
++++ b/io/jonasg/xjx/serdes/reflector/InstanceReflector.java
+@@ -49,7 +49,7 @@ public class InstanceReflector<T> {
+         }
+     }
+ 
+-    public void setField(String fieldName, Object value) {
++    public void setField(String fieldName, Object value) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(50);
+         typeReflector.field(fieldName)
+                 .ifPresent(f -> f.set(instance, value));
+     }
+diff --git a/io/jonasg/xjx/serdes/serialize/XmlStringBuilder.java b/io/jonasg/xjx/serdes/serialize/XmlStringBuilder.java
+index f02d547..d5b4a62 100644
+--- a/io/jonasg/xjx/serdes/serialize/XmlStringBuilder.java
++++ b/io/jonasg/xjx/serdes/serialize/XmlStringBuilder.java
+@@ -4,7 +4,7 @@ import java.util.List;
+ 
+ public class XmlStringBuilder {
+ 
+-    public String build(XmlNode nodes) {
++    public String build(XmlNode nodes) { io.jonasg.xjx.jmhbench.MutationSwitch.tick(29);
+         var sb = new StringBuilder();
+         sb.append("<").append(nodes.name()).append(">\n");
+         buildNodes(nodes.children(), sb);

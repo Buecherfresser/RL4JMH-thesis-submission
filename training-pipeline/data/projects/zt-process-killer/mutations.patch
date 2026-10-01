@@ -1,0 +1,574 @@
+diff --git a/org/zeroturnaround/process/AndProcess.java b/org/zeroturnaround/process/AndProcess.java
+index 1dbb530..685ed43 100644
+--- a/org/zeroturnaround/process/AndProcess.java
++++ b/org/zeroturnaround/process/AndProcess.java
+@@ -20,7 +20,7 @@ public class AndProcess extends CompositeProcess {
+     super(children);
+   }
+ 
+-  public boolean isAlive() throws IOException, InterruptedException {
++  public boolean isAlive() throws IOException, InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(16);
+     for (SystemProcess child : children) {
+       if (child.isAlive()) {
+         return true;
+@@ -29,7 +29,7 @@ public class AndProcess extends CompositeProcess {
+     return false;
+   }
+ 
+-  public boolean isAllAlive() throws IOException, InterruptedException {
++  public boolean isAllAlive() throws IOException, InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(17);
+     for (SystemProcess child : children) {
+       if (!child.isAlive()) {
+         return false;
+@@ -39,14 +39,14 @@ public class AndProcess extends CompositeProcess {
+   }
+ 
+   @Override
+-  public void waitFor() throws InterruptedException {
++  public void waitFor() throws InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(18);
+     for (SystemProcess child : children) {
+       child.waitFor();
+     }
+   }
+ 
+   @Override
+-  public void destroy(boolean forceful) throws IOException, InterruptedException {
++  public void destroy(boolean forceful) throws IOException, InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(19);
+     Exception firstException = null;
+     for (SystemProcess child : children) {
+       try {
+diff --git a/org/zeroturnaround/process/Java8Process.java b/org/zeroturnaround/process/Java8Process.java
+index 6bc0b8f..076bc85 100644
+--- a/org/zeroturnaround/process/Java8Process.java
++++ b/org/zeroturnaround/process/Java8Process.java
+@@ -35,7 +35,7 @@ public class Java8Process extends JavaProcess {
+    */
+   private static final Method METHOD_WAIT_FOR_TIMEOUT = getMethod("waitFor", long.class, TimeUnit.class);
+ 
+-  public static boolean isSupported() {
++  public static boolean isSupported() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(20);
+     return METHOD_DESTROY_FORCIBLY != null;
+   }
+ 
+@@ -46,7 +46,7 @@ public class Java8Process extends JavaProcess {
+   // Killing
+ 
+   @Override
+-  protected boolean canDestroy(boolean forceful) {
++  protected boolean canDestroy(boolean forceful) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(21);
+     // We have destroyForcibly() method
+     if (forceful) {
+       return true;
+@@ -55,7 +55,7 @@ public class Java8Process extends JavaProcess {
+   }
+ 
+   @Override
+-  protected void invokeDestroy(boolean forceful) {
++  protected void invokeDestroy(boolean forceful) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(22);
+     // We have destroyForcibly() method
+     if (forceful) {
+       log.debug("Invoking destroyForcibly() on {}", process);
+@@ -68,15 +68,15 @@ public class Java8Process extends JavaProcess {
+ 
+   // Process methods in Java 8
+ 
+-  public Process invokeDestroyForcibly() {
++  public Process invokeDestroyForcibly() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(23);
+     return (Process) ReflectionUtil.invokeWithoutDeclaredExceptions(METHOD_DESTROY_FORCIBLY, process);
+   }
+ 
+-  public boolean isAlive() {
++  public boolean isAlive() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(24);
+     return (Boolean) ReflectionUtil.invokeWithoutDeclaredExceptions(METHOD_IS_ALIVE, process);
+   }
+ 
+-  public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
++  public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(25);
+     return (Boolean) ReflectionUtil.invokeWithInterruptedException(METHOD_WAIT_FOR_TIMEOUT, process, timeout, unit);
+   }
+ 
+diff --git a/org/zeroturnaround/process/JavaProcess.java b/org/zeroturnaround/process/JavaProcess.java
+index b76bc48..b222360 100644
+--- a/org/zeroturnaround/process/JavaProcess.java
++++ b/org/zeroturnaround/process/JavaProcess.java
+@@ -23,12 +23,12 @@ public class JavaProcess extends AbstractProcess {
+    *
+    * @return the wrapped process.
+    */
+-  public Process getProcess() {
++  public Process getProcess() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(26);
+     return process;
+   }
+ 
+   @Override
+-  public String getDescription() {
++  public String getDescription() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(27);
+     String result = process.toString();
+     // Remove the package name to get a shorter result
+     int i = result.lastIndexOf('.');
+@@ -36,7 +36,7 @@ public class JavaProcess extends AbstractProcess {
+     return result.substring(i + 1);
+   }
+ 
+-  public boolean isAlive() {
++  public boolean isAlive() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(28);
+     try {
+       process.exitValue();
+       // Process is already terminated
+@@ -48,12 +48,12 @@ public class JavaProcess extends AbstractProcess {
+     }
+   }
+ 
+-  public void waitFor() throws InterruptedException {
++  public void waitFor() throws InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(29);
+     process.waitFor();
+   }
+ 
+   @Override
+-  public void destroy(boolean forceful) throws IOException {
++  public void destroy(boolean forceful) throws IOException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(30);
+     if (!canDestroy(forceful)) {
+       throw new UnsupportedOperationException();
+     }
+@@ -67,7 +67,7 @@ public class JavaProcess extends AbstractProcess {
+    *    <code>false</code> if it must be destroyed gracefully (like <code>kill -TERM</code>).
+    * @return <code>true</code> if {@link #invokeDestroy(boolean)} is supported with the given <code>forceful</code> flag on the given system.
+    */
+-  protected boolean canDestroy(boolean forceful) {
++  protected boolean canDestroy(boolean forceful) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(31);
+     /*
+      * On Windows Process.destroy() destroys the process forcefully.
+      * On UNIX it destroys the process gracefully.
+@@ -75,7 +75,7 @@ public class JavaProcess extends AbstractProcess {
+     return forceful == SystemUtils.IS_OS_WINDOWS;
+   }
+ 
+-  protected void invokeDestroy(boolean forceful) {
++  protected void invokeDestroy(boolean forceful) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(32);
+     log.debug("Invoking destroy() on {}", process);
+     // We ignore forceful flag as this method is only invoked in case of single value - see canDestroy().
+     process.destroy();
+diff --git a/org/zeroturnaround/process/OrProcess.java b/org/zeroturnaround/process/OrProcess.java
+index 705793f..8dabd8a 100644
+--- a/org/zeroturnaround/process/OrProcess.java
++++ b/org/zeroturnaround/process/OrProcess.java
+@@ -20,7 +20,7 @@ public class OrProcess extends CompositeProcess {
+     super(children);
+   }
+ 
+-  public boolean isAlive() throws IOException, InterruptedException {
++  public boolean isAlive() throws IOException, InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(33);
+     for (SystemProcess child : children) {
+       try {
+         return child.isAlive();
+@@ -33,7 +33,7 @@ public class OrProcess extends CompositeProcess {
+   }
+ 
+   @Override
+-  public void waitFor() throws InterruptedException {
++  public void waitFor() throws InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(34);
+     for (SystemProcess child : children) {
+       try {
+         child.waitFor();
+@@ -47,7 +47,7 @@ public class OrProcess extends CompositeProcess {
+   }
+ 
+   @Override
+-  public void destroy(boolean forceful) throws IOException, InterruptedException {
++  public void destroy(boolean forceful) throws IOException, InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(35);
+     for (SystemProcess child : children) {
+       try {
+         invokeDestroy(child, forceful);
+diff --git a/org/zeroturnaround/process/PidUtil.java b/org/zeroturnaround/process/PidUtil.java
+index 27963be..1164011 100644
+--- a/org/zeroturnaround/process/PidUtil.java
++++ b/org/zeroturnaround/process/PidUtil.java
+@@ -26,7 +26,7 @@ public final class PidUtil {
+   /**
+    * @return process ID of the current JVM.
+    */
+-  public static int getMyPid() {
++  public static int getMyPid() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(1);
+     Integer result = MyPidHolder.MY_PID;
+     if (result == null) {
+       throw new UnsupportedOperationException("Could not detect my process ID.");
+@@ -91,7 +91,7 @@ public final class PidUtil {
+    * @param process process object (not <code>null</code>).
+    * @return detected PID (not <code>null</code>).
+    */
+-  public static int getPid(Process process) {
++  public static int getPid(Process process) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(3);
+     if (process == null)
+       throw new IllegalArgumentException("Process must be provided.");
+ 
+diff --git a/org/zeroturnaround/process/ProcessUtil.java b/org/zeroturnaround/process/ProcessUtil.java
+index 605eed4..80664f3 100644
+--- a/org/zeroturnaround/process/ProcessUtil.java
++++ b/org/zeroturnaround/process/ProcessUtil.java
+@@ -33,7 +33,7 @@ public class ProcessUtil {
+    *
+    * @throws InterruptedException if the current thread was interrupted.
+    */
+-  public static void waitFor(SystemProcess process) throws InterruptedException {
++  public static void waitFor(SystemProcess process) throws InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(4);
+     log.info("Waiting for {} to finish.", process);
+     waitFor(process, Stopwatch.createStarted(), "{} finished");
+   }
+@@ -48,7 +48,7 @@ public class ProcessUtil {
+    * @throws InterruptedException if the current thread was interrupted.
+    * @throws TimeoutException if timeout was reached before the process finished.
+    */
+-  public static void waitFor(SystemProcess process, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
++  public static void waitFor(SystemProcess process, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(5);
+     log.info("Waiting for {} to finish.", process);
+     waitFor(process, Stopwatch.createStarted(), timeout, unit, "{} finished", "%s did not finish");
+   }
+@@ -61,7 +61,7 @@ public class ProcessUtil {
+    * @throws IOException on IO error.
+    * @throws InterruptedException if the current thread was interrupted.
+    */
+-  public static void destroyGracefullyAndWait(SystemProcess process) throws IOException, InterruptedException {
++  public static void destroyGracefullyAndWait(SystemProcess process) throws IOException, InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(6);
+     Stopwatch sw = Stopwatch.createStarted();
+     process.destroyGracefully();
+     waitFor(process, sw, "Destroyed {} gracefully");
+@@ -78,7 +78,7 @@ public class ProcessUtil {
+    * @throws InterruptedException if the current thread was interrupted.
+    * @throws TimeoutException if timeout was reached before the process finished.
+    */
+-  public static void destroyGracefullyAndWait(SystemProcess process, long timeout, TimeUnit unit) throws IOException, InterruptedException, TimeoutException {
++  public static void destroyGracefullyAndWait(SystemProcess process, long timeout, TimeUnit unit) throws IOException, InterruptedException, TimeoutException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(7);
+     Stopwatch sw = Stopwatch.createStarted();
+     process.destroyGracefully();
+     waitFor(process, sw, timeout, unit, "Destroyed {} gracefully", "Could not destroy %s gracefully");
+@@ -92,7 +92,7 @@ public class ProcessUtil {
+    * @throws IOException on IO error.
+    * @throws InterruptedException if the current thread was interrupted.
+    */
+-  public static void destroyForcefullyAndWait(SystemProcess process) throws IOException, InterruptedException {
++  public static void destroyForcefullyAndWait(SystemProcess process) throws IOException, InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(8);
+     Stopwatch sw = Stopwatch.createStarted();
+     process.destroyForcefully();
+     waitFor(process, sw, "Destroyed {} forcefully");
+@@ -109,7 +109,7 @@ public class ProcessUtil {
+    * @throws InterruptedException if the current thread was interrupted.
+    * @throws TimeoutException if timeout was reached before the process finished.
+    */
+-  public static void destroyForcefullyAndWait(SystemProcess process, long timeout, TimeUnit unit) throws IOException, InterruptedException, TimeoutException {
++  public static void destroyForcefullyAndWait(SystemProcess process, long timeout, TimeUnit unit) throws IOException, InterruptedException, TimeoutException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(9);
+     Stopwatch sw = Stopwatch.createStarted();
+     process.destroyForcefully();
+     waitFor(process, sw, timeout, unit, "Destroyed {} forcefully", "Could not destroy %s forcefully");
+@@ -125,7 +125,7 @@ public class ProcessUtil {
+    * @throws IOException on IO error.
+    * @throws InterruptedException if the current thread was interrupted.
+    */
+-  public static void destroyGracefullyOrForcefullyAndWait(SystemProcess process) throws IOException, InterruptedException {
++  public static void destroyGracefullyOrForcefullyAndWait(SystemProcess process) throws IOException, InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(10);
+     try {
+       destroyGracefullyAndWait(process);
+       return;
+@@ -151,7 +151,7 @@ public class ProcessUtil {
+    * @throws IOException on IO error.
+    * @throws InterruptedException if the current thread was interrupted.
+    */
+-  public static void destroyGracefullyOrForcefullyAndWait(SystemProcess process, long gracefulTimeout, TimeUnit gracefulTimeoutUnit) throws IOException, InterruptedException {
++  public static void destroyGracefullyOrForcefullyAndWait(SystemProcess process, long gracefulTimeout, TimeUnit gracefulTimeoutUnit) throws IOException, InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(11);
+     if (tryDestroyGracefully(process, gracefulTimeout, gracefulTimeoutUnit)) {
+       return;
+     }
+@@ -173,7 +173,7 @@ public class ProcessUtil {
+    * @throws InterruptedException if the current thread was interrupted.
+    * @throws TimeoutException if timeout was reached before the process finished (after the forceful destroy operation).
+    */
+-  public static void destroyGracefullyOrForcefullyAndWait(SystemProcess process, long gracefulTimeout, TimeUnit gracefulTimeoutUnit, long forcefulTimeout, TimeUnit forcefulTimeoutUnit) throws IOException, InterruptedException, TimeoutException {
++  public static void destroyGracefullyOrForcefullyAndWait(SystemProcess process, long gracefulTimeout, TimeUnit gracefulTimeoutUnit, long forcefulTimeout, TimeUnit forcefulTimeoutUnit) throws IOException, InterruptedException, TimeoutException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(12);
+     if (tryDestroyGracefully(process, gracefulTimeout, gracefulTimeoutUnit)) {
+       return;
+     }
+diff --git a/org/zeroturnaround/process/Processes.java b/org/zeroturnaround/process/Processes.java
+index 041df7c..12b3a4f 100644
+--- a/org/zeroturnaround/process/Processes.java
++++ b/org/zeroturnaround/process/Processes.java
+@@ -17,7 +17,7 @@ public class Processes {
+    * @param process instance of an existing process started from JVM.
+    * @return system process that represents the given input as described above.
+    */
+-  public static SystemProcess newStandardProcess(Process process) {
++  public static SystemProcess newStandardProcess(Process process) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(36);
+     return newStandardProcess(process, PidUtil.getPid(process));
+   }
+ 
+@@ -30,7 +30,7 @@ public class Processes {
+    * @param pid PID of the same process.
+    * @return system process that represents the given input as described above.
+    */
+-  public static SystemProcess newStandardProcess(Process process, int pid) {
++  public static SystemProcess newStandardProcess(Process process, int pid) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(37);
+     return newProcessWithAtlernatives(newJavaProcess(process), newPidProcess(pid));
+   }
+ 
+@@ -40,7 +40,7 @@ public class Processes {
+    * @param process instance of an existing process started from JVM.
+    * @return system process that represents the given input as described above.
+    */
+-  public static JavaProcess newJavaProcess(Process process) {
++  public static JavaProcess newJavaProcess(Process process) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(38);
+     if (Java8Process.isSupported())
+       return new Java8Process(process);
+     return new JavaProcess(process);
+@@ -53,7 +53,7 @@ public class Processes {
+    * @param process instance of an existing process started from JVM.
+    * @return system process that represents the given input as described above.
+    */
+-  public static PidProcess newPidProcess(Process process) {
++  public static PidProcess newPidProcess(Process process) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(39);
+     return newPidProcess(PidUtil.getPid(process));
+   }
+ 
+@@ -64,7 +64,7 @@ public class Processes {
+    * @param pid PID of an external process (running or not).
+    * @return system process that represents the given input as described above.
+    */
+-  public static PidProcess newPidProcess(int pid) {
++  public static PidProcess newPidProcess(int pid) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(40);
+     if (SystemUtils.IS_OS_WINDOWS) {
+       return new WindowsProcess(pid);
+     }
+@@ -78,7 +78,7 @@ public class Processes {
+    * @return system process that represents the given inputs as described above.
+    * @deprecated Use {@link #newProcessWithAlternatives(SystemProcess...)} instead.
+    */
+-  public static SystemProcess newProcessWithAtlernatives(SystemProcess... processes) {
++  public static SystemProcess newProcessWithAtlernatives(SystemProcess... processes) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(41);
+     return newProcessWithAlternatives(processes);
+   }
+ 
+@@ -87,7 +87,7 @@ public class Processes {
+    * @param processes alternative process instances that represent a single process.
+    * @return system process that represents the given inputs as described above.
+    */
+-  public static SystemProcess newProcessWithAlternatives(SystemProcess... processes) {
++  public static SystemProcess newProcessWithAlternatives(SystemProcess... processes) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(42);
+     return new OrProcess(Arrays.asList(processes));
+   }
+ 
+@@ -96,7 +96,7 @@ public class Processes {
+    * @param processes process instances that represent different processes.
+    * @return system process that represents the given inputs as described above.
+    */
+-  public static SystemProcess newProcessForMultiple(SystemProcess... processes) {
++  public static SystemProcess newProcessForMultiple(SystemProcess... processes) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(43);
+     return new AndProcess(Arrays.asList(processes));
+   }
+ 
+diff --git a/org/zeroturnaround/process/ReflectionUtil.java b/org/zeroturnaround/process/ReflectionUtil.java
+index 251a557..2640fef 100644
+--- a/org/zeroturnaround/process/ReflectionUtil.java
++++ b/org/zeroturnaround/process/ReflectionUtil.java
+@@ -14,7 +14,7 @@ class ReflectionUtil {
+ 
+   private static final Logger log = LoggerFactory.getLogger(ReflectionUtil.class);
+ 
+-  public static Object invokeWithoutDeclaredExceptions(Method method, Object target, Object... args) {
++  public static Object invokeWithoutDeclaredExceptions(Method method, Object target, Object... args) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(13);
+     try {
+       return doInvoke(method, target, args);
+     }
+@@ -23,7 +23,7 @@ class ReflectionUtil {
+     }
+   }
+ 
+-  public static Object invokeWithInterruptedException(Method method, Object target, Object... args) throws InterruptedException {
++  public static Object invokeWithInterruptedException(Method method, Object target, Object... args) throws InterruptedException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(14);
+     try {
+       return doInvoke(method, target, args);
+     }
+@@ -54,7 +54,7 @@ class ReflectionUtil {
+     throw new UndeclaredThrowableException(t);
+   }
+ 
+-  public static Method getMethodOrNull(Class<?> klass, String name, Class<?>... parameterTypes) {
++  public static Method getMethodOrNull(Class<?> klass, String name, Class<?>... parameterTypes) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(15);
+     try {
+       return klass.getMethod(name, parameterTypes);
+     }
+diff --git a/org/zeroturnaround/process/Stopwatch.java b/org/zeroturnaround/process/Stopwatch.java
+index 44512d3..bcf8717 100644
+--- a/org/zeroturnaround/process/Stopwatch.java
++++ b/org/zeroturnaround/process/Stopwatch.java
+@@ -14,16 +14,16 @@ class Stopwatch {
+     this.start = start;
+   }
+ 
+-  public static Stopwatch createStarted() {
++  public static Stopwatch createStarted() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(44);
+     return new Stopwatch(System.currentTimeMillis());
+   }
+ 
+-  public Stopwatch stop() {
++  public Stopwatch stop() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(45);
+     stop = System.currentTimeMillis();
+     return this;
+   }
+ 
+-  public long elapsed(TimeUnit desiredUnit) {
++  public long elapsed(TimeUnit desiredUnit) { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(46);
+     return desiredUnit.convert(stop - start, TimeUnit.MILLISECONDS);
+   }
+ 
+diff --git a/org/zeroturnaround/process/UnixProcess.java b/org/zeroturnaround/process/UnixProcess.java
+index d12d118..74d8edf 100644
+--- a/org/zeroturnaround/process/UnixProcess.java
++++ b/org/zeroturnaround/process/UnixProcess.java
+@@ -18,7 +18,7 @@ public class UnixProcess extends PidProcess {
+     super(pid);
+   }
+ 
+-  public boolean isAlive() throws IOException {
++  public boolean isAlive() throws IOException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(47);
+     if (LibC.INSTANCE.getpgid(pid) != -1) {
+       return true;
+     }
+@@ -30,7 +30,7 @@ public class UnixProcess extends PidProcess {
+   }
+ 
+   @Override
+-  public void destroy(boolean forceful) throws IOException {
++  public void destroy(boolean forceful) throws IOException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(48);
+     kill(forceful ? LibC.SIGKILL : LibC.SIGTERM);
+   }
+ 
+@@ -42,7 +42,7 @@ public class UnixProcess extends PidProcess {
+    *
+    * @throws IOException on system call error.
+    */
+-  public boolean kill(int signal) throws IOException {
++  public boolean kill(int signal) throws IOException { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(49);
+     if (LibC.INSTANCE.kill(pid, signal) != -1) {
+       return true;
+     }
+diff --git a/org/zeroturnaround/process/WindowsProcess.java b/org/zeroturnaround/process/WindowsProcess.java
+index 68b301c..a01d116 100644
+--- a/org/zeroturnaround/process/WindowsProcess.java
++++ b/org/zeroturnaround/process/WindowsProcess.java
+@@ -50,7 +50,7 @@ public class WindowsProcess extends PidProcess {
+     this.wmicPath = wmicPath;
+   }
+ 
+-  public File getWmicPath() {
++  public File getWmicPath() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(50);
+     return wmicPath;
+   }
+ 
+diff --git a/org/zeroturnaround/process/jmhbench/MutationSwitch.java b/org/zeroturnaround/process/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..e465ad7
+--- /dev/null
++++ b/org/zeroturnaround/process/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.zeroturnaround.process.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/zeroturnaround/process/win/WmicUtil.java b/org/zeroturnaround/process/win/WmicUtil.java
+index c54ae3b..8757e61 100644
+--- a/org/zeroturnaround/process/win/WmicUtil.java
++++ b/org/zeroturnaround/process/win/WmicUtil.java
+@@ -21,7 +21,7 @@ public class WmicUtil {
+   private static final String DEFAULT_DIR = "System32/Wbem/";
+   private static final File PATH = findPath();
+ 
+-  public static File getPath() {
++  public static File getPath() { org.zeroturnaround.process.jmhbench.MutationSwitch.tick(2);
+     return PATH;
+   }
+ 

@@ -1,0 +1,165 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable.benchmark;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableFromIterable;
+import io.reactivex.rxjava3.subscribers.DefaultSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableFromIterable}.
+ *
+ * The benchmark measures the throughput (operations per second) of subscribing to a Flowable
+ * created from an {@link Iterable}. Two scenarios are covered:
+ *
+ * <ul>
+ *   <li>Fast path – the downstream requests {@code Long.MAX_VALUE} (unbounded demand).</li>
+ *   <li>Slow path – the downstream requests a bounded number of items per {@code request}
+ *       call (simulating back‑pressure).</li>
+ * </ul>
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * <ul>
+ *   <li>Separate {@link State} for immutable data (the source {@code List}) and mutable
+ *       per‑thread data (the {@code Subscriber}).</li>
+ *   <li>Warm‑up and measurement iterations, multiple forks, and a time unit of seconds.</li>
+ *   <li>Use of {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Parameterisation of the source size to explore scaling behaviour.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Benchmark)
+public class FlowableFromIterableBenchmark {
+
+    /**
+     * Size of the source {@link List}. Typical values are small (10), medium (1_000) and large (1_000_000).
+     */
+    @Param({"10", "1000", "1000000"})
+    public int size;
+
+    /**
+     * The source {@code List<Integer>} that will be wrapped by {@link FlowableFromIterable}.
+     */
+    private List<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            source.add(i);
+        }
+    }
+
+    /**
+     * Benchmark the fast‑path (unbounded request) subscription.
+     */
+    @Benchmark
+    public void fastPath(Blackhole bh) {
+        Flowable<Integer> flowable = new FlowableFromIterable<>(source);
+        flowable.subscribe(new FastSubscriber(bh));
+    }
+
+    /**
+     * Benchmark the slow‑path (bounded request) subscription.
+     * The subscriber requests {@code requestSize} items per {@code request} call.
+     */
+    @Benchmark
+    public void slowPath(Blackhole bh) {
+        Flowable<Integer> flowable = new FlowableFromIterable<>(source);
+        flowable.subscribe(new SlowSubscriber(bh, requestSize));
+    }
+
+    /**
+     * Number of items requested per {@code request} call in the slow‑path benchmark.
+     * Keeping it relatively small forces the operator to go through the {@code slowPath}
+     * logic repeatedly.
+     */
+    @Param({"1", "10", "100"})
+    public int requestSize;
+
+    /**
+     * Subscriber used for the fast‑path benchmark.
+     * It requests {@code Long.MAX_VALUE} in {@code onSubscribe} and forwards each received
+     * item to the {@link Blackhole}.
+     */
+    static final class FastSubscriber extends DefaultSubscriber<Integer> {
+        private final Blackhole bh;
+
+        FastSubscriber(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onStart() {
+            // Unbounded demand – triggers the fastPath in the operator.
+            request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // Errors are not expected in this benchmark; rethrow to fail fast.
+            throw new RuntimeException(t);
+        }
+
+        @Override
+        public void onComplete() {
+            // No-op – completion is part of the measured work.
+        }
+    }
+
+    /**
+     * Subscriber used for the slow‑path benchmark.
+     * It requests a fixed number of items ( {@code requestSize} ) each time it receives
+     * an item, thereby exercising the operator's {@code slowPath} logic.
+     */
+    static final class SlowSubscriber extends DefaultSubscriber<Integer> {
+        private final Blackhole bh;
+        private final int requestSize;
+        private int remaining;
+
+        SlowSubscriber(Blackhole bh, int requestSize) {
+            this.bh = bh;
+            this.requestSize = requestSize;
+            this.remaining = requestSize;
+        }
+
+        @Override
+        public void onStart() {
+            request(requestSize);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            bh.consume(t);
+            if (--remaining == 0) {
+                remaining = requestSize;
+                request(requestSize);
+            }
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            throw new RuntimeException(t);
+        }
+
+        @Override
+        public void onComplete() {
+            // No-op
+        }
+    }
+}
+```

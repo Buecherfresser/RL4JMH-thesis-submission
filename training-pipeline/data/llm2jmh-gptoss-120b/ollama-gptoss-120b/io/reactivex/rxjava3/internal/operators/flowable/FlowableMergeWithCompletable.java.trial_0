@@ -1,0 +1,89 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.subscribers.DefaultSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableMergeWithCompletable}
+ * measuring the throughput of items emitted when merging a {@link Flowable} with a {@link Completable}.
+ *
+ * The benchmark uses a hot source (created once per iteration) and a downstream subscriber that
+ * requests an unbounded amount of items. The {@link Blackhole} consumes each item to prevent
+ * dead‑code elimination.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Iteration) prepares fresh sources for each measurement iteration.
+ * - Use of Blackhole to consume values.
+ * - Throughput mode reports operations per second.
+ * - Proper warm‑up and measurement configuration.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableMergeWithCompletableBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({"1", "10", "1000", "100000"})
+    public int itemCount;
+
+    private Flowable<Integer> source;
+    private Completable other;
+
+    /**
+     * Prepare a fresh Flowable and Completable for each iteration.
+     * The Flowable emits a range of integers and the Completable completes immediately.
+     */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        source = Flowable.range(1, itemCount);
+        other = Completable.complete();
+    }
+
+    /**
+     * Benchmark method that merges the Flowable with the Completable and subscribes
+     * a blackhole‑draining subscriber.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void mergeWithCompletable(Blackhole bh) {
+        // Merge the source Flowable with the Completable using the operator under test.
+        Flowable<Integer> merged = source.mergeWith(other);
+
+        // Subscribe with a subscriber that requests unbounded demand.
+        merged.subscribe(new DefaultSubscriber<Integer>() {
+            @Override
+            public void onStart() {
+                request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are not expected in this benchmark; rethrow to fail fast.
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // No action needed on completion.
+            }
+        });
+    }
+}
+```

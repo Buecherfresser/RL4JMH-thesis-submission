@@ -1,0 +1,63 @@
+```
+package io.reactivex.rxjava3.internal.operators.maybe.benchmark;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableSource;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeFromCompletable;
+
+/**
+ * Benchmark for {@link MaybeFromCompletable}.
+ *
+ * Measures the throughput of subscribing to a {@code MaybeFromCompletable}
+ * that wraps a hot {@link Completable#complete()} source.
+ *
+ * The benchmark follows JMH best practices:
+ * - {@code @State(Scope.Thread)} isolates mutable state per thread.
+ * - {@code @Setup} prepares immutable objects once per benchmark iteration.
+ * - {@code Blackhole} prevents dead‑code elimination.
+ * - Throughput mode reports operations per time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class MaybeFromCompletableBenchmark {
+
+    /** A Completable that completes immediately. */
+    private CompletableSource completable;
+
+    /** The Maybe operator under test. */
+    private MaybeFromCompletable<Object> maybe;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Completable.complete() returns a hot source that finishes synchronously.
+        this.completable = Completable.complete();
+        // Wrap the Completable into the Maybe operator we want to benchmark.
+        this.maybe = new MaybeFromCompletable<>(completable);
+    }
+
+    /**
+     * Subscribes to the {@code MaybeFromCompletable} and blocks until termination.
+     *
+     * The result is always {@code null} because the source Completable does not emit a value.
+     * Consuming the result with {@link Blackhole} prevents the JIT from optimizing the call away.
+     *
+     * @param bh Blackhole to consume the result.
+     * @return the result of {@code maybe.blockingGet()} (always {@code null}).
+     */
+    @Benchmark
+    public Object subscribeAndBlock(Blackhole bh) {
+        Object result = maybe.blockingGet(); // triggers subscription and completion
+        bh.consume(result);
+        return result;
+    }
+}
+```

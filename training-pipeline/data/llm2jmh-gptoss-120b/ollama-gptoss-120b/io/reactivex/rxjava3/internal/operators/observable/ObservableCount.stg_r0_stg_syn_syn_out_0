@@ -1,0 +1,92 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@code ObservableCount} operator.
+ *
+ * Measures the throughput of counting a fixed number of items emitted by a cold {@link Observable}.
+ * The benchmark uses a cold source (Observable.range) so each iteration re‑creates the stream,
+ * ensuring that the measurement reflects the cost of the operator itself rather than any
+ * one‑time allocation.
+ *
+ * Best practices applied:
+ * • @State(Scope.Thread) isolates benchmark state per thread.
+ * • @Setup prepares immutable data structures once per fork.
+ * • Blackhole consumes the result to prevent dead‑code elimination.
+ * • Warm‑up, measurement, and fork parameters are chosen to give stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, warmups = 1)
+@State(Scope.Thread)
+public class ObservableCountBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable for each benchmark iteration.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * The cold source Observable that will be counted.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * The Single that performs the count operation.
+     */
+    private Single<Long> countSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Observable.range creates a cold Observable that emits {@code itemCount} integers.
+        source = Observable.range(1, itemCount);
+        // The count operator returns a Single<Long> that emits the number of items.
+        countSingle = source.count();
+    }
+
+    @Benchmark
+    public void countItems(Blackhole bh) {
+        // blockingGet forces the subscription and waits for completion.
+        // The result is consumed by Blackhole to avoid dead‑code elimination.
+        long result = countSingle.blockingGet();
+        bh.consume(result);
+    }
+}

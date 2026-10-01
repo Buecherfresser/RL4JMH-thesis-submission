@@ -1,0 +1,60 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableScanSeed}.
+ * Measures the throughput of the scan operator with a seed value.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableScanSeedBenchmark {
+
+    /** Number of items emitted by the source Flowable. */
+    @Param({"1_000", "10_000", "100_000"})
+    public int itemCount;
+
+    /** Source Flowable emitting a range of integers. */
+    private Flowable<Integer> source;
+
+    /** Scan operator under test. */
+    private Flowable<Integer> scanned;
+
+    /** Seed supplier returning the initial accumulator value. */
+    private Supplier<Integer> seedSupplier = () -> 0;
+
+    /** Accumulator function adding the incoming value to the current sum. */
+    private BiFunction<Integer, Integer, Integer> accumulator = (sum, value) -> sum + value;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold source that emits a deterministic range of integers.
+        source = Flowable.range(1, itemCount);
+
+        // Apply the scan operator with a seed. hide() prevents operator fusion
+        // which could otherwise mask the true cost of the ScanSeed implementation.
+        scanned = source.scanWith(seedSupplier, accumulator).hide();
+    }
+
+    /**
+     * Consumes the entire sequence produced by the scan operator.
+     * The Blackhole ensures that the consumed values are not optimized away.
+     */
+    @Benchmark
+    public void scanSeed(Blackhole bh) {
+        scanned.blockingForEach(bh::consume);
+    }
+}
+```

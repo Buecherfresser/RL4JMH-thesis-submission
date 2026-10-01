@@ -1,0 +1,117 @@
+```
+package io.reactivex.rxjava3.internal.subscriptions.jmh;
+
+import io.reactivex.rxjava3.internal.subscriptions.SubscriptionArbiter;
+import org.openjdk.jmh.annotations.*;
+import org.reactivestreams.Subscription;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+/**
+ * JMH benchmarks for {@link SubscriptionArbiter}.
+ *
+ * The benchmarks focus on the most critical public methods:
+ * {@code request}, {@code produced}, {@code setSubscription} and {@code cancel}.
+ *
+ * Throughput mode is used because the typical usage pattern of a
+ * {@code SubscriptionArbiter} is to handle a high volume of calls from
+ * multiple threads.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Benchmark)
+public class SubscriptionArbiterBenchmark {
+
+    /** The arbiter instance shared across all benchmark threads. */
+    private SubscriptionArbiter arbiter;
+
+    /** A dummy subscription used for {@code setSubscription}. */
+    private static final Subscription DUMMY_SUBSCRIPTION = new Subscription() {
+        @Override public void request(long n) { /* no‑op */ }
+        @Override public void cancel() { /* no‑op */ }
+    };
+
+    /** Counter used to generate varying request amounts. */
+    private final AtomicLong requestCounter = new AtomicLong(1);
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // The arbiter is created with {@code cancelOnReplace = true} to exercise the
+        // cancellation path when a new subscription replaces the current one.
+        arbiter = new SubscriptionArbiter(true);
+        // Prime the arbiter with an initial subscription to avoid the first
+        // {@code setSubscription} call paying the cost of the initial null check.
+        arbiter.setSubscription(DUMMY_SUBSCRIPTION);
+    }
+
+    /**
+     * Benchmark the {@code request} method.
+     *
+     * Each invocation requests a monotonically increasing amount of items.
+     * The amount is capped by {@code Long.MAX_VALUE} to avoid overflow.
+     */
+    @Benchmark
+    @Group("request")
+    @GroupThreads(4)
+    public void benchmarkRequest(Blackhole bh) {
+        long n = requestCounter.getAndIncrement();
+        // Ensure we never request a negative or zero amount.
+        n = Math.max(1, n & Long.MAX_VALUE);
+        arbiter.request(n);
+        // Consume the internal state to prevent dead‑code elimination.
+        bh.consume(arbiter.isUnbounded());
+    }
+
+    /**
+     * Benchmark the {@code produced} method.
+     *
+     * Simulates the production of items after a request.
+     */
+    @Benchmark
+    @Group("produced")
+    @GroupThreads(4)
+    public void benchmarkProduced(Blackhole bh) {
+        long n = requestCounter.getAndIncrement();
+        n = Math.max(1, n & Long.MAX_VALUE);
+        arbiter.produced(n);
+        bh.consume(arbiter.isUnbounded());
+    }
+
+    /**
+     * Benchmark the {@code setSubscription} method.
+     *
+     * Replaces the current subscription with a new dummy instance.
+     */
+    @Benchmark
+    @Group("setSubscription")
+    @GroupThreads(2)
+    public void benchmarkSetSubscription(Blackhole bh) {
+        // Create a fresh dummy subscription each time to avoid any caching effects.
+        Subscription s = new Subscription() {
+            @Override public void request(long n) { /* no‑op */ }
+            @Override public void cancel() { /* no‑op */ }
+        };
+        arbiter.setSubscription(s);
+        bh.consume(arbiter.isCancelled());
+    }
+
+    /**
+     * Benchmark the {@code cancel} method.
+     *
+     * Repeatedly cancels the arbiter; subsequent calls are cheap because the
+     * {@code cancelled} flag is already set.
+     */
+    @Benchmark
+    @Group("cancel")
+    @GroupThreads(1)
+    public void benchmarkCancel(Blackhole bh) {
+        arbiter.cancel();
+        bh.consume(arbiter.isCancelled());
+    }
+}
+```

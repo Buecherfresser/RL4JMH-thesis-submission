@@ -1,0 +1,121 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmarks for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableSwitchIfEmpty}.
+ *
+ * The benchmarks measure the throughput (operations per second) of the
+ * {@code switchIfEmpty} operator under two typical scenarios:
+ *
+ * 1. The upstream Flowable is empty and the operator switches to the fallback
+ *    Publisher.
+ * 2. The upstream Flowable emits items, so the fallback is never used.
+ *
+ * The benchmarks run on a single thread and use the {@code trampoline}
+ * scheduler to avoid additional thread scheduling overhead, focusing the
+ * measurement on the operator logic itself.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class FlowableSwitchIfEmptyBenchmark {
+
+    /**
+     * Number of items emitted by the non‑empty source.
+     */
+    @Param({ "1", "1000", "100000" })
+    public int itemCount;
+
+    /**
+     * The upstream Flowable that emits {@code itemCount} items.
+     */
+    private Flowable<Integer> nonEmptySource;
+
+    /**
+     * An empty upstream Flowable.
+     */
+    private Flowable<Integer> emptySource;
+
+    /**
+     * The fallback Publisher used when the upstream is empty.
+     */
+    private Flowable<Integer> fallback;
+
+    /**
+     * A reusable TestSubscriber that consumes the flow without additional work.
+     */
+    private TestSubscriber<Integer> subscriber;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Non‑empty source emits a range of integers.
+        nonEmptySource = Flowable.range(1, itemCount).subscribeOn(Schedulers.trampoline());
+        // Empty source never emits any item.
+        emptySource = Flowable.<Integer>empty().subscribeOn(Schedulers.trampoline());
+        // Fallback emits the same number of items as the non‑empty source.
+        fallback = Flowable.range(1, itemCount).subscribeOn(Schedulers.trampoline());
+        subscriber = new TestSubscriber<>();
+    }
+
+    /**
+     * Benchmark where the upstream is empty and the operator switches to the fallback.
+     */
+    @Benchmark
+    public void switchIfEmpty_EmptySource(Blackhole bh) {
+        subscriber = new TestSubscriber<>();
+        emptySource.switchIfEmpty(fallback).subscribe(subscriber);
+        // Consume all items to ensure the pipeline runs to completion.
+        subscriber.awaitDone(1, TimeUnit.MINUTES);
+        // Use Blackhole to prevent dead‑code elimination.
+        bh.consume(subscriber.values());
+    }
+
+    /**
+     * Benchmark where the upstream emits items, so the fallback is never used.
+     */
+    @Benchmark
+    public void switchIfEmpty_NonEmptySource(Blackhole bh) {
+        subscriber = new TestSubscriber<>();
+        nonEmptySource.switchIfEmpty(fallback).subscribe(subscriber);
+        subscriber.awaitDone(1, TimeUnit.MINUTES);
+        bh.consume(subscriber.values());
+    }
+}

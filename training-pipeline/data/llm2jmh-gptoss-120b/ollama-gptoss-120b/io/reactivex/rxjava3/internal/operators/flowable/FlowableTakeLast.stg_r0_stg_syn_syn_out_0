@@ -1,0 +1,97 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableTakeLast}.
+ *
+ * The benchmark measures the throughput (items processed per second) of the
+ * {@code takeLast} operator under different buffer sizes and source lengths.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source Flowable in @Setup to exclude allocation overhead.
+ * - Use Blackhole to consume items and prevent dead‑code elimination.
+ * - Parameterize both the source size and the {@code takeLast} count.
+ * - Run in Mode.Throughput with a time unit of seconds.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class FlowableTakeLastBenchmark {
+
+    /**
+     * Number of items emitted by the upstream Flowable.
+     */
+    @Param({ "1000", "10000", "100000", "1000000" })
+    public int sourceSize;
+
+    /**
+     * Number of last items to retain (the argument to takeLast).
+     */
+    @Param({ "1", "10", "100", "1000" })
+    public int takeCount;
+
+    /**
+     * The upstream Flowable that emits a range of integers.
+     */
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a simple range source; it is cheap to create and deterministic.
+        source = Flowable.range(1, sourceSize);
+    }
+
+    /**
+     * Benchmark that subscribes to the {@code takeLast} operator and drains all
+     * items, feeding them into the Blackhole.
+     *
+     * @param bh Blackhole to consume the emitted items.
+     */
+    @Benchmark
+    public void takeLastThroughput(Blackhole bh) {
+        // Apply the operator with the configured count.
+        Flowable<Integer> flow = source.takeLast(takeCount);
+        // blockingSubscribe ensures the benchmark measures the complete
+        // processing of the stream while preventing dead‑code elimination.
+        flow.blockingSubscribe(bh::consume);
+    }
+}

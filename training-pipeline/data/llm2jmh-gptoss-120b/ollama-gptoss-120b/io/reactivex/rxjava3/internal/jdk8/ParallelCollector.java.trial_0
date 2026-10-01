@@ -1,0 +1,62 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Throughput benchmark for {@code ParallelCollector}.
+ *
+ * The benchmark creates a {@link Flowable} of integers, turns it into a {@link io.reactivex.rxjava3.parallel.ParallelFlowable},
+ * applies the internal {@code ParallelCollector} via the public {@code collect} operator and blocks
+ * for the final result. The throughput (operations per second) is measured.
+ *
+ * Best‑practice notes:
+ * • Use {@code @State(Scope.Benchmark)} to share the source between iterations.
+ * • Parameterise the number of items and parallelism to explore scaling.
+ * • Run the benchmark with enough warm‑up iterations to let JIT optimisations settle.
+ * • Use {@code Blackhole} to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Benchmark)
+public class ParallelCollectorBenchmark {
+
+    @Param({"1_000", "10_000", "100_000"})
+    public int itemCount;
+
+    @Param({"1", "2", "4", "8"})
+    public int parallelism;
+
+    private Flowable<Integer> source;
+    private Collector<Integer, ?, Integer> collector;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a range Flowable and parallelise it.
+        source = Flowable.range(1, itemCount)
+                .parallel(parallelism)
+                .runOn(Schedulers.computation());
+
+        // Simple summing collector; any collector can be used.
+        collector = Collectors.summingInt(i -> i);
+    }
+
+    @Benchmark
+    public void parallelCollect(Blackhole bh) {
+        // Apply the ParallelCollector via the public API and block for the result.
+        int result = source.collect(collector).blockingFirst();
+        bh.consume(result);
+    }
+}
+```

@@ -1,0 +1,610 @@
+base_model: google/gemma-4-E2B-it
+output_dir: outputs/grpo-run9-smoke4
+dataset_path: data/snippets/rl-mutation-all.good.jsonl
+corpus: full
+seed: 42
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+  exclude_modules:
+  - vision_tower
+  - audio_tower
+  - multi_modal_projector
+  bias: none
+learning_rate: 8.0e-05
+lr_scheduler_type: cosine_with_min_lr
+lr_scheduler_min_lr: 2.0e-05
+per_device_batch_size: 1
+gradient_accumulation_steps: 4
+group_size: 8
+rollout_temperature: 1.0
+top_p: 0.95
+top_k: 64
+max_prompt_length: 20480
+max_completion_length: 16384
+completion_eos_token_id: 106
+chat_template_kwargs:
+  enable_thinking: true
+max_source_chars: 48000
+limit_prompts: 40
+kl_coeff: 0.0
+epsilon: 0.2
+epsilon_high: 0.28
+grpo_loss_type: dr_grpo
+scale_rewards: false
+mask_truncated_completions: false
+mu: 1
+num_epochs: 1.0
+num_iterations: 3
+warmup_ratio: 0.03
+logging_steps: 1
+save_steps: 0
+resume_from_checkpoint: null
+report_to: none
+holdout_prompts: 4
+holdout_seed: 12345
+holdout_eval_every: 3
+holdout_eval_on_start: true
+per_device_eval_batch_size: 1
+num_generations_eval: 4
+use_vllm: true
+vllm_mode: colocate
+vllm_gpu_memory_utilization: 0.4
+vllm_tensor_parallel_size: 1
+vllm_max_model_length: 65536
+vllm_importance_sampling_correction: false
+vllm_enable_sleep_mode: true
+reward_weights:
+  compile: 0.1
+  runtime: 0.1
+  anti_pattern: 0.05
+  rsd: 0.05
+  mutation: 0.7
+anti_pattern_backend: spotjmh
+need_run: true
+reward_workers: 4
+capture_completions_every: 0
+gpu_sample_seconds: 10.0
+repair_completions: false
+exclude_projects:
+- jackson-dataformats-binary
+- spatial4j
+rsd_good: 0.05
+rsd_bad: 0.25
+mutation:
+  alpha: 0.05
+  min_slowdown: 1.1
+  arm_property: jmhbench.mutant
+  coverage_guidance: true
+  max_mutants_per_candidate: 0
+  max_benchmarks_per_mutant: 6
+  mode: coverage_aware
+  coverage_weight: 0.3
+  coverage_jmh:
+    warmup_iterations: 0
+    measurement_iterations: 1
+    forks: 1
+    warmup_time: 100ms
+    measurement_time: 100ms
+    timeout_s: 120.0
+    per_iteration_timeout_s: 60.0
+    fail_on_error: false
+runner:
+  jmh_version: '1.37'
+  java_release: 17
+  jmh:
+    warmup_iterations: 3
+    measurement_iterations: 5
+    forks: 1
+    warmup_time: 200ms
+    measurement_time: 200ms
+    timeout_s: 120.0
+    per_iteration_timeout_s: 60.0
+    fail_on_error: false
+project_classpaths:
+  commons-numbers: data/classpaths/commons-numbers-mutants.cp
+  commons-statistics: data/classpaths/commons-statistics-mutants.cp
+  commons-codec: data/classpaths/commons-codec-mutants.cp
+  commons-text: data/classpaths/commons-text-mutants.cp
+  jackson-core: data/classpaths/jackson-core-mutants.cp
+  roaringbitmap: data/classpaths/roaringbitmap-mutants.cp
+  parallelcolt: data/classpaths/parallelcolt-mutants.cp
+  chronicle-bytes: data/classpaths/chronicle-bytes-mutants.cp
+  chronicle-map: data/classpaths/chronicle-map-mutants.cp
+  chronicle-wire: data/classpaths/chronicle-wire-mutants.cp
+  objectlayout: data/classpaths/objectlayout-mutants.cp
+  jheaps: data/classpaths/jheaps-mutants.cp
+  streamex: data/classpaths/streamex-mutants.cp
+  vavr: data/classpaths/vavr-mutants.cp
+  cache2k: data/classpaths/cache2k-mutants.cp
+  stream-lib: data/classpaths/stream-lib-mutants.cp
+  sparsebitset: data/classpaths/sparsebitset-mutants.cp
+  hash4j: data/classpaths/hash4j-mutants.cp
+  zero-allocation-hashing: data/classpaths/zero-allocation-hashing-mutants.cp
+  guava: data/classpaths/guava-mutants.cp
+  xz-java: data/classpaths/xz-java-mutants.cp
+  commons-crypto: data/classpaths/commons-crypto-mutants.cp
+  big-math: data/classpaths/big-math-mutants.cp
+  hipparchus: data/classpaths/hipparchus-mutants.cp
+  ojalgo: data/classpaths/ojalgo-mutants.cp
+  la4j: data/classpaths/la4j-mutants.cp
+  jafama: data/classpaths/jafama-mutants.cp
+  commons-math: data/classpaths/commons-math-mutants.cp
+  commons-rng: data/classpaths/commons-rng-mutants.cp
+  commons-geometry: data/classpaths/commons-geometry-mutants.cp
+  jackson-databind: data/classpaths/jackson-databind-mutants.cp
+  gson: data/classpaths/gson-mutants.cp
+  dsl-json: data/classpaths/dsl-json-mutants.cp
+  moshi: data/classpaths/moshi-mutants.cp
+  json-java: data/classpaths/json-java-mutants.cp
+  json-simple: data/classpaths/json-simple-mutants.cp
+  flatbuffers: data/classpaths/flatbuffers-mutants.cp
+  avro: data/classpaths/avro-mutants.cp
+  jackson-dataformats-binary: data/classpaths/jackson-dataformats-binary-mutants.cp
+  commons-csv: data/classpaths/commons-csv-mutants.cp
+  fastcsv: data/classpaths/fastcsv-mutants.cp
+  jsoup: data/classpaths/jsoup-mutants.cp
+  commons-io: data/classpaths/commons-io-mutants.cp
+  brics-automaton: data/classpaths/brics-automaton-mutants.cp
+  joda-time: data/classpaths/joda-time-mutants.cp
+  threeten-extra: data/classpaths/threeten-extra-mutants.cp
+  conversant-disruptor: data/classpaths/conversant-disruptor-mutants.cp
+  hdrhistogram: data/classpaths/hdrhistogram-mutants.cp
+  commons-pool: data/classpaths/commons-pool-mutants.cp
+  reactor-core: data/classpaths/reactor-core-mutants.cp
+  vertx: data/classpaths/vertx-mutants.cp
+  jts: data/classpaths/jts-mutants.cp
+  spatial4j: data/classpaths/spatial4j-mutants.cp
+  h3-java: data/classpaths/h3-java-mutants.cp
+  jgraphx: data/classpaths/jgraphx-mutants.cp
+  zxing: data/classpaths/zxing-mutants.cp
+  commons-imaging: data/classpaths/commons-imaging-mutants.cp
+  jimfs: data/classpaths/jimfs-mutants.cp
+  tablesaw: data/classpaths/tablesaw-mutants.cp
+  bigqueue: data/classpaths/bigqueue-mutants.cp
+  commons-configuration: data/classpaths/commons-configuration-mutants.cp
+  commons-validator: data/classpaths/commons-validator-mutants.cp
+  commons-beanutils: data/classpaths/commons-beanutils-mutants.cp
+  javatuples: data/classpaths/javatuples-mutants.cp
+  big-sorter: data/classpaths/big-sorter-mutants.cp
+  easyflow: data/classpaths/easyflow-mutants.cp
+  escpos-coffee: data/classpaths/escpos-coffee-mutants.cp
+  jarchivelib: data/classpaths/jarchivelib-mutants.cp
+  java-image-scaling: data/classpaths/java-image-scaling-mutants.cp
+  javareedsolomon: data/classpaths/javareedsolomon-mutants.cp
+  parsii: data/classpaths/parsii-mutants.cp
+  pngencoder: data/classpaths/pngencoder-mutants.cp
+  jmail: data/classpaths/jmail-mutants.cp
+  rtree: data/classpaths/rtree-mutants.cp
+  bplustree: data/classpaths/bplustree-mutants.cp
+  jsemver: data/classpaths/jsemver-mutants.cp
+  zt-process-killer: data/classpaths/zt-process-killer-mutants.cp
+  compile-testing: data/classpaths/compile-testing-mutants.cp
+  semver4j: data/classpaths/semver4j-mutants.cp
+  txtmark: data/classpaths/txtmark-mutants.cp
+  geantyref: data/classpaths/geantyref-mutants.cp
+  dictomaton: data/classpaths/dictomaton-mutants.cp
+  java-uuid-generator: data/classpaths/java-uuid-generator-mutants.cp
+  tls-channel: data/classpaths/tls-channel-mutants.cp
+  nano-cuckoo: data/classpaths/nano-cuckoo-mutants.cp
+  stateless4j: data/classpaths/stateless4j-mutants.cp
+  dfa-regex: data/classpaths/dfa-regex-mutants.cp
+  java-string-similarity: data/classpaths/java-string-similarity-mutants.cp
+  jbibtex: data/classpaths/jbibtex-mutants.cp
+  mapbox-vector-tile-java: data/classpaths/mapbox-vector-tile-java-mutants.cp
+  dd-plist: data/classpaths/dd-plist-mutants.cp
+  networkanalysis: data/classpaths/networkanalysis-mutants.cp
+  password4j: data/classpaths/password4j-mutants.cp
+  shoki: data/classpaths/shoki-mutants.cp
+  cloning: data/classpaths/cloning-mutants.cp
+  java-php-serializer: data/classpaths/java-php-serializer-mutants.cp
+  toml4j: data/classpaths/toml4j-mutants.cp
+  vavr-jackson: data/classpaths/vavr-jackson-mutants.cp
+  aho-corasick: data/classpaths/aho-corasick-mutants.cp
+  lunar-java: data/classpaths/lunar-java-mutants.cp
+  sheetz: data/classpaths/sheetz-mutants.cp
+  itu: data/classpaths/itu-mutants.cp
+  clipper2-java: data/classpaths/clipper2-java-mutants.cp
+  bson4jackson: data/classpaths/bson4jackson-mutants.cp
+  nbvcxz: data/classpaths/nbvcxz-mutants.cp
+  chrono-java: data/classpaths/chrono-java-mutants.cp
+  keccakj: data/classpaths/keccakj-mutants.cp
+  numbers-java: data/classpaths/numbers-java-mutants.cp
+  chronicle-threads: data/classpaths/chronicle-threads-mutants.cp
+  coralring: data/classpaths/coralring-mutants.cp
+  unsafe-tools: data/classpaths/unsafe-tools-mutants.cp
+  iban4j: data/classpaths/iban4j-mutants.cp
+  littleproxy: data/classpaths/littleproxy-mutants.cp
+  pinyin: data/classpaths/pinyin-mutants.cp
+  maker: data/classpaths/maker-mutants.cp
+  jgitver: data/classpaths/jgitver-mutants.cp
+  protonpack: data/classpaths/protonpack-mutants.cp
+  webdrivermanager: data/classpaths/webdrivermanager-mutants.cp
+  reflections: data/classpaths/reflections-mutants.cp
+  json-schema-inferrer: data/classpaths/json-schema-inferrer-mutants.cp
+  kvstore: data/classpaths/kvstore-mutants.cp
+  peteroupc-cbor-java: data/classpaths/peteroupc-cbor-java-mutants.cp
+  pngtastic: data/classpaths/pngtastic-mutants.cp
+  zjsonpatch: data/classpaths/zjsonpatch-mutants.cp
+  cbor-java: data/classpaths/cbor-java-mutants.cp
+  chronicle-values: data/classpaths/chronicle-values-mutants.cp
+  vertx-stomp: data/classpaths/vertx-stomp-mutants.cp
+  crawler-commons: data/classpaths/crawler-commons-mutants.cp
+  java-concurrency-patterns: data/classpaths/java-concurrency-patterns-mutants.cp
+  rtree-multi: data/classpaths/rtree-multi-mutants.cp
+  structures: data/classpaths/structures-mutants.cp
+  hikaricp: data/classpaths/hikaricp-mutants.cp
+  zt-zip: data/classpaths/zt-zip-mutants.cp
+  fixture-factory: data/classpaths/fixture-factory-mutants.cp
+  ck: data/classpaths/ck-mutants.cp
+  dregex: data/classpaths/dregex-mutants.cp
+  jvm-profiler: data/classpaths/jvm-profiler-mutants.cp
+  jsonstream: data/classpaths/jsonstream-mutants.cp
+  remap: data/classpaths/remap-mutants.cp
+  siren4j: data/classpaths/siren4j-mutants.cp
+  javaewah: data/classpaths/javaewah-mutants.cp
+  jitrex: data/classpaths/jitrex-mutants.cp
+  segment: data/classpaths/segment-mutants.cp
+  jboss-classfilewriter: data/classpaths/jboss-classfilewriter-mutants.cp
+  pinyin4j: data/classpaths/pinyin4j-mutants.cp
+  regexstaticanalysis: data/classpaths/regexstaticanalysis-mutants.cp
+  thumbnailator: data/classpaths/thumbnailator-mutants.cp
+  fusionauth-jwt: data/classpaths/fusionauth-jwt-mutants.cp
+  barefoot: data/classpaths/barefoot-mutants.cp
+  jchronic: data/classpaths/jchronic-mutants.cp
+  erdos: data/classpaths/erdos-mutants.cp
+  coralqueue: data/classpaths/coralqueue-mutants.cp
+  aparapi: data/classpaths/aparapi-mutants.cp
+  similarity: data/classpaths/similarity-mutants.cp
+  jdframe: data/classpaths/jdframe-mutants.cp
+  memoryfilesystem: data/classpaths/memoryfilesystem-mutants.cp
+  eo-yaml: data/classpaths/eo-yaml-mutants.cp
+  indriya: data/classpaths/indriya-mutants.cp
+  tinspin-indexes: data/classpaths/tinspin-indexes-mutants.cp
+  jdsp: data/classpaths/jdsp-mutants.cp
+  pngj: data/classpaths/pngj-mutants.cp
+  threetenbp: data/classpaths/threetenbp-mutants.cp
+  zip4j: data/classpaths/zip4j-mutants.cp
+  barcode-lib4j: data/classpaths/barcode-lib4j-mutants.cp
+  nlp-lang: data/classpaths/nlp-lang-mutants.cp
+  uom: data/classpaths/uom-mutants.cp
+  jwave: data/classpaths/jwave-mutants.cp
+  regex-builder: data/classpaths/regex-builder-mutants.cp
+  netty-socketio: data/classpaths/netty-socketio-mutants.cp
+  javacc: data/classpaths/javacc-mutants.cp
+  staedi: data/classpaths/staedi-mutants.cp
+  aalto-xml: data/classpaths/aalto-xml-mutants.cp
+  commons-jexl: data/classpaths/commons-jexl-mutants.cp
+  core: data/classpaths/core-mutants.cp
+  graphstore: data/classpaths/graphstore-mutants.cp
+  mutabilitydetector: data/classpaths/mutabilitydetector-mutants.cp
+  evalex: data/classpaths/evalex-mutants.cp
+  liqp: data/classpaths/liqp-mutants.cp
+  classgraph: data/classpaths/classgraph-mutants.cp
+  easy-random: data/classpaths/easy-random-mutants.cp
+  htmlunit-neko: data/classpaths/htmlunit-neko-mutants.cp
+  chatgpt-java: data/classpaths/chatgpt-java-mutants.cp
+  jboss-modules: data/classpaths/jboss-modules-mutants.cp
+  dataframe: data/classpaths/dataframe-mutants.cp
+  commons-ognl: data/classpaths/commons-ognl-mutants.cp
+  javolution: data/classpaths/javolution-mutants.cp
+  etk4j: data/classpaths/etk4j-mutants.cp
+  sofa-bolt: data/classpaths/sofa-bolt-mutants.cp
+  woodstox: data/classpaths/woodstox-mutants.cp
+  phtree: data/classpaths/phtree-mutants.cp
+  junidecode: data/classpaths/junidecode-mutants.cp
+  commons-net: data/classpaths/commons-net-mutants.cp
+  spring-hateoas: data/classpaths/spring-hateoas-mutants.cp
+  java-immutable-collections: data/classpaths/java-immutable-collections-mutants.cp
+  dnsjava: data/classpaths/dnsjava-mutants.cp
+  json-schema-validator: data/classpaths/json-schema-validator-mutants.cp
+  qlexpress: data/classpaths/qlexpress-mutants.cp
+  geometry-api-java: data/classpaths/geometry-api-java-mutants.cp
+  streaminer: data/classpaths/streaminer-mutants.cp
+  morpheus-core: data/classpaths/morpheus-core-mutants.cp
+  sshj: data/classpaths/sshj-mutants.cp
+  one-nio: data/classpaths/one-nio-mutants.cp
+  cactoos: data/classpaths/cactoos-mutants.cp
+  flag4j: data/classpaths/flag4j-mutants.cp
+  zip4jvm: data/classpaths/zip4jvm-mutants.cp
+  neureka: data/classpaths/neureka-mutants.cp
+  commons-bcel: data/classpaths/commons-bcel-mutants.cp
+  ical4j: data/classpaths/ical4j-mutants.cp
+  yosegi: data/classpaths/yosegi-mutants.cp
+  imglib2: data/classpaths/imglib2-mutants.cp
+  libjitsi: data/classpaths/libjitsi-mutants.cp
+  finmath-lib: data/classpaths/finmath-lib-mutants.cp
+  jsonld-java: data/classpaths/jsonld-java-mutants.cp
+  halodb: data/classpaths/halodb-mutants.cp
+  j2v8: data/classpaths/j2v8-mutants.cp
+  paguro: data/classpaths/paguro-mutants.cp
+  uuid-creator: data/classpaths/uuid-creator-mutants.cp
+  beanshell: data/classpaths/beanshell-mutants.cp
+  atlas: data/classpaths/atlas-mutants.cp
+  pdfbox-graphics2d: data/classpaths/pdfbox-graphics2d-mutants.cp
+  commons-ip-math: data/classpaths/commons-ip-math-mutants.cp
+  completely: data/classpaths/completely-mutants.cp
+  java-diff-utils: data/classpaths/java-diff-utils-mutants.cp
+  java-thread-affinity: data/classpaths/java-thread-affinity-mutants.cp
+  needle: data/classpaths/needle-mutants.cp
+  querystream: data/classpaths/querystream-mutants.cp
+  simmetrics: data/classpaths/simmetrics-mutants.cp
+  javacv: data/classpaths/javacv-mutants.cp
+  tektosyne: data/classpaths/tektosyne-mutants.cp
+  jslt: data/classpaths/jslt-mutants.cp
+  jsonpath: data/classpaths/jsonpath-mutants.cp
+  ognl: data/classpaths/ognl-mutants.cp
+  orika: data/classpaths/orika-mutants.cp
+  rythmengine: data/classpaths/rythmengine-mutants.cp
+  domino-jackson: data/classpaths/domino-jackson-mutants.cp
+  t-digest: data/classpaths/t-digest-mutants.cp
+  javaluator: data/classpaths/javaluator-mutants.cp
+  webporter: data/classpaths/webporter-mutants.cp
+  flatpack: data/classpaths/flatpack-mutants.cp
+  jackson-modules-java8: data/classpaths/jackson-modules-java8-mutants.cp
+  fastexcel: data/classpaths/fastexcel-mutants.cp
+  jprotobuf: data/classpaths/jprotobuf-mutants.cp
+  json-io: data/classpaths/json-io-mutants.cp
+  proj4j: data/classpaths/proj4j-mutants.cp
+  classfile: data/classpaths/classfile-mutants.cp
+  justify: data/classpaths/justify-mutants.cp
+project_mutants:
+  commons-numbers: data/projects/commons-numbers/mutants.yaml
+  commons-statistics: data/projects/commons-statistics/mutants.yaml
+  commons-codec: data/projects/commons-codec/mutants.yaml
+  commons-text: data/projects/commons-text/mutants.yaml
+  jackson-core: data/projects/jackson-core/mutants.yaml
+  roaringbitmap: data/projects/roaringbitmap/mutants.yaml
+  parallelcolt: data/projects/parallelcolt/mutants.yaml
+  chronicle-bytes: data/projects/chronicle-bytes/mutants.yaml
+  chronicle-map: data/projects/chronicle-map/mutants.yaml
+  chronicle-wire: data/projects/chronicle-wire/mutants.yaml
+  objectlayout: data/projects/objectlayout/mutants.yaml
+  jheaps: data/projects/jheaps/mutants.yaml
+  streamex: data/projects/streamex/mutants.yaml
+  vavr: data/projects/vavr/mutants.yaml
+  cache2k: data/projects/cache2k/mutants.yaml
+  stream-lib: data/projects/stream-lib/mutants.yaml
+  sparsebitset: data/projects/sparsebitset/mutants.yaml
+  hash4j: data/projects/hash4j/mutants.yaml
+  zero-allocation-hashing: data/projects/zero-allocation-hashing/mutants.yaml
+  guava: data/projects/guava/mutants.yaml
+  xz-java: data/projects/xz-java/mutants.yaml
+  commons-crypto: data/projects/commons-crypto/mutants.yaml
+  big-math: data/projects/big-math/mutants.yaml
+  hipparchus: data/projects/hipparchus/mutants.yaml
+  ojalgo: data/projects/ojalgo/mutants.yaml
+  la4j: data/projects/la4j/mutants.yaml
+  jafama: data/projects/jafama/mutants.yaml
+  commons-math: data/projects/commons-math/mutants.yaml
+  commons-rng: data/projects/commons-rng/mutants.yaml
+  commons-geometry: data/projects/commons-geometry/mutants.yaml
+  jackson-databind: data/projects/jackson-databind/mutants.yaml
+  gson: data/projects/gson/mutants.yaml
+  dsl-json: data/projects/dsl-json/mutants.yaml
+  moshi: data/projects/moshi/mutants.yaml
+  json-java: data/projects/json-java/mutants.yaml
+  json-simple: data/projects/json-simple/mutants.yaml
+  flatbuffers: data/projects/flatbuffers/mutants.yaml
+  avro: data/projects/avro/mutants.yaml
+  jackson-dataformats-binary: data/projects/jackson-dataformats-binary/mutants.yaml
+  commons-csv: data/projects/commons-csv/mutants.yaml
+  fastcsv: data/projects/fastcsv/mutants.yaml
+  jsoup: data/projects/jsoup/mutants.yaml
+  commons-io: data/projects/commons-io/mutants.yaml
+  brics-automaton: data/projects/brics-automaton/mutants.yaml
+  joda-time: data/projects/joda-time/mutants.yaml
+  threeten-extra: data/projects/threeten-extra/mutants.yaml
+  conversant-disruptor: data/projects/conversant-disruptor/mutants.yaml
+  hdrhistogram: data/projects/hdrhistogram/mutants.yaml
+  commons-pool: data/projects/commons-pool/mutants.yaml
+  reactor-core: data/projects/reactor-core/mutants.yaml
+  vertx: data/projects/vertx/mutants.yaml
+  jts: data/projects/jts/mutants.yaml
+  spatial4j: data/projects/spatial4j/mutants.yaml
+  h3-java: data/projects/h3-java/mutants.yaml
+  jgraphx: data/projects/jgraphx/mutants.yaml
+  zxing: data/projects/zxing/mutants.yaml
+  commons-imaging: data/projects/commons-imaging/mutants.yaml
+  jimfs: data/projects/jimfs/mutants.yaml
+  tablesaw: data/projects/tablesaw/mutants.yaml
+  bigqueue: data/projects/bigqueue/mutants.yaml
+  commons-configuration: data/projects/commons-configuration/mutants.yaml
+  commons-validator: data/projects/commons-validator/mutants.yaml
+  commons-beanutils: data/projects/commons-beanutils/mutants.yaml
+  javatuples: data/projects/javatuples/mutants.yaml
+  big-sorter: data/projects/big-sorter/mutants.yaml
+  easyflow: data/projects/easyflow/mutants.yaml
+  escpos-coffee: data/projects/escpos-coffee/mutants.yaml
+  jarchivelib: data/projects/jarchivelib/mutants.yaml
+  java-image-scaling: data/projects/java-image-scaling/mutants.yaml
+  javareedsolomon: data/projects/javareedsolomon/mutants.yaml
+  parsii: data/projects/parsii/mutants.yaml
+  pngencoder: data/projects/pngencoder/mutants.yaml
+  jmail: data/projects/jmail/mutants.yaml
+  rtree: data/projects/rtree/mutants.yaml
+  bplustree: data/projects/bplustree/mutants.yaml
+  jsemver: data/projects/jsemver/mutants.yaml
+  zt-process-killer: data/projects/zt-process-killer/mutants.yaml
+  compile-testing: data/projects/compile-testing/mutants.yaml
+  semver4j: data/projects/semver4j/mutants.yaml
+  txtmark: data/projects/txtmark/mutants.yaml
+  geantyref: data/projects/geantyref/mutants.yaml
+  dictomaton: data/projects/dictomaton/mutants.yaml
+  java-uuid-generator: data/projects/java-uuid-generator/mutants.yaml
+  tls-channel: data/projects/tls-channel/mutants.yaml
+  nano-cuckoo: data/projects/nano-cuckoo/mutants.yaml
+  stateless4j: data/projects/stateless4j/mutants.yaml
+  dfa-regex: data/projects/dfa-regex/mutants.yaml
+  java-string-similarity: data/projects/java-string-similarity/mutants.yaml
+  jbibtex: data/projects/jbibtex/mutants.yaml
+  mapbox-vector-tile-java: data/projects/mapbox-vector-tile-java/mutants.yaml
+  dd-plist: data/projects/dd-plist/mutants.yaml
+  networkanalysis: data/projects/networkanalysis/mutants.yaml
+  password4j: data/projects/password4j/mutants.yaml
+  shoki: data/projects/shoki/mutants.yaml
+  cloning: data/projects/cloning/mutants.yaml
+  java-php-serializer: data/projects/java-php-serializer/mutants.yaml
+  toml4j: data/projects/toml4j/mutants.yaml
+  vavr-jackson: data/projects/vavr-jackson/mutants.yaml
+  aho-corasick: data/projects/aho-corasick/mutants.yaml
+  lunar-java: data/projects/lunar-java/mutants.yaml
+  sheetz: data/projects/sheetz/mutants.yaml
+  itu: data/projects/itu/mutants.yaml
+  clipper2-java: data/projects/clipper2-java/mutants.yaml
+  bson4jackson: data/projects/bson4jackson/mutants.yaml
+  nbvcxz: data/projects/nbvcxz/mutants.yaml
+  chrono-java: data/projects/chrono-java/mutants.yaml
+  keccakj: data/projects/keccakj/mutants.yaml
+  numbers-java: data/projects/numbers-java/mutants.yaml
+  chronicle-threads: data/projects/chronicle-threads/mutants.yaml
+  coralring: data/projects/coralring/mutants.yaml
+  unsafe-tools: data/projects/unsafe-tools/mutants.yaml
+  iban4j: data/projects/iban4j/mutants.yaml
+  littleproxy: data/projects/littleproxy/mutants.yaml
+  pinyin: data/projects/pinyin/mutants.yaml
+  maker: data/projects/maker/mutants.yaml
+  jgitver: data/projects/jgitver/mutants.yaml
+  protonpack: data/projects/protonpack/mutants.yaml
+  webdrivermanager: data/projects/webdrivermanager/mutants.yaml
+  reflections: data/projects/reflections/mutants.yaml
+  json-schema-inferrer: data/projects/json-schema-inferrer/mutants.yaml
+  kvstore: data/projects/kvstore/mutants.yaml
+  peteroupc-cbor-java: data/projects/peteroupc-cbor-java/mutants.yaml
+  pngtastic: data/projects/pngtastic/mutants.yaml
+  zjsonpatch: data/projects/zjsonpatch/mutants.yaml
+  cbor-java: data/projects/cbor-java/mutants.yaml
+  chronicle-values: data/projects/chronicle-values/mutants.yaml
+  vertx-stomp: data/projects/vertx-stomp/mutants.yaml
+  crawler-commons: data/projects/crawler-commons/mutants.yaml
+  java-concurrency-patterns: data/projects/java-concurrency-patterns/mutants.yaml
+  rtree-multi: data/projects/rtree-multi/mutants.yaml
+  structures: data/projects/structures/mutants.yaml
+  hikaricp: data/projects/hikaricp/mutants.yaml
+  zt-zip: data/projects/zt-zip/mutants.yaml
+  fixture-factory: data/projects/fixture-factory/mutants.yaml
+  ck: data/projects/ck/mutants.yaml
+  dregex: data/projects/dregex/mutants.yaml
+  jvm-profiler: data/projects/jvm-profiler/mutants.yaml
+  jsonstream: data/projects/jsonstream/mutants.yaml
+  remap: data/projects/remap/mutants.yaml
+  siren4j: data/projects/siren4j/mutants.yaml
+  javaewah: data/projects/javaewah/mutants.yaml
+  jitrex: data/projects/jitrex/mutants.yaml
+  segment: data/projects/segment/mutants.yaml
+  jboss-classfilewriter: data/projects/jboss-classfilewriter/mutants.yaml
+  pinyin4j: data/projects/pinyin4j/mutants.yaml
+  regexstaticanalysis: data/projects/regexstaticanalysis/mutants.yaml
+  thumbnailator: data/projects/thumbnailator/mutants.yaml
+  fusionauth-jwt: data/projects/fusionauth-jwt/mutants.yaml
+  barefoot: data/projects/barefoot/mutants.yaml
+  jchronic: data/projects/jchronic/mutants.yaml
+  erdos: data/projects/erdos/mutants.yaml
+  coralqueue: data/projects/coralqueue/mutants.yaml
+  aparapi: data/projects/aparapi/mutants.yaml
+  similarity: data/projects/similarity/mutants.yaml
+  jdframe: data/projects/jdframe/mutants.yaml
+  memoryfilesystem: data/projects/memoryfilesystem/mutants.yaml
+  eo-yaml: data/projects/eo-yaml/mutants.yaml
+  indriya: data/projects/indriya/mutants.yaml
+  tinspin-indexes: data/projects/tinspin-indexes/mutants.yaml
+  jdsp: data/projects/jdsp/mutants.yaml
+  pngj: data/projects/pngj/mutants.yaml
+  threetenbp: data/projects/threetenbp/mutants.yaml
+  zip4j: data/projects/zip4j/mutants.yaml
+  barcode-lib4j: data/projects/barcode-lib4j/mutants.yaml
+  nlp-lang: data/projects/nlp-lang/mutants.yaml
+  uom: data/projects/uom/mutants.yaml
+  jwave: data/projects/jwave/mutants.yaml
+  regex-builder: data/projects/regex-builder/mutants.yaml
+  netty-socketio: data/projects/netty-socketio/mutants.yaml
+  javacc: data/projects/javacc/mutants.yaml
+  staedi: data/projects/staedi/mutants.yaml
+  aalto-xml: data/projects/aalto-xml/mutants.yaml
+  commons-jexl: data/projects/commons-jexl/mutants.yaml
+  core: data/projects/core/mutants.yaml
+  graphstore: data/projects/graphstore/mutants.yaml
+  mutabilitydetector: data/projects/mutabilitydetector/mutants.yaml
+  evalex: data/projects/evalex/mutants.yaml
+  liqp: data/projects/liqp/mutants.yaml
+  classgraph: data/projects/classgraph/mutants.yaml
+  easy-random: data/projects/easy-random/mutants.yaml
+  htmlunit-neko: data/projects/htmlunit-neko/mutants.yaml
+  chatgpt-java: data/projects/chatgpt-java/mutants.yaml
+  jboss-modules: data/projects/jboss-modules/mutants.yaml
+  dataframe: data/projects/dataframe/mutants.yaml
+  commons-ognl: data/projects/commons-ognl/mutants.yaml
+  javolution: data/projects/javolution/mutants.yaml
+  etk4j: data/projects/etk4j/mutants.yaml
+  sofa-bolt: data/projects/sofa-bolt/mutants.yaml
+  woodstox: data/projects/woodstox/mutants.yaml
+  phtree: data/projects/phtree/mutants.yaml
+  junidecode: data/projects/junidecode/mutants.yaml
+  commons-net: data/projects/commons-net/mutants.yaml
+  spring-hateoas: data/projects/spring-hateoas/mutants.yaml
+  java-immutable-collections: data/projects/java-immutable-collections/mutants.yaml
+  dnsjava: data/projects/dnsjava/mutants.yaml
+  json-schema-validator: data/projects/json-schema-validator/mutants.yaml
+  qlexpress: data/projects/qlexpress/mutants.yaml
+  geometry-api-java: data/projects/geometry-api-java/mutants.yaml
+  streaminer: data/projects/streaminer/mutants.yaml
+  morpheus-core: data/projects/morpheus-core/mutants.yaml
+  sshj: data/projects/sshj/mutants.yaml
+  one-nio: data/projects/one-nio/mutants.yaml
+  cactoos: data/projects/cactoos/mutants.yaml
+  flag4j: data/projects/flag4j/mutants.yaml
+  zip4jvm: data/projects/zip4jvm/mutants.yaml
+  neureka: data/projects/neureka/mutants.yaml
+  commons-bcel: data/projects/commons-bcel/mutants.yaml
+  ical4j: data/projects/ical4j/mutants.yaml
+  yosegi: data/projects/yosegi/mutants.yaml
+  imglib2: data/projects/imglib2/mutants.yaml
+  libjitsi: data/projects/libjitsi/mutants.yaml
+  finmath-lib: data/projects/finmath-lib/mutants.yaml
+  jsonld-java: data/projects/jsonld-java/mutants.yaml
+  halodb: data/projects/halodb/mutants.yaml
+  j2v8: data/projects/j2v8/mutants.yaml
+  paguro: data/projects/paguro/mutants.yaml
+  uuid-creator: data/projects/uuid-creator/mutants.yaml
+  beanshell: data/projects/beanshell/mutants.yaml
+  atlas: data/projects/atlas/mutants.yaml
+  pdfbox-graphics2d: data/projects/pdfbox-graphics2d/mutants.yaml
+  commons-ip-math: data/projects/commons-ip-math/mutants.yaml
+  completely: data/projects/completely/mutants.yaml
+  java-diff-utils: data/projects/java-diff-utils/mutants.yaml
+  java-thread-affinity: data/projects/java-thread-affinity/mutants.yaml
+  needle: data/projects/needle/mutants.yaml
+  querystream: data/projects/querystream/mutants.yaml
+  simmetrics: data/projects/simmetrics/mutants.yaml
+  javacv: data/projects/javacv/mutants.yaml
+  tektosyne: data/projects/tektosyne/mutants.yaml
+  jslt: data/projects/jslt/mutants.yaml
+  jsonpath: data/projects/jsonpath/mutants.yaml
+  ognl: data/projects/ognl/mutants.yaml
+  orika: data/projects/orika/mutants.yaml
+  rythmengine: data/projects/rythmengine/mutants.yaml
+  domino-jackson: data/projects/domino-jackson/mutants.yaml
+  t-digest: data/projects/t-digest/mutants.yaml
+  javaluator: data/projects/javaluator/mutants.yaml
+  webporter: data/projects/webporter/mutants.yaml
+  flatpack: data/projects/flatpack/mutants.yaml
+  jackson-modules-java8: data/projects/jackson-modules-java8/mutants.yaml
+  fastexcel: data/projects/fastexcel/mutants.yaml
+  jprotobuf: data/projects/jprotobuf/mutants.yaml
+  json-io: data/projects/json-io/mutants.yaml
+  proj4j: data/projects/proj4j/mutants.yaml
+  classfile: data/projects/classfile/mutants.yaml
+  justify: data/projects/justify/mutants.yaml

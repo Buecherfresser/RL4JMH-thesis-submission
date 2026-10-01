@@ -1,0 +1,125 @@
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.parallel.ParallelFilter}.
+ * Measures throughput of the parallel filter operator under a typical workload.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ParallelFilterBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the source per benchmark iteration.
+         */
+        @Param({ "1000000" })
+        int itemCount;
+
+        /**
+         * Parallelism level – typically the number of CPU cores.
+         */
+        @Param({ "4" })
+        int parallelism;
+
+        /**
+         * Source ParallelFlowable that emits a range of integers.
+         */
+        ParallelFlowable<Integer> source;
+
+        /**
+         * Predicate used by the filter operator (filters even numbers).
+         */
+        Predicate<Integer> predicate;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a ParallelFlowable that emits a range of integers on the computation scheduler.
+            source = Flowable.range(1, itemCount).parallel(parallelism).runOn(Schedulers.computation());
+            // Simple predicate that lets through even numbers.
+            predicate = i -> (i & 1) == 0;
+        }
+    }
+
+    @Benchmark
+    public void parallelFilter(Blackhole bh, BenchmarkState state) throws InterruptedException {
+        // Latch to wait for all parallel rails to complete.
+        CountDownLatch latch = new CountDownLatch(state.parallelism);
+        // Subscribe to the filtered ParallelFlowable.
+        state.source.filter(state.predicate).subscribe(new Subscriber<Integer>() {
+
+            Subscription upstream;
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                // Request an unbounded number of items; the source is finite.
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                // Consume the item to prevent dead‑code elimination.
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // In case of error, still count down the latch.
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                // Signal completion of this rail.
+                latch.countDown();
+            }
+        });
+        // Wait for all rails to finish before ending the iteration.
+        latch.await();
+    }
+}

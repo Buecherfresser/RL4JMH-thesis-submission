@@ -1,0 +1,148 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link MaybeUnsubscribeOn} measuring the throughput of the
+ * {@code dispose()} operation. The benchmark creates a {@code Maybe} that never
+ * terminates, applies the {@code unsubscribeOn} operator and repeatedly disposes
+ * the subscription. This isolates the cost of scheduling the disposal on the
+ * provided {@link Scheduler}.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * <ul>
+ *   <li>State is scoped to a single thread to avoid contention.</li>
+ *   <li>Warm‑up and measurement iterations are defined.</li>
+ *   <li>Forking isolates JVM warm‑up effects.</li>
+ *   <li>Blackhole is not required because we only measure side‑effects.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class MaybeUnsubscribeOnBenchmark {
+
+    /**
+     * Scheduler used by the operator – a single‑threaded scheduler is sufficient for the test.
+     */
+    private Scheduler scheduler;
+
+    /**
+     * The Maybe source that never terminates; disposal is the only operation exercised.
+     */
+    private Maybe<Integer> source;
+
+    /**
+     * The operator under test.
+     */
+    private Maybe<Integer> maybeUnsubscribeOn;
+
+    /**
+     * Disposable obtained after subscription; reused in each benchmark iteration.
+     */
+    private Disposable disposable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a dedicated single‑threaded scheduler to avoid interference from other threads.
+        scheduler = Schedulers.single();
+        // A never‑ending Maybe; we only care about the disposal path.
+        source = Maybe.never();
+        // Apply the operator under test.
+        maybeUnsubscribeOn = new MaybeUnsubscribeOn<>(source, scheduler);
+        // Subscribe once; the same Disposable will be disposed repeatedly in the benchmark.
+        maybeUnsubscribeOn.subscribe(new io.reactivex.rxjava3.core.MaybeObserver<Integer>() {
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                disposable = d;
+            }
+
+            @Override
+            public void onSuccess(Integer value) {
+            }
+
+            @Override
+            public void onError(Throwable e) {
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        });
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Ensure the scheduler is shut down to avoid thread leaks.
+        scheduler.shutdown();
+    }
+
+    /**
+     * Benchmark the throughput of disposing the subscription.
+     *
+     * Each invocation disposes the previously obtained {@link Disposable},
+     * which triggers the {@code scheduleDirect} call inside {@link MaybeUnsubscribeOn.UnsubscribeOnMaybeObserver}.
+     */
+    @Benchmark
+    public void dispose() {
+        // The operator internally checks for already‑disposed state, so we need a fresh subscription
+        // for each iteration to measure the full cost. Re‑subscribe before disposing.
+        maybeUnsubscribeOn.subscribe(new io.reactivex.rxjava3.core.MaybeObserver<Integer>() {
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                d.dispose();
+            }
+
+            @Override
+            public void onSuccess(Integer value) {
+            }
+
+            @Override
+            public void onError(Throwable e) {
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        });
+    }
+}

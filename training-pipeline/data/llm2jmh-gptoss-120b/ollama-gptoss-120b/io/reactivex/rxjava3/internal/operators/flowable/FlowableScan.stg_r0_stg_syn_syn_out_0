@@ -1,0 +1,96 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableScan}
+ * measuring throughput of the scan operator.
+ *
+ * The benchmark creates a {@link Flowable#range} source of configurable size,
+ * applies a simple integer addition accumulator, and consumes the resulting
+ * stream using a {@link Blackhole} to avoid dead‑code elimination.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Param allows testing different source sizes.
+ * - @Setup(Level.Trial) prepares immutable source once per trial.
+ * - Warmup and measurement iterations are defined.
+ * - Throughput mode reports operations per second.
+ */
+@State(Scope.Thread)
+public class FlowableScanBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({ "1_000", "10_000", "100_000", "1_000_000" })
+    public int size;
+
+    /**
+     * Source Flowable emitting a range of integers.
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * Simple accumulator that adds two integers.
+     */
+    private static final BiFunction<Integer, Integer, Integer> ACCUMULATOR = (a, b) -> a + b;
+
+    /**
+     * Prepare the source Flowable once per trial.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Flowable.range is synchronous and backpressure‑aware, ideal for benchmarking.
+        source = Flowable.range(1, size);
+    }
+
+    /**
+     * Measures how many scan operations can be performed per second.
+     *
+     * @param bh Blackhole to consume emitted items and prevent dead‑code elimination.
+     */
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+    @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+    public void scanThroughput(Blackhole bh) {
+        // Subscribe synchronously; the upstream is finite and completes quickly.
+        source.scan(ACCUMULATOR).subscribe(bh::consume);
+    }
+}

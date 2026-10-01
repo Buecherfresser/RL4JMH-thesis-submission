@@ -1,0 +1,27 @@
+instance_id: netty_pool_cache_size_001
+target_class: bench.PooledAllocator
+expected_input_shapes: []
+tags:
+- memory
+- real-world
+- netty
+provenance:
+  project: netty/netty
+  url: https://github.com/netty/netty/pull/10825
+  commit: 221c1a1ed7f09e7c3c2fe4cc8088f9d254a1ae49
+  description: 'Inspired by Netty PR #10825 ("Fix caching for normal allocations")
+
+    which corrected the per-arena cache sizing in
+
+    `PooledByteBufAllocator`. The simplified SUT here is a tiny size-class
+
+    pool with the same allocate/release shape; the full real class is not
+
+    extracted, so the SUT may be expanded later by following the linked PR.
+
+    '
+junit_test_path: tests/PooledAllocatorTest.java
+regressions:
+- id: zero_capacity_cache
+  patch: regressions/zero_capacity_cache.patch
+  description: Cache constructed with zero capacity so every allocate() misses.

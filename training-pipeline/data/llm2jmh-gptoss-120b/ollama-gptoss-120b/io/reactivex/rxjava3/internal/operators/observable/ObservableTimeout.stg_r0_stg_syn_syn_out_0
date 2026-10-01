@@ -1,0 +1,93 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableTimeout}.
+ * Measures the throughput of the timeout operator when the timeout never fires.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+@State(Scope.Thread)
+public class ObservableTimeoutBenchmark {
+
+    /**
+     * Source emitting a fixed number of items synchronously.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * An Observable that never emits nor completes – used as a timeout indicator that never fires.
+     */
+    private Observable<Object> neverTimeout;
+
+    /**
+     * Fallback Observable used in the variant with a fallback.
+     */
+    private Observable<Integer> fallback;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Emit 10 000 integers synchronously; this size is large enough to amortize overhead.
+        source = Observable.range(0, 10_000);
+        neverTimeout = Observable.never();
+        // fallback that completes immediately
+        fallback = Observable.empty();
+    }
+
+    /**
+     * Benchmark the timeout operator without a fallback.
+     * The timeout indicator never fires, so the operator should behave like a pass‑through.
+     */
+    @Benchmark
+    public void timeoutWithoutFallback(Blackhole bh) {
+        source.timeout(neverTimeout, i -> neverTimeout).subscribe(bh::consume, bh::consume);
+    }
+
+    /**
+     * Benchmark the timeout operator with a fallback Observable.
+     * The timeout indicator never fires, so the fallback is never used.
+     */
+    @Benchmark
+    public void timeoutWithFallback(Blackhole bh) {
+        source.timeout(neverTimeout, i -> neverTimeout, fallback).subscribe(bh::consume, bh::consume);
+    }
+}

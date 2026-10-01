@@ -1,0 +1,67 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableTimeInterval}
+ * measuring the throughput of the time‑interval operator under a simple synchronous source.
+ *
+ * The benchmark uses the public {@code timeInterval} operator which internally delegates to
+ * {@code FlowableTimeInterval}. It runs in {@link Mode#Throughput} so the result is reported
+ * as operations per second.
+ *
+ * Best‑practice notes:
+ * • {@code @State(Scope.Thread)} isolates each thread’s data to avoid contention.
+ * • {@code @Param} allows quick exploration of different source sizes.
+ * • {@code Blackhole} consumes the emitted {@code Timed<T>} objects to prevent dead‑code elimination.
+ * • Warm‑up and measurement iterations are kept modest to keep the benchmark fast while still
+ *   providing stable results; they can be tuned via the JMH command line.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableTimeIntervalBenchmark {
+
+    /**
+     * Number of items emitted by the upstream source.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    /**
+     * The upstream source used for all benchmark runs.
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * Scheduler used by the time‑interval operator.
+     */
+    private Scheduler scheduler;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a simple range source; the computation scheduler introduces a realistic async boundary.
+        scheduler = Schedulers.computation();
+        source = Flowable.range(1, itemCount).subscribeOn(scheduler);
+    }
+
+    /**
+     * Executes the time‑interval operator and consumes all emitted {@code Timed<Integer>} values.
+     *
+     * @param bh Blackhole to consume the results and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void timeIntervalThroughput(Blackhole bh) {
+        source.timeInterval(TimeUnit.MILLISECONDS, scheduler)
+              .blockingForEach(timed -> bh.consume(timed));
+    }
+}
+```

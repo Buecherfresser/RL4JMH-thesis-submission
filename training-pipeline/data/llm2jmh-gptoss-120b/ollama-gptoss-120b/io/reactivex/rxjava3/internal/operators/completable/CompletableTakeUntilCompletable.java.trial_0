@@ -1,0 +1,65 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.internal.operators.completable.CompletableTakeUntilCompletable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link CompletableTakeUntilCompletable}.
+ *
+ * The benchmark measures the throughput of subscribing to the operator
+ * and awaiting its termination. It uses {@link Completable#blockingAwait()}
+ * to ensure the whole reactive chain is executed synchronously, which
+ * eliminates the influence of asynchronous scheduling on the measured
+ * throughput.
+ *
+ * Best‑practice JMH settings (warm‑up, measurement, forks) are applied
+ * to obtain reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3)
+@State(Scope.Thread)
+public class CompletableTakeUntilCompletableBenchmark {
+
+    /** A source that completes immediately. */
+    private Completable source;
+
+    /** A secondary Completable that never completes (so the operator completes via {@code source}). */
+    private Completable other;
+
+    /** The operator under test. */
+    private CompletableTakeUntilCompletable operator;
+
+    /**
+     * Set up the benchmark state. The {@code source} completes instantly,
+     * while {@code other} never completes, ensuring the operator's
+     * {@code onComplete} path is exercised.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Completable.complete();
+        other = Completable.never();
+        operator = new CompletableTakeUntilCompletable(source, other);
+    }
+
+    /**
+     * Benchmark the subscription and completion of {@link CompletableTakeUntilCompletable}.
+     *
+     * @param bh Blackhole to consume a dummy value and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void takeUntilCompletable(Blackhole bh) {
+        // blockingAwait() blocks until the Completable terminates.
+        operator.blockingAwait();
+        // Consume a dummy value to keep the JIT from optimizing away the call.
+        bh.consume(1);
+    }
+}
+```

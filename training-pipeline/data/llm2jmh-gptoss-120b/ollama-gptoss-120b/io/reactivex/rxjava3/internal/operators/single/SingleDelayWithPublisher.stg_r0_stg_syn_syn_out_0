@@ -1,0 +1,123 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscription;
+import org.reactivestreams.FlowableSubscriber;
+import org.reactivestreams.Flowable;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link SingleDelayWithPublisher}.
+ *
+ * The benchmark measures the throughput of the operator when the upstream {@link Single}
+ * emits a value immediately and the delaying {@link Publisher} emits a single item
+ * also immediately. This reflects the common use‑case where the delay is driven by
+ * another reactive source rather than a timed delay.
+ *
+ * Best practices applied:
+ * <ul>
+ *   <li>State is scoped to the thread ({@code @State(Scope.Thread)}) to avoid contention.</li>
+ *   <li>All allocations are performed in {@code @Setup(Level.Trial)} to keep the measured
+ *       section focused on the operator's runtime behavior.</li>
+ *   <li>Blackhole is used to consume the result, preventing dead‑code elimination.</li>
+ *   <li>Throughput mode is selected to report operations per second.</li>
+ *   <li>Warm‑up and measurement iterations are left to the JMH runner configuration.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class SingleDelayWithPublisherBenchmark {
+
+    /**
+     * Source Single that emits a constant value.
+     */
+    private SingleSource<Integer> source;
+
+    /**
+     * Publisher that emits a single item and completes.
+     */
+    private Publisher<String> other;
+
+    /**
+     * The operator under test.
+     */
+    private Single<Integer> delayedSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source that immediately emits 1
+        source = observer -> observer.onSuccess(1);
+        // Publisher that immediately emits a dummy value and completes
+        other = new Publisher<String>() {
+
+            @Override
+            public void subscribe(org.reactivestreams.Subscriber<? super String> s) {
+                s.onSubscribe(new Subscription() {
+
+                    @Override
+                    public void request(long n) {
+                        /* no backpressure needed */
+                    }
+
+                    @Override
+                    public void cancel() {
+                        /* no-op */
+                    }
+                });
+                s.onNext("trigger");
+                s.onComplete();
+            }
+        };
+        // Create the operator instance
+        delayedSingle = new SingleDelayWithPublisher<>(source, other);
+    }
+
+    /**
+     * Benchmark method that subscribes to the delayed Single and blocks for the result.
+     *
+     * @param bh Blackhole to consume the emitted value.
+     */
+    @Benchmark
+    public void delayedSingleThroughput(Blackhole bh) {
+        // blockingGet is used to keep the benchmark simple and deterministic.
+        // In a real‑world scenario you might prefer async subscription with a latch.
+        int result = delayedSingle.blockingGet();
+        bh.consume(result);
+    }
+}

@@ -1,0 +1,603 @@
+diff --git a/com/wanasit/chrono/Chrono.java b/com/wanasit/chrono/Chrono.java
+index f189039..7e7d5e7 100644
+--- a/com/wanasit/chrono/Chrono.java
++++ b/com/wanasit/chrono/Chrono.java
+@@ -14,11 +14,11 @@ public class Chrono {
+     public static final Chrono casual = new Chrono(ChronoOption.casualOptions());
+     public static final Chrono standard = new Chrono(ChronoOption.standardOptions());
+ 
+-    public static List<ParsedResult> Parse(String text) {
++    public static List<ParsedResult> Parse(String text) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(1);
+         return standard.parse(text);
+     }
+ 
+-    public static List<ParsedResult> Parse(String text, Date refDate) {
++    public static List<ParsedResult> Parse(String text, Date refDate) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(5);
+         return standard.parse(text, refDate);
+     }
+ 
+diff --git a/com/wanasit/chrono/ChronoOption.java b/com/wanasit/chrono/ChronoOption.java
+index 3ab7fec..e939095 100644
+--- a/com/wanasit/chrono/ChronoOption.java
++++ b/com/wanasit/chrono/ChronoOption.java
+@@ -33,7 +33,7 @@ public class ChronoOption {
+         this.timezoneOffset = Calendar.getInstance().getTimeZone().getOffset(0);
+     }
+ 
+-    public static ChronoOption standardOptions() {
++    public static ChronoOption standardOptions() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(9);
+         ChronoOption options = new ChronoOption();
+ 
+         // All Parsers
+@@ -62,7 +62,7 @@ public class ChronoOption {
+         return options;
+     }
+ 
+-    public static ChronoOption casualOptions() {
++    public static ChronoOption casualOptions() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(12);
+ 
+         ChronoOption options = ChronoOption.standardOptions();
+         options.parsers.add(new ENCasualDateExpressionParser());
+diff --git a/com/wanasit/chrono/ParsedDateComponent.java b/com/wanasit/chrono/ParsedDateComponent.java
+index a678942..295815c 100644
+--- a/com/wanasit/chrono/ParsedDateComponent.java
++++ b/com/wanasit/chrono/ParsedDateComponent.java
+@@ -36,7 +36,7 @@ public class ParsedDateComponent {
+     }
+     
+     
+-    public Date date(){
++    public Date date(){ com.wanasit.chrono.jmhbench.MutationSwitch.tick(15);
+         
+         Map<Components, Integer> joinInfo = new HashMap<ParsedDateComponent.Components, Integer>();
+         
+@@ -71,7 +71,7 @@ public class ParsedDateComponent {
+         return null;
+     }
+     
+-    public boolean isCertain(Components component) {
++    public boolean isCertain(Components component) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(18);
+         return this.knownValues.containsKey(component);
+     }
+     
+diff --git a/com/wanasit/chrono/ParsedResult.java b/com/wanasit/chrono/ParsedResult.java
+index b32aa6c..41c31a7 100644
+--- a/com/wanasit/chrono/ParsedResult.java
++++ b/com/wanasit/chrono/ParsedResult.java
+@@ -31,7 +31,7 @@ public class ParsedResult implements Comparable<ParsedResult>, Cloneable{
+     }
+     
+     
+-    public int compareTo(ParsedResult o) {
++    public int compareTo(ParsedResult o) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(21);
+         return this.index - o.index;
+     }
+     
+diff --git a/com/wanasit/chrono/filter/LowProbabilityFormatFilter.java b/com/wanasit/chrono/filter/LowProbabilityFormatFilter.java
+index 4bed914..44d2118 100644
+--- a/com/wanasit/chrono/filter/LowProbabilityFormatFilter.java
++++ b/com/wanasit/chrono/filter/LowProbabilityFormatFilter.java
+@@ -8,7 +8,7 @@ import com.wanasit.chrono.ParsedResult;
+ public class LowProbabilityFormatFilter extends Filter {
+  
+     @Override
+-    public boolean isValid(String text, ChronoOption options, ParsedResult result) {
++    public boolean isValid(String text, ChronoOption options, ParsedResult result) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(2);
+         return !Pattern.matches("^\\d\\.\\d{1,2}$", result.text);
+     }
+     
+diff --git a/com/wanasit/chrono/filter/PrefixCheckFilter.java b/com/wanasit/chrono/filter/PrefixCheckFilter.java
+index 9af1685..02bde8d 100644
+--- a/com/wanasit/chrono/filter/PrefixCheckFilter.java
++++ b/com/wanasit/chrono/filter/PrefixCheckFilter.java
+@@ -8,7 +8,7 @@ import com.wanasit.chrono.ParsedResult;
+ public class PrefixCheckFilter extends Filter {
+  
+     @Override
+-    public boolean isValid(String text, ChronoOption options, ParsedResult result) {
++    public boolean isValid(String text, ChronoOption options, ParsedResult result) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(6);
+         String prefix = text.substring(0, result.index); 
+         return !Pattern.matches("(\\d+\\/)$", prefix);
+     }
+diff --git a/com/wanasit/chrono/jmhbench/MutationSwitch.java b/com/wanasit/chrono/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c18145c
+--- /dev/null
++++ b/com/wanasit/chrono/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.wanasit.chrono.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/wanasit/chrono/parser/en/ENCasualDateExpressionParser.java b/com/wanasit/chrono/parser/en/ENCasualDateExpressionParser.java
+index 6955422..416d714 100644
+--- a/com/wanasit/chrono/parser/en/ENCasualDateExpressionParser.java
++++ b/com/wanasit/chrono/parser/en/ENCasualDateExpressionParser.java
+@@ -19,12 +19,12 @@ public class ENCasualDateExpressionParser extends ParserAbstract {
+             + "(?=\\W|$)";
+ 
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(3);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(7);
+ 
+         ParsedResult result = new ParsedResult(this, matcher.start(), matcher.group());
+ 
+diff --git a/com/wanasit/chrono/parser/en/ENDayOfWeekDateFormatParser.java b/com/wanasit/chrono/parser/en/ENDayOfWeekDateFormatParser.java
+index 0ee789a..d698895 100644
+--- a/com/wanasit/chrono/parser/en/ENDayOfWeekDateFormatParser.java
++++ b/com/wanasit/chrono/parser/en/ENDayOfWeekDateFormatParser.java
+@@ -25,10 +25,10 @@ public class ENDayOfWeekDateFormatParser extends ParserAbstract {
+     }
+ 
+     @Override
+-    protected Pattern pattern() { return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE); }
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(10); return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE); }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(13);
+ 
+         Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
+         calendar.setTime(refDate);
+diff --git a/com/wanasit/chrono/parser/en/ENInternationalStandardParser.java b/com/wanasit/chrono/parser/en/ENInternationalStandardParser.java
+index 4fdb558..5d61a3c 100644
+--- a/com/wanasit/chrono/parser/en/ENInternationalStandardParser.java
++++ b/com/wanasit/chrono/parser/en/ENInternationalStandardParser.java
+@@ -34,12 +34,12 @@ public class ENInternationalStandardParser extends ParserAbstract {
+     protected static final int TZD_MINUTE_OFFSET_GROUP = 8;
+ 
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(16);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(19);
+ 
+         ParsedResult result = new ParsedResult(this, matcher.start(), matcher.group());
+ 
+diff --git a/com/wanasit/chrono/parser/en/ENMonthNameLittleEndianParser.java b/com/wanasit/chrono/parser/en/ENMonthNameLittleEndianParser.java
+index afbbec8..3593c5f 100644
+--- a/com/wanasit/chrono/parser/en/ENMonthNameLittleEndianParser.java
++++ b/com/wanasit/chrono/parser/en/ENMonthNameLittleEndianParser.java
+@@ -17,12 +17,12 @@ public class ENMonthNameLittleEndianParser extends ParserAbstract {
+     protected static String regPattern = "(\\W|^)((Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sun|Mon|Tue|Wed|Thu|Fri|Sat)\\s*,?\\s*)?([0-9]{1,2})(st|nd|rd|th)?(\\s*(to|\\-|\\s)\\s*([0-9]{1,2})(st|nd|rd|th)?)?\\s*(Jan(?:uary|\\.)?|Feb(?:ruary|\\.)?|Mar(?:ch|\\.)?|Apr(?:il|\\.)?|May|Jun(?:e|\\.)?|Jul(?:y|\\.)?|Aug(?:ust|\\.)?|Sep(?:tember|\\.)?|Oct(?:ober|\\.)?|Nov(?:ember|\\.)?|Dec(?:ember|\\.)?)((\\s*[0-9]{2,4})(\\s*BE)?)?(\\W|$)";
+     
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(22);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(24);
+ 
+         ParsedResult result = new ParsedResult(this, matcher.start() + matcher.group(1).length(),
+                 matcher.group());
+diff --git a/com/wanasit/chrono/parser/en/ENMonthNameMiddleEndianParser.java b/com/wanasit/chrono/parser/en/ENMonthNameMiddleEndianParser.java
+index f92ee18..3a4b9cb 100644
+--- a/com/wanasit/chrono/parser/en/ENMonthNameMiddleEndianParser.java
++++ b/com/wanasit/chrono/parser/en/ENMonthNameMiddleEndianParser.java
+@@ -31,12 +31,12 @@ public class ENMonthNameMiddleEndianParser extends ParserAbstract {
+ 
+ 
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(26);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(28);
+ 
+         Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
+         calendar.setTime(refDate);
+diff --git a/com/wanasit/chrono/parser/en/ENSlashBigEndianDateFormatParser.java b/com/wanasit/chrono/parser/en/ENSlashBigEndianDateFormatParser.java
+index b21b131..5bba88d 100644
+--- a/com/wanasit/chrono/parser/en/ENSlashBigEndianDateFormatParser.java
++++ b/com/wanasit/chrono/parser/en/ENSlashBigEndianDateFormatParser.java
+@@ -16,12 +16,12 @@ public class ENSlashBigEndianDateFormatParser extends ParserAbstract {
+     protected static String regPattern = "(\\W|^)([0-9]{4})[\\/\\.]([0-9]{1,2})([\\/\\.]([0-9]{1,2}))(\\W|$)";
+ 
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(29);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(30);
+ 
+         Pattern datePattern = Pattern.compile("^\\d.\\d$", Pattern.CASE_INSENSITIVE);
+         if (datePattern.matcher(matcher.group()).find()) return null;
+diff --git a/com/wanasit/chrono/parser/en/ENSlashDateFormatParser.java b/com/wanasit/chrono/parser/en/ENSlashDateFormatParser.java
+index 2a6c1c1..6ccf00c 100644
+--- a/com/wanasit/chrono/parser/en/ENSlashDateFormatParser.java
++++ b/com/wanasit/chrono/parser/en/ENSlashDateFormatParser.java
+@@ -16,12 +16,12 @@ public class ENSlashDateFormatParser extends ParserAbstract {
+     protected static String regPattern = "(\\W|^)(Sun|Sunday|Mon|Monday|Tue|Tuesday|Wed|Wednesday|Thur|Thursday|Fri|Friday|Sat|Saturday)?\\s*\\,?\\s*([0-9]{1,2})[\\/\\.]([0-9]{1,2})([\\/\\.]([0-9]{4}|[0-9]{2}))?(\\W|$)";
+ 
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(31);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(32);
+         // TODO Auto-generated method stub
+ 
+ 
+diff --git a/com/wanasit/chrono/parser/en/ENTimeAgoFormatParser.java b/com/wanasit/chrono/parser/en/ENTimeAgoFormatParser.java
+index 2fa5adc..332be09 100644
+--- a/com/wanasit/chrono/parser/en/ENTimeAgoFormatParser.java
++++ b/com/wanasit/chrono/parser/en/ENTimeAgoFormatParser.java
+@@ -16,12 +16,12 @@ public class ENTimeAgoFormatParser extends ParserAbstract {
+     protected static String regPattern = "(?<=\\W|^)([1-9][0-9]{0,5})\\s*(minutes?|hours?|days?)\\s*ago(?=(?:\\W|$))";
+ 
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(33);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(34);
+ 
+         int amount = Integer.parseInt(matcher.group(1));
+         if (amount < 1)
+diff --git a/com/wanasit/chrono/parser/en/ENTimeDeadlineFormatParser.java b/com/wanasit/chrono/parser/en/ENTimeDeadlineFormatParser.java
+index ce841dd..771fb79 100644
+--- a/com/wanasit/chrono/parser/en/ENTimeDeadlineFormatParser.java
++++ b/com/wanasit/chrono/parser/en/ENTimeDeadlineFormatParser.java
+@@ -16,12 +16,12 @@ public class ENTimeDeadlineFormatParser extends ParserAbstract {
+     protected static String regPattern = "(?<=\\W|^)(?:within|in)\\s*([1-9][0-9]{0,5})\\s*(minutes?|hours?|days?)(?=\\W|$)";
+ 
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(35);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption options) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption options) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(36);
+ 
+         int amount = Integer.parseInt(matcher.group(1));
+         if (amount < 1)
+diff --git a/com/wanasit/chrono/parser/en/ENTimeExpressionParser.java b/com/wanasit/chrono/parser/en/ENTimeExpressionParser.java
+index 750d601..0ef1ae1 100644
+--- a/com/wanasit/chrono/parser/en/ENTimeExpressionParser.java
++++ b/com/wanasit/chrono/parser/en/ENTimeExpressionParser.java
+@@ -17,12 +17,12 @@ public class ENTimeExpressionParser extends ParserAbstract {
+     protected static String SECOND_REG_PATTERN = "^\\s*(\\-|\\~|\\〜|to|\\?)\\s*(\\d{1,2})((\\.|\\:|\\：)(\\d{2})((\\.|\\:|\\：)(\\d{2}))?)?(?!%)(\\s*(AM|PM|A\\.M\\.|P\\.M\\.))?(?=\\W|$)";
+     
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(37);
+         return Pattern.compile(FIRST_REG_PATTERN, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(38);
+         
+         Calendar calendar = Calendar.getInstance();
+         calendar.setTime(refDate);
+diff --git a/com/wanasit/chrono/parser/en/ENWeekExpressionParser.java b/com/wanasit/chrono/parser/en/ENWeekExpressionParser.java
+index b24be02..fccd9e6 100644
+--- a/com/wanasit/chrono/parser/en/ENWeekExpressionParser.java
++++ b/com/wanasit/chrono/parser/en/ENWeekExpressionParser.java
+@@ -21,12 +21,12 @@ public class ENWeekExpressionParser extends ParserAbstract {
+             + "(?=\\W|$)";
+ 
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(39);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(40);
+ 
+         ParsedResult result = new ParsedResult(this, matcher.start(), matcher.group());
+         Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
+diff --git a/com/wanasit/chrono/parser/jp/JPCasualDateExpressionParser.java b/com/wanasit/chrono/parser/jp/JPCasualDateExpressionParser.java
+index 7f9f8db..6141c97 100644
+--- a/com/wanasit/chrono/parser/jp/JPCasualDateExpressionParser.java
++++ b/com/wanasit/chrono/parser/jp/JPCasualDateExpressionParser.java
+@@ -19,13 +19,13 @@ public class JPCasualDateExpressionParser extends ParserAbstract {
+ 	    + "";
+     
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(41);
+         return Pattern.compile(regPattern, Pattern.CASE_INSENSITIVE);
+     }
+     
+     
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(42);
+         
+ 	ParsedResult result = new ParsedResult();
+ 	result.text = matcher.group();
+diff --git a/com/wanasit/chrono/parser/jp/JPDateAgoFormatParser.java b/com/wanasit/chrono/parser/jp/JPDateAgoFormatParser.java
+index 21d8533..e7063e6 100644
+--- a/com/wanasit/chrono/parser/jp/JPDateAgoFormatParser.java
++++ b/com/wanasit/chrono/parser/jp/JPDateAgoFormatParser.java
+@@ -15,12 +15,12 @@ import com.wanasit.chrono.parser.ParserAbstract;
+ public class JPDateAgoFormatParser extends ParserAbstract {
+     
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(43);
+         return Pattern.compile("(\\d+)(分|時間|日)前", Pattern.CASE_INSENSITIVE);
+     }
+     
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(44);
+         
+         Calendar calendar = Calendar.getInstance(Locale.JAPANESE);
+         calendar.setTime(refDate);
+diff --git a/com/wanasit/chrono/parser/jp/JPDayOfWeekDateFormatParser.java b/com/wanasit/chrono/parser/jp/JPDayOfWeekDateFormatParser.java
+index c873ee9..7c89d9c 100644
+--- a/com/wanasit/chrono/parser/jp/JPDayOfWeekDateFormatParser.java
++++ b/com/wanasit/chrono/parser/jp/JPDayOfWeekDateFormatParser.java
+@@ -15,12 +15,12 @@ import com.wanasit.chrono.parser.ParserAbstract;
+ public class JPDayOfWeekDateFormatParser extends ParserAbstract {
+     
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(45);
+         return Pattern.compile("(日|月|火|水|木|金|土)曜日?", Pattern.CASE_INSENSITIVE);
+     }
+     
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(46);
+         
+         Calendar calendar = Calendar.getInstance(Locale.JAPANESE);
+         calendar.setTime(refDate);
+diff --git a/com/wanasit/chrono/parser/jp/JPStandartDateFormatParser.java b/com/wanasit/chrono/parser/jp/JPStandartDateFormatParser.java
+index c1c7b87..389c89d 100644
+--- a/com/wanasit/chrono/parser/jp/JPStandartDateFormatParser.java
++++ b/com/wanasit/chrono/parser/jp/JPStandartDateFormatParser.java
+@@ -15,12 +15,12 @@ import com.wanasit.chrono.parser.ParserAbstract;
+ public class JPStandartDateFormatParser extends ParserAbstract {
+     
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(47);
+         return Pattern.compile("(((平成|昭和)?([0-9０-９]{2,4})年|今年|去年|来年)|[^年]|^)([0-9０-９]{1,2}|今|先|来)月([0-9０-９]{1,2})日\\s*(?:\\((?:日|月|火|水|木|金|土)\\))?", Pattern.CASE_INSENSITIVE);
+     }
+     
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(48);
+         
+         Calendar calendar = Calendar.getInstance(Locale.JAPANESE);
+         calendar.setTime(refDate);
+diff --git a/com/wanasit/chrono/parser/jp/JPTimeExpressionParser.java b/com/wanasit/chrono/parser/jp/JPTimeExpressionParser.java
+index 536e991..b617c92 100644
+--- a/com/wanasit/chrono/parser/jp/JPTimeExpressionParser.java
++++ b/com/wanasit/chrono/parser/jp/JPTimeExpressionParser.java
+@@ -15,12 +15,12 @@ public class JPTimeExpressionParser extends ParserAbstract {
+     protected static String FIRST_REG_PATTERN = "(?<!午前|午後|\\d)(午前|午後)?([0-9０-９]{1,2})時(([0-9]{2})分|半)?";
+     
+     @Override
+-    protected Pattern pattern() {
++    protected Pattern pattern() { com.wanasit.chrono.jmhbench.MutationSwitch.tick(49);
+         return Pattern.compile(FIRST_REG_PATTERN, Pattern.CASE_INSENSITIVE);
+     }
+ 
+     @Override
+-    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) {
++    protected ParsedResult extract(String text, Date refDate, Matcher matcher, ChronoOption option) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(50);
+         
+         Calendar calendar = Calendar.getInstance();
+         calendar.setTime(refDate);
+diff --git a/com/wanasit/chrono/refiner/ExtractConcordanceRefiner.java b/com/wanasit/chrono/refiner/ExtractConcordanceRefiner.java
+index 1eb593d..19d5224 100644
+--- a/com/wanasit/chrono/refiner/ExtractConcordanceRefiner.java
++++ b/com/wanasit/chrono/refiner/ExtractConcordanceRefiner.java
+@@ -9,7 +9,7 @@ public class ExtractConcordanceRefiner implements Refiner {
+ 
+     public static final int CONCORDANCE_SIZE = 30;
+ 
+-    public List<ParsedResult> refine(List<ParsedResult> results, String text, ChronoOption options) {
++    public List<ParsedResult> refine(List<ParsedResult> results, String text, ChronoOption options) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(11);
+ 
+ 	for (ParsedResult result : results) {
+ 
+diff --git a/com/wanasit/chrono/refiner/ExtractTimezoneRefiner.java b/com/wanasit/chrono/refiner/ExtractTimezoneRefiner.java
+index 410f77a..eeacce8 100644
+--- a/com/wanasit/chrono/refiner/ExtractTimezoneRefiner.java
++++ b/com/wanasit/chrono/refiner/ExtractTimezoneRefiner.java
+@@ -20,7 +20,7 @@ public class ExtractTimezoneRefiner implements Refiner {
+ 
+     public static final Map<String, Integer> TIMEZONE_ABBR_MAP = new HashMap<String, Integer>();
+ 
+-    public List<ParsedResult> refine(List<ParsedResult> results, String text, ChronoOption options) {
++    public List<ParsedResult> refine(List<ParsedResult> results, String text, ChronoOption options) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(14);
+ 
+ 
+         for (ParsedResult result : results) {
+diff --git a/com/wanasit/chrono/refiner/en/ENMergeDateAndTimeRefiner.java b/com/wanasit/chrono/refiner/en/ENMergeDateAndTimeRefiner.java
+index 82b01b6..b79e79f 100644
+--- a/com/wanasit/chrono/refiner/en/ENMergeDateAndTimeRefiner.java
++++ b/com/wanasit/chrono/refiner/en/ENMergeDateAndTimeRefiner.java
+@@ -13,11 +13,11 @@ import com.wanasit.chrono.ParsedResult;
+ public class ENMergeDateAndTimeRefiner extends RefinerAbstract {
+ 
+     
+-    protected static boolean isDateOnly(ParsedResult result){
++    protected static boolean isDateOnly(ParsedResult result){ com.wanasit.chrono.jmhbench.MutationSwitch.tick(17);
+         return !result.start.isCertain(Components.Hour);
+     }
+     
+-    protected static boolean isTimeOnly(ParsedResult result){
++    protected static boolean isTimeOnly(ParsedResult result){ com.wanasit.chrono.jmhbench.MutationSwitch.tick(20);
+         return !result.start.isCertain(Components.DayOfMonth) && !result.start.isCertain(Components.DayOfWeek);
+     }
+     
+diff --git a/com/wanasit/chrono/refiner/en/ENMergeDateRangeRefiner.java b/com/wanasit/chrono/refiner/en/ENMergeDateRangeRefiner.java
+index 1ce7cf2..4c8f489 100644
+--- a/com/wanasit/chrono/refiner/en/ENMergeDateRangeRefiner.java
++++ b/com/wanasit/chrono/refiner/en/ENMergeDateRangeRefiner.java
+@@ -10,7 +10,7 @@ import com.wanasit.chrono.refiner.RefinerAbstract;
+ 
+ public class ENMergeDateRangeRefiner extends RefinerAbstract {
+     
+-    protected static boolean ableToMerge(String text, ParsedResult prevResult, ParsedResult curResult){
++    protected static boolean ableToMerge(String text, ParsedResult prevResult, ParsedResult curResult){ com.wanasit.chrono.jmhbench.MutationSwitch.tick(4);
+         
+         try{
+             Pattern allowedPattern = Pattern.compile("\\s*(and|to|-|ー)?\\s*", Pattern.CASE_INSENSITIVE);
+@@ -25,7 +25,7 @@ public class ENMergeDateRangeRefiner extends RefinerAbstract {
+         return false;
+     }
+     
+-    protected static ParsedResult mergeResult(String text, ParsedResult fromResult, ParsedResult toResult){
++    protected static ParsedResult mergeResult(String text, ParsedResult fromResult, ParsedResult toResult){ com.wanasit.chrono.jmhbench.MutationSwitch.tick(8);
+         
+         if (fromResult.start.date().after(toResult.start.date())) {
+             ParsedResult tmp = fromResult;
+diff --git a/com/wanasit/chrono/refiner/en/ENMergeWeekdayRefiner.java b/com/wanasit/chrono/refiner/en/ENMergeWeekdayRefiner.java
+index 5396e5a..a5658ba 100644
+--- a/com/wanasit/chrono/refiner/en/ENMergeWeekdayRefiner.java
++++ b/com/wanasit/chrono/refiner/en/ENMergeWeekdayRefiner.java
+@@ -22,7 +22,7 @@ public class ENMergeWeekdayRefiner extends RefinerAbstract {
+     private static Pattern ALLOWED_PATTERN_BETWEEN = Pattern.compile("\\s*('s|on)?\\s*", Pattern.CASE_INSENSITIVE);
+ 
+ 
+-    protected static boolean checkPatternBetween(String text, ParsedResult prevResult, ParsedResult curResult) {
++    protected static boolean checkPatternBetween(String text, ParsedResult prevResult, ParsedResult curResult) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(23);
+ 
+         try {
+             String textBetween = text.substring(prevResult.index + prevResult.text.length(), curResult.index);
+@@ -35,7 +35,7 @@ public class ENMergeWeekdayRefiner extends RefinerAbstract {
+         return false;
+     }
+ 
+-    protected static boolean checkMergingCompatible(ParsedResult weekResult, ParsedResult weekDayResult) {
++    protected static boolean checkMergingCompatible(ParsedResult weekResult, ParsedResult weekDayResult) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(25);
+ 
+         if (weekResult.start.isCertain(Components.DayOfMonth) || weekResult.end != null)
+             return false;
+diff --git a/com/wanasit/chrono/refiner/en/ENRemoveOverlapRefiner.java b/com/wanasit/chrono/refiner/en/ENRemoveOverlapRefiner.java
+index d8ce904..6b5159a 100644
+--- a/com/wanasit/chrono/refiner/en/ENRemoveOverlapRefiner.java
++++ b/com/wanasit/chrono/refiner/en/ENRemoveOverlapRefiner.java
+@@ -10,7 +10,7 @@ import com.wanasit.chrono.refiner.RefinerAbstract;
+ public class ENRemoveOverlapRefiner extends RefinerAbstract {
+     
+     @Override
+-    public List<ParsedResult> refine(List<ParsedResult> results, String text, ChronoOption options) {
++    public List<ParsedResult> refine(List<ParsedResult> results, String text, ChronoOption options) { com.wanasit.chrono.jmhbench.MutationSwitch.tick(27);
+         
+         if (results.size() < 2) return results;
+         

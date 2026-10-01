@@ -1,0 +1,156 @@
+package io.reactivex.rxjava3.subscribers;
+
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SerializedSubscriber}.
+ *
+ * Measures the throughput of {@code onNext} calls under different threading scenarios.
+ * The benchmark follows best practices:
+ * - Uses {@link Blackhole} to avoid dead‑code elimination.
+ * - Provides a minimal no‑op downstream {@link Subscriber}.
+ * - Initializes the subscriber once per trial.
+ * - Uses {@code Mode.Throughput} to report operations per time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
+public class SerializedSubscriberBenchmark {
+
+    /**
+     * Simple downstream subscriber that discards all signals.
+     */
+    static final class NoOpSubscriber<T> implements Subscriber<T> {
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onNext(T t) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onComplete() {
+            /* no‑op */
+        }
+    }
+
+    /**
+     * Dummy subscription used to satisfy the upstream contract.
+     */
+    static final class NoOpSubscription implements Subscription {
+
+        @Override
+        public void request(long n) {
+            /* no‑op */
+        }
+
+        @Override
+        public void cancel() {
+            /* no‑op */
+        }
+    }
+
+    /**
+     * State shared by all benchmark threads.
+     */
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+
+        SerializedSubscriber<Object> serialized;
+
+        NoOpSubscriber<Object> downstream;
+
+        NoOpSubscription upstream;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            downstream = new NoOpSubscriber<>();
+            serialized = new SerializedSubscriber<>(downstream, false);
+            upstream = new NoOpSubscription();
+            serialized.onSubscribe(upstream);
+        }
+
+        /**
+         * Reset the internal flags between invocations if needed.
+         */
+        @TearDown(Level.Iteration)
+        public void tearDown() {
+            // SerializedSubscriber does not expose a reset, so we recreate it per iteration
+            // when a clean state is required. For pure onNext throughput this is unnecessary.
+        }
+    }
+
+    /**
+     * Single‑threaded throughput of {@code onNext}.
+     *
+     * @param state shared benchmark state
+     * @param bh    blackhole to consume the emitted value
+     */
+    @Benchmark
+    @Threads(1)
+    public void onNextSingleThread(BenchmarkState state, Blackhole bh) {
+        Object value = new Object();
+        // prevent dead‑code elimination
+        bh.consume(value);
+        state.serialized.onNext(value);
+    }
+
+    /**
+     * Multi‑threaded throughput of {@code onNext}.
+     *
+     * @param state shared benchmark state
+     * @param bh    blackhole to consume the emitted value
+     */
+    @Benchmark
+    @Threads(4)
+    public void onNextFourThreads(BenchmarkState state, Blackhole bh) {
+        Object value = new Object();
+        // prevent dead‑code elimination
+        bh.consume(value);
+        state.serialized.onNext(value);
+    }
+}

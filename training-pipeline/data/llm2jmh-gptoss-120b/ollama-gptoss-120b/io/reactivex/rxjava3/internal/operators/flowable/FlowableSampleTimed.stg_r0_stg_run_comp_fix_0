@@ -1,0 +1,95 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableSampleTimed}.
+ *
+ * Measures throughput of sampling a fast upstream {@link Flowable} with a timed interval.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableSampleTimedBenchmark {
+
+    @Param({ "1000000" })
+    public int upstreamItemCount;
+
+    @Param({ "1" })
+    public long periodMs;
+
+    private Flowable<Integer> upstream;
+    private Flowable<Integer> sampled;
+    private BlackholeSubscriber subscriber;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        upstream = Flowable.range(1, upstreamItemCount)
+                .subscribeOn(Schedulers.computation());
+
+        // Provide a no‑op onDropped consumer to satisfy the non‑null requirement.
+        Consumer<Integer> noOp = t -> { };
+        sampled = upstream.sample(periodMs, TimeUnit.MILLISECONDS, Schedulers.computation(), false, noOp);
+
+        subscriber = new BlackholeSubscriber();
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        subscriber.dispose();
+    }
+
+    @Benchmark
+    public void sampleTimedThroughput(Blackhole bh) {
+        subscriber.setBlackhole(bh);
+        sampled.subscribe(subscriber);
+        subscriber.awaitCompletion();
+    }
+
+    private static final class BlackholeSubscriber extends DisposableSubscriber<Integer> {
+        private volatile Blackhole bh;
+        private final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        private final AtomicLong received = new AtomicLong();
+
+        void setBlackhole(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            if (bh != null) {
+                bh.consume(t);
+            }
+            received.incrementAndGet();
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            t.printStackTrace();
+            latch.countDown();
+        }
+
+        @Override
+        public void onComplete() {
+            latch.countDown();
+        }
+
+        void awaitCompletion() {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}
+```

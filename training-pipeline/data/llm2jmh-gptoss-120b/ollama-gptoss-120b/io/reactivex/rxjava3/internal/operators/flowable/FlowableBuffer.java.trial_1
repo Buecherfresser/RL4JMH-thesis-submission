@@ -1,0 +1,73 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
+/**
+ * JMH benchmarks for the {@code Flowable.buffer} operator which internally uses
+ * {@code FlowableBuffer}. The benchmarks cover the three buffering strategies:
+ *
+ * <ul>
+ *   <li>Exact buffering (size == skip)</li>
+ *   <li>Skipping buffering (skip > size)</li>
+ *   <li>Overlapping buffering (skip < size)</li>
+ * </ul>
+ *
+ * The source is a hot {@link Flowable} emitting a large number of integers.
+ * Results are consumed via {@link Blackhole} to avoid dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableBufferBenchmark {
+
+    @Param({ "1000000" })
+    public int itemCount;
+
+    @Param({ "10", "100", "1000" })
+    public int size;
+
+    @Param({ "10", "20", "5" })
+    public int skip;
+
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Flowable.range(1, itemCount)
+                         .subscribeOn(Schedulers.computation())
+                         .hide();
+    }
+
+    @Benchmark
+    public void exactBuffer(Blackhole bh) {
+        source.buffer(size)
+              .subscribe(v -> bh.consume(v),
+                         e -> bh.consume(e),
+                         () -> {});
+    }
+
+    @Benchmark
+    public void skipBuffer(Blackhole bh) {
+        source.buffer(size, skip)
+              .subscribe(v -> bh.consume(v),
+                         e -> bh.consume(e),
+                         () -> {});
+    }
+
+    @Benchmark
+    public void overlappingBuffer(Blackhole bh) {
+        source.buffer(size, skip)
+              .subscribe(v -> bh.consume(v),
+                         e -> bh.consume(e),
+                         () -> {});
+    }
+}
+```

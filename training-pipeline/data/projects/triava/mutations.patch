@@ -1,0 +1,838 @@
+diff --git a/com/trivago/triava/collections/HashInterner.java b/com/trivago/triava/collections/HashInterner.java
+index 52e84b5..133ac1d 100644
+--- a/com/trivago/triava/collections/HashInterner.java
++++ b/com/trivago/triava/collections/HashInterner.java
+@@ -1,104 +1,104 @@
+-/*********************************************************************************
+- * Copyright 2015-present trivago GmbH
+- * 
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- * 
+- *    http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- **********************************************************************************/
+-
+-package com.trivago.triava.collections;
+-
+-import java.util.concurrent.ConcurrentHashMap;
+-import java.util.concurrent.ConcurrentMap;
+-
+-/**
+- * Hash based implementation of {@link Interner}. 
+- * Identity is determined via {@link #equals(Object)} and {@link #hashCode()}, thus stored instances
+- * must guarantee that hashCode is consistent with equals. This implementation can return different object
+- * references in the case of two concurrent {@link #get(Object)} calls
+- * 
+- * <p>
+- * <b>Speed</b>: The implementation is twice as fast as Guavas Interner, and 5 times as fast as String.intern().
+- * Measurement via bb Microbenchmark tool (ticket SRT-6053). Time in microseconds (us) for 1000 interns:
+- * <ul>
+- * <li>18us triava HashInterner</li>
+- * <li>32us Guava Weak Interner</li>
+- * <li>39us Guava Strong Interner</li>
+- * <li>88us String.intern() - the 88us average had a very high deviation.</li>
+- * </ul>
+- * 
+- * @author cesken
+- * @since 2012-08-10
+- * 
+- */
+-public class HashInterner<T> implements Interner<T>
+-{
+-	// The implementation uses a ConcurrentMap, so we do not need to synchronize.
+-	private final ConcurrentMap<T, T> interningMap;
+-
+-	/**
+-	 * Creates an Interner with 100 expected elements as sizing hint for the underlying Map.
+-	 */
+-	public HashInterner()
+-	{
+-		this(100);
+-	}
+-	
+-	/**
+-	 * Creates an Interner with expectedElements as sizing hint for the underlying Map.
+-	 * 
+-	 * @param expectedElements The expected number of elements
+-	 */
+-	public HashInterner(int expectedElements)
+-	{
+-		interningMap = new ConcurrentHashMap<>(expectedElements);
+-	}
+-	
+-	@Override
+-	public T get(T value)
+-	{
+-		if ( value == null )
+-		{
+-			// Special code path: Return immediately for null value, as they are not allowed in ConcurrentHashMap.
+-			return null;
+-		}
+-		
+-		T sharedRefString = interningMap.get(value);
+-		if (sharedRefString != null)
+-			return sharedRefString;
+-
+-		/*
+-		 * Not yet in interned. Add to Map and return new value.
+-		 * 
+-		 * Hint for concurrency: If multiple callers enter it with the same not-yet-contained
+-		 * value, then both will write. The later put() will win, and the former will use a non-shared value.
+-		 */
+-		interningMap.put(value, value);
+-		return value;
+-	}
+-
+-	/**
+-	 * @return Returns the number of elements this instance has interned.
+-	 */
+-	public int size()
+-	{
+-		return interningMap.size();
+-	}
+-
+-	@Override
+-	public String toString()
+-	{
+-		return "Interner " + this.hashCode() + " [" + size() + " elements]";
+-	}
+-	
+-	
+-}
+-
++/*********************************************************************************
++ * Copyright 2015-present trivago GmbH
++ * 
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ **********************************************************************************/
++
++package com.trivago.triava.collections;
++
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.ConcurrentMap;
++
++/**
++ * Hash based implementation of {@link Interner}. 
++ * Identity is determined via {@link #equals(Object)} and {@link #hashCode()}, thus stored instances
++ * must guarantee that hashCode is consistent with equals. This implementation can return different object
++ * references in the case of two concurrent {@link #get(Object)} calls
++ * 
++ * <p>
++ * <b>Speed</b>: The implementation is twice as fast as Guavas Interner, and 5 times as fast as String.intern().
++ * Measurement via bb Microbenchmark tool (ticket SRT-6053). Time in microseconds (us) for 1000 interns:
++ * <ul>
++ * <li>18us triava HashInterner</li>
++ * <li>32us Guava Weak Interner</li>
++ * <li>39us Guava Strong Interner</li>
++ * <li>88us String.intern() - the 88us average had a very high deviation.</li>
++ * </ul>
++ * 
++ * @author cesken
++ * @since 2012-08-10
++ * 
++ */
++public class HashInterner<T> implements Interner<T>
++{
++	// The implementation uses a ConcurrentMap, so we do not need to synchronize.
++	private final ConcurrentMap<T, T> interningMap;
++
++	/**
++	 * Creates an Interner with 100 expected elements as sizing hint for the underlying Map.
++	 */
++	public HashInterner()
++	{
++		this(100);
++	}
++	
++	/**
++	 * Creates an Interner with expectedElements as sizing hint for the underlying Map.
++	 * 
++	 * @param expectedElements The expected number of elements
++	 */
++	public HashInterner(int expectedElements)
++	{
++		interningMap = new ConcurrentHashMap<>(expectedElements);
++	}
++	
++	@Override
++	public T get(T value)
++	{
++		if ( value == null )
++		{
++			// Special code path: Return immediately for null value, as they are not allowed in ConcurrentHashMap.
++			return null;
++		}
++		
++		T sharedRefString = interningMap.get(value);
++		if (sharedRefString != null)
++			return sharedRefString;
++
++		/*
++		 * Not yet in interned. Add to Map and return new value.
++		 * 
++		 * Hint for concurrency: If multiple callers enter it with the same not-yet-contained
++		 * value, then both will write. The later put() will win, and the former will use a non-shared value.
++		 */
++		interningMap.put(value, value);
++		return value;
++	}
++
++	/**
++	 * @return Returns the number of elements this instance has interned.
++	 */
++	public int size()
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(1);
++		return interningMap.size();
++	}
++
++	@Override
++	public String toString()
++	{
++		return "Interner " + this.hashCode() + " [" + size() + " elements]";
++	}
++	
++	
++}
++
+diff --git a/com/trivago/triava/jmhbench/MutationSwitch.java b/com/trivago/triava/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..2806781
+--- /dev/null
++++ b/com/trivago/triava/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.trivago.triava.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/trivago/triava/logging/TriavaConsoleLogger.java b/com/trivago/triava/logging/TriavaConsoleLogger.java
+index 8297803..5725dec 100644
+--- a/com/trivago/triava/logging/TriavaConsoleLogger.java
++++ b/com/trivago/triava/logging/TriavaConsoleLogger.java
+@@ -29,13 +29,13 @@ public class TriavaConsoleLogger implements TriavaLogger
+ 
+ 	@Override
+ 	public void info(String message)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(2);
+ 		System.out.println(message);
+ 	}
+ 
+ 	@Override
+ 	public void error(String message)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(6);
+ 		System.err.println(message);
+ 	}
+ 
+diff --git a/com/trivago/triava/logging/TriavaNullLogger.java b/com/trivago/triava/logging/TriavaNullLogger.java
+index 1a552fd..761ec0e 100644
+--- a/com/trivago/triava/logging/TriavaNullLogger.java
++++ b/com/trivago/triava/logging/TriavaNullLogger.java
+@@ -27,12 +27,12 @@ public class TriavaNullLogger implements TriavaLogger
+ 
+ 	@Override
+ 	public void info(String message)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(10);
+ 	}
+ 
+ 	@Override
+ 	public void error(String message)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(14);
+ 	}
+ 
+ 	@Override
+diff --git a/com/trivago/triava/tcache/AccessTimeObjectHolder.java b/com/trivago/triava/tcache/AccessTimeObjectHolder.java
+index ce21dba..e1ecb92 100644
+--- a/com/trivago/triava/tcache/AccessTimeObjectHolder.java
++++ b/com/trivago/triava/tcache/AccessTimeObjectHolder.java
+@@ -156,7 +156,7 @@ public final class AccessTimeObjectHolder<V> implements TCacheHolder<V>
+ 	 * @return true, if the call has released the holder. false, if the holder was already released before.
+ 	 */
+ 	protected boolean release()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(37);
+ 		synchronized (this)
+ 		{
+ 			boolean alreadyReleased = (flags & STATE_MASK) == STATE_RELEASED;
+@@ -171,7 +171,7 @@ public final class AccessTimeObjectHolder<V> implements TCacheHolder<V>
+ 	}
+ 	
+ 	public void setMaxIdleTime(int idleTime, TimeUnit timeUnit)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(38);
+ 		maxIdleTime = SecondsOrMillis.fromMillisToInternal(timeUnit.toMillis(idleTime));
+ 	}
+ 
+diff --git a/com/trivago/triava/tcache/Cache.java b/com/trivago/triava/tcache/Cache.java
+index 2382eec..b1874e6 100644
+--- a/com/trivago/triava/tcache/Cache.java
++++ b/com/trivago/triava/tcache/Cache.java
+@@ -290,12 +290,12 @@ public class Cache<K, V> implements Thread.UncaughtExceptionHandler, ActionConte
+ 	 * @return The number of extra elements required in the storage Map.
+ 	 */
+ 	protected int evictionExtraSpace(Builder<K, V> builder)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(39);
+ 		return 0;
+ 	}
+ 
+ 	public String id()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(40);
+ 		return id;
+ 	}
+ 
+diff --git a/com/trivago/triava/tcache/CacheLimit.java b/com/trivago/triava/tcache/CacheLimit.java
+index 63b8fbb..7b98ee7 100644
+--- a/com/trivago/triava/tcache/CacheLimit.java
++++ b/com/trivago/triava/tcache/CacheLimit.java
+@@ -105,7 +105,7 @@ public class CacheLimit<K, V> extends Cache<K, V>
+ 	 * @return true, if the cache is full
+ 	 */
+ 	protected boolean isFull()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(41);
+ 		int size = objects.size();
+ 		boolean full = size >= userDataElements;
+ //		if (LOG_INTERNAL_DATA && LOG_INTERNAL_EXTENDED_DATA && full)
+@@ -122,7 +122,7 @@ public class CacheLimit<K, V> extends Cache<K, V>
+ 	 * @return true, if the cache is overfull
+ 	 */
+ 	protected boolean isOverfull()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(42);
+ 		// maxElements = expectedElements from the configuration. NOT how we sized the ConcurrentMap. 
+ 		int size = objects.size();
+ 		boolean full = size >= blockStartAt;
+diff --git a/com/trivago/triava/tcache/CacheWriteMode.java b/com/trivago/triava/tcache/CacheWriteMode.java
+index 89ed1f4..a0af878 100644
+--- a/com/trivago/triava/tcache/CacheWriteMode.java
++++ b/com/trivago/triava/tcache/CacheWriteMode.java
+@@ -47,7 +47,7 @@ public enum CacheWriteMode
+ 	 * @return The corresponding CacheWriteMode
+ 	 */
+ 	public static CacheWriteMode fromStoreByValue(boolean storeByValue)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(43);
+ 		return storeByValue ? Serialize : Identity;
+ 	}
+ 	
+@@ -57,7 +57,7 @@ public enum CacheWriteMode
+ 	 * @return true, if the mode is to store by value
+ 	 */
+ 	public boolean isStoreByValue()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(44);
+ 		return jsr107compatibleStoreByValue;
+ 	}
+ }
+diff --git a/com/trivago/triava/tcache/TCacheFactory.java b/com/trivago/triava/tcache/TCacheFactory.java
+index 1b5fc97..4c0fbd3 100644
+--- a/com/trivago/triava/tcache/TCacheFactory.java
++++ b/com/trivago/triava/tcache/TCacheFactory.java
+@@ -115,7 +115,7 @@ public class TCacheFactory implements Closeable, CacheManager
+ 	 * @return The standard cache factory.
+ 	 */
+ 	public synchronized static TCacheFactory standardFactory()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(45);
+ 		/*
+ 		 * This method is synchronized, as otherwise concurrent Threads could create two
+ 		 * different standardFactory instances, where the last .
+@@ -136,7 +136,7 @@ public class TCacheFactory implements Closeable, CacheManager
+ 	 * @return A Builder
+ 	 */
+ 	public <K, V> Builder<K, V> builder()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(46);
+ 		return new InternalBuilder<K,V>(this);
+ 	}
+ 	
+diff --git a/com/trivago/triava/tcache/TCacheJSR107.java b/com/trivago/triava/tcache/TCacheJSR107.java
+index ddba852..939a148 100644
+--- a/com/trivago/triava/tcache/TCacheJSR107.java
++++ b/com/trivago/triava/tcache/TCacheJSR107.java
+@@ -103,14 +103,14 @@ public class TCacheJSR107<K, V> implements javax.cache.Cache<K, V>
+ 	
+ 	@Override
+ 	public void clear()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(47);
+ 		throwISEwhenClosed();
+ 		tcache.clear();	
+ 	}
+ 
+ 	@Override
+ 	public void close()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(48);
+ 		tcache.close();
+ 	}
+ 
+diff --git a/com/trivago/triava/tcache/action/DeleteAction.java b/com/trivago/triava/tcache/action/DeleteAction.java
+index df55dfa..c1a6718 100644
+--- a/com/trivago/triava/tcache/action/DeleteAction.java
++++ b/com/trivago/triava/tcache/action/DeleteAction.java
+@@ -66,7 +66,7 @@ public class DeleteAction<K,V,W> extends Action<K,V,W>
+ 	}
+ 
+ 	public void setRemoved(boolean removed)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(49);
+ 		this.removed = removed;
+ 	}
+ }
+diff --git a/com/trivago/triava/tcache/action/WriteBehindActionRunner.java b/com/trivago/triava/tcache/action/WriteBehindActionRunner.java
+index 4f503a3..67c3d16 100644
+--- a/com/trivago/triava/tcache/action/WriteBehindActionRunner.java
++++ b/com/trivago/triava/tcache/action/WriteBehindActionRunner.java
+@@ -35,7 +35,7 @@ public class WriteBehindActionRunner<K,V> extends ActionRunner<K,V>
+ 	
+ 	@Override
+ 	public boolean preMutate(Action<K,V,?> action, Object arg)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(50);
+ 		return true;
+ 	}
+ 
+diff --git a/com/trivago/triava/tcache/core/Builder.java b/com/trivago/triava/tcache/core/Builder.java
+index 1df1f3d..17b9b58 100644
+--- a/com/trivago/triava/tcache/core/Builder.java
++++ b/com/trivago/triava/tcache/core/Builder.java
+@@ -142,7 +142,7 @@ public class Builder<K,V>  implements TriavaCacheConfiguration<K, V, Builder<K,V
+ 	 * @return The Cache
+ 	 */
+ 	public Cache<K, V> build()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(3);
+ 		throw new UnsupportedOperationException("build() is only supported by internal subclasses.");
+ 	}
+ 	
+@@ -158,7 +158,7 @@ public class Builder<K,V>  implements TriavaCacheConfiguration<K, V, Builder<K,V
+ 
+ 	@Override
+ 	public Builder<K,V> setId(String id)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(7);
+ 		this.id = id;
+ 		return this;
+ 	}
+diff --git a/com/trivago/triava/tcache/core/InternalBuilder.java b/com/trivago/triava/tcache/core/InternalBuilder.java
+index e5a4b56..a79e420 100644
+--- a/com/trivago/triava/tcache/core/InternalBuilder.java
++++ b/com/trivago/triava/tcache/core/InternalBuilder.java
+@@ -57,7 +57,7 @@ public class InternalBuilder<K, V> extends Builder<K, V>
+ 	}
+ 
+ 	public Cache<K, V> build()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(11);
+ 		if (getId() == null)
+ 		{
+ 			setId("tcache-" + anonymousCacheId.incrementAndGet());
+diff --git a/com/trivago/triava/tcache/event/ListenerCacheEventManager.java b/com/trivago/triava/tcache/event/ListenerCacheEventManager.java
+index 70ff742..8850d8f 100644
+--- a/com/trivago/triava/tcache/event/ListenerCacheEventManager.java
++++ b/com/trivago/triava/tcache/event/ListenerCacheEventManager.java
+@@ -32,13 +32,13 @@ public class ListenerCacheEventManager<K, V> implements CacheEventManager<K, V>
+ {
+ 	@Override
+ 	public void created(CacheEntryCreatedListener<K, V> listener, TCacheEntryEventCollection<K, V> eventColl)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(15);
+ 		listener.onCreated(eventColl.events());
+ 	}
+ 	
+ 	@Override
+ 	public void updated(CacheEntryUpdatedListener<K, V> listener, TCacheEntryEventCollection<K, V> eventColl)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(18);
+ 		listener.onUpdated(eventColl.events());
+ 	}
+ 	
+diff --git a/com/trivago/triava/tcache/event/ListenerCollection.java b/com/trivago/triava/tcache/event/ListenerCollection.java
+index 2399ae7..9cf3257 100644
+--- a/com/trivago/triava/tcache/event/ListenerCollection.java
++++ b/com/trivago/triava/tcache/event/ListenerCollection.java
+@@ -66,7 +66,7 @@ public class ListenerCollection<K,V>
+ 	 * @param listenerConfiguration The Cache Listener
+ 	 */
+ 	public synchronized void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> listenerConfiguration)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(21);
+ 		throwISEwhenClosed();
+ 
+ 		Iterator<ListenerEntry<K, V>> it = listeners.iterator();
+@@ -114,7 +114,7 @@ public class ListenerCollection<K,V>
+ 	 * @param listenerConfiguration The Cache Listener
+ 	 */
+ 	public synchronized void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> listenerConfiguration)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(24);
+ 		throwISEwhenClosed();
+ 		
+ 		boolean added = enableCacheEntryListener(listenerConfiguration);
+diff --git a/com/trivago/triava/tcache/event/ListenerEntry.java b/com/trivago/triava/tcache/event/ListenerEntry.java
+index 720ca17..525e2e5 100644
+--- a/com/trivago/triava/tcache/event/ListenerEntry.java
++++ b/com/trivago/triava/tcache/event/ListenerEntry.java
+@@ -388,7 +388,7 @@ final class ListenerEntry<K,V>
+ 
+ 		@Override
+ 		public void run()
+-		{
++		{ com.trivago.triava.jmhbench.MutationSwitch.tick(26);
+ 			@SuppressWarnings("unchecked")
+ 			CacheEntryListener<K, V> listenerRef = (CacheEntryListener<K, V>) listener;
+ 
+@@ -413,7 +413,7 @@ final class ListenerEntry<K,V>
+ 		}
+ 
+ 		 public void shutdown()
+-		 {
++		 { com.trivago.triava.jmhbench.MutationSwitch.tick(28);
+ 			 running = false;
+ 			 Thread thread = dispatchThread;
+ 			 if (thread != null)
+diff --git a/com/trivago/triava/tcache/storage/ConcurrentKeyDeserMap.java b/com/trivago/triava/tcache/storage/ConcurrentKeyDeserMap.java
+index eb5524f..e1f0924 100644
+--- a/com/trivago/triava/tcache/storage/ConcurrentKeyDeserMap.java
++++ b/com/trivago/triava/tcache/storage/ConcurrentKeyDeserMap.java
+@@ -54,13 +54,13 @@ public class ConcurrentKeyDeserMap<K,V> implements ConcurrentMap<K, V>
+ 	
+ 	@Override
+ 	public int size()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(29);
+ 		return backingMap.size();
+ 	}
+ 
+ 	@Override
+ 	public boolean isEmpty()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(30);
+ 		return backingMap.isEmpty();
+ 	}
+ 
+diff --git a/com/trivago/triava/tcache/storage/HighscalelibNonBlockingHashMap.java b/com/trivago/triava/tcache/storage/HighscalelibNonBlockingHashMap.java
+index 88cfd44..79cf62d 100644
+--- a/com/trivago/triava/tcache/storage/HighscalelibNonBlockingHashMap.java
++++ b/com/trivago/triava/tcache/storage/HighscalelibNonBlockingHashMap.java
+@@ -36,7 +36,7 @@ public class HighscalelibNonBlockingHashMap<K,V> implements StorageBackend<K, V>
+ {
+ 	@Override
+ 	public ConcurrentMap<K, TCacheHolder<V>> createMap(Builder<K,V> builder, double evictionMapSizeFactor)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(31);
+ 		try
+ 		{
+ 			Class<?> cacheClass = Class.forName("org.cliffc.high_scale_lib.NonBlockingHashMap");
+diff --git a/com/trivago/triava/tcache/storage/JavaConcurrentHashMap.java b/com/trivago/triava/tcache/storage/JavaConcurrentHashMap.java
+index ae567e9..de895e6 100644
+--- a/com/trivago/triava/tcache/storage/JavaConcurrentHashMap.java
++++ b/com/trivago/triava/tcache/storage/JavaConcurrentHashMap.java
+@@ -35,7 +35,7 @@ public class JavaConcurrentHashMap<K,V> implements StorageBackend<K, V>
+ {
+ 	@Override
+ 	public ConcurrentMap<K, TCacheHolder<V>> createMap(Builder<K,V> builder, double evictionMapSizeFactor)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(32);
+ 		double loadFactor = 0.75F;
+ 		int requiredMapSize = (int) (builder.getMaxElements() / loadFactor) + (int)evictionMapSizeFactor;
+ 		return new ConcurrentHashMap<>(requiredMapSize, (float) loadFactor,
+diff --git a/com/trivago/triava/tcache/util/KeyValueUtil.java b/com/trivago/triava/tcache/util/KeyValueUtil.java
+index 555bb64..1b81588 100644
+--- a/com/trivago/triava/tcache/util/KeyValueUtil.java
++++ b/com/trivago/triava/tcache/util/KeyValueUtil.java
+@@ -56,7 +56,7 @@ public class KeyValueUtil<K, V>
+ 	 * @throws  NullPointerException if at least one parameter is null 
+ 	 */
+ 	public void verifyKeyAndValueNotNull(K key, V value)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(33);
+ 		verifyKeyNotNull(key);
+ 		verifyValueNotNull(value);
+ 	}
+@@ -74,7 +74,7 @@ public class KeyValueUtil<K, V>
+ 	 * @throws  NullPointerException if key is null 
+ 	 */
+ 	public void verifyKeyNotNull(K key)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(34);
+ 		if(key == null)
+ 		{
+ 			throw new NullPointerException("null key is not allowed. cache=" + id);
+diff --git a/com/trivago/triava/tcache/util/TCKMBeanServerBuilder.java b/com/trivago/triava/tcache/util/TCKMBeanServerBuilder.java
+index ac164a6..310f323 100644
+--- a/com/trivago/triava/tcache/util/TCKMBeanServerBuilder.java
++++ b/com/trivago/triava/tcache/util/TCKMBeanServerBuilder.java
+@@ -48,7 +48,7 @@ public class TCKMBeanServerBuilder extends MBeanServerBuilder {
+ 
+   @Override
+   public MBeanServer newMBeanServer(String defaultDomain, MBeanServer outer, MBeanServerDelegate delegate)
+-  {
++  { com.trivago.triava.jmhbench.MutationSwitch.tick(35);
+     MBeanServerDelegate decoratingDelegate = new RIMBeanServerDelegate(delegate);
+     return super.newMBeanServer(defaultDomain, outer, decoratingDelegate);
+   }
+@@ -73,7 +73,7 @@ public class TCKMBeanServerBuilder extends MBeanServerBuilder {
+     }
+ 
+     @Override
+-    public String getSpecificationName() {
++    public String getSpecificationName() { com.trivago.triava.jmhbench.MutationSwitch.tick(36);
+       return delegate.getSpecificationName();
+     }
+ 
+diff --git a/com/trivago/triava/time/EstimatorTimeSource.java b/com/trivago/triava/time/EstimatorTimeSource.java
+index 5db21a5..34c6e45 100644
+--- a/com/trivago/triava/time/EstimatorTimeSource.java
++++ b/com/trivago/triava/time/EstimatorTimeSource.java
+@@ -87,7 +87,7 @@ public class EstimatorTimeSource extends Thread implements TimeSource
+ 	}
+ 
+ 	public void run()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(4);
+ 		logger.info("MillisEstimatorThread " + this.getName() + " has entered run()");
+ 		this.running = true;
+ 		while (running)
+@@ -120,7 +120,7 @@ public class EstimatorTimeSource extends Thread implements TimeSource
+ 
+ 	@Override
+ 	public void shutdown()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(8);
+ 		cancel();
+ 
+ 	}
+diff --git a/com/trivago/triava/time/OffsetTimeSource.java b/com/trivago/triava/time/OffsetTimeSource.java
+index 903fc2c..427bdab 100644
+--- a/com/trivago/triava/time/OffsetTimeSource.java
++++ b/com/trivago/triava/time/OffsetTimeSource.java
+@@ -57,13 +57,13 @@ public class OffsetTimeSource implements TimeSource
+ 
+ 	@Override
+ 	public long time(TimeUnit tu)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(12);
+ 		return tu.convert(getMillisFromSource(), TimeUnit.MILLISECONDS);
+ 	}
+ 
+ 	@Override
+ 	public long seconds()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(16);
+ 		return time(TimeUnit.SECONDS);
+ 	}
+ 
+diff --git a/com/trivago/triava/time/SystemTimeSource.java b/com/trivago/triava/time/SystemTimeSource.java
+index e38e33f..2a51d46 100644
+--- a/com/trivago/triava/time/SystemTimeSource.java
++++ b/com/trivago/triava/time/SystemTimeSource.java
+@@ -34,13 +34,13 @@ public class SystemTimeSource implements TimeSource
+ 
+ 	@Override
+ 	public long time(TimeUnit tu)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(19);
+ 		return tu.convert(getMillisFromSource(), TimeUnit.MILLISECONDS);
+ 	}
+ 
+ 	@Override
+ 	public long seconds()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(22);
+ 		return time(TimeUnit.SECONDS);
+ 	}
+ 
+diff --git a/com/trivago/triava/util/UnitComponent.java b/com/trivago/triava/util/UnitComponent.java
+index 98918eb..36b35f1 100644
+--- a/com/trivago/triava/util/UnitComponent.java
++++ b/com/trivago/triava/util/UnitComponent.java
+@@ -60,7 +60,7 @@ public class UnitComponent
+ 	 * @return The base value
+ 	 */
+ 	public int base()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(5);
+ 		return base;
+ 	}
+ 
+@@ -69,7 +69,7 @@ public class UnitComponent
+ 	 * @return The kilo value
+ 	 */
+ 	public int kilo()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(9);
+ 		return kilo;
+ 	}
+ 
+diff --git a/com/trivago/triava/util/UnitFormatter.java b/com/trivago/triava/util/UnitFormatter.java
+index 3b3bc9f..0e36594 100644
+--- a/com/trivago/triava/util/UnitFormatter.java
++++ b/com/trivago/triava/util/UnitFormatter.java
+@@ -37,7 +37,7 @@ public class UnitFormatter
+ 	 * @return The formatted value
+ 	 */
+ 	public static String formatAsUnit(long value, UnitSystem unitSystem, String unitPostfix)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(13);
+ 		return formatAsUnit(value, unitSystem, unitPostfix, new DecimalFormat("0.##"));
+ 	}
+ 	
+@@ -53,7 +53,7 @@ public class UnitFormatter
+ 	 * @return The formatted value
+ 	 */
+ 	public static String formatAsUnit(long value, UnitSystem unitSystem, String unitPostfix, DecimalFormat format)
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(17);
+ 		StringBuilder formatedSize = new StringBuilder(12);
+ 
+ 		if (value < unitSystem.kiloPrefix().value())
+diff --git a/com/trivago/triava/util/UnitPrefix.java b/com/trivago/triava/util/UnitPrefix.java
+index 4627f3e..58edc02 100644
+--- a/com/trivago/triava/util/UnitPrefix.java
++++ b/com/trivago/triava/util/UnitPrefix.java
+@@ -37,12 +37,12 @@ public class UnitPrefix
+ 	}
+ 
+ 	public String symbol()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(20);
+ 		return symbol;
+ 	}
+ 
+ 	public double value()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(23);
+ 		return value;
+ 	}
+ 
+diff --git a/com/trivago/triava/util/UnitSystem.java b/com/trivago/triava/util/UnitSystem.java
+index 1261502..ff8e0f3 100644
+--- a/com/trivago/triava/util/UnitSystem.java
++++ b/com/trivago/triava/util/UnitSystem.java
+@@ -88,13 +88,13 @@ public class UnitSystem
+ 
+ 
+ 	public UnitPrefix basePrefix()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(25);
+ 		return base;
+ 	}
+ 
+ 
+ 	public UnitPrefix kiloPrefix()
+-	{
++	{ com.trivago.triava.jmhbench.MutationSwitch.tick(27);
+ 		return kilo;
+ 	}
+ 

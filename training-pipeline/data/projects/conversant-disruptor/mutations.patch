@@ -1,0 +1,558 @@
+diff --git a/com/conversantmedia/util/concurrent/Capacity.java b/com/conversantmedia/util/concurrent/Capacity.java
+index adcf4d2..5dbb1cb 100644
+--- a/com/conversantmedia/util/concurrent/Capacity.java
++++ b/com/conversantmedia/util/concurrent/Capacity.java
+@@ -32,7 +32,7 @@ final class Capacity {
+      * return the next power of two after @param capacity or
+      * capacity if it is already
+      */
+-    public static int getCapacity(int capacity) {
++    public static int getCapacity(int capacity) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(1);
+         int c = 1;
+         if(capacity >= MAX_POWER2) {
+             c = MAX_POWER2;
+diff --git a/com/conversantmedia/util/concurrent/ConcurrentStack.java b/com/conversantmedia/util/concurrent/ConcurrentStack.java
+index eed8f7c..a670ea7 100644
+--- a/com/conversantmedia/util/concurrent/ConcurrentStack.java
++++ b/com/conversantmedia/util/concurrent/ConcurrentStack.java
+@@ -77,7 +77,7 @@ public final class ConcurrentStack<N> implements BlockingStack<N> {
+ 
+ 
+     @Override
+-    public final boolean push(final N n, final long time, final TimeUnit unit) throws InterruptedException {
++    public final boolean push(final N n, final long time, final TimeUnit unit) throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(2);
+         final long endDate = System.nanoTime() + unit.toNanos(time);
+         while(!push(n)) {
+             if(endDate - System.nanoTime() < 0) {
+@@ -91,7 +91,7 @@ public final class ConcurrentStack<N> implements BlockingStack<N> {
+     }
+ 
+     @Override
+-    public final void pushInterruptibly(final N n) throws InterruptedException {
++    public final void pushInterruptibly(final N n) throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(3);
+         while(!push(n)) {
+             if(Thread.currentThread().isInterrupted()) {
+                 throw new InterruptedException();
+@@ -119,7 +119,7 @@ public final class ConcurrentStack<N> implements BlockingStack<N> {
+      * @return boolean - false if stack overflow, true otherwise
+      */
+     @Override
+-    public final boolean push(final N n) {
++    public final boolean push(final N n) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(4);
+         int spin = 0;
+         for(;;) {
+ 
+@@ -153,7 +153,7 @@ public final class ConcurrentStack<N> implements BlockingStack<N> {
+      * @return N - the object at the top of the stack
+      */
+     @Override
+-    public final N peek() {
++    public final N peek() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(5);
+         // read the current cursor
+         int spin = 0;
+         for(;;) {
+@@ -177,7 +177,7 @@ public final class ConcurrentStack<N> implements BlockingStack<N> {
+      * @return N - The object on the top of the stack
+      */
+     @Override
+-    public final N pop() {
++    public final N pop() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(6);
+ 
+         int spin = 0;
+         // now pop the stack
+@@ -211,7 +211,7 @@ public final class ConcurrentStack<N> implements BlockingStack<N> {
+     }
+ 
+     @Override
+-    public final N pop(final long time, final TimeUnit unit) throws InterruptedException {
++    public final N pop(final long time, final TimeUnit unit) throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(7);
+         final long endTime = System.nanoTime() + unit.toNanos(time);
+         for(;;) {
+             final N n = pop();
+diff --git a/com/conversantmedia/util/concurrent/ContendedAtomicInteger.java b/com/conversantmedia/util/concurrent/ContendedAtomicInteger.java
+index 40b5cf0..f3baacb 100644
+--- a/com/conversantmedia/util/concurrent/ContendedAtomicInteger.java
++++ b/com/conversantmedia/util/concurrent/ContendedAtomicInteger.java
+@@ -47,7 +47,7 @@ final class ContendedAtomicInteger {
+         contendedArray.set(CACHE_LINE_INTS, i);
+     }
+ 
+-    public boolean compareAndSet(final int expect, final int i) {
++    public boolean compareAndSet(final int expect, final int i) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(8);
+         return contendedArray.compareAndSet(CACHE_LINE_INTS, expect, i);
+     }
+ 
+diff --git a/com/conversantmedia/util/concurrent/ContendedAtomicLong.java b/com/conversantmedia/util/concurrent/ContendedAtomicLong.java
+index 94eaa4d..c9e7523 100644
+--- a/com/conversantmedia/util/concurrent/ContendedAtomicLong.java
++++ b/com/conversantmedia/util/concurrent/ContendedAtomicLong.java
+@@ -54,7 +54,7 @@ final class ContendedAtomicLong {
+         return Long.toString(get());
+     }
+ 
+-    public boolean compareAndSet(final long expect, final long l) {
++    public boolean compareAndSet(final long expect, final long l) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(9);
+         return contendedArray.compareAndSet(CACHE_LINE_LONGS, expect, l);
+     }
+ }
+diff --git a/com/conversantmedia/util/concurrent/DisruptorBlockingQueue.java b/com/conversantmedia/util/concurrent/DisruptorBlockingQueue.java
+index 983a697..bc33800 100644
+--- a/com/conversantmedia/util/concurrent/DisruptorBlockingQueue.java
++++ b/com/conversantmedia/util/concurrent/DisruptorBlockingQueue.java
+@@ -165,7 +165,7 @@ public final class DisruptorBlockingQueue<E> extends MultithreadConcurrentQueue<
+     }
+ 
+     @Override
+-    public final boolean offer(E e) {
++    public final boolean offer(E e) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(10);
+         try {
+             return super.offer(e);
+         } finally {
+@@ -174,7 +174,7 @@ public final class DisruptorBlockingQueue<E> extends MultithreadConcurrentQueue<
+     }
+ 
+     @Override
+-    public final E poll() {
++    public final E poll() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(11);
+         final E e = super.poll();
+         // not full now
+         queueNotFullCondition.signal();
+@@ -195,7 +195,7 @@ public final class DisruptorBlockingQueue<E> extends MultithreadConcurrentQueue<
+     }
+ 
+     @Override
+-    public E element() {
++    public E element() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(12);
+         final E val = peek();
+         if (val != null)
+             return val;
+@@ -214,7 +214,7 @@ public final class DisruptorBlockingQueue<E> extends MultithreadConcurrentQueue<
+     }
+ 
+     @Override
+-    public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
++    public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(13);
+         for (;;) {
+             if (offer(e)) {
+                 return true;
+@@ -227,7 +227,7 @@ public final class DisruptorBlockingQueue<E> extends MultithreadConcurrentQueue<
+     }
+ 
+     @Override
+-    public E take() throws InterruptedException {
++    public E take() throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(14);
+         for (;;) {
+             E pollObj = poll();
+             if (pollObj != null) {
+@@ -242,7 +242,7 @@ public final class DisruptorBlockingQueue<E> extends MultithreadConcurrentQueue<
+     }
+ 
+     @Override
+-    public E poll(long timeout, TimeUnit unit) throws InterruptedException {
++    public E poll(long timeout, TimeUnit unit) throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(15);
+         for(;;) {
+             E pollObj = poll();
+             if(pollObj != null) {
+diff --git a/com/conversantmedia/util/concurrent/MPMCBlockingQueue.java b/com/conversantmedia/util/concurrent/MPMCBlockingQueue.java
+index e795183..ac1dd0f 100644
+--- a/com/conversantmedia/util/concurrent/MPMCBlockingQueue.java
++++ b/com/conversantmedia/util/concurrent/MPMCBlockingQueue.java
+@@ -120,7 +120,7 @@ public final class MPMCBlockingQueue<E> extends MPMCConcurrentQueue<E> implement
+     }
+ 
+     @Override
+-    public final boolean offer(E e) {
++    public final boolean offer(E e) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(16);
+         if (super.offer(e)) {
+             queueNotEmptyCondition.signal();
+             return true;
+@@ -131,7 +131,7 @@ public final class MPMCBlockingQueue<E> extends MPMCConcurrentQueue<E> implement
+     }
+ 
+     @Override
+-    public final E poll() {
++    public final E poll() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(17);
+         final E e = super.poll();
+         // not full now
+         queueNotFullCondition.signal();
+@@ -152,7 +152,7 @@ public final class MPMCBlockingQueue<E> extends MPMCConcurrentQueue<E> implement
+     }
+ 
+     @Override
+-    public E element() {
++    public E element() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(18);
+         final E val = peek();
+         if (val != null)
+             return val;
+@@ -171,7 +171,7 @@ public final class MPMCBlockingQueue<E> extends MPMCConcurrentQueue<E> implement
+     }
+ 
+     @Override
+-    public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
++    public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(19);
+         for (;;) {
+             if (offer(e)) {
+                 return true;
+@@ -184,7 +184,7 @@ public final class MPMCBlockingQueue<E> extends MPMCConcurrentQueue<E> implement
+     }
+ 
+     @Override
+-    public E take() throws InterruptedException {
++    public E take() throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(20);
+         for (;;) {
+             E pollObj = poll();
+             if (pollObj != null) {
+@@ -199,7 +199,7 @@ public final class MPMCBlockingQueue<E> extends MPMCConcurrentQueue<E> implement
+     }
+ 
+     @Override
+-    public E poll(long timeout, TimeUnit unit) throws InterruptedException {
++    public E poll(long timeout, TimeUnit unit) throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(21);
+         for(;;) {
+             E pollObj = poll();
+             if(pollObj != null) {
+diff --git a/com/conversantmedia/util/concurrent/MPMCConcurrentQueue.java b/com/conversantmedia/util/concurrent/MPMCConcurrentQueue.java
+index f8b0701..86f81b8 100644
+--- a/com/conversantmedia/util/concurrent/MPMCConcurrentQueue.java
++++ b/com/conversantmedia/util/concurrent/MPMCConcurrentQueue.java
+@@ -63,7 +63,7 @@ class MPMCConcurrentQueue<E> implements ConcurrentQueue<E> {
+     }
+ 
+     @Override
+-    public boolean offer(E e) {
++    public boolean offer(E e) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(22);
+         Cell<E> cell;
+         long tail = this.tail.get();
+         for(;;) {
+@@ -86,7 +86,7 @@ class MPMCConcurrentQueue<E> implements ConcurrentQueue<E> {
+     };
+ 
+     @Override
+-    public E poll() {
++    public E poll() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(23);
+         Cell<E> cell;
+         long head = this.head.get();
+         for(;;) {
+@@ -114,7 +114,7 @@ class MPMCConcurrentQueue<E> implements ConcurrentQueue<E> {
+     }
+ 
+     @Override
+-    public final E peek() {
++    public final E peek() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(24);
+         return buffer[(int)(head.get()&mask)].entry;
+     }
+ 
+@@ -133,17 +133,17 @@ class MPMCConcurrentQueue<E> implements ConcurrentQueue<E> {
+     }
+ 
+     @Override
+-    public final int size() {
++    public final int size() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(25);
+         return (int)Math.max((tail.get() - head.get()), 0);
+     }
+ 
+     @Override
+-    public int capacity() {
++    public int capacity() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(26);
+         return size;
+     }
+ 
+     @Override
+-    public final boolean isEmpty() {
++    public final boolean isEmpty() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(27);
+         return head.get() == tail.get();
+     }
+ 
+diff --git a/com/conversantmedia/util/concurrent/MultithreadConcurrentQueue.java b/com/conversantmedia/util/concurrent/MultithreadConcurrentQueue.java
+index 65c4038..cf52f6b 100644
+--- a/com/conversantmedia/util/concurrent/MultithreadConcurrentQueue.java
++++ b/com/conversantmedia/util/concurrent/MultithreadConcurrentQueue.java
+@@ -159,7 +159,7 @@ public class MultithreadConcurrentQueue<E> extends MultithreadConcurrentQueuePad
+     }
+ 
+     @Override
+-    public boolean offer(E e) {
++    public boolean offer(E e) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(28);
+         int spin = 0;
+ 
+         for(;;) {
+@@ -196,7 +196,7 @@ public class MultithreadConcurrentQueue<E> extends MultithreadConcurrentQueuePad
+     }
+ 
+     @Override
+-    public E poll() {
++    public E poll() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(29);
+         int spin = 0;
+ 
+         for(;;) {
+@@ -229,7 +229,7 @@ public class MultithreadConcurrentQueue<E> extends MultithreadConcurrentQueuePad
+     }
+ 
+     @Override
+-    public final E peek() {
++    public final E peek() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(30);
+         return buffer[(int)(head.sum()&mask)];
+     }
+ 
+@@ -281,7 +281,7 @@ public class MultithreadConcurrentQueue<E> extends MultithreadConcurrentQueuePad
+      * @return int - possibly the size, or possibly any value less than capacity()
+      */
+     @Override
+-    public final int size() {
++    public final int size() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(31);
+         // size of the ring
+         // note these values can roll from positive to
+         // negative, this is properly handled since
+@@ -290,12 +290,12 @@ public class MultithreadConcurrentQueue<E> extends MultithreadConcurrentQueuePad
+     }
+ 
+     @Override
+-    public int capacity() {
++    public int capacity() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(32);
+         return size;
+     }
+ 
+     @Override
+-    public final boolean isEmpty() {
++    public final boolean isEmpty() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(33);
+         return tail.sum() == head.sum();
+     }
+ 
+diff --git a/com/conversantmedia/util/concurrent/PushPullBlockingQueue.java b/com/conversantmedia/util/concurrent/PushPullBlockingQueue.java
+index e58de9a..c9b0b18 100644
+--- a/com/conversantmedia/util/concurrent/PushPullBlockingQueue.java
++++ b/com/conversantmedia/util/concurrent/PushPullBlockingQueue.java
+@@ -119,7 +119,7 @@ public final class PushPullBlockingQueue<E> extends PushPullConcurrentQueue<E> i
+     }
+ 
+     @Override
+-    public final boolean offer(E e) {
++    public final boolean offer(E e) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(34);
+         try {
+             return super.offer(e);
+         } finally {
+@@ -128,7 +128,7 @@ public final class PushPullBlockingQueue<E> extends PushPullConcurrentQueue<E> i
+     }
+ 
+     @Override
+-    public final E poll() {
++    public final E poll() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(35);
+         final E e = super.poll();
+         // not full now
+         queueNotFullCondition.signal();
+@@ -149,7 +149,7 @@ public final class PushPullBlockingQueue<E> extends PushPullConcurrentQueue<E> i
+     }
+ 
+     @Override
+-    public E element() {
++    public E element() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(36);
+         final E val = peek();
+         if (val != null)
+             return val;
+@@ -168,7 +168,7 @@ public final class PushPullBlockingQueue<E> extends PushPullConcurrentQueue<E> i
+     }
+ 
+     @Override
+-    public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
++    public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(37);
+         for (;;) {
+             if (offer(e)) {
+                 return true;
+@@ -181,7 +181,7 @@ public final class PushPullBlockingQueue<E> extends PushPullConcurrentQueue<E> i
+     }
+ 
+     @Override
+-    public E take() throws InterruptedException {
++    public E take() throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(38);
+         for (;;) {
+             E pollObj = poll();
+             if (pollObj != null) {
+@@ -195,7 +195,7 @@ public final class PushPullBlockingQueue<E> extends PushPullConcurrentQueue<E> i
+     }
+ 
+     @Override
+-    public E poll(long timeout, TimeUnit unit) throws InterruptedException {
++    public E poll(long timeout, TimeUnit unit) throws InterruptedException { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(39);
+         for(;;) {
+             E pollObj = poll();
+             if(pollObj != null) {
+diff --git a/com/conversantmedia/util/concurrent/PushPullConcurrentQueue.java b/com/conversantmedia/util/concurrent/PushPullConcurrentQueue.java
+index 9b5cd31..985f5ab 100644
+--- a/com/conversantmedia/util/concurrent/PushPullConcurrentQueue.java
++++ b/com/conversantmedia/util/concurrent/PushPullConcurrentQueue.java
+@@ -130,7 +130,7 @@ public class PushPullConcurrentQueue<E> extends PushPullConcurrentQueuePadding4
+ 
+ 
+     @Override
+-    public boolean offer(final E e) {
++    public boolean offer(final E e) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(40);
+         if(e != null) {
+             final long tail = this.tail.sum();
+             final long queueStart = tail - size;
+@@ -148,7 +148,7 @@ public class PushPullConcurrentQueue<E> extends PushPullConcurrentQueuePadding4
+     }
+ 
+     @Override
+-    public E poll() {
++    public E poll() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(41);
+         final long head = this.head.sum();
+         if((head < tailCache) || (head < (tailCache = tail.sum()))) {
+             final int dx = (int)(head & mask);
+@@ -181,7 +181,7 @@ public class PushPullConcurrentQueue<E> extends PushPullConcurrentQueuePadding4
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(42);
+         for(int i=0; i<buffer.length; i++) {
+             buffer[i] = null;
+         }
+@@ -190,7 +190,7 @@ public class PushPullConcurrentQueue<E> extends PushPullConcurrentQueuePadding4
+ 
+ 
+     @Override
+-    public final E peek() {
++    public final E peek() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(43);
+         return buffer[(int)(head.sum() & mask)];
+     }
+ 
+@@ -203,12 +203,12 @@ public class PushPullConcurrentQueue<E> extends PushPullConcurrentQueuePadding4
+      * @return int - possibly the size, or possibly any value less than capacity()
+      */
+     @Override
+-    public final int size() {
++    public final int size() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(44);
+         return (int)Math.max(tail.sum() - head.sum(), 0);
+     }
+ 
+     @Override
+-    public int capacity() {
++    public int capacity() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(45);
+         return size;
+     }
+ 
+diff --git a/com/conversantmedia/util/concurrent/SequenceLock.java b/com/conversantmedia/util/concurrent/SequenceLock.java
+index 6cb1fb8..63071c9 100644
+--- a/com/conversantmedia/util/concurrent/SequenceLock.java
++++ b/com/conversantmedia/util/concurrent/SequenceLock.java
+@@ -12,19 +12,19 @@ public class SequenceLock implements OptimisticLock {
+     final ContendedAtomicLong sequence = new ContendedAtomicLong(2);
+ 
+     @Override
+-    public long readLock() {
++    public long readLock() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(46);
+         // anybody can read until the sequence changes
+         return sequence.get();
+     }
+ 
+     @Override
+-    public boolean readLockHeld(final long lockToken) {
++    public boolean readLockHeld(final long lockToken) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(47);
+         return sequence.get() == lockToken &&
+                 (lockToken & 1) == 0;
+     }
+ 
+     @Override
+-    public long writeLock() {
++    public long writeLock() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(48);
+         int spin = 0;
+         for(;;) {
+             final long sequence = this.sequence.get();
+@@ -37,12 +37,12 @@ public class SequenceLock implements OptimisticLock {
+     }
+ 
+     @Override
+-    public void unlock(final long sequence) {
++    public void unlock(final long sequence) { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(49);
+         this.sequence.set(sequence+2L);
+     }
+ 
+     @Override
+-    public long tryWriteLock() {
++    public long tryWriteLock() { com.conversantmedia.util.concurrent.jmhbench.MutationSwitch.tick(50);
+         final long sequence = this.sequence.get();
+         if(((sequence & 1) == 0) &&
+                 this.sequence.compareAndSet(sequence, sequence+1)) {
+diff --git a/com/conversantmedia/util/concurrent/jmhbench/MutationSwitch.java b/com/conversantmedia/util/concurrent/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..329b806
+--- /dev/null
++++ b/com/conversantmedia/util/concurrent/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.conversantmedia.util.concurrent.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

@@ -1,0 +1,615 @@
+diff --git a/org/fusesource/mqtt/cli/Listener.java b/org/fusesource/mqtt/cli/Listener.java
+index 3e9abd9..75c2590 100644
+--- a/org/fusesource/mqtt/cli/Listener.java
++++ b/org/fusesource/mqtt/cli/Listener.java
+@@ -89,7 +89,7 @@ public class Listener {
+         return argl.removeFirst();
+     }
+     
+-    public static void main(String[] args) throws Exception {
++    public static void main(String[] args) throws Exception { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(1);
+         Listener main = new Listener();
+ 
+         // Process the arguments
+@@ -167,7 +167,7 @@ public class Listener {
+         // Handle a Ctrl-C event cleanly.
+         Runtime.getRuntime().addShutdownHook(new Thread(){
+             @Override
+-            public void run() {
++            public void run() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(4);
+                 setName("MQTT client shutdown");
+                 if(debug) {
+                     stderr("Disconnecting the client.");
+diff --git a/org/fusesource/mqtt/cli/Publisher.java b/org/fusesource/mqtt/cli/Publisher.java
+index 6fdf62a..c717d3f 100644
+--- a/org/fusesource/mqtt/cli/Publisher.java
++++ b/org/fusesource/mqtt/cli/Publisher.java
+@@ -101,7 +101,7 @@ public class Publisher {
+         return argl.removeFirst();
+     }
+     
+-    public static void main(String[] args) throws Exception {
++    public static void main(String[] args) throws Exception { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(7);
+         Publisher main = new Publisher();
+ 
+         // Process the arguments
+@@ -203,7 +203,7 @@ public class Publisher {
+         // Handle a Ctrl-C event cleanly.
+         Runtime.getRuntime().addShutdownHook(new Thread(){
+             @Override
+-            public void run() {
++            public void run() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(10);
+                 setName("MQTT client shutdown");
+                 connection.getDispatchQueue().execute(new Task() {
+                     public void run() {
+diff --git a/org/fusesource/mqtt/client/BlockingConnection.java b/org/fusesource/mqtt/client/BlockingConnection.java
+index a10c2de..5cc0d60 100644
+--- a/org/fusesource/mqtt/client/BlockingConnection.java
++++ b/org/fusesource/mqtt/client/BlockingConnection.java
+@@ -45,11 +45,11 @@ public class BlockingConnection {
+         this.next = next;
+     }
+ 
+-    public boolean isConnected() {
++    public boolean isConnected() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(2);
+         return next.isConnected();
+     }
+ 
+-    public void connect() throws Exception {
++    public void connect() throws Exception { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(5);
+         this.next.connect().await();
+     }
+ 
+diff --git a/org/fusesource/mqtt/client/CallbackConnection.java b/org/fusesource/mqtt/client/CallbackConnection.java
+index 61fda7c..c567beb 100644
+--- a/org/fusesource/mqtt/client/CallbackConnection.java
++++ b/org/fusesource/mqtt/client/CallbackConnection.java
+@@ -86,9 +86,9 @@ public class CallbackConnection {
+     }
+ 
+     private static final ExtendedListener DEFAULT_LISTENER = new ExtendedListener(){
+-        public void onConnected() {
++        public void onConnected() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(8);
+         }
+-        public void onDisconnected() {
++        public void onDisconnected() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(11);
+         }
+         public void onPublish(UTF8Buffer utf8Buffer, Buffer buffer, Runnable runnable) {
+             this.onFailure(createListenerNotSetError());
+diff --git a/org/fusesource/mqtt/client/FutureConnection.java b/org/fusesource/mqtt/client/FutureConnection.java
+index 07bf862..de88214 100644
+--- a/org/fusesource/mqtt/client/FutureConnection.java
++++ b/org/fusesource/mqtt/client/FutureConnection.java
+@@ -54,11 +54,11 @@ public class FutureConnection {
+         this.next = next;
+         this.next.listener(new ExtendedListener() {
+ 
+-            public void onConnected() {
++            public void onConnected() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(13);
+                 connected = true;
+             }
+ 
+-            public void onDisconnected() {
++            public void onDisconnected() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(15);
+                 connected = false;
+             }
+ 
+diff --git a/org/fusesource/mqtt/client/MQTT.java b/org/fusesource/mqtt/client/MQTT.java
+index 2e1b3ca..f89edd7 100644
+--- a/org/fusesource/mqtt/client/MQTT.java
++++ b/org/fusesource/mqtt/client/MQTT.java
+@@ -47,10 +47,10 @@ public class MQTT {
+     private static ThreadPoolExecutor blockingThreadPool;
+ 
+ 
+-    public synchronized static ThreadPoolExecutor getBlockingThreadPool() {
++    public synchronized static ThreadPoolExecutor getBlockingThreadPool() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(17);
+         if( blockingThreadPool == null ) {
+             blockingThreadPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE, KEEP_ALIVE, TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>(), new ThreadFactory() {
+-                    public Thread newThread(Runnable r) {
++                    public Thread newThread(Runnable r) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(19);
+                         Thread rc = new Thread(null, r, "MQTT Task", STACK_SIZE);
+                         rc.setDaemon(true);
+                         return rc;
+diff --git a/org/fusesource/mqtt/client/Message.java b/org/fusesource/mqtt/client/Message.java
+index 1554d41..7f0493e 100644
+--- a/org/fusesource/mqtt/client/Message.java
++++ b/org/fusesource/mqtt/client/Message.java
+@@ -44,7 +44,7 @@ public class Message {
+         this.onComplete = onComplete;
+     }
+ 
+-    public byte[] getPayload() {
++    public byte[] getPayload() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(21);
+         return payload.toByteArray();
+     }
+ 
+@@ -53,7 +53,7 @@ public class Message {
+      * since it avoids a byte array copy.
+      * @return
+      */
+-    public Buffer getPayloadBuffer() {
++    public Buffer getPayloadBuffer() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(23);
+         return payload;
+     }
+ 
+diff --git a/org/fusesource/mqtt/client/NoopCallback.java b/org/fusesource/mqtt/client/NoopCallback.java
+index 2a4d613..d25255b 100644
+--- a/org/fusesource/mqtt/client/NoopCallback.java
++++ b/org/fusesource/mqtt/client/NoopCallback.java
+@@ -33,13 +33,13 @@ public class NoopCallback<T> implements Callback<T> {
+         this.next = next;
+     }
+ 
+-    public void onSuccess(T value) {
++    public void onSuccess(T value) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(25);
+         if( next!=null ) {
+             next.onSuccess(value);
+         }
+     }
+ 
+-    public void onFailure(Throwable value) {
++    public void onFailure(Throwable value) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(27);
+         if( next!=null ) {
+             next.onFailure(value);
+         }
+diff --git a/org/fusesource/mqtt/client/Promise.java b/org/fusesource/mqtt/client/Promise.java
+index 2353635..899dca8 100644
+--- a/org/fusesource/mqtt/client/Promise.java
++++ b/org/fusesource/mqtt/client/Promise.java
+@@ -35,7 +35,7 @@ public class Promise<T> implements Callback<T>, Future<T> {
+     private Throwable error;
+     private T value;
+ 
+-    public void onFailure(Throwable value) {
++    public void onFailure(Throwable value) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(29);
+         Callback<T> callback = null;
+         synchronized(this)  {
+             error = value;
+@@ -47,7 +47,7 @@ public class Promise<T> implements Callback<T>, Future<T> {
+         }
+     }
+ 
+-    public void onSuccess(T value) {
++    public void onSuccess(T value) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(31);
+         Callback<T> callback = null;
+         synchronized(this)  {
+             this.value = value;
+diff --git a/org/fusesource/mqtt/client/ProxyCallback.java b/org/fusesource/mqtt/client/ProxyCallback.java
+index 1a7e881..5c5edf3 100644
+--- a/org/fusesource/mqtt/client/ProxyCallback.java
++++ b/org/fusesource/mqtt/client/ProxyCallback.java
+@@ -33,13 +33,13 @@ public class ProxyCallback<T> implements Callback<T> {
+         this.next = next;
+     }
+ 
+-    public void onSuccess(T value) {
++    public void onSuccess(T value) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(33);
+         if( next!=null ) {
+             next.onSuccess(value);
+         }
+     }
+ 
+-    public void onFailure(Throwable value) {
++    public void onFailure(Throwable value) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(35);
+         if( next!=null ) {
+             next.onFailure(value);
+         }
+diff --git a/org/fusesource/mqtt/client/Topic.java b/org/fusesource/mqtt/client/Topic.java
+index 07444e2..0ee70b1 100644
+--- a/org/fusesource/mqtt/client/Topic.java
++++ b/org/fusesource/mqtt/client/Topic.java
+@@ -40,11 +40,11 @@ public class Topic {
+         this.qos = qos;
+     }
+ 
+-    public UTF8Buffer name() {
++    public UTF8Buffer name() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(37);
+         return name;
+     }
+ 
+-    public QoS qos() {
++    public QoS qos() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(39);
+         return qos;
+     }
+ 
+diff --git a/org/fusesource/mqtt/client/Tracer.java b/org/fusesource/mqtt/client/Tracer.java
+index 3496e84..96952cc 100644
+--- a/org/fusesource/mqtt/client/Tracer.java
++++ b/org/fusesource/mqtt/client/Tracer.java
+@@ -30,14 +30,14 @@ public class Tracer {
+      * @param message
+      * @param args
+      */
+-    public void debug(String message, Object...args) {
++    public void debug(String message, Object...args) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(41);
+     }
+ 
+     /**
+      * Called when a MQTTFrame sent to the remote peer.
+      * @param frame
+      */
+-    public void onSend(MQTTFrame frame) {
++    public void onSend(MQTTFrame frame) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(43);
+     }
+ 
+     /**
+diff --git a/org/fusesource/mqtt/codec/CONNACK.java b/org/fusesource/mqtt/codec/CONNACK.java
+index db9aa3c..82c7508 100644
+--- a/org/fusesource/mqtt/codec/CONNACK.java
++++ b/org/fusesource/mqtt/codec/CONNACK.java
+@@ -45,7 +45,7 @@ public class CONNACK implements Message {
+ 
+     private Code code = Code.CONNECTION_ACCEPTED;
+     
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(3);
+         return TYPE;
+     }
+ 
+@@ -75,7 +75,7 @@ public class CONNACK implements Message {
+         }
+     }
+ 
+-    public Code code() {
++    public Code code() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(6);
+         return code;
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/CONNECT.java b/org/fusesource/mqtt/codec/CONNECT.java
+index 385d308..ed0366f 100644
+--- a/org/fusesource/mqtt/codec/CONNECT.java
++++ b/org/fusesource/mqtt/codec/CONNECT.java
+@@ -68,7 +68,7 @@ public class CONNECT implements Message {
+         this.version = other.version;
+     }
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(9);
+         return TYPE;
+     }
+ 
+@@ -172,7 +172,7 @@ public class CONNECT implements Message {
+         }
+     }
+ 
+-    public boolean cleanSession() {
++    public boolean cleanSession() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(12);
+         return cleanSession;
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/DISCONNECT.java b/org/fusesource/mqtt/codec/DISCONNECT.java
+index b63782f..9febe4b 100644
+--- a/org/fusesource/mqtt/codec/DISCONNECT.java
++++ b/org/fusesource/mqtt/codec/DISCONNECT.java
+@@ -32,7 +32,7 @@ public class DISCONNECT extends EmptyBase implements Message {
+ 
+     public static final byte TYPE = 14;
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(14);
+         return TYPE;
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/MQTTFrame.java b/org/fusesource/mqtt/codec/MQTTFrame.java
+index 66765a2..bd2d5a2 100644
+--- a/org/fusesource/mqtt/codec/MQTTFrame.java
++++ b/org/fusesource/mqtt/codec/MQTTFrame.java
+@@ -42,10 +42,10 @@ public class MQTTFrame extends MessageSupport.HeaderBase {
+         this.buffers = buffers;
+     }
+ 
+-    public Buffer[] buffers() {
++    public Buffer[] buffers() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(16);
+         return buffers;
+     }
+-    public MQTTFrame buffers(Buffer...buffers) {
++    public MQTTFrame buffers(Buffer...buffers) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(18);
+         this.buffers = buffers;
+         return this;
+     }
+diff --git a/org/fusesource/mqtt/codec/MQTTProtocolCodec.java b/org/fusesource/mqtt/codec/MQTTProtocolCodec.java
+index a5d300c..45554ae 100644
+--- a/org/fusesource/mqtt/codec/MQTTProtocolCodec.java
++++ b/org/fusesource/mqtt/codec/MQTTProtocolCodec.java
+@@ -41,11 +41,11 @@ public class MQTTProtocolCodec extends AbstractProtocolCodec {
+         this.bufferPools = BUFFER_POOLS;
+     }
+ 
+-    public int getMaxMessageLength() {
++    public int getMaxMessageLength() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(20);
+         return maxMessageLength;
+     }
+ 
+-    public void setMaxMessageLength(int maxMessageLength) {
++    public void setMaxMessageLength(int maxMessageLength) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(22);
+         this.maxMessageLength = maxMessageLength;
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/MessageSupport.java b/org/fusesource/mqtt/codec/MessageSupport.java
+index a0a5e8e..d758e3f 100644
+--- a/org/fusesource/mqtt/codec/MessageSupport.java
++++ b/org/fusesource/mqtt/codec/MessageSupport.java
+@@ -103,11 +103,11 @@ public final class MessageSupport {
+             }
+         }
+ 
+-        public short messageId() {
++        public short messageId() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(24);
+             return messageId;
+         }
+ 
+-        protected AckBase messageId(short messageId) {
++        protected AckBase messageId(short messageId) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(26);
+             this.messageId = messageId;
+             return this;
+         }
+diff --git a/org/fusesource/mqtt/codec/PINGREQ.java b/org/fusesource/mqtt/codec/PINGREQ.java
+index 01017e4..93618b3 100644
+--- a/org/fusesource/mqtt/codec/PINGREQ.java
++++ b/org/fusesource/mqtt/codec/PINGREQ.java
+@@ -31,7 +31,7 @@ public class PINGREQ extends MessageSupport.EmptyBase implements Message {
+ 
+     public static final byte TYPE = 12;
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(28);
+         return TYPE;
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/PINGRESP.java b/org/fusesource/mqtt/codec/PINGRESP.java
+index adba5a7..8f21eef 100644
+--- a/org/fusesource/mqtt/codec/PINGRESP.java
++++ b/org/fusesource/mqtt/codec/PINGRESP.java
+@@ -31,7 +31,7 @@ public class PINGRESP extends MessageSupport.EmptyBase implements Message {
+ 
+     public static final byte TYPE = 13;
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(30);
+         return TYPE;
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/PUBACK.java b/org/fusesource/mqtt/codec/PUBACK.java
+index 876ba89..31e8372 100644
+--- a/org/fusesource/mqtt/codec/PUBACK.java
++++ b/org/fusesource/mqtt/codec/PUBACK.java
+@@ -31,7 +31,7 @@ public class PUBACK extends MessageSupport.AckBase implements Message {
+ 
+     public static final byte TYPE = 4;
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(32);
+         return TYPE;
+     }
+ 
+@@ -41,7 +41,7 @@ public class PUBACK extends MessageSupport.AckBase implements Message {
+     }
+ 
+     @Override
+-    public PUBACK messageId(short messageId) {
++    public PUBACK messageId(short messageId) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(34);
+         return (PUBACK) super.messageId(messageId);
+     }
+ }
+diff --git a/org/fusesource/mqtt/codec/PUBCOMP.java b/org/fusesource/mqtt/codec/PUBCOMP.java
+index 3b25e9b..8685548 100644
+--- a/org/fusesource/mqtt/codec/PUBCOMP.java
++++ b/org/fusesource/mqtt/codec/PUBCOMP.java
+@@ -31,7 +31,7 @@ public class PUBCOMP extends MessageSupport.AckBase implements Message {
+ 
+     public static final byte TYPE = 7;
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(36);
+         return TYPE;
+     }
+ 
+@@ -41,7 +41,7 @@ public class PUBCOMP extends MessageSupport.AckBase implements Message {
+     }
+ 
+     @Override
+-    public PUBCOMP messageId(short messageId) {
++    public PUBCOMP messageId(short messageId) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(38);
+         return (PUBCOMP) super.messageId(messageId);
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/PUBLISH.java b/org/fusesource/mqtt/codec/PUBLISH.java
+index a6a31df..532f54f 100644
+--- a/org/fusesource/mqtt/codec/PUBLISH.java
++++ b/org/fusesource/mqtt/codec/PUBLISH.java
+@@ -46,7 +46,7 @@ public class PUBLISH extends MessageSupport.HeaderBase implements Message, Acked
+         qos(QoS.AT_LEAST_ONCE);
+     }
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(40);
+         return TYPE;
+     }
+ 
+@@ -90,7 +90,7 @@ public class PUBLISH extends MessageSupport.HeaderBase implements Message, Acked
+     }
+ 
+     @Override
+-    public boolean dup() {
++    public boolean dup() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(42);
+         return super.dup();
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/PUBREC.java b/org/fusesource/mqtt/codec/PUBREC.java
+index 1ddb287..186b204 100644
+--- a/org/fusesource/mqtt/codec/PUBREC.java
++++ b/org/fusesource/mqtt/codec/PUBREC.java
+@@ -31,7 +31,7 @@ public class PUBREC extends MessageSupport.AckBase implements Message {
+ 
+     public static final byte TYPE = 5;
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(44);
+         return TYPE;
+     }
+ 
+@@ -41,7 +41,7 @@ public class PUBREC extends MessageSupport.AckBase implements Message {
+     }
+ 
+     @Override
+-    public PUBREC messageId(short messageId) {
++    public PUBREC messageId(short messageId) { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(45);
+         return (PUBREC) super.messageId(messageId);
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/PUBREL.java b/org/fusesource/mqtt/codec/PUBREL.java
+index 121ea7e..2323ab0 100644
+--- a/org/fusesource/mqtt/codec/PUBREL.java
++++ b/org/fusesource/mqtt/codec/PUBREL.java
+@@ -38,7 +38,7 @@ public class PUBREL extends MessageSupport.HeaderBase implements Message, Acked
+ 
+     private short messageId;
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(46);
+         return TYPE;
+     }
+     
+@@ -70,7 +70,7 @@ public class PUBREL extends MessageSupport.HeaderBase implements Message, Acked
+ 
+ 
+     @Override
+-    public boolean dup() {
++    public boolean dup() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(47);
+         return super.dup();
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/SUBACK.java b/org/fusesource/mqtt/codec/SUBACK.java
+index ca10e0f..54c0e9a 100644
+--- a/org/fusesource/mqtt/codec/SUBACK.java
++++ b/org/fusesource/mqtt/codec/SUBACK.java
+@@ -40,7 +40,7 @@ public class SUBACK implements Message {
+     private short messageId;
+     private byte[] grantedQos = NO_GRANTED_QOS;
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(48);
+         return TYPE;
+     }
+ 
+@@ -66,7 +66,7 @@ public class SUBACK implements Message {
+         }
+     }
+ 
+-    public byte[] grantedQos() {
++    public byte[] grantedQos() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(49);
+         return grantedQos;
+     }
+ 
+diff --git a/org/fusesource/mqtt/codec/SUBSCRIBE.java b/org/fusesource/mqtt/codec/SUBSCRIBE.java
+index f6b15b2..1f92ef0 100644
+--- a/org/fusesource/mqtt/codec/SUBSCRIBE.java
++++ b/org/fusesource/mqtt/codec/SUBSCRIBE.java
+@@ -47,7 +47,7 @@ public class SUBSCRIBE extends MessageSupport.HeaderBase implements Message, Ack
+         qos(QoS.AT_LEAST_ONCE);
+     }
+ 
+-    public byte messageType() {
++    public byte messageType() { org.fusesource.mqtt.jmhbench.MutationSwitch.tick(50);
+         return TYPE;
+     }
+ 
+diff --git a/org/fusesource/mqtt/jmhbench/MutationSwitch.java b/org/fusesource/mqtt/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..becdb5e
+--- /dev/null
++++ b/org/fusesource/mqtt/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.fusesource.mqtt.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

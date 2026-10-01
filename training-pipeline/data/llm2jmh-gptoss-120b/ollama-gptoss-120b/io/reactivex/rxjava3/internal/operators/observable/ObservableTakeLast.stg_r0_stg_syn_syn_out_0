@@ -1,0 +1,108 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Throughput benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableTakeLast}.
+ *
+ * The benchmark measures how many items per second can be processed when the
+ * {@code takeLast} operator buffers the last {@code count} elements of a source
+ * sequence of {@code size} elements.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Parameterize both the source size and the buffer count to explore different
+ *   workload characteristics.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are configured to let the JIT stabilize.
+ * - Forking isolates the benchmark from JVM start‑up effects.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableTakeLastBenchmark {
+
+    /**
+     * Number of items emitted by the upstream Observable.
+     * Typical values: small (10), medium (1_000), large (1_000_000).
+     */
+    @Param({ "10", "1000", "1000000" })
+    public int size;
+
+    /**
+     * Number of last items to retain by the takeLast operator.
+     * Must be less than or equal to {@code size}.
+     */
+    @Param({ "1", "10", "100" })
+    public int count;
+
+    private Observable<Integer> source;
+
+    /**
+     * Prepare the upstream Observable before each benchmark iteration.
+     * Using {@code Observable.range} provides a deterministic, cheap source.
+     */
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Ensure count does not exceed size to keep the semantics correct.
+        int effectiveCount = Math.min(count, size);
+        source = Observable.range(1, size).takeLast(effectiveCount);
+    }
+
+    /**
+     * Benchmark method that subscribes to the prepared Observable and consumes
+     * all emitted items. The Blackhole guarantees that the JIT compiler cannot
+     * eliminate the subscription logic.
+     *
+     * @param bh Blackhole to consume each emitted item.
+     */
+    @Benchmark
+    public void takeLastThroughput(Blackhole bh) {
+        // Subscribe and consume all items; blockingSubscribe ensures the
+        // benchmark thread waits for completion.
+        source.blockingSubscribe(new Consumer<Integer>() {
+
+            @Override
+            public void accept(Integer value) {
+                bh.consume(value);
+            }
+        });
+    }
+}

@@ -1,0 +1,98 @@
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link ObservableFlatMapStream}.
+ *
+ * The benchmark measures the throughput of flat‑mapping an {@link Observable}
+ * of {@code Integer}s into a {@link Stream} of {@code Integer}s.
+ *
+ * Best‑practice notes:
+ * • The {@link State} is {@code Scope.Thread} to avoid cross‑thread contention.
+ * • All allocations that are not part of the measured code are performed in {@link Setup}.
+ * • {@link Blackhole} is used to consume the emitted items, preventing dead‑code elimination.
+ * • The benchmark runs in {@link Mode#Throughput} with a time unit of operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, warmups = 1)
+@State(Scope.Thread)
+public class ObservableFlatMapStreamBenchmark {
+
+    /**
+     * Number of upstream items emitted per subscription.
+     */
+    @Param({ "1000", "10000" })
+    public int upstreamCount;
+
+    /**
+     * Number of items each upstream element is mapped to.
+     */
+    @Param({ "10", "100" })
+    public int innerStreamSize;
+
+    private Observable<Integer> source;
+
+    private Function<Integer, Stream<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Create a cold Observable that emits a range of integers.
+        source = Observable.range(1, upstreamCount);
+        // Mapper creates a Stream of consecutive integers for each upstream value.
+        mapper = i -> IntStream.rangeClosed(1, innerStreamSize).boxed();
+    }
+
+    /**
+     * Benchmark that subscribes to the flat‑mapped Observable and consumes all items.
+     *
+     * @param bh Blackhole to consume emitted values.
+     */
+    @Benchmark
+    public void flatMapStreamThroughput(Blackhole bh) {
+        // The operator under test.
+        Observable<Integer> flatMapped = new ObservableFlatMapStream<>(source, mapper);
+        // Subscribe and consume all items; blockingSubscribe ensures the benchmark
+        // measures the complete processing of one subscription.
+        flatMapped.blockingSubscribe(bh::consume);
+    }
+}

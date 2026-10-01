@@ -1,0 +1,80 @@
+```java
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableTimeout;
+import io.reactivex.rxjava3.schedulers.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmarks for {@link CompletableTimeout}.
+ *
+ * <p>Two scenarios are measured:
+ * <ul>
+ *   <li>{@code timeoutNoDelay} – the source completes immediately, so the timeout task is cancelled.</li>
+ *   <li>{@code timeoutWithFallback} – the source never completes, the timeout fires and the fallback {@code other}
+ *       Completable is subscribed.</li>
+ * </ul>
+ *
+ * <p>Throughput mode is used because we are interested in how many subscriptions per second the operator can
+ * handle under steady‑state conditions.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class CompletableTimeoutBenchmark {
+
+    /** Scheduler used by the operator. A fresh scheduler is created for each iteration. */
+    private Scheduler scheduler;
+
+    /** Common fallback {@link Completable} used when the timeout fires. */
+    private Completable fallback;
+
+    /** Create a dedicated scheduled thread pool before every iteration. */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        scheduler = Schedulers.from(
+                Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors()));
+        fallback = Completable.complete();
+    }
+
+    /** Shut down the dedicated scheduler after every iteration. */
+    @TearDown(Level.Iteration)
+    public void tearDown() {
+        scheduler.shutdown();
+    }
+
+    /** Benchmark where the source completes immediately (fast‑path). */
+    @Benchmark
+    public void timeoutNoDelay(Blackhole bh) {
+        Completable source = Completable.complete();
+        CompletableTimeout op = new CompletableTimeout(
+                source,
+                1, TimeUnit.MILLISECONDS,
+                scheduler,
+                fallback);
+        op.blockingAwait();
+        bh.consume(op);
+    }
+
+    /** Benchmark where the source never completes, causing a timeout and fallback subscription. */
+    @Benchmark
+    public void timeoutWithFallback(Blackhole bh) {
+        Completable source = Completable.never();
+        CompletableTimeout op = new CompletableTimeout(
+                source,
+                1, TimeUnit.MILLISECONDS,
+                scheduler,
+                fallback);
+        op.blockingAwait();
+        bh.consume(op);
+    }
+}
+```

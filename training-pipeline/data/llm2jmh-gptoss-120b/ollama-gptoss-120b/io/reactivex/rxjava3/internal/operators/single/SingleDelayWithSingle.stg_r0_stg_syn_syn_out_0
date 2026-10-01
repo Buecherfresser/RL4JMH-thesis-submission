@@ -1,0 +1,93 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SingleDelayWithSingle}.
+ *
+ * The benchmark measures the throughput of the operator when the upstream
+ * {@code source} Single and the delaying {@code other} Single both emit
+ * immediately. This reflects the minimal overhead of the operator
+ * (subscription handling, disposal management, and the internal
+ * {@code ResumeSingleObserver} wiring).
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} isolates benchmark state per thread.
+ * - {@code @Setup(Level.Iteration)} recreates the operator each iteration
+ *   to avoid caching effects.
+ * - {@code Blackhole} consumes the result to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are defined to let the JVM reach a
+ *   steady state.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class SingleDelayWithSingleBenchmark {
+
+    /**
+     * Upstream source that emits a single integer.
+     */
+    private Single<Integer> source;
+
+    /**
+     * Delaying Single that completes before the source is subscribed to.
+     */
+    private Single<Integer> other;
+
+    /**
+     * The operator under test.
+     */
+    private SingleDelayWithSingle<Integer, Integer> operator;
+
+    @Setup(Level.Iteration)
+    public void setUp() {
+        // Both Singles emit immediately; this isolates the operator's overhead.
+        source = Single.just(1);
+        other = Single.just(2);
+        operator = new SingleDelayWithSingle<>(source, other);
+    }
+
+    @Benchmark
+    public void delayWithSingleThroughput(Blackhole bh) {
+        // blockingGet forces the whole chain to execute synchronously.
+        // The result is consumed by Blackhole to avoid dead‑code elimination.
+        bh.consume(operator.blockingGet());
+    }
+}

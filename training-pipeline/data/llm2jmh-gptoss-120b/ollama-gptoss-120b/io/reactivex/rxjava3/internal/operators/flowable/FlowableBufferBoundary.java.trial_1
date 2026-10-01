@@ -1,0 +1,77 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
+/**
+ * Benchmark for the {@code Flowable.buffer(open, close, bufferSupplier)} operator,
+ * which internally uses {@code FlowableBufferBoundary}.
+ *
+ * Measures throughput of processing a stream of integers where each item opens
+ * a buffer that closes immediately (size‑1 buffers), stressing the operator's
+ * concurrency and back‑pressure handling.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableBufferBoundaryBenchmark {
+
+    @Param({ "100000" })
+    public int itemCount;
+
+    @Param({ "100000" })
+    public int openCount;
+
+    private Flowable<Integer> source;
+    private Flowable<Integer> openPublisher;
+    private Function<Integer, Flowable<Integer>> closeFunction;
+    private Supplier<List<Integer>> bufferSupplier;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Source emits a deterministic range of integers.
+        source = Flowable.range(1, itemCount)
+                .subscribeOn(Schedulers.trampoline());
+
+        // Open publisher emits a token for each buffer we want to create.
+        openPublisher = Flowable.range(1, openCount)
+                .subscribeOn(Schedulers.trampoline());
+
+        // Each buffer closes immediately after it is opened (size‑1 buffer).
+        closeFunction = token -> Flowable.just(token)
+                .subscribeOn(Schedulers.trampoline());
+
+        // Buffer supplier creates a new ArrayList for each buffer.
+        bufferSupplier = () -> new ArrayList<>();
+    }
+
+    @Benchmark
+    public void bufferBoundaryThroughput(Blackhole bh) throws InterruptedException {
+        Flowable<List<Integer>> buffered = source.buffer(openPublisher, closeFunction, bufferSupplier);
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        buffered.subscribe(
+                bh::consume,      // onNext
+                bh::consume,      // onError
+                latch::countDown  // onComplete
+        );
+
+        latch.await();
+    }
+}
+```

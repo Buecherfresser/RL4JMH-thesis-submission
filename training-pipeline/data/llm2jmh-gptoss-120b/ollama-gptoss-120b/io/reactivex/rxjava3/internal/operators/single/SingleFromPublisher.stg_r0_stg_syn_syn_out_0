@@ -1,0 +1,79 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Publisher;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SingleFromPublisher}.
+ *
+ * The benchmark measures the throughput of converting a Publisher that emits a single
+ * element into a {@code Single} and then blocking to retrieve the value.
+ *
+ * Best practices applied:
+ * - Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - Perform heavy setup in {@code @Setup(Level.Trial)} to exclude it from the measurement.
+ * - Use {@code blockingGet()} to ensure the subscription completes within the benchmark iteration.
+ * - Configure warm‑up, measurement, and fork parameters to obtain stable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class SingleFromPublisherBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Single that wraps a Publisher emitting exactly one integer.
+         */
+        Single<Integer> single;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            Publisher<Integer> publisher = Flowable.just(1);
+            single = new SingleFromPublisher<>(publisher);
+        }
+    }
+
+    @Benchmark
+    public Integer singleFromPublisherThroughput(BenchmarkState state) {
+        // blockingGet() forces the subscription to complete, making the measurement deterministic.
+        return state.single.blockingGet();
+    }
+}

@@ -1,0 +1,88 @@
+```java
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableFlatMapMaybe}
+ * measuring throughput of the flatMapMaybe operator when the mapper returns an immediate {@link Maybe}.
+ */
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ObservableFlatMapMaybeBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable per benchmark iteration.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    /**
+     * Source Observable emitting a range of integers.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * Mapper converting each integer into a Maybe emitting a String.
+     */
+    private Function<Integer, MaybeSource<String>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Create a cold Observable that emits 'size' sequential integers.
+        source = Observable.range(1, size);
+        // Mapper returns a Maybe that immediately emits a transformed value.
+        mapper = i -> Maybe.just("value-" + i);
+    }
+
+    /**
+     * Executes the flatMapMaybe operator and consumes all emitted items.
+     *
+     * The benchmark measures how many complete flatMapMaybe executions can be performed per second.
+     */
+    @Benchmark
+    public void flatMapMaybeThroughput(Blackhole bh) {
+        // The blockingSubscribe ensures the whole stream is processed before the method returns.
+        source.flatMapMaybe(mapper).blockingSubscribe(bh::consume);
+    }
+}
+```

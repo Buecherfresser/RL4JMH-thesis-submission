@@ -1,0 +1,122 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SingleFlatMapPublisher}.
+ *
+ * Measures the throughput of the operator when a {@link Single} emits a single value
+ * that is mapped to a {@link Flowable} of {@code N} items.
+ *
+ * The benchmark follows best practices:
+ * - Use @State to share immutable fixtures across iterations.
+ * - Pre‑allocate objects that are not part of the measured work.
+ * - Use a CountDownLatch to wait for completion without busy‑waiting.
+ * - Consume emitted items via Blackhole to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class SingleFlatMapPublisherBenchmark {
+
+    /**
+     * Number of items emitted by the inner Publisher.
+     */
+    @Param({ "10", "100", "1000" })
+    public int innerItemCount;
+
+    /**
+     * The source Single that emits a constant value.
+     */
+    private Single<Integer> source;
+
+    /**
+     * Mapper function turning the upstream value into a Flowable of {@code innerItemCount} items.
+     */
+    private Function<Integer, Publisher<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        source = Single.just(1);
+        mapper = v -> Flowable.range(0, innerItemCount);
+    }
+
+    /**
+     * Benchmark method that creates a new {@link SingleFlatMapPublisher},
+     * subscribes a {@link TestSubscriber}, and waits for completion.
+     *
+     * The measured part is the whole flat‑map operation including subscription,
+     * request handling and emission of all inner items.
+     */
+    @Benchmark
+    public void flatMapPublisher(Blackhole bh) throws InterruptedException {
+        // Create the operator instance
+        SingleFlatMapPublisher<Integer, Integer> operator = new SingleFlatMapPublisher<>(source, mapper);
+        // Latch to wait for onComplete / onError
+        CountDownLatch latch = new CountDownLatch(1);
+        // Subscriber that forwards each item to Blackhole and signals completion
+        operator.subscribe(new DisposableSubscriber<Integer>() {
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are not expected in this benchmark; count them as failures
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+        // Wait for the stream to finish; timeout guards against deadlocks
+        if (!latch.await(5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Benchmark timed out");
+        }
+    }
+}

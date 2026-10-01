@@ -1,0 +1,52 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link ObservableElementAtMaybe}.
+ *
+ * Measures the throughput of retrieving the element at a given index from an {@link Observable}
+ * using the {@code elementAtMaybe} operator.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Param to explore different source sizes and target indices.
+ * - @Setup to create the source Observable once per benchmark iteration.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableElementAtMaybeBenchmark {
+
+    @Param({ "10", "1000", "100000" })
+    public int sourceSize;
+
+    @Param({ "0", "1", "10", "100", "500" })
+    public int index;
+
+    private Observable<Integer> source;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        int safeIndex = Math.min(index, sourceSize - 1);
+        this.index = safeIndex;
+        this.source = Observable.range(0, sourceSize);
+    }
+
+    @Benchmark
+    public void elementAtMaybe(Blackhole bh) {
+        // Use the correct constructor of ObservableElementAtMaybe (source, index)
+        Maybe<Integer> maybe = new ObservableElementAtMaybe<>(source, index);
+        Integer result = maybe.blockingGet();
+        bh.consume(result);
+    }
+}
+```

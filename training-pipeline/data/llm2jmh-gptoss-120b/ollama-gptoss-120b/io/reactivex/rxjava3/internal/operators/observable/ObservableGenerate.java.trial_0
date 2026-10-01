@@ -1,0 +1,87 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableGenerate;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+/**
+ * Benchmark for {@link ObservableGenerate} measuring the throughput of generating a fixed number of items.
+ *
+ * The generator emits integers from 0 up to {@code count - 1} and then completes.
+ * This mimics a typical use‑case of {@code Observable.generate} and isolates the overhead
+ * of the operator itself.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Perform all allocations in @Setup to keep the benchmark measurement focused on the operator.
+ * - Use Blackhole to consume emitted items and prevent dead‑code elimination.
+ * - Configure warm‑up, measurement iterations and forks for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class ObservableGenerateThroughputBenchmark {
+
+    /** Number of items each benchmark iteration will generate. */
+    @Param({"1000", "10000", "100000"})
+    public int count;
+
+    /** The Observable under test, created once per benchmark thread. */
+    private Observable<Integer> observable;
+
+    /** Supplier that provides the initial state (the current index). */
+    private Supplier<Integer> stateSupplier;
+
+    /** Generator function that emits the next integer and updates the state. */
+    private BiFunction<Integer, ObservableEmitter<Integer>, Integer> generator;
+
+    /** Consumer that disposes the final state (no‑op for this benchmark). */
+    private Consumer<Integer> disposeState;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Initial state is 0 (the first index to emit)
+        stateSupplier = () -> 0;
+
+        // Generator emits the current index and increments it.
+        // When the index reaches 'count' it signals completion.
+        generator = (index, emitter) -> {
+            if (index < count) {
+                emitter.onNext(index);
+                return index + 1;
+            } else {
+                emitter.onComplete();
+                return index; // state is irrelevant after completion
+            }
+        };
+
+        // No resources to clean up, so the dispose consumer is a no‑op.
+        disposeState = s -> { /* no‑op */ };
+
+        // Build the ObservableGenerate instance.
+        observable = new ObservableGenerate<>(stateSupplier, generator, disposeState);
+    }
+
+    /**
+     * Benchmark method that subscribes to the ObservableGenerate and consumes all emitted items.
+     *
+     * @param bh Blackhole to consume the items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void generateAndConsume(Blackhole bh) {
+        // blockingSubscribe ensures the benchmark measures the full generation cycle.
+        observable.blockingSubscribe(bh::consume);
+    }
+}
+```

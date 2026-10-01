@@ -1,0 +1,57 @@
+```
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.parallel.ParallelFlowable;
+import io.reactivex.rxjava3.parallel.ParallelFailureHandling;
+
+/**
+ * Benchmark for {@link ParallelMapTryOptional}.
+ *
+ * Measures throughput of a parallel flow that maps each upstream value to an {@link Optional}
+ * and applies a simple error‑handling strategy.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ParallelMapTryOptionalBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int itemCount;
+
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    /** The prepared parallel flow with the operator applied. */
+    private ParallelFlowable<Integer> parallelFlow;
+
+    /** Simple mapper that doubles the value and wraps it in an Optional. */
+    private static final Function<Integer, Optional<Integer>> MAPPER = v -> Optional.of(v * 2);
+
+    /** Error handler that stops on any error. */
+    private static final BiFunction<Long, Throwable, ParallelFailureHandling> ERROR_HANDLER =
+            (retryCount, throwable) -> ParallelFailureHandling.STOP;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        Flowable<Integer> source = Flowable.range(1, itemCount);
+        ParallelFlowable<Integer> parallelSource = source.parallel(parallelism);
+        // Explicit generic arguments help the compiler infer the correct types.
+        parallelFlow = new ParallelMapTryOptional<Integer, Integer>(parallelSource, MAPPER, ERROR_HANDLER);
+    }
+
+    @Benchmark
+    public void mapTryOptionalThroughput(Blackhole bh) {
+        parallelFlow.sequential().blockingForEach(bh::consume);
+    }
+}
+```

@@ -1,0 +1,72 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Maybe;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Throughput benchmark for {@code Maybe.switchIfEmpty} operator.
+ *
+ * <p>Two scenarios are measured:
+ * <ul>
+ *   <li>Source emits a value (no switch).</li>
+ *   <li>Source completes empty and switches to the fallback Maybe.</li>
+ * </ul>
+ *
+ * <p>Best‑practice JMH settings are used:
+ * <ul>
+ *   <li>Warm‑up iterations to let the JIT stabilize.</li>
+ *   <li>Multiple measurement iterations for statistical confidence.</li>
+ *   <li>Forks to isolate JVM state.</li>
+ *   <li>Throughput mode (operations per time unit).</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class MaybeSwitchIfEmptyBenchmark {
+
+    /** Source that emits a value; the fallback is never used. */
+    private Maybe<Integer> maybeWithValue;
+
+    /** Source that completes empty; the fallback is subscribed. */
+    private Maybe<Integer> maybeEmptySwitch;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Using the public API; internally this creates an instance of MaybeSwitchIfEmpty.
+        maybeWithValue = Maybe.just(1)
+                               .switchIfEmpty(Maybe.just(2));
+
+        maybeEmptySwitch = Maybe.<Integer>empty()
+                                 .switchIfEmpty(Maybe.just(2));
+    }
+
+    /**
+     * Benchmark where the upstream Maybe emits a value.
+     *
+     * @param bh Blackhole to consume the emitted value and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void switchIfEmpty_ValuePresent(Blackhole bh) {
+        maybeWithValue.subscribe(bh::consume);
+    }
+
+    /**
+     * Benchmark where the upstream Maybe is empty and the operator switches to the fallback.
+     *
+     * @param bh Blackhole to consume the emitted value from the fallback.
+     */
+    @Benchmark
+    public void switchIfEmpty_EmptySwitches(Blackhole bh) {
+        maybeEmptySwitch.subscribe(bh::consume);
+    }
+}
+```

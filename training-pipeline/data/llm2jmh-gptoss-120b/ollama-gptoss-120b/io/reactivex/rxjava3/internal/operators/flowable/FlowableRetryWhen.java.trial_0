@@ -1,0 +1,102 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.processors.UnicastProcessor;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableRetryWhen}
+ * measuring the throughput of a retryWhen flow under a typical error‑retry scenario.
+ *
+ * The benchmark creates a source Flowable that emits a fixed number of items and then
+ * fails with an exception. The retryWhen handler retries a configurable number of
+ * times before finally propagating the error. The downstream consumes the items
+ * using a {@link TestSubscriber} to avoid side‑effects that could interfere with
+ * JIT optimizations.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Trial) performs heavyweight initialization once per JVM launch.
+ * - Blackhole is used to consume the final TestSubscriber to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are defined to let the JIT stabilize.
+ * - Throughput mode reports operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableRetryWhenBenchmark {
+
+    /** Number of items emitted before the source fails. */
+    @Param({"1000"})
+    public int itemCount;
+
+    /** Number of retry attempts the handler will allow. */
+    @Param({"3"})
+    public int maxRetries;
+
+    /** The source Flowable that fails after emitting {@code itemCount} items. */
+    private Flowable<Integer> source;
+
+    /** The retryWhen operator applied to {@code source}. */
+    private Flowable<Integer> retryWhenFlowable;
+
+    /** Counter used by the handler to track retry attempts. */
+    private AtomicInteger retryCounter;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a source that emits a range of integers and then throws an exception.
+        source = Flowable.range(1, itemCount)
+                .concatWith(Flowable.error(new RuntimeException("forced failure")));
+
+        // Handler that retries up to {@code maxRetries} times.
+        Function<Flowable<Throwable>, Flowable<?>> handler = errors -> {
+            // Use a processor to forward the error signals to the handler.
+            UnicastProcessor<Throwable> processor = UnicastProcessor.create();
+            return errors
+                    .doOnNext(e -> {
+                        int attempt = retryCounter.incrementAndGet();
+                        if (attempt > maxRetries) {
+                            // Propagate the error downstream after max retries.
+                            processor.onError(e);
+                        } else {
+                            // Signal a retry by completing the processor.
+                            processor.onComplete();
+                        }
+                    })
+                    .ignoreElements()
+                    .andThen(processor);
+        };
+
+        retryCounter = new AtomicInteger(0);
+        retryWhenFlowable = source.retryWhen(handler);
+    }
+
+    /**
+     * Executes the retryWhen flow and consumes all emitted items.
+     *
+     * @param bh Blackhole to consume the subscriber and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void retryWhenThroughput(Blackhole bh) {
+        // Use TestSubscriber to subscribe and request all items.
+        TestSubscriber<Integer> ts = new TestSubscriber<>(0);
+        retryWhenFlowable.subscribe(ts);
+        ts.request(Long.MAX_VALUE);
+        // Wait for termination (either complete or error).
+        ts.awaitDone(5, TimeUnit.SECONDS);
+        // Consume the subscriber to prevent the JIT from optimizing it away.
+        bh.consume(ts);
+    }
+}
+```

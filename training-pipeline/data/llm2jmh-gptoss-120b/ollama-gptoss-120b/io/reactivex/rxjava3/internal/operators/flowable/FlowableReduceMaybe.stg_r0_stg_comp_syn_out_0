@@ -1,0 +1,97 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmark for {@link FlowableReduceMaybe}.
+ *
+ * Measures the throughput of reducing a {@link Flowable} of {@code Integer}s
+ * to a {@link Maybe} using a simple sum reducer.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * - @State is scoped to a thread to avoid sharing mutable state.
+ * - @Setup creates immutable data structures once per iteration.
+ * - The benchmark method performs the operation and consumes the result via Blackhole.
+ * - Warm‑up, measurement, forks and time‑units are explicitly defined.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class FlowableReduceMaybeBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of elements in the source Flowable.
+         */
+        @Param({ "100", "1000", "10000" })
+        public int size;
+
+        /**
+         * Source Flowable emitting a range of integers.
+         */
+        Flowable<Integer> source;
+
+        /**
+         * Reducer that sums two integers.
+         */
+        BiFunction<Integer, Integer, Integer> sumReducer = (a, b) -> a + b;
+
+        /**
+         * The Maybe produced by FlowableReduceMaybe.
+         */
+        Maybe<Integer> maybe;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a Flowable that emits 'size' sequential integers.
+            source = Flowable.range(1, size);
+            // Build the FlowableReduceMaybe operator.
+            maybe = new FlowableReduceMaybe<>(source, sumReducer);
+        }
+    }
+
+    @Benchmark
+    public void reduceMaybe(BenchmarkState state, Blackhole bh) {
+        // Execute the reduction and consume the result to prevent dead‑code elimination.
+        Integer result = state.maybe.blockingGet();
+        bh.consume(result);
+    }
+}

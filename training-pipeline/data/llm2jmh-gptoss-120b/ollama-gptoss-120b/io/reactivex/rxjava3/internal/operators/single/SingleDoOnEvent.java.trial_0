@@ -1,0 +1,63 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.BiConsumer;
+
+/**
+ * Benchmark for {@code Single.doOnEvent} which internally uses {@code SingleDoOnEvent}.
+ *
+ * The benchmark measures the throughput of a simple {@code Single.just(...)} pipeline
+ * with a no‑op {@code BiConsumer}. The {@link Blackhole} is used to consume the result
+ * and to prevent dead‑code elimination.
+ *
+ * Best‑practice JMH settings:
+ * - Warm‑up iterations to let the JIT stabilize.
+ * - Measurement iterations for reliable numbers.
+ * - Single fork to isolate JVM launch overhead.
+ * - Scope.Thread state to avoid sharing mutable objects across threads.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class SingleDoOnEventBenchmark {
+
+    /** The {@code Single} under test. */
+    private Single<Integer> single;
+
+    /** A no‑op {@code BiConsumer} used by {@code doOnEvent}. */
+    private BiConsumer<Integer, Throwable> consumer;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Minimal work consumer – just a placeholder to trigger the operator.
+        consumer = (value, error) -> {
+            // No side effects; keep it as cheap as possible.
+        };
+
+        // Build the pipeline once per trial.
+        single = Single.just(1).doOnEvent(consumer);
+    }
+
+    /**
+     * Executes the {@code Single} and consumes the result.
+     *
+     * @param bh Blackhole to consume the emitted value and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void doOnEventThroughput(Blackhole bh) {
+        // blockingGet forces subscription and emission synchronously,
+        // giving a clear measurement of the operator overhead.
+        int result = single.blockingGet();
+        bh.consume(result);
+    }
+}
+```

@@ -1,0 +1,111 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableAll}.
+ *
+ * The benchmarks measure the throughput (operations per second) of the {@code all} operator
+ * under three typical scenarios:
+ *
+ * <ul>
+ *   <li>All items satisfy the predicate (no early termination).</li>
+ *   <li>The first item fails the predicate (early termination).</li>
+ *   <li>The predicate throws an exception (error path).</li>
+ * </ul>
+ *
+ * The benchmark follows best practices:
+ * <ul>
+ *   <li>State is scoped to a single thread to avoid contention.</li>
+ *   <li>All allocations are performed in {@link Setup} to keep the measured code focused on the operator.</li>
+ *   <li>Blackhole is used to consume results and prevent dead‑code elimination.</li>
+ *   <li>Reasonable warm‑up, measurement, and fork settings are provided.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class ObservableAllBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     * Typical values are powers of two to exercise different internal buffer sizes.
+     */
+    @Param({"1", "10", "1000", "100000"})
+    public int size;
+
+    private Observable<Integer> sourceAllTrue;
+    private Observable<Integer> sourceFirstFalse;
+    private Observable<Integer> sourceError;
+
+    private Predicate<Integer> alwaysTrue;
+    private Predicate<Integer> firstFalse;
+    private Predicate<Integer> throwsException;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Source that emits {@code size} sequential integers starting from 1.
+        Observable<Integer> base = Observable.range(1, size);
+
+        // Predicate that always returns true.
+        alwaysTrue = v -> true;
+
+        // Predicate that returns false for the first element, true afterwards.
+        firstFalse = new Predicate<Integer>() {
+            private boolean first = true;
+            @Override
+            public boolean test(Integer v) {
+                if (first) {
+                    first = false;
+                    return false;
+                }
+                return true;
+            }
+        };
+
+        // Predicate that throws a RuntimeException for any element.
+        throwsException = v -> {
+            throw new RuntimeException("forced error");
+        };
+
+        // Prepare the three source streams.
+        sourceAllTrue = base;
+        sourceFirstFalse = base;
+        sourceError = base;
+    }
+
+    @Benchmark
+    public void allMatchTrue(Blackhole bh) {
+        // All items satisfy the predicate → the operator must process the whole stream.
+        boolean result = sourceAllTrue.all(alwaysTrue).blockingGet();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void earlyFalse(Blackhole bh) {
+        // The first item fails the predicate → the operator should terminate early.
+        boolean result = sourceFirstFalse.all(firstFalse).blockingGet();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void predicateThrows(Blackhole bh) {
+        // Predicate throws an exception → the operator propagates the error.
+        try {
+            sourceError.all(throwsException).blockingGet();
+        } catch (Throwable t) {
+            // Expected path; consume to avoid dead‑code elimination.
+            bh.consume(t);
+        }
+    }
+}
+```

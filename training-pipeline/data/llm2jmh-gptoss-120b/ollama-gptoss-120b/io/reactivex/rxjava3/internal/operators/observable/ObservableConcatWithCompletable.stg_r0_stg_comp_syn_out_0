@@ -1,0 +1,120 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableConcatWithCompletable}.
+ *
+ * Measures the throughput (items per second) of an {@code Observable} concatenated with a {@code Completable}.
+ *
+ * The benchmark follows best practices:
+ * <ul>
+ *   <li>Uses {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Performs a full subscription in each benchmark iteration to include subscription overhead.</li>
+ *   <li>Consumes emitted items via {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Provides a baseline (plain Observable) for comparison.</li>
+ *   <li>Configures warm‑up, measurement, and forks to obtain stable results.</li>
+ * </ul>
+ */
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@Threads(1)
+public class ObservableConcatWithCompletableBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable.
+     * Adjust this parameter to see how the operator behaves with different payload sizes.
+     */
+    @Param({ "1", "10", "1000", "100000" })
+    public int itemCount;
+
+    /**
+     * Source Observable that emits a range of integers.
+     */
+    private Observable<Integer> source;
+
+    /**
+     * A Completable that completes immediately.
+     */
+    private CompletableSource completable;
+
+    /**
+     * The operator under test: source.concatWith(completable).
+     */
+    private Observable<Integer> concatWithCompletable;
+
+    /**
+     * Baseline Observable without the concatWith operator (used for comparison).
+     */
+    private Observable<Integer> baseline;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits {@code itemCount} sequential integers.
+        source = Observable.range(1, itemCount).subscribeOn(Schedulers.trampoline());
+        // Completable that completes immediately.
+        completable = Completable.complete();
+        // Operator under test.
+        concatWithCompletable = source.concatWith(completable);
+        // Baseline (no concat) – just the source Observable.
+        baseline = source;
+    }
+
+    /**
+     * Benchmark the throughput of the {@code concatWith} operator.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void concatWithCompletable(Blackhole bh) {
+        // Subscribe and block until the stream terminates.
+        concatWithCompletable.blockingSubscribe(bh::consume);
+    }
+
+    /**
+     * Baseline benchmark that measures the throughput of the source Observable alone.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void baseline(Blackhole bh) {
+        baseline.blockingSubscribe(bh::consume);
+    }
+}

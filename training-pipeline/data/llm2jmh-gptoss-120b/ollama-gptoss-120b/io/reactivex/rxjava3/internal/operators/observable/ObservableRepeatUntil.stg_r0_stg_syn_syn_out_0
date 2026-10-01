@@ -1,0 +1,115 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for the {@code ObservableRepeatUntil} operator.
+ *
+ * <p>The benchmark measures the throughput (operations per second) of repeating
+ * a finite source {@link Observable} until a supplied condition becomes {@code true}.
+ *
+ * <p>Best‑practice JMH settings are used:
+ * <ul>
+ *   <li>5 warm‑up iterations (1 s each) to let the JIT stabilize.</li>
+ *   <li>10 measurement iterations (1 s each) for reliable results.</li>
+ *   <li>3 forks to isolate JVM state.</li>
+ *   <li>Scope.Thread state to avoid cross‑thread contention.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(3)
+@State(Scope.Thread)
+public class ObservableRepeatUntilBenchmark {
+
+    /**
+     * Number of repetitions before the {@code until} predicate returns {@code true}.
+     */
+    @Param({ "1", "10", "100" })
+    public int repeatCount;
+
+    /**
+     * Size of the source observable (number of emitted items per subscription).
+     */
+    @Param({ "10", "1000" })
+    public int sourceSize;
+
+    private Observable<Integer> source;
+
+    private Observable<Integer> repeatUntil;
+
+    /**
+     * Counter used by the {@code BooleanSupplier} to decide when to stop repeating.
+     */
+    private AtomicInteger repeatCounter;
+
+    /**
+     * Predicate that stops after {@code repeatCount} repetitions.
+     */
+    private BooleanSupplier untilPredicate;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A simple synchronous source that emits a range of integers.
+        source = Observable.range(1, sourceSize);
+        // Counter that is incremented each time the source completes.
+        repeatCounter = new AtomicInteger(0);
+        // Predicate that returns true after {@code repeatCount} completions.
+        untilPredicate = () -> repeatCounter.incrementAndGet() >= repeatCount;
+        // Build the repeat‑until observable using the public API.
+        // Internally this creates an instance of {@link ObservableRepeatUntil}.
+        repeatUntil = source.repeatUntil(untilPredicate);
+    }
+
+    /**
+     * Executes the repeat‑until flow and consumes all emitted items.
+     *
+     * <p>The {@link Blackhole} ensures that the JIT compiler cannot
+     * eliminate the subscription logic as dead code.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void repeatUntil(Blackhole bh) {
+        // blockingSubscribe is appropriate for a synchronous source and
+        // guarantees that the benchmark measures the complete execution.
+        repeatUntil.blockingSubscribe(bh::consume);
+    }
+}

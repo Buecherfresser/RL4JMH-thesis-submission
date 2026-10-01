@@ -1,0 +1,89 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmark for {@link io.reactivex.rxjava3.internal.operators.maybe.MaybeMap}.
+ *
+ * The benchmark measures the throughput of applying a simple mapping function
+ * to a {@code Maybe.just()} source. The mapping function is deliberately trivial
+ * (integer increment) to focus on the overhead of the operator itself.
+ *
+ * Best practices applied:
+ * - Use {@code @State(Scope.Thread)} to avoid sharing mutable state across threads.
+ * - Perform all allocations in {@code @Setup} to exclude them from the measured time.
+ * - Use {@code Blackhole} to consume the result and prevent dead‑code elimination.
+ * - Configure warm‑up and measurement iterations to let the JIT stabilize.
+ * - Run in {@code Mode.Throughput} with a time unit of operations per millisecond.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class MaybeMapBenchmark {
+
+    /**
+     * Source Maybe emitting a single integer value.
+     */
+    private Maybe<Integer> source;
+
+    /**
+     * Simple mapper that increments the integer.
+     */
+    private Function<Integer, Integer> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Allocate the source and mapper once per trial.
+        source = Maybe.just(1);
+        mapper = v -> v + 1;
+    }
+
+    /**
+     * Benchmark the throughput of the MaybeMap operator.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void mapThroughput(Blackhole bh) {
+        // The mapping is performed synchronously; blockingGet() returns the mapped value.
+        Integer result = source.map(mapper).blockingGet();
+        bh.consume(result);
+    }
+}

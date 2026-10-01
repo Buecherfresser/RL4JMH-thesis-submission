@@ -1,0 +1,60 @@
+```java
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Publisher;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.MaybeObserver;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@code MaybeDelayOtherPublisher}.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeDelayOtherPublisherBenchmark {
+
+    private Maybe<Integer> upstream;
+    private Publisher<Object> other;
+    private Maybe<Integer> delayedMaybe;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        upstream = Maybe.just(42);
+        other = Flowable.empty();               // completes immediately
+        delayedMaybe = upstream.delay(other);   // creates MaybeDelayOtherPublisher
+    }
+
+    @Benchmark
+    public void subscribeAndBlock(Blackhole bh) {
+        Integer result = delayedMaybe.blockingGet();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void subscribeWithObserver(Blackhole bh) throws InterruptedException {
+        final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        delayedMaybe.subscribe(new MaybeObserver<Integer>() {
+            @Override public void onSubscribe(io.reactivex.rxjava3.disposables.Disposable d) { d.dispose(); }
+            @Override public void onSuccess(Integer value) {
+                bh.consume(value);
+                latch.countDown();
+            }
+            @Override public void onError(Throwable e) {
+                bh.consume(e);
+                latch.countDown();
+            }
+            @Override public void onComplete() {
+                latch.countDown();
+            }
+        });
+        latch.await();
+    }
+}
+```

@@ -1,0 +1,632 @@
+diff --git a/io/github/vimasig/bozar/obfuscator/Bozar.java b/io/github/vimasig/bozar/obfuscator/Bozar.java
+index e7854f0..fbcf15d 100644
+--- a/io/github/vimasig/bozar/obfuscator/Bozar.java
++++ b/io/github/vimasig/bozar/obfuscator/Bozar.java
+@@ -42,7 +42,7 @@ public class Bozar implements Runnable {
+     private TransformManager transformHandler;
+ 
+     @Override
+-    public void run() {
++    public void run() { io.github.vimasig.jmhbench.MutationSwitch.tick(16);
+         try {
+             // Used to calculate time elapsed
+             final long startTime = System.currentTimeMillis();
+@@ -188,7 +188,7 @@ public class Bozar implements Runnable {
+         }
+     }
+ 
+-    public boolean isExcluded(ClassTransformer classTransformer, final String str) {
++    public boolean isExcluded(ClassTransformer classTransformer, final String str) { io.github.vimasig.jmhbench.MutationSwitch.tick(17);
+         final String s = (str.contains("$")) ? str.substring(0, str.indexOf("$")) : str;
+         return this.getConfig().getExclude().lines().anyMatch(line -> {
+             // Detect target transformer
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/TransformManager.java b/io/github/vimasig/bozar/obfuscator/transformer/TransformManager.java
+index 60c803b..a45f352 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/TransformManager.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/TransformManager.java
+@@ -40,7 +40,7 @@ public class TransformManager {
+             }).collect(Collectors.toList()));
+     }
+ 
+-    public static List<Class<? extends ClassTransformer>> getTransformers() {
++    public static List<Class<? extends ClassTransformer>> getTransformers() { io.github.vimasig.jmhbench.MutationSwitch.tick(18);
+         final var transformers = new ArrayList<Class<? extends ClassTransformer>>();
+ 
+         transformers.add(ClassRenamerTransformer.class);
+@@ -65,7 +65,7 @@ public class TransformManager {
+         return transformers;
+     }
+ 
+-    public static ClassTransformer createTransformerInstance(Class<? extends ClassTransformer> transformerClass) {
++    public static ClassTransformer createTransformerInstance(Class<? extends ClassTransformer> transformerClass) { io.github.vimasig.jmhbench.MutationSwitch.tick(19);
+         try {
+             return transformerClass.getConstructor(Bozar.class).newInstance((Object)null);
+         } catch (Exception e) {
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/ConstantTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/ConstantTransformer.java
+index d6f4db1..5cafba3 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/ConstantTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/ConstantTransformer.java
+@@ -144,7 +144,7 @@ public class ConstantTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void transformMethod(ClassNode classNode, MethodNode methodNode) {
++    public void transformMethod(ClassNode classNode, MethodNode methodNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(20);
+         // Look for string literals
+         Arrays.stream(methodNode.instructions.toArray())
+                 .filter(insn -> insn instanceof LdcInsnNode && ((LdcInsnNode)insn).cst instanceof String)
+@@ -160,7 +160,7 @@ public class ConstantTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void transformField(ClassNode classNode, FieldNode fieldNode) {
++    public void transformField(ClassNode classNode, FieldNode fieldNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(21);
+         // Move field strings to initializer methods so we can obfuscate
+         if(fieldNode.value instanceof String)
+             if((fieldNode.access & ACC_STATIC) != 0)
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/CrasherTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/CrasherTransformer.java
+index 1322a21..0aa0c5a 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/CrasherTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/CrasherTransformer.java
+@@ -34,7 +34,7 @@ public class CrasherTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void transformOutput(JarOutputStream jarOutputStream) {
++    public void transformOutput(JarOutputStream jarOutputStream) { io.github.vimasig.jmhbench.MutationSwitch.tick(22);
+         ClassNode invalid = new ClassNode();
+         invalid.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC, PACKAGE_NAME + REPEAT_BASE.repeat((Character.MAX_VALUE / REPEAT_BASE.length()) - PACKAGE_NAME.length()), null, "java/lang/Object", null);
+         try {
+@@ -46,7 +46,7 @@ public class CrasherTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(23);
+         return new BozarConfig.EnableType(() -> this.getBozar().getConfig().getOptions().isCrasher(), boolean.class);
+     }
+ }
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/HeavyControlFlowTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/HeavyControlFlowTransformer.java
+index 6065ef0..910f2cf 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/HeavyControlFlowTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/HeavyControlFlowTransformer.java
+@@ -22,14 +22,14 @@ public class HeavyControlFlowTransformer extends ControlFlowTransformer {
+     private static final int[] accessArr = new int[] { 0, ACC_PUBLIC, ACC_PRIVATE, ACC_PROTECTED };
+ 
+     @Override
+-    public void transformClass(ClassNode classNode) {
++    public void transformClass(ClassNode classNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(24);
+         // Skip interfaces because we cannot declare mutable fields in that
+         if(!ASMUtils.isClassEligibleToModify(classNode)) return;
+         classNode.fields.add(new FieldNode(accessArr[ThreadLocalRandom.current().nextInt(accessArr.length)] | ACC_STATIC, FLOW_FIELD_NAME, "J", null, 0L));
+     }
+ 
+     @Override
+-    public void transformMethod(ClassNode classNode, MethodNode methodNode) {
++    public void transformMethod(ClassNode classNode, MethodNode methodNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(25);
+         if(!ASMUtils.isMethodEligibleToModify(classNode, methodNode)) return;
+         // Add IF instruction if the method doesn't have any
+         if(Arrays.stream(methodNode.instructions.toArray()).noneMatch(ASMUtils::isIf)) {
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/InnerClassTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/InnerClassTransformer.java
+index 9022e22..4110b17 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/InnerClassTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/InnerClassTransformer.java
+@@ -14,12 +14,12 @@ public class InnerClassTransformer extends ClassTransformer {
+         super(bozar, "Remove inner classes", BozarCategory.STABLE);
+     }
+ 
+-    public void transformClass(ClassNode classNode) {
++    public void transformClass(ClassNode classNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(26);
+         classNode.innerClasses = new ArrayList<>();
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(27);
+         return new BozarConfig.EnableType(() -> this.getBozar().getConfig().getOptions().isRemoveInnerClasses(), boolean.class);
+     }
+ }
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/LightControlFlowTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/LightControlFlowTransformer.java
+index 33489b9..b787c85 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/LightControlFlowTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/LightControlFlowTransformer.java
+@@ -22,7 +22,7 @@ public class LightControlFlowTransformer extends ControlFlowTransformer {
+ 
+     private long flowFieldValue = 0;
+     @Override
+-    public void transformClass(ClassNode classNode) {
++    public void transformClass(ClassNode classNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(28);
+         // Skip interfaces because we cannot declare mutable fields in that
+         if(!ASMUtils.isClassEligibleToModify(classNode)) return;
+ 
+@@ -31,7 +31,7 @@ public class LightControlFlowTransformer extends ControlFlowTransformer {
+     }
+ 
+     @Override
+-    public void transformMethod(ClassNode classNode, MethodNode methodNode) {
++    public void transformMethod(ClassNode classNode, MethodNode methodNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(29);
+         if(!ASMUtils.isMethodEligibleToModify(classNode, methodNode)) return;
+ 
+         // Main obfuscation
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/LineNumberTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/LineNumberTransformer.java
+index 1b52c32..fb1934f 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/LineNumberTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/LineNumberTransformer.java
+@@ -18,7 +18,7 @@ public class LineNumberTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void transformMethod(ClassNode classNode, MethodNode methodNode) {
++    public void transformMethod(ClassNode classNode, MethodNode methodNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(1);
+         switch (this.getBozar().getConfig().getOptions().getLineNumbers()) {
+             case DELETE -> Arrays.stream(methodNode.instructions.toArray())
+                     .filter(insn -> insn instanceof LineNumberNode)
+@@ -33,7 +33,7 @@ public class LineNumberTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(2);
+         return new BozarConfig.EnableType(() -> ((List<?>)this.getEnableType().type()).contains(this.getBozar().getConfig().getOptions().getLineNumbers()),
+                 List.of(BozarConfig.BozarOptions.LineNumberOption.DELETE, BozarConfig.BozarOptions.LineNumberOption.RANDOMIZE));
+     }
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/LocalVariableTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/LocalVariableTransformer.java
+index 261511e..aa853bf 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/LocalVariableTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/LocalVariableTransformer.java
+@@ -16,7 +16,7 @@ public class LocalVariableTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void transformMethod(ClassNode classNode, MethodNode methodNode) {
++    public void transformMethod(ClassNode classNode, MethodNode methodNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(30);
+         switch (this.getBozar().getConfig().getOptions().getLocalVariables()) {
+             case DELETE -> {
+                 methodNode.localVariables = null;
+@@ -35,7 +35,7 @@ public class LocalVariableTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(31);
+         return new BozarConfig.EnableType(() -> ((List<?>)this.getEnableType().type()).contains(this.getBozar().getConfig().getOptions().getLocalVariables()),
+                 List.of(BozarConfig.BozarOptions.LocalVariableOption.DELETE, BozarConfig.BozarOptions.LocalVariableOption.OBFUSCATE));
+     }
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/ShuffleTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/ShuffleTransformer.java
+index 15a96f1..394e858 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/ShuffleTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/ShuffleTransformer.java
+@@ -16,12 +16,12 @@ public class ShuffleTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void pre() {
++    public void pre() { io.github.vimasig.jmhbench.MutationSwitch.tick(32);
+         this.shuffle();
+     }
+ 
+     @Override
+-    public void post() {
++    public void post() { io.github.vimasig.jmhbench.MutationSwitch.tick(33);
+         this.shuffle();
+     }
+ 
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/SourceFileTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/SourceFileTransformer.java
+index 9451740..3e634ae 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/SourceFileTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/SourceFileTransformer.java
+@@ -13,13 +13,13 @@ public class SourceFileTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void transformClass(ClassNode classNode) {
++    public void transformClass(ClassNode classNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(34);
+         classNode.sourceFile = "";
+         classNode.sourceDebug = "";
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(35);
+         return new BozarConfig.EnableType(() -> this.getBozar().getConfig().getOptions().isRemoveSourceFile(), boolean.class);
+     }
+ }
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/ClassRenamerTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/ClassRenamerTransformer.java
+index 6def2fb..7bdfe0d 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/ClassRenamerTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/ClassRenamerTransformer.java
+@@ -14,12 +14,12 @@ public class ClassRenamerTransformer extends RenamerTransformer {
+     }
+ 
+     @Override
+-    public void transformClass(ClassNode classNode) {
++    public void transformClass(ClassNode classNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(36);
+         this.registerMap(classNode.name);
+     }
+ 
+     @Override
+-    public void transformResource(ResourceWrapper resource) {
++    public void transformResource(ResourceWrapper resource) { io.github.vimasig.jmhbench.MutationSwitch.tick(37);
+         if(resource.getZipEntry().isDirectory()) return;
+ 
+         String str = new String(resource.getBytes());
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/FieldRenamerTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/FieldRenamerTransformer.java
+index d9a637f..c2cfae0 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/FieldRenamerTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/FieldRenamerTransformer.java
+@@ -15,7 +15,7 @@ public class FieldRenamerTransformer extends RenamerTransformer {
+     }
+ 
+     @Override
+-    public void transformClass(ClassNode classNode) {
++    public void transformClass(ClassNode classNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(38);
+         // Map all fields in this class node and its super classes (if not mapped)
+         getSuperHierarchy(classNode)
+                 .forEach(cn -> cn.fields.stream()
+@@ -39,7 +39,7 @@ public class FieldRenamerTransformer extends RenamerTransformer {
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(39);
+         return new BozarConfig.EnableType(() -> this.getBozar().getConfig().getOptions().getRename() != this.getEnableType().type(), BozarConfig.BozarOptions.RenameOption.OFF);
+     }
+ }
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/MethodRenamerTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/MethodRenamerTransformer.java
+index 0c06516..17a6158 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/MethodRenamerTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/renamer/MethodRenamerTransformer.java
+@@ -40,7 +40,7 @@ public class MethodRenamerTransformer extends RenamerTransformer {
+     }
+ 
+     @Override
+-    public void transformMethod(ClassNode classNode, MethodNode methodNode) {
++    public void transformMethod(ClassNode classNode, MethodNode methodNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(40);
+         // Exclusions
+         if ((classNode.access & ACC_ANNOTATION) != 0) return;
+         if (methodNode.name.contains("<")) return;
+@@ -117,7 +117,7 @@ public class MethodRenamerTransformer extends RenamerTransformer {
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(41);
+         return new BozarConfig.EnableType(() -> this.getBozar().getConfig().getOptions().getRename() != this.getEnableType().type(), BozarConfig.BozarOptions.RenameOption.OFF);
+     }
+ 
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/DummyClassTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/DummyClassTransformer.java
+index f91fb4f..09dad85 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/DummyClassTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/DummyClassTransformer.java
+@@ -19,7 +19,7 @@ public class DummyClassTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void transformOutput(JarOutputStream jarOutputStream) {
++    public void transformOutput(JarOutputStream jarOutputStream) { io.github.vimasig.jmhbench.MutationSwitch.tick(42);
+         ClassNode dummy = new ClassNode();
+         dummy.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC, this.getBozar().getConfig().getOptions().getWatermarkOptions().getDummyClassText(), null, "java/lang/Object", null);
+         dummy.visitMethod(random.nextInt(100), "\u0001", "(\u0001/)L\u0001/;", null, null);
+@@ -32,7 +32,7 @@ public class DummyClassTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(43);
+         return new BozarConfig.EnableType(() -> this.getBozar().getConfig().getOptions().getWatermarkOptions().isDummyClass(), ".OBFUSCATED WITH BOZAR");
+     }
+ }
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/TextInsideClassTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/TextInsideClassTransformer.java
+index 48c19ec..9910c3f 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/TextInsideClassTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/TextInsideClassTransformer.java
+@@ -13,12 +13,12 @@ public class TextInsideClassTransformer extends ClassTransformer {
+     }
+     
+     @Override
+-    public void transformClassWriter(ClassWriter classWriter) {
++    public void transformClassWriter(ClassWriter classWriter) { io.github.vimasig.jmhbench.MutationSwitch.tick(44);
+         classWriter.newUTF8(this.getBozar().getConfig().getOptions().getWatermarkOptions().getTextInsideClassText());
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(45);
+         return new BozarConfig.EnableType(() -> this.getBozar().getConfig().getOptions().getWatermarkOptions().isTextInsideClass(), "Bozar");
+     }
+ }
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/UnusedStringTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/UnusedStringTransformer.java
+index a185a67..f783f1e 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/UnusedStringTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/UnusedStringTransformer.java
+@@ -17,14 +17,14 @@ public class UnusedStringTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void transformMethod(ClassNode classNode, MethodNode methodNode) {
++    public void transformMethod(ClassNode classNode, MethodNode methodNode) { io.github.vimasig.jmhbench.MutationSwitch.tick(3);
+         if(!ASMUtils.isMethodEligibleToModify(classNode, methodNode)) return;
+         methodNode.instructions.insert(new InsnNode(POP));
+         methodNode.instructions.insert(new LdcInsnNode(this.getBozar().getConfig().getOptions().getWatermarkOptions().getLdcPopText()));
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(4);
+         return new BozarConfig.EnableType(() -> this.getBozar().getConfig().getOptions().getWatermarkOptions().isLdcPop(), "");
+     }
+ }
+diff --git a/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/ZipCommentTransformer.java b/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/ZipCommentTransformer.java
+index 0e33093..00f1316 100644
+--- a/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/ZipCommentTransformer.java
++++ b/io/github/vimasig/bozar/obfuscator/transformer/impl/watermark/ZipCommentTransformer.java
+@@ -14,12 +14,12 @@ public class ZipCommentTransformer extends ClassTransformer {
+     }
+ 
+     @Override
+-    public void transformOutput(JarOutputStream jarOutputStream) {
++    public void transformOutput(JarOutputStream jarOutputStream) { io.github.vimasig.jmhbench.MutationSwitch.tick(46);
+         jarOutputStream.setComment(this.getBozar().getConfig().getOptions().getWatermarkOptions().getZipCommentText());
+     }
+ 
+     @Override
+-    public BozarConfig.EnableType getEnableType() {
++    public BozarConfig.EnableType getEnableType() { io.github.vimasig.jmhbench.MutationSwitch.tick(47);
+         return new BozarConfig.EnableType(() -> this.getBozar().getConfig().getOptions().getWatermarkOptions().isZipComment(), "Obfuscation provided by\nhttps://github.com/vimasig/Bozar");
+     }
+ }
+diff --git a/io/github/vimasig/bozar/obfuscator/utils/ASMUtils.java b/io/github/vimasig/bozar/obfuscator/utils/ASMUtils.java
+index fa3c08f..0c5ab5a 100644
+--- a/io/github/vimasig/bozar/obfuscator/utils/ASMUtils.java
++++ b/io/github/vimasig/bozar/obfuscator/utils/ASMUtils.java
+@@ -16,7 +16,7 @@ public class ASMUtils implements Opcodes {
+     private ASMUtils() { }
+ 
+     public static class BuiltInstructions {
+-        public static InsnList getPrintln(String s) {
++        public static InsnList getPrintln(String s) { io.github.vimasig.jmhbench.MutationSwitch.tick(5);
+             final InsnList insnList = new InsnList();
+             insnList.add(new FieldInsnNode(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
+             insnList.add(new LdcInsnNode(s));
+@@ -24,7 +24,7 @@ public class ASMUtils implements Opcodes {
+             return insnList;
+         }
+ 
+-        public static InsnList getThrowNull() {
++        public static InsnList getThrowNull() { io.github.vimasig.jmhbench.MutationSwitch.tick(6);
+             final InsnList insnList = new InsnList();
+             insnList.add(new InsnNode(ACONST_NULL));
+             insnList.add(new InsnNode(ATHROW));
+diff --git a/io/github/vimasig/bozar/obfuscator/utils/BozarClassVerifier.java b/io/github/vimasig/bozar/obfuscator/utils/BozarClassVerifier.java
+index 1c5fdc4..e124da7 100644
+--- a/io/github/vimasig/bozar/obfuscator/utils/BozarClassVerifier.java
++++ b/io/github/vimasig/bozar/obfuscator/utils/BozarClassVerifier.java
+@@ -19,7 +19,7 @@ import java.util.zip.ZipInputStream;
+ 
+ public class BozarClassVerifier {
+ 
+-    public static boolean verify(Bozar bozar, Path path, ClassLoader parent) throws IOException {
++    public static boolean verify(Bozar bozar, Path path, ClassLoader parent) throws IOException { io.github.vimasig.jmhbench.MutationSwitch.tick(48);
+         var classLoader = new URLClassLoader(new URL[] { path.toFile().toURI().toURL() }, parent);
+         var classes = new ArrayList<byte[]>();
+ 
+diff --git a/io/github/vimasig/bozar/obfuscator/utils/BozarUtils.java b/io/github/vimasig/bozar/obfuscator/utils/BozarUtils.java
+index 21aeb5a..575abb8 100644
+--- a/io/github/vimasig/bozar/obfuscator/utils/BozarUtils.java
++++ b/io/github/vimasig/bozar/obfuscator/utils/BozarUtils.java
+@@ -16,7 +16,7 @@ public class BozarUtils {
+     private static final String RELEASES_URL = "https://github.com/vimasig/Bozar/releases";
+     private static final String VERSION_URL = "https://raw.githubusercontent.com/vimasig/Bozar/master/latestrelease";
+ 
+-    public static String getLatestVersion() throws IOException, InterruptedException {
++    public static String getLatestVersion() throws IOException, InterruptedException { io.github.vimasig.jmhbench.MutationSwitch.tick(7);
+         HttpRequest request = HttpRequest.newBuilder()
+                 .uri(URI.create(VERSION_URL))
+                 .build();
+@@ -24,7 +24,7 @@ public class BozarUtils {
+         return response.body();
+     }
+ 
+-    public static void openDownloadURL() {
++    public static void openDownloadURL() { io.github.vimasig.jmhbench.MutationSwitch.tick(8);
+         String err = Desktop.isDesktopSupported() ? (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE) ? null : "Browse") : "Desktop";
+         if(err != null)
+             BozarMessage.CANNOT_OPEN_URL.showError(err);
+diff --git a/io/github/vimasig/bozar/obfuscator/utils/FileUtils.java b/io/github/vimasig/bozar/obfuscator/utils/FileUtils.java
+index 2045c29..361f8cb 100644
+--- a/io/github/vimasig/bozar/obfuscator/utils/FileUtils.java
++++ b/io/github/vimasig/bozar/obfuscator/utils/FileUtils.java
+@@ -7,7 +7,7 @@ import java.util.List;
+ 
+ public class FileUtils {
+ 
+-    public static List<File> getAllFiles(File file) {
++    public static List<File> getAllFiles(File file) { io.github.vimasig.jmhbench.MutationSwitch.tick(9);
+         if(file.isFile()) return List.of(file);
+ 
+         File[] files = file.listFiles();
+diff --git a/io/github/vimasig/bozar/obfuscator/utils/InsnBuilder.java b/io/github/vimasig/bozar/obfuscator/utils/InsnBuilder.java
+index 64f87ea..45b2d15 100644
+--- a/io/github/vimasig/bozar/obfuscator/utils/InsnBuilder.java
++++ b/io/github/vimasig/bozar/obfuscator/utils/InsnBuilder.java
+@@ -17,12 +17,12 @@ public class InsnBuilder {
+         this.insnList = insnList;
+     }
+ 
+-    public InsnBuilder insn(AbstractInsnNode... insnNodes) {
++    public InsnBuilder insn(AbstractInsnNode... insnNodes) { io.github.vimasig.jmhbench.MutationSwitch.tick(10);
+         Arrays.stream(insnNodes).forEach(this.insnList::add);
+         return this;
+     }
+ 
+-    public InsnBuilder insnList(InsnList... insnLists) {
++    public InsnBuilder insnList(InsnList... insnLists) { io.github.vimasig.jmhbench.MutationSwitch.tick(11);
+         Arrays.stream(insnLists).forEach(this.insnList::add);
+         return this;
+     }
+diff --git a/io/github/vimasig/bozar/obfuscator/utils/Reflection.java b/io/github/vimasig/bozar/obfuscator/utils/Reflection.java
+index b53f655..6f380ac 100644
+--- a/io/github/vimasig/bozar/obfuscator/utils/Reflection.java
++++ b/io/github/vimasig/bozar/obfuscator/utils/Reflection.java
+@@ -9,7 +9,7 @@ public class Reflection<T> {
+ 
+     private final T obj;
+ 
+-    public void setDeclaredField(String name, Object value) {
++    public void setDeclaredField(String name, Object value) { io.github.vimasig.jmhbench.MutationSwitch.tick(49);
+         try {
+             Field f = this.obj.getClass().getDeclaredField(name);
+             f.setAccessible(true);
+diff --git a/io/github/vimasig/bozar/obfuscator/utils/StreamUtils.java b/io/github/vimasig/bozar/obfuscator/utils/StreamUtils.java
+index aa6b000..dcaba72 100644
+--- a/io/github/vimasig/bozar/obfuscator/utils/StreamUtils.java
++++ b/io/github/vimasig/bozar/obfuscator/utils/StreamUtils.java
+@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
+ 
+ public class StreamUtils {
+ 
+-    public static String getHash(InputStream is) throws NoSuchAlgorithmException, IOException {
++    public static String getHash(InputStream is) throws NoSuchAlgorithmException, IOException { io.github.vimasig.jmhbench.MutationSwitch.tick(12);
+         MessageDigest digset = MessageDigest.getInstance("SHA-1");
+ 
+         byte[] byteArray = new byte[4096];
+@@ -26,7 +26,7 @@ public class StreamUtils {
+         return sb.toString();
+     }
+ 
+-    public static byte[] readAll(InputStream in) throws IOException {
++    public static byte[] readAll(InputStream in) throws IOException { io.github.vimasig.jmhbench.MutationSwitch.tick(13);
+         ByteArrayOutputStream out = new ByteArrayOutputStream();
+         byte[] buffer = new byte[0x1000];
+         int read;
+diff --git a/io/github/vimasig/bozar/obfuscator/utils/StringUtils.java b/io/github/vimasig/bozar/obfuscator/utils/StringUtils.java
+index bc4e546..812b8c2 100644
+--- a/io/github/vimasig/bozar/obfuscator/utils/StringUtils.java
++++ b/io/github/vimasig/bozar/obfuscator/utils/StringUtils.java
+@@ -24,7 +24,7 @@ public class StringUtils {
+     }
+ 
+     private static List<String> alphabetCombinations = null;
+-    public static List<String> getAlphabetCombinations() {
++    public static List<String> getAlphabetCombinations() { io.github.vimasig.jmhbench.MutationSwitch.tick(14);
+         if(alphabetCombinations == null) {
+             strings = new ArrayList<>();
+             for (int i = 2; i <= 3; i++)
+@@ -33,7 +33,7 @@ public class StringUtils {
+         } return alphabetCombinations;
+     }
+ 
+-    public static String getAlphabet() {
++    public static String getAlphabet() { io.github.vimasig.jmhbench.MutationSwitch.tick(15);
+         return IntStream.rangeClosed('A', 'z')
+                 .mapToObj(operand -> (char) operand)
+                 .filter(Character::isLetter)
+diff --git a/io/github/vimasig/bozar/obfuscator/utils/model/BozarConfig.java b/io/github/vimasig/bozar/obfuscator/utils/model/BozarConfig.java
+index cc62eaf..cd82e94 100644
+--- a/io/github/vimasig/bozar/obfuscator/utils/model/BozarConfig.java
++++ b/io/github/vimasig/bozar/obfuscator/utils/model/BozarConfig.java
+@@ -87,5 +87,5 @@ public class BozarConfig {
+         }
+     }
+ 
+-    public static record EnableType(Supplier<Boolean> isEnabled, Object type) { }
++    public static record EnableType(Supplier<Boolean> isEnabled, Object type) { io.github.vimasig.jmhbench.MutationSwitch.tick(50); }
+ }
+diff --git a/io/github/vimasig/jmhbench/MutationSwitch.java b/io/github/vimasig/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..388ffb3
+--- /dev/null
++++ b/io/github/vimasig/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.github.vimasig.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

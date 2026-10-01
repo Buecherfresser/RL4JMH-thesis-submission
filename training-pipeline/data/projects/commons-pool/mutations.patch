@@ -1,0 +1,604 @@
+diff --git a/org/apache/commons/pool3/PoolUtils.java b/org/apache/commons/pool3/PoolUtils.java
+index 7d7ad14..e801a33 100644
+--- a/org/apache/commons/pool3/PoolUtils.java
++++ b/org/apache/commons/pool3/PoolUtils.java
+@@ -80,7 +80,7 @@ public final class PoolUtils {
+          *
+          * @return next shrink time
+          */
+-        public long getNextShrink() {
++        public long getNextShrink() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(1);
+             return nextShrinkMillis;
+         }
+ 
+@@ -169,7 +169,7 @@ public final class PoolUtils {
+          * {@inheritDoc}
+          */
+         @Override
+-        public void addObject(final K key) throws E, IllegalStateException, UnsupportedOperationException {
++        public void addObject(final K key) throws E, IllegalStateException, UnsupportedOperationException { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(4);
+             keyedPool.addObject(key);
+         }
+ 
+@@ -177,7 +177,7 @@ public final class PoolUtils {
+          * {@inheritDoc}
+          */
+         @Override
+-        public V borrowObject(final K key) throws E, NoSuchElementException, IllegalStateException {
++        public V borrowObject(final K key) throws E, NoSuchElementException, IllegalStateException { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(7);
+             return keyedPool.borrowObject(key);
+         }
+ 
+diff --git a/org/apache/commons/pool3/impl/AbandonedConfig.java b/org/apache/commons/pool3/impl/AbandonedConfig.java
+index 65578cd..fd5a8bd 100644
+--- a/org/apache/commons/pool3/impl/AbandonedConfig.java
++++ b/org/apache/commons/pool3/impl/AbandonedConfig.java
+@@ -127,7 +127,7 @@ public class AbandonedConfig {
+      * @return boolean true if stack trace logging is turned on for abandoned
+      * objects
+      */
+-    public boolean getLogAbandoned() {
++    public boolean getLogAbandoned() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(5);
+         return this.logAbandoned;
+     }
+ 
+@@ -138,7 +138,7 @@ public class AbandonedConfig {
+      *
+      * @return log writer in use
+      */
+-    public PrintWriter getLogWriter() {
++    public PrintWriter getLogWriter() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(8);
+         return logWriter;
+     }
+ 
+@@ -154,7 +154,7 @@ public class AbandonedConfig {
+      *
+      * @return true if abandoned objects are to be removed by borrowObject
+      */
+-    public boolean getRemoveAbandonedOnBorrow() {
++    public boolean getRemoveAbandonedOnBorrow() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(10);
+         return this.removeAbandonedOnBorrow;
+     }
+ 
+diff --git a/org/apache/commons/pool3/impl/CallStackUtils.java b/org/apache/commons/pool3/impl/CallStackUtils.java
+index 9a7a604..7a31209 100644
+--- a/org/apache/commons/pool3/impl/CallStackUtils.java
++++ b/org/apache/commons/pool3/impl/CallStackUtils.java
+@@ -57,7 +57,7 @@ public final class CallStackUtils {
+      */
+     public static CallStack newCallStack(final String messageFormat,
+                                          final boolean useTimestamp,
+-                                         final boolean requireFullStackTrace) {
++                                         final boolean requireFullStackTrace) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(2);
+         return canCreateSecurityManager() && !requireFullStackTrace ?
+             new SecurityManagerCallStack(messageFormat, useTimestamp) :
+             new ThrowableCallStack(messageFormat, useTimestamp);
+diff --git a/org/apache/commons/pool3/impl/DefaultEvictionPolicy.java b/org/apache/commons/pool3/impl/DefaultEvictionPolicy.java
+index fa48020..29dad1a 100644
+--- a/org/apache/commons/pool3/impl/DefaultEvictionPolicy.java
++++ b/org/apache/commons/pool3/impl/DefaultEvictionPolicy.java
+@@ -50,7 +50,7 @@ public class DefaultEvictionPolicy<T> implements EvictionPolicy<T> {
+     }
+ 
+     @Override
+-    public boolean evict(final EvictionConfig config, final PooledObject<T> underTest, final int idleCount) {
++    public boolean evict(final EvictionConfig config, final PooledObject<T> underTest, final int idleCount) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(12);
+         // @formatter:off
+         return config.getIdleSoftEvictDuration().compareTo(underTest.getIdleDuration()) < 0 &&
+                 config.getMinIdle() < idleCount ||
+diff --git a/org/apache/commons/pool3/impl/DefaultPooledObject.java b/org/apache/commons/pool3/impl/DefaultPooledObject.java
+index bddbac2..2173cd7 100644
+--- a/org/apache/commons/pool3/impl/DefaultPooledObject.java
++++ b/org/apache/commons/pool3/impl/DefaultPooledObject.java
+@@ -68,7 +68,7 @@ public class DefaultPooledObject<T> implements PooledObject<T> {
+      * @return {@code true} if the original state was {@link PooledObjectState#IDLE IDLE}
+      */
+     @Override
+-    public synchronized boolean allocate() {
++    public synchronized boolean allocate() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(14);
+         if (state == PooledObjectState.IDLE) {
+             state = PooledObjectState.ALLOCATED;
+             lastBorrowInstant = now();
+@@ -89,7 +89,7 @@ public class DefaultPooledObject<T> implements PooledObject<T> {
+     }
+ 
+     @Override
+-    public int compareTo(final PooledObject<T> other) {
++    public int compareTo(final PooledObject<T> other) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(16);
+         final int compareTo = getLastReturnInstant().compareTo(other.getLastReturnInstant());
+         if (compareTo == 0) {
+             // Make sure the natural ordering is broadly consistent with equals
+@@ -110,7 +110,7 @@ public class DefaultPooledObject<T> implements PooledObject<T> {
+      *         or {@link PooledObjectState#RETURNING RETURNING}.
+      */
+     @Override
+-    public synchronized boolean deallocate() {
++    public synchronized boolean deallocate() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(18);
+         if (state == PooledObjectState.ALLOCATED || state == PooledObjectState.RETURNING) {
+             state = PooledObjectState.IDLE;
+             lastReturnInstant = now();
+diff --git a/org/apache/commons/pool3/impl/DefaultPooledObjectInfo.java b/org/apache/commons/pool3/impl/DefaultPooledObjectInfo.java
+index 008bb6a..3c8a1ee 100644
+--- a/org/apache/commons/pool3/impl/DefaultPooledObjectInfo.java
++++ b/org/apache/commons/pool3/impl/DefaultPooledObjectInfo.java
+@@ -45,17 +45,17 @@ public class DefaultPooledObjectInfo implements DefaultPooledObjectInfoMBean {
+     }
+ 
+     @Override
+-    public long getBorrowedCount() {
++    public long getBorrowedCount() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(20);
+         return pooledObject.getBorrowedCount();
+     }
+ 
+     @Override
+-    public long getCreateTime() {
++    public long getCreateTime() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(22);
+         return pooledObject.getCreateInstant().toEpochMilli();
+     }
+ 
+     @Override
+-    public String getCreateTimeFormatted() {
++    public String getCreateTimeFormatted() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(24);
+         return getTimeMillisFormatted(getCreateTime());
+     }
+ 
+diff --git a/org/apache/commons/pool3/impl/EvictionConfig.java b/org/apache/commons/pool3/impl/EvictionConfig.java
+index 00e22b1..701f0e6 100644
+--- a/org/apache/commons/pool3/impl/EvictionConfig.java
++++ b/org/apache/commons/pool3/impl/EvictionConfig.java
+@@ -43,7 +43,7 @@ public class EvictionConfig {
+      * @return whether the current thread is the eviction thread.
+      * @since 2.14.0
+      */
+-    public static boolean isEvictionThread() {
++    public static boolean isEvictionThread() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(26);
+         return Thread.currentThread().getName().equals(THREAD_NAME);
+     }
+ 
+@@ -81,7 +81,7 @@ public class EvictionConfig {
+      * @return The {@code idleEvictTime}.
+      * @since 2.11.0
+      */
+-    public Duration getIdleEvictDuration() {
++    public Duration getIdleEvictDuration() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(28);
+         return idleEvictDuration;
+     }
+ 
+@@ -96,7 +96,7 @@ public class EvictionConfig {
+      * @return The (@code idleSoftEvictTime} in milliseconds
+      * @since 2.11.0
+      */
+-    public Duration getIdleSoftEvictDuration() {
++    public Duration getIdleSoftEvictDuration() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(30);
+         return idleSoftEvictDuration;
+     }
+ 
+diff --git a/org/apache/commons/pool3/impl/EvictionTimer.java b/org/apache/commons/pool3/impl/EvictionTimer.java
+index c4c8adf..2574e5a 100644
+--- a/org/apache/commons/pool3/impl/EvictionTimer.java
++++ b/org/apache/commons/pool3/impl/EvictionTimer.java
+@@ -54,7 +54,7 @@ final class EvictionTimer {
+     private static final class EvictorThreadFactory implements ThreadFactory {
+ 
+         @Override
+-        public Thread newThread(final Runnable runnable) {
++        public Thread newThread(final Runnable runnable) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(32);
+             final Thread thread = new Thread(runnable, EvictionConfig.THREAD_NAME);
+             thread.setDaemon(true); // POOL-363 - Required for applications using Runtime.addShutdownHook().
+             AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+@@ -71,7 +71,7 @@ final class EvictionTimer {
+      */
+     private static final class Reaper implements Runnable {
+         @Override
+-        public void run() {
++        public void run() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(33);
+             synchronized (EvictionTimer.class) {
+                 /*
+                  * Need to use iterator over TASK_MAP so entries can be removed when iterating without triggering a
+@@ -115,7 +115,7 @@ final class EvictionTimer {
+         }
+ 
+         @Override
+-        public void run() {
++        public void run() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(34);
+             final Runnable task = ref.get();
+             if (task != null) {
+                 task.run();
+diff --git a/org/apache/commons/pool3/impl/GenericKeyedObjectPool.java b/org/apache/commons/pool3/impl/GenericKeyedObjectPool.java
+index fc4d6da..8de3587 100644
+--- a/org/apache/commons/pool3/impl/GenericKeyedObjectPool.java
++++ b/org/apache/commons/pool3/impl/GenericKeyedObjectPool.java
+@@ -337,7 +337,7 @@ public class GenericKeyedObjectPool<K, T, E extends Exception> extends BaseGener
+      *                   fails.
+      */
+     @Override
+-    public void addObject(final K key) throws E {
++    public void addObject(final K key) throws E { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(35);
+         assertOpen();
+         register(key);
+         try {
+@@ -354,7 +354,7 @@ public class GenericKeyedObjectPool<K, T, E extends Exception> extends BaseGener
+      * {@inheritDoc}
+      */
+     @Override
+-    public T borrowObject(final K key) throws E {
++    public T borrowObject(final K key) throws E { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(36);
+         return borrowObject(key, getMaxWaitDuration().toMillis());
+     }
+ 
+@@ -419,7 +419,7 @@ public class GenericKeyedObjectPool<K, T, E extends Exception> extends BaseGener
+      * @throws E if a keyed object instance cannot be returned due to an
+      *                   error
+      */
+-    public T borrowObject(final K key, final long borrowMaxWaitMillis) throws E {
++    public T borrowObject(final K key, final long borrowMaxWaitMillis) throws E { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(37);
+         assertOpen();
+ 
+         final AbandonedConfig ac = this.abandonedConfig;
+diff --git a/org/apache/commons/pool3/impl/GenericKeyedObjectPoolConfig.java b/org/apache/commons/pool3/impl/GenericKeyedObjectPoolConfig.java
+index 9572b23..03e5146 100644
+--- a/org/apache/commons/pool3/impl/GenericKeyedObjectPoolConfig.java
++++ b/org/apache/commons/pool3/impl/GenericKeyedObjectPoolConfig.java
+@@ -91,7 +91,7 @@ public class GenericKeyedObjectPoolConfig<T> extends BaseObjectPoolConfig<T> {
+      *
+      * @see GenericKeyedObjectPool#getMaxIdlePerKey()
+      */
+-    public int getMaxIdlePerKey() {
++    public int getMaxIdlePerKey() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(38);
+         return maxIdlePerKey;
+     }
+ 
+@@ -104,7 +104,7 @@ public class GenericKeyedObjectPoolConfig<T> extends BaseObjectPoolConfig<T> {
+      *
+      * @see GenericKeyedObjectPool#getMaxTotal()
+      */
+-    public int getMaxTotal() {
++    public int getMaxTotal() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(39);
+         return maxTotal;
+     }
+ 
+@@ -117,7 +117,7 @@ public class GenericKeyedObjectPoolConfig<T> extends BaseObjectPoolConfig<T> {
+      *
+      * @see GenericKeyedObjectPool#getMaxTotalPerKey()
+      */
+-    public int getMaxTotalPerKey() {
++    public int getMaxTotalPerKey() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(40);
+         return maxTotalPerKey;
+     }
+ 
+diff --git a/org/apache/commons/pool3/impl/GenericObjectPool.java b/org/apache/commons/pool3/impl/GenericObjectPool.java
+index 48db5a9..2534bc9 100644
+--- a/org/apache/commons/pool3/impl/GenericObjectPool.java
++++ b/org/apache/commons/pool3/impl/GenericObjectPool.java
+@@ -218,7 +218,7 @@ public class GenericObjectPool<T, E extends Exception> extends BaseGenericObject
+      *
+      */
+     @Override
+-    public void addObject() throws E {
++    public void addObject() throws E { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(41);
+         assertOpen();
+         if (factory == null) {
+             throw new IllegalStateException("Cannot add objects without a factory.");
+@@ -233,7 +233,7 @@ public class GenericObjectPool<T, E extends Exception> extends BaseGenericObject
+      * {@inheritDoc}
+      */
+     @Override
+-    public T borrowObject() throws E {
++    public T borrowObject() throws E { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(42);
+         return borrowObject(getMaxWaitDuration());
+     }
+ 
+@@ -283,7 +283,7 @@ public class GenericObjectPool<T, E extends Exception> extends BaseGenericObject
+      * @throws E if an object instance cannot be returned due to an error
+      * @since 2.10.0
+      */
+-    public T borrowObject(final Duration maxWaitDuration) throws E {
++    public T borrowObject(final Duration maxWaitDuration) throws E { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(43);
+         assertOpen();
+         final Instant startInstant = Instant.now();
+         final boolean negativeDuration = maxWaitDuration.isNegative();
+diff --git a/org/apache/commons/pool3/impl/GenericObjectPoolConfig.java b/org/apache/commons/pool3/impl/GenericObjectPoolConfig.java
+index 5b45f10..29368a4 100644
+--- a/org/apache/commons/pool3/impl/GenericObjectPoolConfig.java
++++ b/org/apache/commons/pool3/impl/GenericObjectPoolConfig.java
+@@ -83,7 +83,7 @@ public class GenericObjectPoolConfig<T> extends BaseObjectPoolConfig<T> {
+      *
+      * @see GenericObjectPool#getMaxIdle()
+      */
+-    public int getMaxIdle() {
++    public int getMaxIdle() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(44);
+         return maxIdle;
+     }
+ 
+@@ -96,7 +96,7 @@ public class GenericObjectPoolConfig<T> extends BaseObjectPoolConfig<T> {
+      *
+      * @see GenericObjectPool#getMaxTotal()
+      */
+-    public int getMaxTotal() {
++    public int getMaxTotal() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(45);
+         return maxTotal;
+     }
+ 
+@@ -109,7 +109,7 @@ public class GenericObjectPoolConfig<T> extends BaseObjectPoolConfig<T> {
+      *
+      * @see GenericObjectPool#getMinIdle()
+      */
+-    public int getMinIdle() {
++    public int getMinIdle() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(46);
+         return minIdle;
+     }
+ 
+diff --git a/org/apache/commons/pool3/impl/LinkedBlockingDeque.java b/org/apache/commons/pool3/impl/LinkedBlockingDeque.java
+index abe1da8..710098e 100644
+--- a/org/apache/commons/pool3/impl/LinkedBlockingDeque.java
++++ b/org/apache/commons/pool3/impl/LinkedBlockingDeque.java
+@@ -408,7 +408,7 @@ final class LinkedBlockingDeque<E> extends AbstractQueue<E>
+      * {@inheritDoc}
+      */
+     @Override
+-    public void addFirst(final E e) {
++    public void addFirst(final E e) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(47);
+         if (!offerFirst(e)) {
+             throw new IllegalStateException("Deque full");
+         }
+@@ -420,7 +420,7 @@ final class LinkedBlockingDeque<E> extends AbstractQueue<E>
+      * {@inheritDoc}
+      */
+     @Override
+-    public void addLast(final E e) {
++    public void addLast(final E e) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(48);
+         if (!offerLast(e)) {
+             throw new IllegalStateException("Deque full");
+         }
+@@ -431,7 +431,7 @@ final class LinkedBlockingDeque<E> extends AbstractQueue<E>
+      * The deque will be empty after this call returns.
+      */
+     @Override
+-    public void clear() {
++    public void clear() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(49);
+         lock.lock();
+         try {
+             for (Node<E> f = first; f != null;) {
+diff --git a/org/apache/commons/pool3/impl/NoOpCallStack.java b/org/apache/commons/pool3/impl/NoOpCallStack.java
+index c01a902..32b9cf6 100644
+--- a/org/apache/commons/pool3/impl/NoOpCallStack.java
++++ b/org/apache/commons/pool3/impl/NoOpCallStack.java
+@@ -38,7 +38,7 @@ public class NoOpCallStack implements CallStack {
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(50);
+         // no-op
+     }
+ 
+diff --git a/org/apache/commons/pool3/jmhbench/MutationSwitch.java b/org/apache/commons/pool3/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..2950ece
+--- /dev/null
++++ b/org/apache/commons/pool3/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.apache.commons.pool3.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/apache/commons/pool3/proxy/CglibProxyHandler.java b/org/apache/commons/pool3/proxy/CglibProxyHandler.java
+index da3dd25..9219941 100644
+--- a/org/apache/commons/pool3/proxy/CglibProxyHandler.java
++++ b/org/apache/commons/pool3/proxy/CglibProxyHandler.java
+@@ -50,7 +50,7 @@ final class CglibProxyHandler<T> extends BaseProxyHandler<T> implements MethodIn
+     }
+ 
+     @Override
+-    public Object intercept(final Object object, final Method method, final Object[] args, final MethodProxy methodProxy) throws Throwable {
++    public Object intercept(final Object object, final Method method, final Object[] args, final MethodProxy methodProxy) throws Throwable { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(3);
+         return doInvoke(method, args);
+     }
+ }
+diff --git a/org/apache/commons/pool3/proxy/CglibProxySource.java b/org/apache/commons/pool3/proxy/CglibProxySource.java
+index 9de3cad..9ff9bb8 100644
+--- a/org/apache/commons/pool3/proxy/CglibProxySource.java
++++ b/org/apache/commons/pool3/proxy/CglibProxySource.java
+@@ -61,7 +61,7 @@ public class CglibProxySource<T> extends AbstractProxySource<T> {
+          * @param superclass The superclass.
+          * @return {@code this} instance.
+          */
+-        public Builder<T> setSuperclass(final Class<? extends T> superclass) {
++        public Builder<T> setSuperclass(final Class<? extends T> superclass) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(6);
+             this.superclass = superclass;
+             return asThis();
+         }
+@@ -74,7 +74,7 @@ public class CglibProxySource<T> extends AbstractProxySource<T> {
+      * @return A new builder of {@link CglibProxySource}.
+      * @since 3.0.0
+      */
+-    public static <T> Builder<T> builder() {
++    public static <T> Builder<T> builder() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(9);
+         return new Builder<>();
+     }
+ 
+@@ -100,7 +100,7 @@ public class CglibProxySource<T> extends AbstractProxySource<T> {
+ 
+     @SuppressWarnings("unchecked") // Case to T on return
+     @Override
+-    public T createProxy(final T pooledObject, final UsageTracking<T> usageTracking) {
++    public T createProxy(final T pooledObject, final UsageTracking<T> usageTracking) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(11);
+         final Enhancer enhancer = new Enhancer();
+         enhancer.setSuperclass(superclass);
+         final CglibProxyHandler<T> proxyInterceptor = new CglibProxyHandler<>(pooledObject, usageTracking, isUnwrapInvocationTargetException());
+diff --git a/org/apache/commons/pool3/proxy/JdkProxyHandler.java b/org/apache/commons/pool3/proxy/JdkProxyHandler.java
+index d6d72e3..bf7d18d 100644
+--- a/org/apache/commons/pool3/proxy/JdkProxyHandler.java
++++ b/org/apache/commons/pool3/proxy/JdkProxyHandler.java
+@@ -45,7 +45,7 @@ final class JdkProxyHandler<T> extends BaseProxyHandler<T> implements Invocation
+     }
+ 
+     @Override
+-    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
++    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(13);
+         return doInvoke(method, args);
+     }
+ }
+diff --git a/org/apache/commons/pool3/proxy/JdkProxySource.java b/org/apache/commons/pool3/proxy/JdkProxySource.java
+index 15b35c8..059b5cc 100644
+--- a/org/apache/commons/pool3/proxy/JdkProxySource.java
++++ b/org/apache/commons/pool3/proxy/JdkProxySource.java
+@@ -59,7 +59,7 @@ public class JdkProxySource<T> extends AbstractProxySource<T> {
+          * @param classLoader The class loader to define the proxy class.
+          * @return {@code this} instance.
+          */
+-        public Builder<T> setClassLoader(final ClassLoader classLoader) {
++        public Builder<T> setClassLoader(final ClassLoader classLoader) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(15);
+             this.classLoader = classLoader;
+             return asThis();
+         }
+@@ -70,7 +70,7 @@ public class JdkProxySource<T> extends AbstractProxySource<T> {
+          * @param interfaces The list of interfaces for the proxy class.
+          * @return {@code this} instance.
+          */
+-        public Builder<T> setInterfaces(final Class<?>... interfaces) {
++        public Builder<T> setInterfaces(final Class<?>... interfaces) { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(17);
+             this.interfaces = interfaces != null ? interfaces.clone() : null;
+             return asThis();
+         }
+@@ -83,7 +83,7 @@ public class JdkProxySource<T> extends AbstractProxySource<T> {
+      * @return A new builder of {@link CglibProxySource}.
+      * @since 3.0.0
+      */
+-    public static <T> Builder<T> builder() {
++    public static <T> Builder<T> builder() { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(19);
+         return new Builder<>();
+     }
+ 
+diff --git a/org/apache/commons/pool3/proxy/ProxiedKeyedObjectPool.java b/org/apache/commons/pool3/proxy/ProxiedKeyedObjectPool.java
+index b874d68..2308688 100644
+--- a/org/apache/commons/pool3/proxy/ProxiedKeyedObjectPool.java
++++ b/org/apache/commons/pool3/proxy/ProxiedKeyedObjectPool.java
+@@ -52,14 +52,14 @@ public class ProxiedKeyedObjectPool<K, V, E extends Exception> implements KeyedO
+ 
+     @Override
+     public void addObject(final K key) throws E, IllegalStateException,
+-            UnsupportedOperationException {
++            UnsupportedOperationException { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(21);
+         pool.addObject(key);
+     }
+ 
+     @SuppressWarnings("unchecked")
+     @Override
+     public V borrowObject(final K key) throws E, NoSuchElementException,
+-            IllegalStateException {
++            IllegalStateException { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(23);
+         UsageTracking<V> usageTracking = null;
+         if (pool instanceof UsageTracking) {
+             usageTracking = (UsageTracking<V>) pool;
+@@ -68,7 +68,7 @@ public class ProxiedKeyedObjectPool<K, V, E extends Exception> implements KeyedO
+     }
+ 
+     @Override
+-    public void clear() throws E, UnsupportedOperationException {
++    public void clear() throws E, UnsupportedOperationException { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(25);
+         pool.clear();
+     }
+ 
+diff --git a/org/apache/commons/pool3/proxy/ProxiedObjectPool.java b/org/apache/commons/pool3/proxy/ProxiedObjectPool.java
+index 882ee2a..7b87d3e 100644
+--- a/org/apache/commons/pool3/proxy/ProxiedObjectPool.java
++++ b/org/apache/commons/pool3/proxy/ProxiedObjectPool.java
+@@ -48,13 +48,13 @@ public class ProxiedObjectPool<T, E extends Exception> implements ObjectPool<T,
+     }
+ 
+     @Override
+-    public void addObject() throws E, IllegalStateException, UnsupportedOperationException {
++    public void addObject() throws E, IllegalStateException, UnsupportedOperationException { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(27);
+         pool.addObject();
+     }
+ 
+     @SuppressWarnings("unchecked")
+     @Override
+-    public T borrowObject() throws E, NoSuchElementException, IllegalStateException {
++    public T borrowObject() throws E, NoSuchElementException, IllegalStateException { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(29);
+         UsageTracking<T> usageTracking = null;
+         if (pool instanceof UsageTracking) {
+             usageTracking = (UsageTracking<T>) pool;
+@@ -63,7 +63,7 @@ public class ProxiedObjectPool<T, E extends Exception> implements ObjectPool<T,
+     }
+ 
+     @Override
+-    public void clear() throws E, UnsupportedOperationException {
++    public void clear() throws E, UnsupportedOperationException { org.apache.commons.pool3.jmhbench.MutationSwitch.tick(31);
+         pool.clear();
+     }
+ 

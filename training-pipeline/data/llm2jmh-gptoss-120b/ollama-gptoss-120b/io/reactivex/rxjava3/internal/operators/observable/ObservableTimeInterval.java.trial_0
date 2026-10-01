@@ -1,0 +1,63 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableTimeInterval;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.core.Timed;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link ObservableTimeInterval} (the timeInterval operator).
+ * Measures throughput: number of items processed per time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Benchmark)
+public class ObservableTimeIntervalBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Time unit used by the timeInterval operator. */
+    private static final TimeUnit UNIT = TimeUnit.NANOSECONDS;
+
+    /** Scheduler used for time measurement. */
+    private Scheduler scheduler;
+
+    /** Source Observable that emits a range of integers. */
+    private Observable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Use computation scheduler which is the typical default for time-based operators.
+        scheduler = Schedulers.computation();
+
+        // Create a cold Observable that emits a fixed number of items.
+        source = Observable.range(1, itemCount)
+                .subscribeOn(scheduler);
+    }
+
+    /**
+     * Benchmark that applies the timeInterval operator and consumes all emitted {@link Timed} items.
+     * The consumption is performed via {@link Blackhole} to prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void timeIntervalThroughput(Blackhole bh) {
+        source
+            .timeInterval(UNIT, scheduler)
+            .blockingForEach(timed -> bh.consume(timed));
+    }
+}
+```

@@ -1,0 +1,132 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@code ObservableFromArray} (via the public {@code Observable.fromArray} API).
+ * Measures the throughput of subscribing to an Observable that emits a fixed-size array
+ * of items synchronously.
+ *
+ * Best practices applied:
+ * - Use {@link Blackhole} to consume emitted items and prevent dead‑code elimination.
+ * - Reuse the source array and Observable across iterations (state scoped to the thread).
+ * - Warm‑up, measurement, and fork parameters are chosen to obtain stable results.
+ * - The benchmark runs in {@link Mode#Throughput} (operations per second).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ObservableFromArrayBenchmark {
+
+    /**
+     * Size of the array used in the benchmark. Adjust to reflect realistic workloads.
+     */
+    @Param({ "10", "100", "1000", "10000" })
+    public int size;
+
+    /**
+     * The source array filled with Integer objects.
+     */
+    private Integer[] sourceArray;
+
+    /**
+     * Observable that emits the {@code sourceArray} elements synchronously.
+     */
+    private Observable<Integer> observable;
+
+    /**
+     * Reusable observer that forwards received items to a {@link Blackhole}.
+     */
+    private BenchmarkObserver observer;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        sourceArray = new Integer[size];
+        for (int i = 0; i < size; i++) {
+            sourceArray[i] = i;
+        }
+        // Use the public API; internally this creates an ObservableFromArray instance.
+        observable = Observable.fromArray(sourceArray);
+        observer = new BenchmarkObserver();
+    }
+
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        // Attach the Blackhole to the observer for this iteration.
+        observer.setBlackhole(bh);
+        // Subscribe using the same observer instance to avoid allocation overhead.
+        observable.subscribe(observer);
+    }
+
+    /**
+     * Simple {@link Observer} implementation that forwards each {@code onNext}
+     * value to a {@link Blackhole}. The {@code onError} and {@code onComplete}
+     * methods are no‑ops because the benchmark focuses on the emission path.
+     */
+    private static final class BenchmarkObserver implements Observer<Integer> {
+
+        private Blackhole bh;
+
+        void setBlackhole(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            // No disposal needed for this benchmark; the source completes synchronously.
+        }
+
+        @Override
+        public void onNext(Integer value) {
+            bh.consume(value);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // Propagate errors to the Blackhole to avoid silent failures.
+            bh.consume(e);
+        }
+
+        @Override
+        public void onComplete() {
+            // No action required.
+        }
+    }
+}

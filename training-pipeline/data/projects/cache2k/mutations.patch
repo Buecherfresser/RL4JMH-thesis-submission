@@ -1,0 +1,629 @@
+diff --git a/org/cache2k/AbstractCache.java b/org/cache2k/AbstractCache.java
+index 6250de8..037b4fc 100644
+--- a/org/cache2k/AbstractCache.java
++++ b/org/cache2k/AbstractCache.java
+@@ -40,7 +40,7 @@ import java.util.function.Function;
+ public class AbstractCache<K, V> implements Cache<K, V> {
+ 
+   @Override
+-  public String getName() {
++  public String getName() { org.cache2k.jmhbench.MutationSwitch.tick(21);
+     throw new UnsupportedOperationException();
+   }
+ 
+@@ -65,7 +65,7 @@ public class AbstractCache<K, V> implements Cache<K, V> {
+   }
+ 
+   @Override
+-  public boolean containsKey(K key) {
++  public boolean containsKey(K key) { org.cache2k.jmhbench.MutationSwitch.tick(29);
+     throw new UnsupportedOperationException();
+   }
+ 
+diff --git a/org/cache2k/Cache2kBuilder.java b/org/cache2k/Cache2kBuilder.java
+index 946f097..f11a25a 100644
+--- a/org/cache2k/Cache2kBuilder.java
++++ b/org/cache2k/Cache2kBuilder.java
+@@ -108,7 +108,7 @@ public class Cache2kBuilder<K, V>
+    * {@link #valueType}.
+    */
+   @SuppressWarnings({"unchecked", "rawtypes"})
+-  public static Cache2kBuilder<Object, Object> forUnknownTypes() {
++  public static Cache2kBuilder<Object, Object> forUnknownTypes() { org.cache2k.jmhbench.MutationSwitch.tick(1);
+     return new Cache2kBuilder(null, null);
+   }
+ 
+@@ -118,7 +118,7 @@ public class Cache2kBuilder<K, V>
+    * @see #keyType(Class)
+    * @see #valueType(Class)
+    */
+-  public static <K, V> Cache2kBuilder<K, V> of(Class<K> keyType, Class<V> valueType) {
++  public static <K, V> Cache2kBuilder<K, V> of(Class<K> keyType, Class<V> valueType) { org.cache2k.jmhbench.MutationSwitch.tick(11);
+     return new Cache2kBuilder<>(CacheType.of(keyType), CacheType.of(valueType));
+   }
+ 
+diff --git a/org/cache2k/addon/CoalescingBulkLoader.java b/org/cache2k/addon/CoalescingBulkLoader.java
+index c559c6d..276c604 100644
+--- a/org/cache2k/addon/CoalescingBulkLoader.java
++++ b/org/cache2k/addon/CoalescingBulkLoader.java
+@@ -101,7 +101,7 @@ public class CoalescingBulkLoader<K, V> implements AsyncBulkCacheLoader<K, V>, A
+   }
+ 
+   @Override
+-  public void loadAll(Set<K> keys, BulkLoadContext<K, V> context, BulkCallback<K, V> callback) {
++  public void loadAll(Set<K> keys, BulkLoadContext<K, V> context, BulkCallback<K, V> callback) { org.cache2k.jmhbench.MutationSwitch.tick(2);
+     boolean flush = false;
+     for (K key : keys) {
+       Request<K, V> rq = new Request<>();
+@@ -157,7 +157,7 @@ public class CoalescingBulkLoader<K, V> implements AsyncBulkCacheLoader<K, V>, A
+     BulkLoadContext<K, V> finalFirstContext = firstContext;
+     BulkCallback<K, V> callback = new BulkCallback<K, V>() {
+       @Override
+-      public void onLoadSuccess(Map<? extends K, ? extends V> data) {
++      public void onLoadSuccess(Map<? extends K, ? extends V> data) { org.cache2k.jmhbench.MutationSwitch.tick(12);
+         for (Map.Entry<? extends K, ? extends V> e : data.entrySet()) {
+           onLoadSuccess(e.getKey(), e.getValue());
+         }
+diff --git a/org/cache2k/addon/CoalescingBulkLoaderConfig.java b/org/cache2k/addon/CoalescingBulkLoaderConfig.java
+index e0bc872..dcf4e56 100644
+--- a/org/cache2k/addon/CoalescingBulkLoaderConfig.java
++++ b/org/cache2k/addon/CoalescingBulkLoaderConfig.java
+@@ -38,7 +38,7 @@ public class CoalescingBulkLoaderConfig
+   private int maxBatchSize = 100;
+   private boolean refreshOnly = true;
+ 
+-  public long getMaxDelay() {
++  public long getMaxDelay() { org.cache2k.jmhbench.MutationSwitch.tick(22);
+     return maxDelay;
+   }
+ 
+@@ -47,7 +47,7 @@ public class CoalescingBulkLoaderConfig
+    *
+    * @see Builder#maxDelay(long, TimeUnit)
+    */
+-  public void setMaxDelay(long maxDelay) {
++  public void setMaxDelay(long maxDelay) { org.cache2k.jmhbench.MutationSwitch.tick(30);
+     this.maxDelay = maxDelay;
+   }
+ 
+diff --git a/org/cache2k/addon/CoalescingBulkLoaderSupport.java b/org/cache2k/addon/CoalescingBulkLoaderSupport.java
+index 0218637..f85b19a 100644
+--- a/org/cache2k/addon/CoalescingBulkLoaderSupport.java
++++ b/org/cache2k/addon/CoalescingBulkLoaderSupport.java
+@@ -39,11 +39,11 @@ public class CoalescingBulkLoaderSupport extends ToggleFeature
+ 
+   private static final CoalescingBulkLoaderConfig DEFAULT_CONFIG = new CoalescingBulkLoaderConfig();
+ 
+-  public static CoalescingBulkLoaderSupport enable(Cache2kBuilder<?, ?> b) {
++  public static CoalescingBulkLoaderSupport enable(Cache2kBuilder<?, ?> b) { org.cache2k.jmhbench.MutationSwitch.tick(37);
+     return ToggleFeature.enable(b, CoalescingBulkLoaderSupport.class);
+   }
+ 
+-  public static void disable(Cache2kBuilder<?, ?> b) {
++  public static void disable(Cache2kBuilder<?, ?> b) { org.cache2k.jmhbench.MutationSwitch.tick(44);
+     b.disable(CoalescingBulkLoaderSupport.class);
+   }
+ 
+diff --git a/org/cache2k/config/Cache2kConfig.java b/org/cache2k/config/Cache2kConfig.java
+index d818b6d..942d6ec 100644
+--- a/org/cache2k/config/Cache2kConfig.java
++++ b/org/cache2k/config/Cache2kConfig.java
+@@ -154,7 +154,7 @@ public class Cache2kConfig<K, V> implements ConfigBean<Cache2kConfig<K, V>, Cach
+    * @see Cache2kBuilder#keyType(Class)
+    * @see Cache2kBuilder#valueType(Class)
+    */
+-  public static <K, V> Cache2kConfig<K, V> of(Class<K> keyType, Class<V> valueType) {
++  public static <K, V> Cache2kConfig<K, V> of(Class<K> keyType, Class<V> valueType) { org.cache2k.jmhbench.MutationSwitch.tick(3);
+     Cache2kConfig<K, V> c = new Cache2kConfig<>();
+     c.setKeyType(CacheType.of(keyType));
+     c.setValueType(CacheType.of(valueType));
+@@ -168,7 +168,7 @@ public class Cache2kConfig<K, V> implements ConfigBean<Cache2kConfig<K, V>, Cach
+    * @see Cache2kBuilder#keyType(CacheType)
+    * @see Cache2kBuilder#valueType(CacheType)
+    */
+-  public static <K, V> Cache2kConfig<K, V> of(CacheType<K> keyType, CacheType<V> valueType) {
++  public static <K, V> Cache2kConfig<K, V> of(CacheType<K> keyType, CacheType<V> valueType) { org.cache2k.jmhbench.MutationSwitch.tick(13);
+     Cache2kConfig<K, V> c = new Cache2kConfig<>();
+     c.setKeyType(keyType);
+     c.setValueType(valueType);
+diff --git a/org/cache2k/config/Cache2kManagerConfig.java b/org/cache2k/config/Cache2kManagerConfig.java
+index 8b96864..0e38015 100644
+--- a/org/cache2k/config/Cache2kManagerConfig.java
++++ b/org/cache2k/config/Cache2kManagerConfig.java
+@@ -37,14 +37,14 @@ public class Cache2kManagerConfig
+   private boolean skipCheckOnStartup = false;
+   private boolean ignoreAnonymousCache = false;
+ 
+-  public boolean isIgnoreMissingCacheConfiguration() {
++  public boolean isIgnoreMissingCacheConfiguration() { org.cache2k.jmhbench.MutationSwitch.tick(23);
+     return ignoreMissingCacheConfiguration;
+   }
+ 
+   /**
+    * Configure a cache with default parameters if configuration has no specific section for it.
+    */
+-  public void setIgnoreMissingCacheConfiguration(boolean f) {
++  public void setIgnoreMissingCacheConfiguration(boolean f) { org.cache2k.jmhbench.MutationSwitch.tick(31);
+     ignoreMissingCacheConfiguration = f;
+   }
+ 
+diff --git a/org/cache2k/config/CacheTypeCapture.java b/org/cache2k/config/CacheTypeCapture.java
+index a68a086..97b1b91 100644
+--- a/org/cache2k/config/CacheTypeCapture.java
++++ b/org/cache2k/config/CacheTypeCapture.java
+@@ -68,12 +68,12 @@ public class CacheTypeCapture<T> implements CacheType<T> {
+   }
+ 
+   @Override
+-  public String getTypeName() {
++  public String getTypeName() { org.cache2k.jmhbench.MutationSwitch.tick(38);
+     return descriptor.getTypeName();
+   }
+ 
+   @Override
+-  public boolean hasTypeArguments() {
++  public boolean hasTypeArguments() { org.cache2k.jmhbench.MutationSwitch.tick(45);
+     return descriptor.hasTypeArguments();
+   }
+ 
+diff --git a/org/cache2k/core/ConcurrentMapWrapper.java b/org/cache2k/core/ConcurrentMapWrapper.java
+index 151dd0e..0925df5 100644
+--- a/org/cache2k/core/ConcurrentMapWrapper.java
++++ b/org/cache2k/core/ConcurrentMapWrapper.java
+@@ -62,7 +62,7 @@ public class ConcurrentMapWrapper<K, V> extends AbstractMap<K, V> implements Con
+    * We cannot use {@link Cache#putIfAbsent(Object, Object)} since the map returns the value.
+    */
+   @Override
+-  public V putIfAbsent(K key, V value) {
++  public V putIfAbsent(K key, V value) { org.cache2k.jmhbench.MutationSwitch.tick(4);
+     EntryProcessor<K, V, V> p = e -> {
+       if (!e.exists()) {
+         e.setValue(value);
+@@ -82,7 +82,7 @@ public class ConcurrentMapWrapper<K, V> extends AbstractMap<K, V> implements Con
+   }
+ 
+   @Override
+-  public boolean replace(K key, V oldValue, V newValue) {
++  public boolean replace(K key, V oldValue, V newValue) { org.cache2k.jmhbench.MutationSwitch.tick(14);
+     return cache.replaceIfEquals(key, oldValue, newValue);
+   }
+ 
+diff --git a/org/cache2k/core/InternalCache2kBuilder.java b/org/cache2k/core/InternalCache2kBuilder.java
+index 34fc71a..f0acbcc 100644
+--- a/org/cache2k/core/InternalCache2kBuilder.java
++++ b/org/cache2k/core/InternalCache2kBuilder.java
+@@ -104,12 +104,12 @@ public class InternalCache2kBuilder<K, V> implements InternalCacheBuildContext<K
+   }
+ 
+   @Override
+-  public String getName() {
++  public String getName() { org.cache2k.jmhbench.MutationSwitch.tick(24);
+     return config.getName();
+   }
+ 
+   @Override
+-  public TimeReference getTimeReference() {
++  public TimeReference getTimeReference() { org.cache2k.jmhbench.MutationSwitch.tick(32);
+     if (clock == null) {
+       throw new IllegalStateException("Time reference not set yet");
+     }
+diff --git a/org/cache2k/core/util/Util.java b/org/cache2k/core/util/Util.java
+index 6b835c8..68357eb 100644
+--- a/org/cache2k/core/util/Util.java
++++ b/org/cache2k/core/util/Util.java
+@@ -42,14 +42,14 @@ public class Util {
+ 
+   public static final String NAME_SEPARATOR = ":";
+ 
+-  public static String compactFullName(CacheManager mgr, String cacheName) {
++  public static String compactFullName(CacheManager mgr, String cacheName) { org.cache2k.jmhbench.MutationSwitch.tick(39);
+     if (!CacheManager.STANDARD_DEFAULT_MANAGER_NAME.equals(mgr.getName())) {
+       return mgr.getName() + NAME_SEPARATOR + cacheName;
+     }
+     return cacheName;
+   }
+ 
+-  public static String formatTime(Instant t) {
++  public static String formatTime(Instant t) { org.cache2k.jmhbench.MutationSwitch.tick(46);
+     LocalDateTime ldt = t.atZone(ZoneId.systemDefault()).toLocalDateTime();
+     return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ldt);
+   }
+diff --git a/org/cache2k/expiry/Expiry.java b/org/cache2k/expiry/Expiry.java
+index af98351..2f40efc 100644
+--- a/org/cache2k/expiry/Expiry.java
++++ b/org/cache2k/expiry/Expiry.java
+@@ -40,7 +40,7 @@ public class Expiry implements ExpiryTimeValues {
+    *               expiry is requested.
+    * @throws IllegalArgumentException if the time value is negative
+    */
+-  public static long toSharpTime(long millis) {
++  public static long toSharpTime(long millis) { org.cache2k.jmhbench.MutationSwitch.tick(5);
+     if (millis == ETERNAL) {
+       return ETERNAL;
+     }
+@@ -61,7 +61,7 @@ public class Expiry implements ExpiryTimeValues {
+    * @param candidate2 candidate time for next expiry
+    * @return either first or second candidate or {@link #ETERNAL}
+    */
+-  public static long earliestTime(long loadTime, long candidate1, long candidate2) {
++  public static long earliestTime(long loadTime, long candidate1, long candidate2) { org.cache2k.jmhbench.MutationSwitch.tick(15);
+     if (candidate1 >= loadTime) {
+       if (candidate1 < candidate2 || candidate2 < loadTime) {
+         return candidate1;
+diff --git a/org/cache2k/extra/config/generic/BeanPropertyAccessor.java b/org/cache2k/extra/config/generic/BeanPropertyAccessor.java
+index 153469d..5277a60 100644
+--- a/org/cache2k/extra/config/generic/BeanPropertyAccessor.java
++++ b/org/cache2k/extra/config/generic/BeanPropertyAccessor.java
+@@ -40,7 +40,7 @@ public class BeanPropertyAccessor implements TargetPropertyAccessor {
+   }
+ 
+   @Override
+-  public Collection<String> getNames() {
++  public Collection<String> getNames() { org.cache2k.jmhbench.MutationSwitch.tick(40);
+     return gettersLookupMap.keySet();
+   }
+ 
+diff --git a/org/cache2k/extra/config/generic/BeanPropertyMutator.java b/org/cache2k/extra/config/generic/BeanPropertyMutator.java
+index ab4206f..23954b1 100644
+--- a/org/cache2k/extra/config/generic/BeanPropertyMutator.java
++++ b/org/cache2k/extra/config/generic/BeanPropertyMutator.java
+@@ -42,7 +42,7 @@ public class BeanPropertyMutator implements TargetPropertyMutator {
+   }
+ 
+   @Override
+-  public Collection<String> getNames() {
++  public Collection<String> getNames() { org.cache2k.jmhbench.MutationSwitch.tick(47);
+     return settersLookupMap.keySet();
+   }
+ 
+diff --git a/org/cache2k/extra/config/generic/ConfigurationParser.java b/org/cache2k/extra/config/generic/ConfigurationParser.java
+index bb8f924..1530915 100644
+--- a/org/cache2k/extra/config/generic/ConfigurationParser.java
++++ b/org/cache2k/extra/config/generic/ConfigurationParser.java
+@@ -25,7 +25,7 @@ package org.cache2k.extra.config.generic;
+  */
+ public class ConfigurationParser {
+ 
+-  public static ParsedConfiguration parse(ConfigurationTokenizer parser) throws Exception {
++  public static ParsedConfiguration parse(ConfigurationTokenizer parser) throws Exception { org.cache2k.jmhbench.MutationSwitch.tick(6);
+     ParsedConfiguration c = new ParsedConfiguration(parser.getSource(), parser.getLineNumber());
+     parseTopLevelSections(parser, c);
+     ConfigurationTokenizer.Item item = parser.next();
+diff --git a/org/cache2k/extra/config/generic/StandardPropertyParser.java b/org/cache2k/extra/config/generic/StandardPropertyParser.java
+index c0cf25f..669b749 100644
+--- a/org/cache2k/extra/config/generic/StandardPropertyParser.java
++++ b/org/cache2k/extra/config/generic/StandardPropertyParser.java
+@@ -49,7 +49,7 @@ public class StandardPropertyParser implements PropertyParser {
+     put("d", 1000L * 60 * 60 * 24);
+   }};
+ 
+-  public Object parse(Class<?> targetType, String value) throws Exception {
++  public Object parse(Class<?> targetType, String value) throws Exception { org.cache2k.jmhbench.MutationSwitch.tick(16);
+     ValueConverter p = type2parser.get(targetType);
+     if (p == null) {
+       throw new IllegalArgumentException("Unknown target type: " + targetType);
+@@ -69,7 +69,7 @@ public class StandardPropertyParser implements PropertyParser {
+   {
+     addParser(Integer.TYPE, Integer.class, new ValueConverter<Integer>() {
+       @Override
+-      public Integer parse(String v) {
++      public Integer parse(String v) { org.cache2k.jmhbench.MutationSwitch.tick(25);
+         return Integer.valueOf(v);
+       }
+     });
+diff --git a/org/cache2k/extra/jmx/LifecycleListener.java b/org/cache2k/extra/jmx/LifecycleListener.java
+index 8324fcd..49ad4b8 100644
+--- a/org/cache2k/extra/jmx/LifecycleListener.java
++++ b/org/cache2k/extra/jmx/LifecycleListener.java
+@@ -67,7 +67,7 @@ class LifecycleListener implements CacheCreatedListener, CacheClosedListener {
+   }
+ 
+   @Override
+-  public CompletableFuture<Void> onCacheClosed(Cache<?, ?> cache) {
++  public CompletableFuture<Void> onCacheClosed(Cache<?, ?> cache) { org.cache2k.jmhbench.MutationSwitch.tick(33);
+     MBeanServer mbs = getPlatformMBeanServer();
+     unregisterBean(mbs, createCacheControlName(cache.getCacheManager(), cache));
+     unregisterBean(mbs, createCacheStatisticsName(cache.getCacheManager(), cache));
+diff --git a/org/cache2k/jcache/provider/JCacheBuilder.java b/org/cache2k/jcache/provider/JCacheBuilder.java
+index 4c6db5c..8f829ef 100644
+--- a/org/cache2k/jcache/provider/JCacheBuilder.java
++++ b/org/cache2k/jcache/provider/JCacheBuilder.java
+@@ -84,7 +84,7 @@ public class JCacheBuilder<K, V> {
+   }
+ 
+   @SuppressWarnings("unchecked")
+-  public void setConfiguration(Configuration<K, V> cfg) {
++  public void setConfiguration(Configuration<K, V> cfg) { org.cache2k.jmhbench.MutationSwitch.tick(7);
+     if (cfg instanceof CompleteConfiguration) {
+       config = (CompleteConfiguration<K, V>) cfg;
+       if (cfg instanceof ExtendedConfiguration) {
+@@ -124,7 +124,7 @@ public class JCacheBuilder<K, V> {
+     }
+   }
+ 
+-  public Cache<K, V> build() {
++  public Cache<K, V> build() { org.cache2k.jmhbench.MutationSwitch.tick(17);
+     setupTypes();
+     setupDefaults();
+     setupExceptionPropagator();
+diff --git a/org/cache2k/jcache/provider/Util.java b/org/cache2k/jcache/provider/Util.java
+index 68692b7..57bfcf8 100644
+--- a/org/cache2k/jcache/provider/Util.java
++++ b/org/cache2k/jcache/provider/Util.java
+@@ -25,11 +25,11 @@ package org.cache2k.jcache.provider;
+  */
+ public class Util {
+ 
+-  public static <T> T checkKey(T value) {
++  public static <T> T checkKey(T value) { org.cache2k.jmhbench.MutationSwitch.tick(26);
+     return requireNonNull(value, "cache key");
+   }
+ 
+-  public static <T> T checkValue(T value) {
++  public static <T> T checkValue(T value) { org.cache2k.jmhbench.MutationSwitch.tick(34);
+     return requireNonNull(value, "cache value");
+   }
+ 
+diff --git a/org/cache2k/jcache/provider/tckGlue/TckMBeanServerBuilder.java b/org/cache2k/jcache/provider/tckGlue/TckMBeanServerBuilder.java
+index e636115..f48ec0f 100644
+--- a/org/cache2k/jcache/provider/tckGlue/TckMBeanServerBuilder.java
++++ b/org/cache2k/jcache/provider/tckGlue/TckMBeanServerBuilder.java
+@@ -37,7 +37,7 @@ import javax.management.MBeanServerDelegate;
+ public class TckMBeanServerBuilder extends MBeanServerBuilder {
+ 
+   @Override
+-  public MBeanServerDelegate newMBeanServerDelegate() {
++  public MBeanServerDelegate newMBeanServerDelegate() { org.cache2k.jmhbench.MutationSwitch.tick(41);
+     return new WrapperMBeanServerDelegate();
+   }
+ 
+@@ -52,7 +52,7 @@ public class TckMBeanServerBuilder extends MBeanServerBuilder {
+     public WrapperMBeanServerDelegate() {
+     }
+ 
+-    public String getMBeanServerId() {
++    public String getMBeanServerId() { org.cache2k.jmhbench.MutationSwitch.tick(48);
+       return "TckMBeanServer";
+     }
+ 
+diff --git a/org/cache2k/jmhbench/MutationSwitch.java b/org/cache2k/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..cdcc71f
+--- /dev/null
++++ b/org/cache2k/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.cache2k.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/cache2k/pinpoint/Await.java b/org/cache2k/pinpoint/Await.java
+index 2364691..d5b4135 100644
+--- a/org/cache2k/pinpoint/Await.java
++++ b/org/cache2k/pinpoint/Await.java
+@@ -42,7 +42,7 @@ public class Await {
+    * loop. For testing with real clocks the {@code sleep(0)} waits and hopefully gives
+    * some CPU time to other tasks.
+    */
+-  public void await(String description, Duration timeoutDuration, Supplier<Boolean> c) {
++  public void await(String description, Duration timeoutDuration, Supplier<Boolean> c) { org.cache2k.jmhbench.MutationSwitch.tick(8);
+     long t = System.currentTimeMillis() + timeoutDuration.toMillis();
+     try {
+       while (!c.get()) {
+@@ -60,7 +60,7 @@ public class Await {
+   /**
+    * Wait for an event the maximum test time.
+    */
+-  public void await(String description, Supplier<Boolean> c) {
++  public void await(String description, Supplier<Boolean> c) { org.cache2k.jmhbench.MutationSwitch.tick(18);
+     await(description, PinpointParameters.TIMEOUT, c);
+   }
+ 
+diff --git a/org/cache2k/pinpoint/ExceptionCollector.java b/org/cache2k/pinpoint/ExceptionCollector.java
+index 931a80c..4e2e5ae 100644
+--- a/org/cache2k/pinpoint/ExceptionCollector.java
++++ b/org/cache2k/pinpoint/ExceptionCollector.java
+@@ -38,7 +38,7 @@ public class ExceptionCollector {
+   /**
+    * Collect exception or ignore if null.
+    */
+-  public void exception(Throwable t) {
++  public void exception(Throwable t) { org.cache2k.jmhbench.MutationSwitch.tick(27);
+     firstException.compareAndSet(null, t);
+     if (t != null) {
+       exceptionCount.incrementAndGet();
+@@ -48,7 +48,7 @@ public class ExceptionCollector {
+   /**
+    * Execute the runnable and collect exception if thrown
+    */
+-  public void runAndCatch(Runnable r) {
++  public void runAndCatch(Runnable r) { org.cache2k.jmhbench.MutationSwitch.tick(35);
+     try {
+       r.run();
+     } catch (Throwable t) {
+diff --git a/org/cache2k/pinpoint/SupervisedExecutor.java b/org/cache2k/pinpoint/SupervisedExecutor.java
+index 9c921e6..c09ea2e 100644
+--- a/org/cache2k/pinpoint/SupervisedExecutor.java
++++ b/org/cache2k/pinpoint/SupervisedExecutor.java
+@@ -53,7 +53,7 @@ public class SupervisedExecutor implements Executor, AutoCloseable {
+   }
+ 
+   @Override
+-  public void execute(Runnable command) {
++  public void execute(Runnable command) { org.cache2k.jmhbench.MutationSwitch.tick(42);
+     if (notYetFinished.incrementAndGet() == 1) {
+       acquire(allFinished);
+     }
+@@ -73,7 +73,7 @@ public class SupervisedExecutor implements Executor, AutoCloseable {
+   /**
+    * Wait for all executed tasks to finish and propagate exceptions.
+    */
+-  public void join() {
++  public void join() { org.cache2k.jmhbench.MutationSwitch.tick(49);
+     acquire(allFinished);
+     allFinished.release();
+     exceptionCollector.assertNoException();
+diff --git a/org/cache2k/testing/SimulatedClock.java b/org/cache2k/testing/SimulatedClock.java
+index 33518e3..75828cd 100644
+--- a/org/cache2k/testing/SimulatedClock.java
++++ b/org/cache2k/testing/SimulatedClock.java
+@@ -132,7 +132,7 @@ public class SimulatedClock extends TimeReference.Milliseconds implements Schedu
+     this(1000000);
+   }
+ 
+-  public void schedule(Runnable runnable, long delayMillis) {
++  public void schedule(Runnable runnable, long delayMillis) { org.cache2k.jmhbench.MutationSwitch.tick(9);
+     long ticks = rawTicks() + toTicks(Duration.ofMillis(delayMillis));
+     if (ticks < 0) {
+       schedule(runnable, Long.MAX_VALUE, Long.MAX_VALUE);
+@@ -152,7 +152,7 @@ public class SimulatedClock extends TimeReference.Milliseconds implements Schedu
+   }
+ 
+   @Override
+-  public void execute(Runnable command) {
++  public void execute(Runnable command) { org.cache2k.jmhbench.MutationSwitch.tick(19);
+     schedule(command, 0, 0);
+   }
+ 
+diff --git a/org/cache2k/testsuite/api/MapTest.java b/org/cache2k/testsuite/api/MapTest.java
+index 7ad773d..c384a4b 100644
+--- a/org/cache2k/testsuite/api/MapTest.java
++++ b/org/cache2k/testsuite/api/MapTest.java
+@@ -48,7 +48,7 @@ import org.junit.experimental.categories.Category;
+ @Category(FastTests.class)
+ public class MapTest extends TestCase {
+ 
+-  public static Test suite() {
++  public static Test suite() { org.cache2k.jmhbench.MutationSwitch.tick(10);
+     TestSuite suite = new TestSuite();
+     suite.addTest(suite("cache2k_disallowNull", false, () -> {
+       return new Cache2kBuilder<String, String>() {};
+diff --git a/org/cache2k/testsuite/expiry/ExpirySetupTest.java b/org/cache2k/testsuite/expiry/ExpirySetupTest.java
+index ef26d19..4b98528 100644
+--- a/org/cache2k/testsuite/expiry/ExpirySetupTest.java
++++ b/org/cache2k/testsuite/expiry/ExpirySetupTest.java
+@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.*;
+ public class ExpirySetupTest<K, V> extends AbstractCacheTester<K, V> {
+ 
+   @Test
+-  public void defaults() {
++  public void defaults() { org.cache2k.jmhbench.MutationSwitch.tick(20);
+     init(b -> {
+       Cache2kConfig<K, V> cfg = b.config();
+       assertFalse(cfg.isEternal());
+@@ -54,7 +54,7 @@ public class ExpirySetupTest<K, V> extends AbstractCacheTester<K, V> {
+   }
+ 
+   @Test
+-  public void maxExpireAfterWrite() {
++  public void maxExpireAfterWrite() { org.cache2k.jmhbench.MutationSwitch.tick(28);
+     init(b -> b.expireAfterWrite(TIME_MAX_MILLIS, TimeUnit.MILLISECONDS));
+     put(k0, v0);
+   }
+diff --git a/org/cache2k/testsuite/stress/ConcurrentMapStressTest.java b/org/cache2k/testsuite/stress/ConcurrentMapStressTest.java
+index 66df2a2..0828c26 100644
+--- a/org/cache2k/testsuite/stress/ConcurrentMapStressTest.java
++++ b/org/cache2k/testsuite/stress/ConcurrentMapStressTest.java
+@@ -49,7 +49,7 @@ public class ConcurrentMapStressTest {
+ 
+   @SuppressWarnings("unchecked")
+   @Test
+-  public void test() throws Exception {
++  public void test() throws Exception { org.cache2k.jmhbench.MutationSwitch.tick(36);
+     ConcurrentMap<Integer, Integer> map;
+     boolean useMap = false;
+     if (useMap) {
+@@ -73,7 +73,7 @@ public class ConcurrentMapStressTest {
+   public static class Compute1 extends MyActorPair {
+     AtomicInteger counter1 = new AtomicInteger();
+     public Compute1(Target target) { super(target); }
+-    public void setup() {
++    public void setup() { org.cache2k.jmhbench.MutationSwitch.tick(43);
+       counter1.set(0);
+       remove();
+     }
+diff --git a/org/cache2k/testsuite/support/StaticUtil.java b/org/cache2k/testsuite/support/StaticUtil.java
+index 082d1a9..cf92d85 100644
+--- a/org/cache2k/testsuite/support/StaticUtil.java
++++ b/org/cache2k/testsuite/support/StaticUtil.java
+@@ -31,7 +31,7 @@ public class StaticUtil {
+   /**
+    * Enforce the usage of wired cache by registering a dummy listener.
+    */
+-  public static <K, V> Cache2kBuilder<K, V> enforceWiredCache(Cache2kBuilder<K, V> b) {
++  public static <K, V> Cache2kBuilder<K, V> enforceWiredCache(Cache2kBuilder<K, V> b) { org.cache2k.jmhbench.MutationSwitch.tick(50);
+     return b.addListener((CacheEntryRemovedListener<K, V>) (cache, entry) -> { });
+   }
+ 

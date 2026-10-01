@@ -1,0 +1,608 @@
+diff --git a/org/mapdb/db/DB.java b/org/mapdb/db/DB.java
+index 2e13aa5..9debe96 100644
+--- a/org/mapdb/db/DB.java
++++ b/org/mapdb/db/DB.java
+@@ -13,11 +13,11 @@ public class DB {
+         this.store = store;
+     }
+ 
+-    public Store getStore(){
++    public Store getStore(){ org.mapdb.jmhbench.MutationSwitch.tick(1);
+         return store;
+     }
+ 
+-    public void close() {
++    public void close() { org.mapdb.jmhbench.MutationSwitch.tick(9);
+ 
+     }
+ 
+diff --git a/org/mapdb/flat/LongBufStack.java b/org/mapdb/flat/LongBufStack.java
+index 889614d..8d9c0f7 100644
+--- a/org/mapdb/flat/LongBufStack.java
++++ b/org/mapdb/flat/LongBufStack.java
+@@ -18,13 +18,13 @@ public class LongBufStack{
+         this(ByteBuffer.allocate(8*1024*1024));
+     }
+ 
+-    public long pop(){
++    public long pop(){ org.mapdb.jmhbench.MutationSwitch.tick(2);
+         if(pos==0)
+             return 0L;
+         return buf.getLong(8*(--pos));
+     }
+ 
+-    public void push(long value){
++    public void push(long value){ org.mapdb.jmhbench.MutationSwitch.tick(10);
+         if(value == 0L)
+             throw new IllegalArgumentException();
+ 
+diff --git a/org/mapdb/io/DataIO.java b/org/mapdb/io/DataIO.java
+index a8e9602..70bdf64 100644
+--- a/org/mapdb/io/DataIO.java
++++ b/org/mapdb/io/DataIO.java
+@@ -178,7 +178,7 @@ public final class DataIO {
+      * @param value to calculate
+      * @return number of bytes used in packed form
+      */
+-    public static int packLongSize(long value) {
++    public static int packLongSize(long value) { org.mapdb.jmhbench.MutationSwitch.tick(34);
+         int shift = 63-Long.numberOfLeadingZeros(value);
+         shift -= shift%7; // round down to nearest multiple of 7
+         int ret = 1;
+@@ -293,7 +293,7 @@ public final class DataIO {
+         out.writeByte((byte) ((value & 0x7F)|0x80));
+     }
+ 
+-    public static int longHash(long h) {
++    public static int longHash(long h) { org.mapdb.jmhbench.MutationSwitch.tick(37);
+         //$DELAY$
+         h = h * -7046029254386353131L;
+         h ^= h >> 32;
+diff --git a/org/mapdb/io/DataInput2ByteArray.java b/org/mapdb/io/DataInput2ByteArray.java
+index 25f9f67..433a808 100644
+--- a/org/mapdb/io/DataInput2ByteArray.java
++++ b/org/mapdb/io/DataInput2ByteArray.java
+@@ -17,12 +17,12 @@ public final class DataInput2ByteArray implements DataInput2 {
+         this.pos = pos;
+     }
+ 
+-    public int getPos(){
++    public int getPos(){ org.mapdb.jmhbench.MutationSwitch.tick(3);
+         return pos;
+     }
+ 
+     @Override
+-    public void readFully(byte[] b, int off, int len) {
++    public void readFully(byte[] b, int off, int len) { org.mapdb.jmhbench.MutationSwitch.tick(11);
+         System.arraycopy(buf, pos, b, off, len);
+         pos += len;
+     }
+diff --git a/org/mapdb/io/DataInput2ByteBuffer.java b/org/mapdb/io/DataInput2ByteBuffer.java
+index 3dea08b..debd894 100644
+--- a/org/mapdb/io/DataInput2ByteBuffer.java
++++ b/org/mapdb/io/DataInput2ByteBuffer.java
+@@ -11,12 +11,12 @@ public final class DataInput2ByteBuffer implements DataInput2 {
+         this.buf = buf;
+     }
+ 
+-    public void readFully(byte[] b, int off, int len) {
++    public void readFully(byte[] b, int off, int len) { org.mapdb.jmhbench.MutationSwitch.tick(17);
+         buf.get(b, off,len);
+     }
+ 
+     @Override
+-    public int skipBytes(final int n) {
++    public int skipBytes(final int n) { org.mapdb.jmhbench.MutationSwitch.tick(21);
+         buf.position(buf.position()+n);
+         return n;
+     }
+diff --git a/org/mapdb/io/DataInputToStream.java b/org/mapdb/io/DataInputToStream.java
+index f547aa9..290af59 100644
+--- a/org/mapdb/io/DataInputToStream.java
++++ b/org/mapdb/io/DataInputToStream.java
+@@ -30,7 +30,7 @@ public final class DataInputToStream extends InputStream {
+     }
+ 
+     @Override
+-    public void close() throws IOException {
++    public void close() throws IOException { org.mapdb.jmhbench.MutationSwitch.tick(25);
+         if(in instanceof Closeable)
+             ((Closeable) in).close();
+     }
+diff --git a/org/mapdb/io/DataOutput2ByteArray.java b/org/mapdb/io/DataOutput2ByteArray.java
+index 25f7620..66119a8 100644
+--- a/org/mapdb/io/DataOutput2ByteArray.java
++++ b/org/mapdb/io/DataOutput2ByteArray.java
+@@ -29,7 +29,7 @@ public class DataOutput2ByteArray extends OutputStream implements DataOutput2{
+      * make sure there will be enough space in buffer to write N bytes
+      * @param n number of bytes which can be safely written after this method returns
+      */
+-    protected void ensureAvail(int n) {
++    protected void ensureAvail(int n) { org.mapdb.jmhbench.MutationSwitch.tick(28);
+         //$DELAY$
+         n+=pos;
+         if ((n&sizeMask)!=0) {
+@@ -66,7 +66,7 @@ public class DataOutput2ByteArray extends OutputStream implements DataOutput2{
+     }
+ 
+     @Override
+-    public void writeBoolean(final boolean v){
++    public void writeBoolean(final boolean v){ org.mapdb.jmhbench.MutationSwitch.tick(31);
+         ensureAvail(1);
+         //$DELAY$
+         buf[pos++] = (byte) (v ? 1 : 0);
+diff --git a/org/mapdb/jmhbench/MutationSwitch.java b/org/mapdb/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..a653490
+--- /dev/null
++++ b/org/mapdb/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.mapdb.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/mapdb/list/KernelList.java b/org/mapdb/list/KernelList.java
+index 80f4b37..f8c8f09 100644
+--- a/org/mapdb/list/KernelList.java
++++ b/org/mapdb/list/KernelList.java
+@@ -39,12 +39,12 @@ public class KernelList<E>
+             this.ser = ser;
+         }
+ 
+-        public static <E> KernelList.Maker<E> newList(Store store, Serializer<E> ser) {
++        public static <E> KernelList.Maker<E> newList(Store store, Serializer<E> ser) { org.mapdb.jmhbench.MutationSwitch.tick(4);
+             long recid = store.put(new long[]{}, KERNEL_SER);
+             return new KernelList.Maker(store, recid, ser);
+         }
+ 
+-        public Maker<E> entryStore(Store store){
++        public Maker<E> entryStore(Store store){ org.mapdb.jmhbench.MutationSwitch.tick(12);
+             this.entryStore = store;
+             return this;
+         }
+diff --git a/org/mapdb/list/MonolithList.java b/org/mapdb/list/MonolithList.java
+index 8901e61..3d58dd3 100644
+--- a/org/mapdb/list/MonolithList.java
++++ b/org/mapdb/list/MonolithList.java
+@@ -21,12 +21,12 @@ public class MonolithList<E>
+             this.ser = ser;
+         }
+ 
+-        public static <E> Maker<E> newList(Store store, Serializer<E> ser) {
++        public static <E> Maker<E> newList(Store store, Serializer<E> ser) { org.mapdb.jmhbench.MutationSwitch.tick(18);
+             long recid = store.put(new ArrayList(), new ArrayListSerializer(ser));
+             return new Maker(store, recid, ser);
+         }
+ 
+-        public MonolithList<E> make(){
++        public MonolithList<E> make(){ org.mapdb.jmhbench.MutationSwitch.tick(22);
+             return new MonolithList<E>(store, recid, ser);
+         }
+     }
+diff --git a/org/mapdb/record/Atomic.java b/org/mapdb/record/Atomic.java
+index b7e45d0..990b0ce 100644
+--- a/org/mapdb/record/Atomic.java
++++ b/org/mapdb/record/Atomic.java
+@@ -122,7 +122,7 @@ final public class Atomic {
+         /**
+          * @return recid under which value is saved
+          */
+-        public long getRecid(){
++        public long getRecid(){ org.mapdb.jmhbench.MutationSwitch.tick(5);
+             return recid;
+         }
+ 
+@@ -151,7 +151,7 @@ final public class Atomic {
+          * @param newValue the new value
+          * @return the previous value
+          */
+-        public final int getAndSet(int newValue) {
++        public final int getAndSet(int newValue) { org.mapdb.jmhbench.MutationSwitch.tick(13);
+             for (;;) {
+                 int current = get();
+                 if (compareAndSet(current, newValue)) {
+diff --git a/org/mapdb/ser/ArrayDeltaSerializer.java b/org/mapdb/ser/ArrayDeltaSerializer.java
+index 3b24dc4..25216bc 100644
+--- a/org/mapdb/ser/ArrayDeltaSerializer.java
++++ b/org/mapdb/ser/ArrayDeltaSerializer.java
+@@ -18,7 +18,7 @@ public class ArrayDeltaSerializer<T> extends ArraySerializer<T> {
+     }
+ 
+     @Override
+-    public void valueArraySerialize(DataOutput2 out, Object[] vals2) {
++    public void valueArraySerialize(DataOutput2 out, Object[] vals2) { org.mapdb.jmhbench.MutationSwitch.tick(6);
+         Object[] vals = (Object[]) vals2;
+         if (vals.length == 0)
+             return;
+@@ -50,7 +50,7 @@ public class ArrayDeltaSerializer<T> extends ArraySerializer<T> {
+     }
+ 
+     @Override
+-    public Object[] valueArrayDeserialize(DataInput2 in, final int size) {
++    public Object[] valueArrayDeserialize(DataInput2 in, final int size) { org.mapdb.jmhbench.MutationSwitch.tick(14);
+         Object[] ret = new Object[size];
+         if (size == 0)
+             return ret;
+diff --git a/org/mapdb/ser/ArraySerializer.java b/org/mapdb/ser/ArraySerializer.java
+index 4404fdb..9ad1b0a 100644
+--- a/org/mapdb/ser/ArraySerializer.java
++++ b/org/mapdb/ser/ArraySerializer.java
+@@ -58,7 +58,7 @@ public class ArraySerializer<T> extends DefaultGroupSerializer<T[]> {
+ 
+ 
+     @Override
+-    public void serialize(DataOutput2 out, T[] value) {
++    public void serialize(DataOutput2 out, T[] value) { org.mapdb.jmhbench.MutationSwitch.tick(19);
+         out.packInt(value.length);
+         for (T a : value) {
+             serializer.serialize(out, a);
+@@ -66,7 +66,7 @@ public class ArraySerializer<T> extends DefaultGroupSerializer<T[]> {
+     }
+ 
+     @Override
+-    public T[] deserialize(DataInput2 in) {
++    public T[] deserialize(DataInput2 in) { org.mapdb.jmhbench.MutationSwitch.tick(23);
+         int size = in.unpackInt();
+         T[] ret = (T[]) Array.newInstance(componentType, size);
+         for (int i = 0; i < ret.length; i++) {
+diff --git a/org/mapdb/ser/ArrayTupleSerializer.java b/org/mapdb/ser/ArrayTupleSerializer.java
+index e7e3180..dc5a5de 100644
+--- a/org/mapdb/ser/ArrayTupleSerializer.java
++++ b/org/mapdb/ser/ArrayTupleSerializer.java
+@@ -35,7 +35,7 @@ public class ArrayTupleSerializer implements GroupSerializer<Object[],Object[]>
+     }
+ 
+ 
+-    protected Object[] cast(Object o){
++    protected Object[] cast(Object o){ org.mapdb.jmhbench.MutationSwitch.tick(26);
+         if(CC.ASSERT && ((Object[])o).length%size!=0) {
+             throw new AssertionError();
+         }
+@@ -60,7 +60,7 @@ public class ArrayTupleSerializer implements GroupSerializer<Object[],Object[]>
+ 
+     @Nullable
+     @Override
+-    public Class serializedType() {
++    public Class serializedType() { org.mapdb.jmhbench.MutationSwitch.tick(29);
+         return Object[].class;
+     }
+ 
+diff --git a/org/mapdb/ser/ByteArrayDelta2Serializer.java b/org/mapdb/ser/ByteArrayDelta2Serializer.java
+index ded98d1..1820543 100644
+--- a/org/mapdb/ser/ByteArrayDelta2Serializer.java
++++ b/org/mapdb/ser/ByteArrayDelta2Serializer.java
+@@ -18,13 +18,13 @@ public class ByteArrayDelta2Serializer implements GroupSerializer<byte[],ByteArr
+ 
+ 
+     @Override
+-    public int valueArraySearch(ByteArrayKeys keys, byte[] key) {
++    public int valueArraySearch(ByteArrayKeys keys, byte[] key) { org.mapdb.jmhbench.MutationSwitch.tick(32);
+         Object[] v = valueArrayToArray(keys);
+         return Arrays.binarySearch(v, key, (Comparator)this);
+     }
+ 
+     @Override
+-    public int valueArraySearch(ByteArrayKeys keys, byte[] key, Comparator comparator) {
++    public int valueArraySearch(ByteArrayKeys keys, byte[] key, Comparator comparator) { org.mapdb.jmhbench.MutationSwitch.tick(35);
+         Object[] v = valueArrayToArray(keys);
+         return Arrays.binarySearch(v, key, comparator);
+     }
+diff --git a/org/mapdb/ser/ByteArrayDeltaSerializer.java b/org/mapdb/ser/ByteArrayDeltaSerializer.java
+index a91d4d0..bf4840a 100644
+--- a/org/mapdb/ser/ByteArrayDeltaSerializer.java
++++ b/org/mapdb/ser/ByteArrayDeltaSerializer.java
+@@ -13,7 +13,7 @@ public class ByteArrayDeltaSerializer extends ByteArraySerializer {
+     //TODO PERF char[][] versus Object[]
+ 
+     @Override
+-    public void valueArraySerialize(DataOutput2 out, byte[][] vals) {
++    public void valueArraySerialize(DataOutput2 out, byte[][] vals) { org.mapdb.jmhbench.MutationSwitch.tick(38);
+         byte[][] chars = (byte[][]) vals;
+         //write lengths
+         for(byte[] b:chars){
+@@ -33,7 +33,7 @@ public class ByteArrayDeltaSerializer extends ByteArraySerializer {
+     }
+ 
+     @Override
+-    public byte[][] valueArrayDeserialize(DataInput2 in, int size) {
++    public byte[][] valueArrayDeserialize(DataInput2 in, int size) { org.mapdb.jmhbench.MutationSwitch.tick(40);
+         byte[][] ret = new byte[size][];
+ 
+         //read lengths and init arrays
+diff --git a/org/mapdb/ser/ByteArrayNoSizeSerializer.java b/org/mapdb/ser/ByteArrayNoSizeSerializer.java
+index 68e4d86..101c411 100644
+--- a/org/mapdb/ser/ByteArrayNoSizeSerializer.java
++++ b/org/mapdb/ser/ByteArrayNoSizeSerializer.java
+@@ -18,7 +18,7 @@ import java.util.Arrays;
+ public class ByteArrayNoSizeSerializer implements Serializer<byte[]> {
+ 
+     @Override
+-    public void serialize(DataOutput2 out, byte[] value) {
++    public void serialize(DataOutput2 out, byte[] value) { org.mapdb.jmhbench.MutationSwitch.tick(42);
+         out.write(value);
+     }
+ 
+@@ -32,7 +32,7 @@ public class ByteArrayNoSizeSerializer implements Serializer<byte[]> {
+ 
+     @Nullable
+     @Override
+-    public Class serializedType() {
++    public Class serializedType() { org.mapdb.jmhbench.MutationSwitch.tick(44);
+         return null;
+     }
+ 
+diff --git a/org/mapdb/ser/ByteArraySerializer.java b/org/mapdb/ser/ByteArraySerializer.java
+index 5f9a3c4..460508a 100644
+--- a/org/mapdb/ser/ByteArraySerializer.java
++++ b/org/mapdb/ser/ByteArraySerializer.java
+@@ -19,13 +19,13 @@ public class ByteArraySerializer implements GroupSerializer<byte[], byte[][]> {
+     private static final XXHash32 HASHER =  XXHashFactory.fastestInstance().hash32();
+ 
+     @Override
+-    public void serialize(DataOutput2 out, byte[] value) {
++    public void serialize(DataOutput2 out, byte[] value) { org.mapdb.jmhbench.MutationSwitch.tick(46);
+         out.packInt(value.length);
+         out.write(value);
+     }
+ 
+     @Override
+-    public byte[] deserialize(DataInput2 in) {
++    public byte[] deserialize(DataInput2 in) { org.mapdb.jmhbench.MutationSwitch.tick(48);
+         int size = in.unpackInt();
+         byte[] ret = new byte[size];
+         in.readFully(ret);
+diff --git a/org/mapdb/ser/CharArraySerializer.java b/org/mapdb/ser/CharArraySerializer.java
+index f38ce19..d9cbf63 100644
+--- a/org/mapdb/ser/CharArraySerializer.java
++++ b/org/mapdb/ser/CharArraySerializer.java
+@@ -13,7 +13,7 @@ import java.util.Arrays;
+ public class CharArraySerializer extends DefaultGroupSerializer<char[]> {
+ 
+     @Override
+-    public void serialize(DataOutput2 out, char[] value) {
++    public void serialize(DataOutput2 out, char[] value) { org.mapdb.jmhbench.MutationSwitch.tick(50);
+         out.packInt(value.length);
+         for (char c : value) {
+             out.writeChar(c);
+diff --git a/org/mapdb/store/ConcMapStore.java b/org/mapdb/store/ConcMapStore.java
+index 7c44677..62b53ee 100644
+--- a/org/mapdb/store/ConcMapStore.java
++++ b/org/mapdb/store/ConcMapStore.java
+@@ -31,7 +31,7 @@ public class ConcMapStore implements Store{
+     }
+ 
+     @Override
+-    public long preallocate() {
++    public long preallocate() { org.mapdb.jmhbench.MutationSwitch.tick(7);
+         long recid = allocateRecid();
+         Object o = m.put(recid, PREALLOCATED);
+         assert(o==null);
+@@ -77,7 +77,7 @@ public class ConcMapStore implements Store{
+     }
+ 
+     @Override
+-    public void verify() {
++    public void verify() { org.mapdb.jmhbench.MutationSwitch.tick(15);
+ 
+     }
+ 
+diff --git a/org/mapdb/store/FileHeapBufStore.java b/org/mapdb/store/FileHeapBufStore.java
+index c9f89e5..9e9afd0 100644
+--- a/org/mapdb/store/FileHeapBufStore.java
++++ b/org/mapdb/store/FileHeapBufStore.java
+@@ -18,7 +18,7 @@ public class FileHeapBufStore extends HeapBufStore{
+         //-WUNLOCK
+     }
+ 
+-    protected void reload() {
++    protected void reload() { org.mapdb.jmhbench.MutationSwitch.tick(39);
+         //-AWLOCKED
+         clear();
+ 
+@@ -52,7 +52,7 @@ public class FileHeapBufStore extends HeapBufStore{
+         }
+     }
+ 
+-    protected void save() {
++    protected void save() { org.mapdb.jmhbench.MutationSwitch.tick(41);
+         //-ARLOCKED
+         try( DataOutputStream out = new DataOutputStream(new FileOutputStream(file))) {
+             IO.writeLong(out, records.size());
+diff --git a/org/mapdb/store/HeapBufStore.java b/org/mapdb/store/HeapBufStore.java
+index ae05819..cd8c107 100644
+--- a/org/mapdb/store/HeapBufStore.java
++++ b/org/mapdb/store/HeapBufStore.java
+@@ -22,7 +22,7 @@ public class HeapBufStore implements Store {
+     protected long maxRecid = 0L;
+ 
+     @Override
+-    public long preallocate() {
++    public long preallocate() { org.mapdb.jmhbench.MutationSwitch.tick(43);
+         //-WLOCK
+         return preallocate2();
+         //-WUNLOCK
+@@ -41,7 +41,7 @@ public class HeapBufStore implements Store {
+         //-WUNLOCK
+     }
+ 
+-    protected long preallocate2(){
++    protected long preallocate2(){ org.mapdb.jmhbench.MutationSwitch.tick(45);
+         //-AWLOCKED
+         long recid =
+                 freeRecids.isEmpty()?
+diff --git a/org/mapdb/store/legacy/DataInput2Exposed.java b/org/mapdb/store/legacy/DataInput2Exposed.java
+index 41d1a85..427cd37 100644
+--- a/org/mapdb/store/legacy/DataInput2Exposed.java
++++ b/org/mapdb/store/legacy/DataInput2Exposed.java
+@@ -19,12 +19,12 @@ public final class DataInput2Exposed implements DataInput2 {
+         this.pos = pos;
+     }
+ 
+-    public int getPos(){
++    public int getPos(){ org.mapdb.jmhbench.MutationSwitch.tick(47);
+         return pos;
+     }
+ 
+     @Override
+-    public void readFully(byte[] b, int off, int len) {
++    public void readFully(byte[] b, int off, int len) { org.mapdb.jmhbench.MutationSwitch.tick(49);
+         ByteBuffer clone = buf.duplicate();
+         clone.position(pos);
+         pos+=len;
+diff --git a/org/mapdb/store/legacy/LongConcurrentHashMap.java b/org/mapdb/store/legacy/LongConcurrentHashMap.java
+index 022673b..5934f4f 100644
+--- a/org/mapdb/store/legacy/LongConcurrentHashMap.java
++++ b/org/mapdb/store/legacy/LongConcurrentHashMap.java
+@@ -591,7 +591,7 @@ public class LongConcurrentHashMap< V>
+      * @return <tt>true</tt> if this map contains no key-value mappings
+      */
+     @Override
+-	public boolean isEmpty() {
++	public boolean isEmpty() { org.mapdb.jmhbench.MutationSwitch.tick(20);
+         final Segment<V>[] segments = this.segments;
+         /*
+          * We keep track of per-segment modCounts to avoid ABA
+@@ -631,7 +631,7 @@ public class LongConcurrentHashMap< V>
+      * @return the number of key-value mappings in this map
+      */
+     @Override
+-	public int size() {
++	public int size() { org.mapdb.jmhbench.MutationSwitch.tick(24);
+         final Segment<V>[] segments = this.segments;
+         long sum = 0;
+         long check = 0;
+diff --git a/org/mapdb/store/legacy/LongHashMap.java b/org/mapdb/store/legacy/LongHashMap.java
+index 10a0634..ba23370 100644
+--- a/org/mapdb/store/legacy/LongHashMap.java
++++ b/org/mapdb/store/legacy/LongHashMap.java
+@@ -61,7 +61,7 @@ public class LongHashMap<V> extends LongMap<V> implements Serializable {
+      */
+     protected final long hashSalt = hashSaltValue();
+ 
+-    protected long hashSaltValue() {
++    protected long hashSaltValue() { org.mapdb.jmhbench.MutationSwitch.tick(27);
+         return new Random().nextLong();
+     }
+ 
+@@ -167,7 +167,7 @@ public class LongHashMap<V> extends LongMap<V> implements Serializable {
+ 
+ 
+         @Override
+-        public boolean moveToNext() {
++        public boolean moveToNext() { org.mapdb.jmhbench.MutationSwitch.tick(30);
+             if(!hasNext()) return false;
+             makeNext();
+             return true;
+diff --git a/org/mapdb/store/li/LiUtil.java b/org/mapdb/store/li/LiUtil.java
+index 57c5b4c..7897db2 100644
+--- a/org/mapdb/store/li/LiUtil.java
++++ b/org/mapdb/store/li/LiUtil.java
+@@ -12,7 +12,7 @@ public final class LiUtil {
+     public static final long R_LINKED = 3;
+ 
+ 
+-    public static void zeroOut(ByteBuffer data, long offset, int size) {
++    public static void zeroOut(ByteBuffer data, long offset, int size) { org.mapdb.jmhbench.MutationSwitch.tick(33);
+         int end = (int) (offset+size);
+         for(int i = (int) offset; i<end; i++){
+             data.put(i, (byte) 0);
+@@ -20,7 +20,7 @@ public final class LiUtil {
+     }
+ 
+ 
+-    public static long decompIndexValPage(long indexVal) {
++    public static long decompIndexValPage(long indexVal) { org.mapdb.jmhbench.MutationSwitch.tick(36);
+         return indexVal & 0xFFFFFFFFFFL;
+     }
+ 
+diff --git a/org/mapdb/util/IO.java b/org/mapdb/util/IO.java
+index 3d6c430..40fb1b6 100644
+--- a/org/mapdb/util/IO.java
++++ b/org/mapdb/util/IO.java
+@@ -7,11 +7,11 @@ import java.io.InputStream;
+ 
+ public class IO {
+ 
+-    public static long readLong(DataInputStream in) throws IOException {
++    public static long readLong(DataInputStream in) throws IOException { org.mapdb.jmhbench.MutationSwitch.tick(8);
+         return in.readLong();
+     }
+ 
+-    public static int readInt(DataInputStream in) throws IOException {
++    public static int readInt(DataInputStream in) throws IOException { org.mapdb.jmhbench.MutationSwitch.tick(16);
+             return in.readInt();
+     }
+ 

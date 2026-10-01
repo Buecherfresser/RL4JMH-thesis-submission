@@ -1,0 +1,76 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.functions.Consumer;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableDebounceTimed}.
+ * Measures the throughput of the debounce operator when processing a steady stream of integers.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableDebounceTimedBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Scheduler used by the debounce operator. */
+        Scheduler scheduler;
+
+        /** Flowable that emits an infinite sequence of integers. */
+        Flowable<Integer> source;
+
+        /** Flowable with debounce applied. */
+        Flowable<Integer> debounced;
+
+        /** No‑op consumer for the onDropped callback. */
+        static final Consumer<Object> NOOP_DROPPED = v -> { /* intentionally empty */ };
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Use the computation scheduler – the same scheduler that typical users would pick.
+            scheduler = Schedulers.computation();
+
+            // A fast, infinite source of integers. hide() prevents fusion optimisations that would
+            // bypass the debounce operator, ensuring we measure the operator itself.
+            source = Flowable.range(1, 1_000).repeat().hide();
+
+            // Apply the debounce operator with a 1 ms timeout.
+            debounced = source.debounce(1, TimeUnit.MILLISECONDS, scheduler, NOOP_DROPPED);
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            // Shut down the scheduler to avoid thread leaks after the benchmark finishes.
+            scheduler.shutdown();
+        }
+    }
+
+    /**
+     * Measures how many items per second can be processed through the debounce operator.
+     * Each iteration processes exactly 1 000 items to keep the workload constant.
+     *
+     * @param state shared benchmark state
+     * @param bh    JMH blackhole to consume the emitted values
+     */
+    @Benchmark
+    public void debounceThroughput(BenchmarkState state, Blackhole bh) {
+        // Take a fixed number of items to keep the benchmark duration bounded,
+        // then block until all items have been consumed.
+        state.debounced
+                .take(1_000)
+                .blockingSubscribe(bh::consume);
+    }
+}
+```

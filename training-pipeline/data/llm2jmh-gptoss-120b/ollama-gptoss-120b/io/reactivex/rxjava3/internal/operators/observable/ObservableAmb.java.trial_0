@@ -1,0 +1,117 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableAmb;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link ObservableAmb} (the {@code amb} operator).
+ *
+ * <p>The benchmark measures the throughput of the operator when it has to race
+ * a configurable number of source {@link Observable}s. One source emits a single
+ * item immediately, the others are {@code Observable.never()} to simulate the
+ * worst‑case contention scenario where the operator must subscribe to many
+ * sources before the winner is known.</p>
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@code @State} for immutable configuration (source count).</li>
+ *   <li>Use {@code Blackhole} to consume emitted items and avoid dead‑code elimination.</li>
+ *   <li>Warm‑up and measurement iterations are defined to let the JIT stabilize.</li>
+ *   <li>Multiple forks to reduce JVM warm‑up bias.</li>
+ *   <li>Throughput mode (operations per second) which is the most relevant metric for reactive streams.</li>
+ *   <li>All allocations are performed in {@code @Setup} to keep the benchmark method focused on the operation under test.</li>
+ * </ul>
+ * </p>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class ObservableAmbBenchmark {
+
+    /**
+     * Number of competing sources. Typical values are 2, 4, 8, 16.
+     */
+    @Param({"2", "4", "8", "16"})
+    public int sourceCount;
+
+    /** Array of sources used for each benchmark iteration. */
+    private ObservableSource<Integer>[] sources;
+
+    /** The amb operator built from the sources. */
+    private Observable<Integer> ambObservable;
+
+    /** Simple observer that forwards received items to a Blackhole. */
+    private static final class BlackholeObserver implements Observer<Integer> {
+        private final Blackhole bh;
+        private Disposable d;
+
+        BlackholeObserver(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            this.d = d;
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            bh.consume(e);
+        }
+
+        @Override
+        public void onComplete() {
+            // no‑op
+        }
+    }
+
+    /**
+     * Prepare the sources and the amb observable.
+     *
+     * <p>One source emits a single integer immediately; the rest are {@code Observable.never()}
+     * to force the amb operator to keep all subscriptions alive until the winner is decided.</p>
+     */
+    @SuppressWarnings("unchecked")
+    @Setup(Level.Trial)
+    public void setup() {
+        sources = new ObservableSource[sourceCount];
+        // First source wins immediately.
+        sources[0] = Observable.just(1);
+        // Remaining sources never emit.
+        for (int i = 1; i < sourceCount; i++) {
+            sources[i] = Observable.never();
+        }
+        // Build the amb observable using the internal class to avoid extra indirections.
+        ambObservable = Observable.ambArray(sources);
+    }
+
+    /**
+     * Benchmark method that subscribes to the amb observable and consumes the emitted value.
+     *
+     * <p>The subscription is performed for each operation, which reflects the typical usage
+     * pattern of creating a new reactive pipeline per request.</p>
+     *
+     * @param bh Blackhole to consume the emitted item.
+     */
+    @Benchmark
+    public void ambThroughput(Blackhole bh) {
+        // Subscribe and block until the single emission is received.
+        // Using a custom observer ensures the JIT cannot eliminate the subscription.
+        ambObservable.subscribe(new BlackholeObserver(bh));
+    }
+}
+```

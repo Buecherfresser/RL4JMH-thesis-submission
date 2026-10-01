@@ -1,0 +1,126 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SingleOnErrorReturn}.
+ *
+ * Measures throughput of the error‑handling path with and without a {@code valueSupplier}.
+ * The benchmark uses {@link Single#blockingGet()} to force subscription completion,
+ * which is a common pattern for micro‑benchmarking reactive operators.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create immutable sources once per thread.
+ * - Warm‑up and measurement iterations are defined via JMH defaults (can be overridden on CLI).
+ * - Multiple forks to reduce JVM warm‑up effects.
+ * - Throughput mode (operations per second) with millisecond time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Fork(value = 2, warmups = 1)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class SingleOnErrorReturnBenchmark {
+
+    /**
+     * Source that immediately signals an error.
+     */
+    private Single<Integer> errorSource;
+
+    /**
+     * Operator instance that uses a value supplier to provide a fallback.
+     */
+    private Single<Integer> withSupplier;
+
+    /**
+     * Operator instance that uses a pre‑computed fallback value (no supplier).
+     */
+    private Single<Integer> withoutSupplier;
+
+    /**
+     * Simple supplier that returns a constant fallback value.
+     */
+    private static final Function<Throwable, Integer> FALLBACK_SUPPLIER = throwable -> 42;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a source that always fails with a RuntimeException.
+        errorSource = Single.error(new RuntimeException("forced error"));
+        // Operator with a supplier (valueSupplier != null).
+        withSupplier = new SingleOnErrorReturn<>(errorSource, FALLBACK_SUPPLIER, // value is ignored when supplier is present
+        null);
+        // Operator without a supplier (valueSupplier == null) using a constant fallback.
+        withoutSupplier = new SingleOnErrorReturn<>(errorSource, null, // constant fallback value
+        42);
+    }
+
+    /**
+     * Benchmark the error‑handling path when a {@code valueSupplier} is provided.
+     *
+     * The subscription is forced to complete via {@code blockingGet()}.
+     */
+    @Benchmark
+    public Integer errorWithSupplier() {
+        // blockingGet will trigger onError, the operator will invoke the supplier,
+        // and finally emit the fallback value.
+        return withSupplier.blockingGet();
+    }
+
+    /**
+     * Benchmark the error‑handling path when a pre‑computed fallback value is used.
+     *
+     * No supplier invocation overhead is present.
+     */
+    @Benchmark
+    public Integer errorWithoutSupplier() {
+        return withoutSupplier.blockingGet();
+    }
+
+    /**
+     * Benchmark the success path (no error) to provide a baseline for comparison.
+     *
+     * Uses a source that emits a value directly; the operator should forward it unchanged.
+     */
+    @Benchmark
+    public Integer successPath() {
+        Single<Integer> successSource = Single.just(1);
+        Single<Integer> operator = new SingleOnErrorReturn<>(successSource, FALLBACK_SUPPLIER, 0);
+        return operator.blockingGet();
+    }
+}

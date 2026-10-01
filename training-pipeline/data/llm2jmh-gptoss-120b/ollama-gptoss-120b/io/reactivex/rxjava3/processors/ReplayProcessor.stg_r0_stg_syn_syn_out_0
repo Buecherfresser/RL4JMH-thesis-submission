@@ -1,0 +1,197 @@
+package io.reactivex.rxjava3.processors;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link ReplayProcessor}.
+ *
+ * The benchmarks focus on the most common operations:
+ * <ul>
+ *   <li>Emitting items into an unbounded replay buffer</li>
+ *   <li>Emitting items into a size‑bounded replay buffer</li>
+ *   <li>Emitting items into a time‑and‑size bounded replay buffer</li>
+ *   <li>Subscribing a new downstream and replaying the buffered items</li>
+ * </ul>
+ *
+ * All benchmarks run in {@link Mode#Throughput} (operations per second) and use
+ * a {@link Blackhole} to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ReplayProcessorBenchmark {
+
+    /**
+     * Number of items emitted per benchmark iteration.
+     */
+    @Param({ "1", "10", "100" })
+    public int batchSize;
+
+    /**
+     * Processor used for the unbounded benchmark.
+     */
+    private ReplayProcessor<Integer> unbounded;
+
+    /**
+     * Processor used for the size‑bounded benchmark (maxSize = 128).
+     */
+    private ReplayProcessor<Integer> sizeBounded;
+
+    /**
+     * Processor used for the time‑and‑size bounded benchmark (maxSize = 128, maxAge = 1 s).
+     */
+    private ReplayProcessor<Integer> timeAndSizeBounded;
+
+    /**
+     * A simple subscriber that consumes items and discards them via Blackhole.
+     */
+    private static final class BlackholeSubscriber implements org.reactivestreams.Subscriber<Integer> {
+
+        private final Blackhole bh;
+
+        private org.reactivestreams.Subscription upstream;
+
+        BlackholeSubscriber(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(org.reactivestreams.Subscription s) {
+            this.upstream = s;
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onComplete() {
+            // no‑op
+        }
+    }
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Unbounded buffer with a modest capacity hint (the buffer grows automatically)
+        unbounded = ReplayProcessor.create();
+        // Size‑bounded buffer (max 128 items)
+        sizeBounded = ReplayProcessor.createWithSize(128);
+        // Time‑and‑size bounded buffer (max 128 items, max age 1 second)
+        timeAndSizeBounded = ReplayProcessor.createWithTimeAndSize(1, TimeUnit.SECONDS, Schedulers.computation(), 128);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Complete processors to release internal resources
+        unbounded.onComplete();
+        sizeBounded.onComplete();
+        timeAndSizeBounded.onComplete();
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Emit benchmarks                                                       */
+    /* --------------------------------------------------------------------- */
+    @Benchmark
+    public void emitUnbounded(Blackhole bh) {
+        for (int i = 0; i < batchSize; i++) {
+            unbounded.onNext(i);
+        }
+        // Prevent the JIT from discarding the loop
+        bh.consume(unbounded);
+    }
+
+    @Benchmark
+    public void emitSizeBounded(Blackhole bh) {
+        for (int i = 0; i < batchSize; i++) {
+            sizeBounded.onNext(i);
+        }
+        bh.consume(sizeBounded);
+    }
+
+    @Benchmark
+    public void emitTimeAndSizeBounded(Blackhole bh) {
+        for (int i = 0; i < batchSize; i++) {
+            timeAndSizeBounded.onNext(i);
+        }
+        bh.consume(timeAndSizeBounded);
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Subscribe & replay benchmarks                                         */
+    /* --------------------------------------------------------------------- */
+    @Benchmark
+    public void subscribeAndReplayUnbounded(Blackhole bh) {
+        // Pre‑populate a small amount of data to make replay non‑trivial
+        for (int i = 0; i < batchSize; i++) {
+            unbounded.onNext(i);
+        }
+        unbounded.subscribe(new BlackholeSubscriber(bh));
+    }
+
+    @Benchmark
+    public void subscribeAndReplaySizeBounded(Blackhole bh) {
+        for (int i = 0; i < batchSize; i++) {
+            sizeBounded.onNext(i);
+        }
+        sizeBounded.subscribe(new BlackholeSubscriber(bh));
+    }
+
+    @Benchmark
+    public void subscribeAndReplayTimeAndSizeBounded(Blackhole bh) {
+        for (int i = 0; i < batchSize; i++) {
+            timeAndSizeBounded.onNext(i);
+        }
+        timeAndSizeBounded.subscribe(new BlackholeSubscriber(bh));
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Main method for ad‑hoc execution (optional)                           */
+    /* --------------------------------------------------------------------- */
+    public static void main(String[] args) throws Exception {
+        org.openjdk.jmh.Main.main(args);
+    }
+}

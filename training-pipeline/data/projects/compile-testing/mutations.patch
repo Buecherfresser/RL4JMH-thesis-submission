@@ -1,0 +1,562 @@
+diff --git a/com/google/testing/compile/Breadcrumbs.java b/com/google/testing/compile/Breadcrumbs.java
+index b5adef9..865c44d 100644
+--- a/com/google/testing/compile/Breadcrumbs.java
++++ b/com/google/testing/compile/Breadcrumbs.java
+@@ -89,23 +89,23 @@ final class Breadcrumbs {
+     }
+ 
+     @Override
+-    public String defaultAction(Tree t, Void v) {
++    public String defaultAction(Tree t, Void v) { com.google.testing.jmhbench.MutationSwitch.tick(1);
+       return (t != null) ? kindString(t) : "";
+     }
+ 
+     @Override
+-    public String visitBlock(BlockTree reference, Void v) {
++    public String visitBlock(BlockTree reference, Void v) { com.google.testing.jmhbench.MutationSwitch.tick(2);
+       return (reference != null)
+           ? detailedKindString(reference, reference.isStatic() ? "static" : "non-static") : "";
+     }
+ 
+     @Override
+-    public String visitBreak(BreakTree reference, Void v) {
++    public String visitBreak(BreakTree reference, Void v) { com.google.testing.jmhbench.MutationSwitch.tick(3);
+       return (reference != null) ? detailedKindString(reference, reference.getLabel()) : "";
+     }
+ 
+     @Override
+-    public String visitClass(ClassTree reference, Void v) {
++    public String visitClass(ClassTree reference, Void v) { com.google.testing.jmhbench.MutationSwitch.tick(4);
+       return (reference != null) ? detailedKindString(reference, reference.getSimpleName()) : "";
+     }
+ 
+diff --git a/com/google/testing/compile/Compilation.java b/com/google/testing/compile/Compilation.java
+index 57342b4..a9034d3 100644
+--- a/com/google/testing/compile/Compilation.java
++++ b/com/google/testing/compile/Compilation.java
+@@ -61,17 +61,17 @@ public final class Compilation {
+   }
+ 
+   /** The compiler. */
+-  public Compiler compiler() {
++  public Compiler compiler() { com.google.testing.jmhbench.MutationSwitch.tick(5);
+     return compiler;
+   }
+ 
+   /** The source files compiled. */
+-  public ImmutableList<JavaFileObject> sourceFiles() {
++  public ImmutableList<JavaFileObject> sourceFiles() { com.google.testing.jmhbench.MutationSwitch.tick(6);
+     return sourceFiles;
+   }
+ 
+   /** The status of the compilation. */
+-  public Status status() {
++  public Status status() { com.google.testing.jmhbench.MutationSwitch.tick(7);
+     return status;
+   }
+ 
+@@ -82,7 +82,7 @@ public final class Compilation {
+    * @see #warnings()
+    * @see #notes()
+    */
+-  public ImmutableList<Diagnostic<? extends JavaFileObject>> diagnostics() {
++  public ImmutableList<Diagnostic<? extends JavaFileObject>> diagnostics() { com.google.testing.jmhbench.MutationSwitch.tick(8);
+     return diagnostics;
+   }
+ 
+diff --git a/com/google/testing/compile/CompilationRule.java b/com/google/testing/compile/CompilationRule.java
+index d54e05b..241588c 100644
+--- a/com/google/testing/compile/CompilationRule.java
++++ b/com/google/testing/compile/CompilationRule.java
+@@ -53,10 +53,10 @@ public final class CompilationRule implements TestRule {
+   private Types types;
+ 
+   @Override
+-  public Statement apply(final Statement base, Description description) {
++  public Statement apply(final Statement base, Description description) { com.google.testing.jmhbench.MutationSwitch.tick(9);
+     return new Statement() {
+       @Override
+-      public void evaluate() throws Throwable {
++      public void evaluate() throws Throwable { com.google.testing.jmhbench.MutationSwitch.tick(10);
+         EvaluatingProcessor evaluatingProcessor = new EvaluatingProcessor(base);
+         Compilation compilation = javac().withProcessors(evaluatingProcessor).compile(DUMMY);
+         checkState(compilation.status().equals(SUCCESS), compilation);
+@@ -70,7 +70,7 @@ public final class CompilationRule implements TestRule {
+    *
+    * @throws IllegalStateException if this method is invoked outside the execution of the rule.
+    */
+-  public Elements getElements() {
++  public Elements getElements() { com.google.testing.jmhbench.MutationSwitch.tick(11);
+     checkState(elements != null, "Not running within the rule");
+     return elements;
+   }
+@@ -80,7 +80,7 @@ public final class CompilationRule implements TestRule {
+    *
+    * @throws IllegalStateException if this method is invoked outside the execution of the rule.
+    */
+-  public Types getTypes() {
++  public Types getTypes() { com.google.testing.jmhbench.MutationSwitch.tick(12);
+     checkState(types != null, "Not running within the rule");
+     return types;
+   }
+diff --git a/com/google/testing/compile/CompilationSubject.java b/com/google/testing/compile/CompilationSubject.java
+index 22b093b..a443bad 100644
+--- a/com/google/testing/compile/CompilationSubject.java
++++ b/com/google/testing/compile/CompilationSubject.java
+@@ -66,12 +66,12 @@ public final class CompilationSubject extends Subject {
+       new CompilationSubjectFactory();
+ 
+   /** Returns a {@link Subject.Factory} for a {@link Compilation}. */
+-  public static Subject.Factory<CompilationSubject, Compilation> compilations() {
++  public static Subject.Factory<CompilationSubject, Compilation> compilations() { com.google.testing.jmhbench.MutationSwitch.tick(13);
+     return FACTORY;
+   }
+ 
+   /** Starts making assertions about a {@link Compilation}. */
+-  public static CompilationSubject assertThat(Compilation actual) {
++  public static CompilationSubject assertThat(Compilation actual) { com.google.testing.jmhbench.MutationSwitch.tick(14);
+     return assertAbout(compilations()).that(actual);
+   }
+ 
+@@ -83,7 +83,7 @@ public final class CompilationSubject extends Subject {
+   }
+ 
+   /** Asserts that the compilation succeeded. */
+-  public void succeeded() {
++  public void succeeded() { com.google.testing.jmhbench.MutationSwitch.tick(15);
+     Compilation actual = actualNotNull();
+     if (actual.status().equals(FAILURE)) {
+       failWithoutActual(
+@@ -92,7 +92,7 @@ public final class CompilationSubject extends Subject {
+   }
+ 
+   /** Asserts that the compilation succeeded without warnings. */
+-  public void succeededWithoutWarnings() {
++  public void succeededWithoutWarnings() { com.google.testing.jmhbench.MutationSwitch.tick(16);
+     succeeded();
+     hadWarningCount(0);
+   }
+diff --git a/com/google/testing/compile/CompilationSubjectFactory.java b/com/google/testing/compile/CompilationSubjectFactory.java
+index b2ff5ff..5616e02 100644
+--- a/com/google/testing/compile/CompilationSubjectFactory.java
++++ b/com/google/testing/compile/CompilationSubjectFactory.java
+@@ -25,7 +25,7 @@ final class CompilationSubjectFactory implements Subject.Factory<CompilationSubj
+ 
+   @Override
+   public CompilationSubject createSubject(
+-      FailureMetadata failureMetadata, @Nullable Compilation that) {
++      FailureMetadata failureMetadata, @Nullable Compilation that) { com.google.testing.jmhbench.MutationSwitch.tick(17);
+     return new CompilationSubject(failureMetadata, that);
+   }
+ }
+diff --git a/com/google/testing/compile/ForwardingStandardJavaFileManager.java b/com/google/testing/compile/ForwardingStandardJavaFileManager.java
+index 9b612b9..df1dd3e 100644
+--- a/com/google/testing/compile/ForwardingStandardJavaFileManager.java
++++ b/com/google/testing/compile/ForwardingStandardJavaFileManager.java
+@@ -44,22 +44,22 @@ public class ForwardingStandardJavaFileManager
+ 
+   @Override
+   public Iterable<? extends JavaFileObject> getJavaFileObjectsFromFiles(
+-      Iterable<? extends File> files) {
++      Iterable<? extends File> files) { com.google.testing.jmhbench.MutationSwitch.tick(18);
+     return fileManager.getJavaFileObjectsFromFiles(files);
+   }
+ 
+   @Override
+-  public Iterable<? extends JavaFileObject> getJavaFileObjects(File... files) {
++  public Iterable<? extends JavaFileObject> getJavaFileObjects(File... files) { com.google.testing.jmhbench.MutationSwitch.tick(19);
+     return fileManager.getJavaFileObjects(files);
+   }
+ 
+   @Override
+-  public Iterable<? extends JavaFileObject> getJavaFileObjects(String... names) {
++  public Iterable<? extends JavaFileObject> getJavaFileObjects(String... names) { com.google.testing.jmhbench.MutationSwitch.tick(20);
+     return fileManager.getJavaFileObjects(names);
+   }
+ 
+   @Override
+-  public Iterable<? extends JavaFileObject> getJavaFileObjectsFromStrings(Iterable<String> names) {
++  public Iterable<? extends JavaFileObject> getJavaFileObjectsFromStrings(Iterable<String> names) { com.google.testing.jmhbench.MutationSwitch.tick(21);
+     return fileManager.getJavaFileObjectsFromStrings(names);
+   }
+ 
+diff --git a/com/google/testing/compile/InMemoryJavaFileManager.java b/com/google/testing/compile/InMemoryJavaFileManager.java
+index b2641b3..37875ee 100644
+--- a/com/google/testing/compile/InMemoryJavaFileManager.java
++++ b/com/google/testing/compile/InMemoryJavaFileManager.java
+@@ -57,7 +57,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
+           .build(
+               new CacheLoader<URI, JavaFileObject>() {
+                 @Override
+-                public JavaFileObject load(URI key) {
++                public JavaFileObject load(URI key) { com.google.testing.jmhbench.MutationSwitch.tick(22);
+                   return new InMemoryJavaFileObject(key);
+                 }
+               });
+@@ -83,7 +83,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
+   }
+ 
+   @Override
+-  public boolean isSameFile(FileObject a, FileObject b) {
++  public boolean isSameFile(FileObject a, FileObject b) { com.google.testing.jmhbench.MutationSwitch.tick(23);
+     /* This check is less strict than what is typically done by the normal compiler file managers
+      * (e.g. JavacFileManager), but is actually the moral equivalent of what most of the
+      * implementations do anyway. We use this check rather than just delegating to the compiler's
+@@ -93,7 +93,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
+ 
+   @Override
+   public @Nullable FileObject getFileForInput(
+-      Location location, String packageName, String relativeName) throws IOException {
++      Location location, String packageName, String relativeName) throws IOException { com.google.testing.jmhbench.MutationSwitch.tick(24);
+     if (location.isOutputLocation()) {
+       return inMemoryOutputs.getIfPresent(uriForFileObject(location, packageName, relativeName));
+     }
+@@ -106,7 +106,7 @@ final class InMemoryJavaFileManager extends ForwardingStandardJavaFileManager {
+ 
+   @Override
+   public @Nullable JavaFileObject getJavaFileForInput(
+-      Location location, String className, Kind kind) throws IOException {
++      Location location, String className, Kind kind) throws IOException { com.google.testing.jmhbench.MutationSwitch.tick(25);
+     if (location.isOutputLocation()) {
+       return inMemoryOutputs.getIfPresent(uriForJavaFileObject(location, className, kind));
+     }
+diff --git a/com/google/testing/compile/JavaFileObjectSubject.java b/com/google/testing/compile/JavaFileObjectSubject.java
+index 80df489..5365651 100644
+--- a/com/google/testing/compile/JavaFileObjectSubject.java
++++ b/com/google/testing/compile/JavaFileObjectSubject.java
+@@ -45,12 +45,12 @@ public final class JavaFileObjectSubject extends Subject {
+       new JavaFileObjectSubjectFactory();
+ 
+   /** Returns a {@link Subject.Factory} for {@link JavaFileObjectSubject}s. */
+-  public static Subject.Factory<JavaFileObjectSubject, JavaFileObject> javaFileObjects() {
++  public static Subject.Factory<JavaFileObjectSubject, JavaFileObject> javaFileObjects() { com.google.testing.jmhbench.MutationSwitch.tick(26);
+     return FACTORY;
+   }
+ 
+   /** Starts making assertions about a {@link JavaFileObject}. */
+-  public static JavaFileObjectSubject assertThat(@Nullable JavaFileObject actual) {
++  public static JavaFileObjectSubject assertThat(@Nullable JavaFileObject actual) { com.google.testing.jmhbench.MutationSwitch.tick(27);
+     return assertAbout(FACTORY).that(actual);
+   }
+ 
+@@ -62,7 +62,7 @@ public final class JavaFileObjectSubject extends Subject {
+   }
+ 
+   @Override
+-  protected String actualCustomStringRepresentation() {
++  protected String actualCustomStringRepresentation() { com.google.testing.jmhbench.MutationSwitch.tick(28);
+     return requireNonNull(actualNotNull().toUri().getPath());
+   }
+ 
+@@ -71,7 +71,7 @@ public final class JavaFileObjectSubject extends Subject {
+    * uses {@link Object#equals(Object)}.
+    */
+   @Override
+-  public void isEqualTo(@Nullable Object other) {
++  public void isEqualTo(@Nullable Object other) { com.google.testing.jmhbench.MutationSwitch.tick(29);
+     if (!(other instanceof JavaFileObject)) {
+       super.isEqualTo(other);
+       return;
+diff --git a/com/google/testing/compile/JavaFileObjectSubjectFactory.java b/com/google/testing/compile/JavaFileObjectSubjectFactory.java
+index 174c29a..3d4cba8 100644
+--- a/com/google/testing/compile/JavaFileObjectSubjectFactory.java
++++ b/com/google/testing/compile/JavaFileObjectSubjectFactory.java
+@@ -26,7 +26,7 @@ final class JavaFileObjectSubjectFactory
+ 
+   @Override
+   public JavaFileObjectSubject createSubject(
+-      FailureMetadata failureMetadata, @Nullable JavaFileObject that) {
++      FailureMetadata failureMetadata, @Nullable JavaFileObject that) { com.google.testing.jmhbench.MutationSwitch.tick(30);
+     return new JavaFileObjectSubject(failureMetadata, that);
+   }
+ }
+diff --git a/com/google/testing/compile/JavaFileObjects.java b/com/google/testing/compile/JavaFileObjects.java
+index 174bd1e..574812c 100644
+--- a/com/google/testing/compile/JavaFileObjects.java
++++ b/com/google/testing/compile/JavaFileObjects.java
+@@ -58,7 +58,7 @@ public final class JavaFileObjects {
+    * <p>Note that this method makes no attempt to verify that the name matches the contents of the
+    * source and compilation errors may result if they do not match.
+    */
+-  public static JavaFileObject forSourceString(String fullyQualifiedName, String source) {
++  public static JavaFileObject forSourceString(String fullyQualifiedName, String source) { com.google.testing.jmhbench.MutationSwitch.tick(31);
+     checkNotNull(fullyQualifiedName);
+     if (fullyQualifiedName.startsWith("package ")) {
+       throw new IllegalArgumentException(
+@@ -84,12 +84,12 @@ public final class JavaFileObjects {
+    *       "}");
+    *   }</pre>
+    */
+-  public static JavaFileObject forSourceLines(String fullyQualifiedName, String... lines) {
++  public static JavaFileObject forSourceLines(String fullyQualifiedName, String... lines) { com.google.testing.jmhbench.MutationSwitch.tick(32);
+     return forSourceLines(fullyQualifiedName, Arrays.asList(lines));
+   }
+ 
+   /** An overload of {@code #forSourceLines} that takes an {@code Iterable<String>}. */
+-  public static JavaFileObject forSourceLines(String fullyQualifiedName, Iterable<String> lines) {
++  public static JavaFileObject forSourceLines(String fullyQualifiedName, Iterable<String> lines) { com.google.testing.jmhbench.MutationSwitch.tick(33);
+     return forSourceString(fullyQualifiedName, LINE_JOINER.join(lines));
+   }
+ 
+@@ -110,7 +110,7 @@ public final class JavaFileObjects {
+     }
+ 
+     @Override
+-    public CharSequence getCharContent(boolean ignoreEncodingErrors) {
++    public CharSequence getCharContent(boolean ignoreEncodingErrors) { com.google.testing.jmhbench.MutationSwitch.tick(34);
+       return source;
+     }
+ 
+diff --git a/com/google/testing/compile/JavaSourceSubjectFactory.java b/com/google/testing/compile/JavaSourceSubjectFactory.java
+index ba47791..29df2a0 100644
+--- a/com/google/testing/compile/JavaSourceSubjectFactory.java
++++ b/com/google/testing/compile/JavaSourceSubjectFactory.java
+@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
+  */
+ public final class JavaSourceSubjectFactory
+     implements Subject.Factory<JavaSourcesSubject.SingleSourceAdapter, JavaFileObject> {
+-  public static JavaSourceSubjectFactory javaSource() {
++  public static JavaSourceSubjectFactory javaSource() { com.google.testing.jmhbench.MutationSwitch.tick(35);
+     return new JavaSourceSubjectFactory();
+   }
+ 
+@@ -36,7 +36,7 @@ public final class JavaSourceSubjectFactory
+ 
+   @Override
+   public JavaSourcesSubject.SingleSourceAdapter createSubject(
+-      FailureMetadata failureMetadata, @Nullable JavaFileObject subject) {
++      FailureMetadata failureMetadata, @Nullable JavaFileObject subject) { com.google.testing.jmhbench.MutationSwitch.tick(36);
+     return new JavaSourcesSubject.SingleSourceAdapter(failureMetadata, subject);
+   }
+ }
+diff --git a/com/google/testing/compile/JavaSourcesSubject.java b/com/google/testing/compile/JavaSourcesSubject.java
+index 1687c2e..5b38339 100644
+--- a/com/google/testing/compile/JavaSourcesSubject.java
++++ b/com/google/testing/compile/JavaSourcesSubject.java
+@@ -78,13 +78,13 @@ public final class JavaSourcesSubject extends Subject
+   }
+ 
+   @Override
+-  public JavaSourcesSubject withCompilerOptions(Iterable<String> options) {
++  public JavaSourcesSubject withCompilerOptions(Iterable<String> options) { com.google.testing.jmhbench.MutationSwitch.tick(37);
+     Iterables.addAll(this.options, options);
+     return this;
+   }
+ 
+   @Override
+-  public JavaSourcesSubject withCompilerOptions(String... options) {
++  public JavaSourcesSubject withCompilerOptions(String... options) { com.google.testing.jmhbench.MutationSwitch.tick(38);
+     this.options.addAll(Arrays.asList(options));
+     return this;
+   }
+@@ -96,13 +96,13 @@ public final class JavaSourcesSubject extends Subject
+    */
+   @Deprecated
+   @Override
+-  public JavaSourcesSubject withClasspathFrom(ClassLoader classLoader) {
++  public JavaSourcesSubject withClasspathFrom(ClassLoader classLoader) { com.google.testing.jmhbench.MutationSwitch.tick(39);
+     this.classLoader = classLoader;
+     return this;
+   }
+ 
+   @Override
+-  public JavaSourcesSubject withClasspath(Iterable<File> classPath) {
++  public JavaSourcesSubject withClasspath(Iterable<File> classPath) { com.google.testing.jmhbench.MutationSwitch.tick(40);
+     this.classPath = ImmutableList.copyOf(classPath);
+     return this;
+   }
+diff --git a/com/google/testing/compile/JavaSourcesSubjectFactory.java b/com/google/testing/compile/JavaSourcesSubjectFactory.java
+index 517e21e..79da047 100644
+--- a/com/google/testing/compile/JavaSourcesSubjectFactory.java
++++ b/com/google/testing/compile/JavaSourcesSubjectFactory.java
+@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
+  */
+ public final class JavaSourcesSubjectFactory
+     implements Subject.Factory<JavaSourcesSubject, Iterable<? extends JavaFileObject>> {
+-  public static JavaSourcesSubjectFactory javaSources() {
++  public static JavaSourcesSubjectFactory javaSources() { com.google.testing.jmhbench.MutationSwitch.tick(41);
+     return new JavaSourcesSubjectFactory();
+   }
+ 
+@@ -36,7 +36,7 @@ public final class JavaSourcesSubjectFactory
+ 
+   @Override
+   public JavaSourcesSubject createSubject(
+-      FailureMetadata failureMetadata, @Nullable Iterable<? extends JavaFileObject> subject) {
++      FailureMetadata failureMetadata, @Nullable Iterable<? extends JavaFileObject> subject) { com.google.testing.jmhbench.MutationSwitch.tick(42);
+     return new JavaSourcesSubject(failureMetadata, subject);
+   }
+ }
+diff --git a/com/google/testing/compile/MoreTrees.java b/com/google/testing/compile/MoreTrees.java
+index 9c4fd1d..dbdf604 100644
+--- a/com/google/testing/compile/MoreTrees.java
++++ b/com/google/testing/compile/MoreTrees.java
+@@ -176,7 +176,7 @@ final class MoreTrees {
+     }
+ 
+     @Override
+-    public Optional<TreePath> scan(Tree node, @Nullable Void v) {
++    public Optional<TreePath> scan(Tree node, @Nullable Void v) { com.google.testing.jmhbench.MutationSwitch.tick(43);
+       if (node == null) {
+         return Optional.empty();
+       }
+@@ -187,18 +187,18 @@ final class MoreTrees {
+     }
+ 
+     @Override
+-    public Optional<TreePath> scan(Iterable<? extends Tree> nodes, @Nullable Void v) {
++    public Optional<TreePath> scan(Iterable<? extends Tree> nodes, @Nullable Void v) { com.google.testing.jmhbench.MutationSwitch.tick(44);
+       return absentIfNull(super.scan(nodes, v));
+     }
+ 
+     /** Returns the first present value. If both values are absent, then returns absent .*/
+     @Override
+-    public Optional<TreePath> reduce(Optional<TreePath> t1, Optional<TreePath> t2) {
++    public Optional<TreePath> reduce(Optional<TreePath> t1, Optional<TreePath> t2) { com.google.testing.jmhbench.MutationSwitch.tick(45);
+       return t1.isPresent() ? t1 : t2;
+     }
+ 
+     @Override
+-    public Optional<TreePath> visitBreak(@Nullable BreakTree node, @Nullable Void v) {
++    public Optional<TreePath> visitBreak(@Nullable BreakTree node, @Nullable Void v) { com.google.testing.jmhbench.MutationSwitch.tick(46);
+       if (node == null) {
+         return Optional.empty();
+       }
+diff --git a/com/google/testing/compile/TreeDiffer.java b/com/google/testing/compile/TreeDiffer.java
+index 9df5585..22196f8 100644
+--- a/com/google/testing/compile/TreeDiffer.java
++++ b/com/google/testing/compile/TreeDiffer.java
+@@ -156,7 +156,7 @@ final class TreeDiffer {
+      * Adds a {@code TwoWayDiff} that results from two {@code Tree}s having different
+      * {@code Tree.Kind}s.
+      */
+-    public void addTypeMismatch(Tree expected, Tree actual) {
++    public void addTypeMismatch(Tree expected, Tree actual) { com.google.testing.jmhbench.MutationSwitch.tick(47);
+       diffBuilder.addDifferingNodes(expectedPathPlus(expected), actualPathPlus(actual),
+           String.format("Expected node kind to be <%s> but was <%s>.",
+               expected.getKind(), actual.getKind()));
+@@ -277,7 +277,7 @@ final class TreeDiffer {
+      * don't have that method.
+      */
+     @Override
+-    public @Nullable Void defaultAction(Tree expected, Tree actual) {
++    public @Nullable Void defaultAction(Tree expected, Tree actual) { com.google.testing.jmhbench.MutationSwitch.tick(48);
+       if (expected.getKind() != actual.getKind()) {
+         addTypeMismatch(expected, actual);
+         return null;
+@@ -393,7 +393,7 @@ final class TreeDiffer {
+     }
+ 
+     @Override
+-    public @Nullable Void visitOther(Tree expected, Tree actual) {
++    public @Nullable Void visitOther(Tree expected, Tree actual) { com.google.testing.jmhbench.MutationSwitch.tick(49);
+       throw new UnsupportedOperationException("cannot compare unknown trees");
+     }
+   }
+@@ -414,7 +414,7 @@ final class TreeDiffer {
+         new TreeFilter() {
+           @Override
+           public ImmutableList<Tree> filterActualMembers(
+-              ImmutableList<Tree> expectedMembers, ImmutableList<Tree> actualMembers) {
++              ImmutableList<Tree> expectedMembers, ImmutableList<Tree> actualMembers) { com.google.testing.jmhbench.MutationSwitch.tick(50);
+             return actualMembers;
+           }
+ 
+diff --git a/com/google/testing/jmhbench/MutationSwitch.java b/com/google/testing/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..01fd391
+--- /dev/null
++++ b/com/google/testing/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.google.testing.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

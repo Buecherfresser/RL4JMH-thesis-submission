@@ -1,0 +1,58 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Completable;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.completable.CompletableFromCallable}.
+ *
+ * Measures the throughput of subscribing to a Completable created from a Callable.
+ * The Callable does virtually no work to isolate the overhead of the RxJava machinery.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Initialize the Completable once in @Setup to exclude construction cost from the benchmark.
+ * - Use Blackhole to consume possible errors and prevent dead‑code elimination.
+ * - Configure warm‑up, measurement iterations and forks for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, warmups = 1)
+@State(Scope.Thread)
+public class CompletableFromCallableBenchmark {
+
+    /** Completable that wraps a no‑op Callable. */
+    private Completable completable;
+
+    /** Set up the Completable once per thread. */
+    @Setup(Level.Trial)
+    public void setUp() {
+        Callable<Object> noOpCallable = () -> null;
+        completable = Completable.fromCallable(noOpCallable);
+    }
+
+    /**
+     * Subscribe to the Completable and immediately dispose the subscription.
+     * The onComplete and onError callbacks are no‑ops; errors are routed to a Blackhole
+     * to avoid dead‑code elimination.
+     *
+     * @param bh Blackhole to consume any error that might be emitted.
+     */
+    @Benchmark
+    public void subscribeAndDispose(Blackhole bh) {
+        // Subscribe with empty onComplete and error consumer that feeds the Blackhole.
+        completable.subscribe(
+                () -> { /* onComplete – nothing to do */ },
+                bh::consume
+        );
+    }
+}
+```

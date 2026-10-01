@@ -1,0 +1,79 @@
+```
+package io.reactivex.rxjava3.benchmark;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableFromAction;
+
+/**
+ * Benchmark measuring the throughput of subscribing to {@link FlowableFromAction}
+ * with a no‑op {@link Action}. The benchmark focuses on the overhead of the
+ * subscription path, not on the work performed by the action.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class FlowableFromActionBenchmark {
+
+    /** A no‑op action used by the Flowable. */
+    private Action noopAction;
+
+    /** The Flowable instance under test. */
+    private Flowable<Object> flowable;
+
+    /** A lightweight subscriber that discards signals. */
+    private Subscriber<Object> blackholeSubscriber;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // No‑op action – does nothing and never throws.
+        noopAction = () -> { /* intentionally empty */ };
+
+        // Create the FlowableFromAction instance.
+        flowable = new FlowableFromAction<>(noopAction);
+
+        // Subscriber that simply requests Long.MAX_VALUE and ignores all signals.
+        blackholeSubscriber = new Subscriber<Object>() {
+            @Override
+            public void onSubscribe(Subscription s) {
+                // Request an unbounded number of items to avoid back‑pressure effects.
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Object t) {
+                // No items are emitted, but method must exist.
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are unexpected in this benchmark; rethrow to fail fast.
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // Completion is expected; nothing to do.
+            }
+        };
+    }
+
+    /**
+     * Benchmark method that subscribes to the FlowableFromAction.
+     * Each invocation represents a single subscription cycle.
+     */
+    @Benchmark
+    public void subscribeAndComplete() {
+        flowable.subscribe(blackholeSubscriber);
+    }
+}
+```

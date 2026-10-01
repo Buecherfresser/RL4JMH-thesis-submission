@@ -1,0 +1,63 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.single.SingleMap}.
+ *
+ * Measures the throughput of a {@code Single.map} operation where the mapper
+ * performs a simple arithmetic transformation. The benchmark blocks on the
+ * {@code Single} to obtain the result, ensuring that the measured work includes
+ * the full operator chain (subscription, mapping, and emission).
+ *
+ * Best practices applied:
+ * - Use {@code @State(Scope.Thread)} to avoid sharing mutable state across threads.
+ * - Pre‑create the {@code Single} and mapper in {@code @Setup} to exclude construction overhead.
+ * - Use {@code Blackhole} to consume the result and prevent dead‑code elimination.
+ * - Configure warm‑up, measurement, forks and time units for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, warmups = 1)
+@State(Scope.Thread)
+public class SingleMapBenchmark {
+
+    /** Source value emitted by the upstream {@code Single}. */
+    private static final int SOURCE_VALUE = 42;
+
+    /** Mapper that adds a constant to the source value. */
+    private Function<Integer, Integer> mapper;
+
+    /** The {@code Single} under test: {@code Single.just(SOURCE_VALUE).map(mapper)}. */
+    private Single<Integer> mappedSingle;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple mapper – change to a more complex function if needed.
+        mapper = v -> v + 1;
+
+        // Build the Single chain once per trial to exclude construction cost.
+        mappedSingle = Single.just(SOURCE_VALUE).map(mapper);
+    }
+
+    /**
+     * Executes the mapping operation and blocks until the result is available.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void mapSingle(Blackhole bh) {
+        // blockingGet() forces the whole chain to run synchronously on the current thread.
+        int result = mappedSingle.blockingGet();
+        bh.consume(result);
+    }
+}
+```

@@ -1,0 +1,640 @@
+diff --git a/com/alipay/remoting/CommonCommandCode.java b/com/alipay/remoting/CommonCommandCode.java
+index fca92a3..8de86d2 100644
+--- a/com/alipay/remoting/CommonCommandCode.java
++++ b/com/alipay/remoting/CommonCommandCode.java
+@@ -33,11 +33,11 @@ public enum CommonCommandCode implements CommandCode {
+     }
+ 
+     @Override
+-    public short value() {
++    public short value() { com.alipay.remoting.jmhbench.MutationSwitch.tick(17);
+         return this.value;
+     }
+ 
+-    public static CommonCommandCode valueOf(short value) {
++    public static CommonCommandCode valueOf(short value) { com.alipay.remoting.jmhbench.MutationSwitch.tick(22);
+         switch (value) {
+             case CommandCode.HEARTBEAT_VALUE:
+                 return HEARTBEAT;
+diff --git a/com/alipay/remoting/Connection.java b/com/alipay/remoting/Connection.java
+index edede7b..c828b8c 100644
+--- a/com/alipay/remoting/Connection.java
++++ b/com/alipay/remoting/Connection.java
+@@ -156,14 +156,14 @@ public class Connection {
+      *
+      * @return true if connection is fine
+      */
+-    public boolean isFine() {
++    public boolean isFine() { com.alipay.remoting.jmhbench.MutationSwitch.tick(27);
+         return this.channel != null && this.channel.isActive() && !closed.get();
+     }
+ 
+     /**
+      * increase the reference count
+      */
+-    public void increaseRef() {
++    public void increaseRef() { com.alipay.remoting.jmhbench.MutationSwitch.tick(31);
+         this.referenceCount.getAndIncrement();
+     }
+ 
+diff --git a/com/alipay/remoting/ConnectionEventHandler.java b/com/alipay/remoting/ConnectionEventHandler.java
+index a5dda17..8cf801a 100644
+--- a/com/alipay/remoting/ConnectionEventHandler.java
++++ b/com/alipay/remoting/ConnectionEventHandler.java
+@@ -70,7 +70,7 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
+      */
+     @Override
+     public void connect(ChannelHandlerContext ctx, SocketAddress remoteAddress,
+-                        SocketAddress localAddress, ChannelPromise promise) throws Exception {
++                        SocketAddress localAddress, ChannelPromise promise) throws Exception { com.alipay.remoting.jmhbench.MutationSwitch.tick(35);
+         if (logger.isInfoEnabled()) {
+             final String local = localAddress == null ? null : RemotingUtil
+                 .parseSocketAddressToString(localAddress);
+@@ -93,7 +93,7 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
+      * @see io.netty.channel.ChannelDuplexHandler#disconnect(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise)
+      */
+     @Override
+-    public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
++    public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception { com.alipay.remoting.jmhbench.MutationSwitch.tick(39);
+         infoLog("Connection disconnect to {}", RemotingUtil.parseRemoteAddress(ctx.channel()));
+         super.disconnect(ctx, promise);
+     }
+diff --git a/com/alipay/remoting/ConnectionEventListener.java b/com/alipay/remoting/ConnectionEventListener.java
+index 91ac518..d7aa465 100644
+--- a/com/alipay/remoting/ConnectionEventListener.java
++++ b/com/alipay/remoting/ConnectionEventListener.java
+@@ -37,7 +37,7 @@ public class ConnectionEventListener {
+      * @param remoteAddress remoting address
+      * @param connection Connection
+      */
+-    public void onEvent(ConnectionEventType type, String remoteAddress, Connection connection) {
++    public void onEvent(ConnectionEventType type, String remoteAddress, Connection connection) { com.alipay.remoting.jmhbench.MutationSwitch.tick(1);
+         List<ConnectionEventProcessor> processorList = this.processors.get(type);
+         if (processorList != null) {
+             for (ConnectionEventProcessor processor : processorList) {
+@@ -53,7 +53,7 @@ public class ConnectionEventListener {
+      * @param processor ConnectionEventProcessor
+      */
+     public void addConnectionEventProcessor(ConnectionEventType type,
+-                                            ConnectionEventProcessor processor) {
++                                            ConnectionEventProcessor processor) { com.alipay.remoting.jmhbench.MutationSwitch.tick(9);
+         List<ConnectionEventProcessor> processorList = this.processors.get(type);
+         if (processorList == null) {
+             this.processors.putIfAbsent(type, new CopyOnWriteArrayList<ConnectionEventProcessor>());
+diff --git a/com/alipay/remoting/ConnectionPool.java b/com/alipay/remoting/ConnectionPool.java
+index 71cd867..c6fae55 100644
+--- a/com/alipay/remoting/ConnectionPool.java
++++ b/com/alipay/remoting/ConnectionPool.java
+@@ -82,7 +82,7 @@ public class ConnectionPool implements Scannable {
+      * 
+      * @param connection Connection
+      */
+-    public void removeAndTryClose(Connection connection) {
++    public void removeAndTryClose(Connection connection) { com.alipay.remoting.jmhbench.MutationSwitch.tick(43);
+         if (null == connection) {
+             return;
+         }
+@@ -98,7 +98,7 @@ public class ConnectionPool implements Scannable {
+     /**
+      * remove all connections
+      */
+-    public void removeAllAndTryClose() {
++    public void removeAllAndTryClose() { com.alipay.remoting.jmhbench.MutationSwitch.tick(47);
+         for (Connection conn : connections) {
+             removeAndTryClose(conn);
+         }
+diff --git a/com/alipay/remoting/codec/ProtocolCodeBasedDecoder.java b/com/alipay/remoting/codec/ProtocolCodeBasedDecoder.java
+index 9e585a2..ac9a015 100644
+--- a/com/alipay/remoting/codec/ProtocolCodeBasedDecoder.java
++++ b/com/alipay/remoting/codec/ProtocolCodeBasedDecoder.java
+@@ -54,7 +54,7 @@ public class ProtocolCodeBasedDecoder extends AbstractBatchDecoder {
+      * @param in input byte buf
+      * @return an instance of ProtocolCode
+      */
+-    protected ProtocolCode decodeProtocolCode(ByteBuf in) {
++    protected ProtocolCode decodeProtocolCode(ByteBuf in) { com.alipay.remoting.jmhbench.MutationSwitch.tick(2);
+         if (in.readableBytes() >= protocolCodeLength) {
+             byte[] protocolCodeBytes = new byte[protocolCodeLength];
+             in.readBytes(protocolCodeBytes);
+@@ -69,7 +69,7 @@ public class ProtocolCodeBasedDecoder extends AbstractBatchDecoder {
+      * @param in input byte buf
+      * @return a byte to represent protocol version
+      */
+-    protected byte decodeProtocolVersion(ByteBuf in) {
++    protected byte decodeProtocolVersion(ByteBuf in) { com.alipay.remoting.jmhbench.MutationSwitch.tick(10);
+         if (in.readableBytes() >= DEFAULT_PROTOCOL_VERSION_LENGTH) {
+             return in.readByte();
+         }
+diff --git a/com/alipay/remoting/config/BoltOption.java b/com/alipay/remoting/config/BoltOption.java
+index 7652a5b..87c908b 100644
+--- a/com/alipay/remoting/config/BoltOption.java
++++ b/com/alipay/remoting/config/BoltOption.java
+@@ -31,11 +31,11 @@ public class BoltOption<T> {
+         this.defaultValue = defaultValue;
+     }
+ 
+-    public String name() {
++    public String name() { com.alipay.remoting.jmhbench.MutationSwitch.tick(3);
+         return name;
+     }
+ 
+-    public T defaultValue() {
++    public T defaultValue() { com.alipay.remoting.jmhbench.MutationSwitch.tick(11);
+         return defaultValue;
+     }
+ 
+diff --git a/com/alipay/remoting/config/BoltOptions.java b/com/alipay/remoting/config/BoltOptions.java
+index cb84658..583d34b 100644
+--- a/com/alipay/remoting/config/BoltOptions.java
++++ b/com/alipay/remoting/config/BoltOptions.java
+@@ -35,7 +35,7 @@ public class BoltOptions {
+      * @return the optioned value of default value if option does not exist.
+      */
+     @SuppressWarnings("unchecked")
+-    public <T> T option(BoltOption<T> option) {
++    public <T> T option(BoltOption<T> option) { com.alipay.remoting.jmhbench.MutationSwitch.tick(18);
+         Object value = options.get(option);
+         if (value == null) {
+             value = option.defaultValue();
+@@ -52,7 +52,7 @@ public class BoltOptions {
+      * @param value option value, null for remove a previous set {@link BoltOption}.
+      * @return this BoltOptions instance
+      */
+-    public <T> BoltOptions option(BoltOption<T> option, T value) {
++    public <T> BoltOptions option(BoltOption<T> option, T value) { com.alipay.remoting.jmhbench.MutationSwitch.tick(23);
+         if (value == null) {
+             options.remove(option);
+             return this;
+diff --git a/com/alipay/remoting/config/ConfigManager.java b/com/alipay/remoting/config/ConfigManager.java
+index c1574cd..7a45b5e 100644
+--- a/com/alipay/remoting/config/ConfigManager.java
++++ b/com/alipay/remoting/config/ConfigManager.java
+@@ -26,11 +26,11 @@ import static java.lang.System.getProperty;
+  */
+ public class ConfigManager {
+     // ~~~ properties for bootstrap
+-    public static boolean tcp_nodelay() {
++    public static boolean tcp_nodelay() { com.alipay.remoting.jmhbench.MutationSwitch.tick(28);
+         return getBool(Configs.TCP_NODELAY, Configs.TCP_NODELAY_DEFAULT);
+     }
+ 
+-    public static boolean tcp_so_reuseaddr() {
++    public static boolean tcp_so_reuseaddr() { com.alipay.remoting.jmhbench.MutationSwitch.tick(32);
+         return getBool(Configs.TCP_SO_REUSEADDR, Configs.TCP_SO_REUSEADDR_DEFAULT);
+     }
+ 
+diff --git a/com/alipay/remoting/config/switches/GlobalSwitch.java b/com/alipay/remoting/config/switches/GlobalSwitch.java
+index af29510..e028544 100644
+--- a/com/alipay/remoting/config/switches/GlobalSwitch.java
++++ b/com/alipay/remoting/config/switches/GlobalSwitch.java
+@@ -47,12 +47,12 @@ public class GlobalSwitch implements Switch {
+ 
+     // ~~~ public methods
+     @Override
+-    public void turnOn(int index) {
++    public void turnOn(int index) { com.alipay.remoting.jmhbench.MutationSwitch.tick(36);
+         this.userSettings.set(index);
+     }
+ 
+     @Override
+-    public void turnOff(int index) {
++    public void turnOff(int index) { com.alipay.remoting.jmhbench.MutationSwitch.tick(40);
+         this.userSettings.clear(index);
+     }
+ 
+diff --git a/com/alipay/remoting/config/switches/ProtocolSwitch.java b/com/alipay/remoting/config/switches/ProtocolSwitch.java
+index 4a213b5..145e2fa 100644
+--- a/com/alipay/remoting/config/switches/ProtocolSwitch.java
++++ b/com/alipay/remoting/config/switches/ProtocolSwitch.java
+@@ -38,12 +38,12 @@ public class ProtocolSwitch implements Switch {
+     // ~~~ public methods
+ 
+     @Override
+-    public void turnOn(int index) {
++    public void turnOn(int index) { com.alipay.remoting.jmhbench.MutationSwitch.tick(44);
+         this.bs.set(index);
+     }
+ 
+     @Override
+-    public void turnOff(int index) {
++    public void turnOff(int index) { com.alipay.remoting.jmhbench.MutationSwitch.tick(48);
+         this.bs.clear(index);
+     }
+ 
+diff --git a/com/alipay/remoting/exception/DeserializationException.java b/com/alipay/remoting/exception/DeserializationException.java
+index 110b1e7..1c166ab 100644
+--- a/com/alipay/remoting/exception/DeserializationException.java
++++ b/com/alipay/remoting/exception/DeserializationException.java
+@@ -70,7 +70,7 @@ public class DeserializationException extends CodecException {
+      *
+      * @return property value of serverSide
+      */
+-    public boolean isServerSide() {
++    public boolean isServerSide() { com.alipay.remoting.jmhbench.MutationSwitch.tick(4);
+         return serverSide;
+     }
+ }
+\ No newline at end of file
+diff --git a/com/alipay/remoting/exception/SerializationException.java b/com/alipay/remoting/exception/SerializationException.java
+index fe88578..b19e2e4 100644
+--- a/com/alipay/remoting/exception/SerializationException.java
++++ b/com/alipay/remoting/exception/SerializationException.java
+@@ -72,7 +72,7 @@ public class SerializationException extends CodecException {
+      *
+      * @return property value of serverSide
+      */
+-    public boolean isServerSide() {
++    public boolean isServerSide() { com.alipay.remoting.jmhbench.MutationSwitch.tick(12);
+         return serverSide;
+     }
+ }
+\ No newline at end of file
+diff --git a/com/alipay/remoting/jmhbench/MutationSwitch.java b/com/alipay/remoting/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..b1b5336
+--- /dev/null
++++ b/com/alipay/remoting/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.alipay.remoting.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/alipay/remoting/log/BoltLoggerFactory.java b/com/alipay/remoting/log/BoltLoggerFactory.java
+index 0b67f5e..f81676a 100644
+--- a/com/alipay/remoting/log/BoltLoggerFactory.java
++++ b/com/alipay/remoting/log/BoltLoggerFactory.java
+@@ -72,14 +72,14 @@ public class BoltLoggerFactory {
+         }
+     }
+ 
+-    public static Logger getLogger(Class<?> clazz) {
++    public static Logger getLogger(Class<?> clazz) { com.alipay.remoting.jmhbench.MutationSwitch.tick(5);
+         if (clazz == null) {
+             return getLogger("");
+         }
+         return getLogger(clazz.getCanonicalName());
+     }
+ 
+-    public static Logger getLogger(String name) {
++    public static Logger getLogger(String name) { com.alipay.remoting.jmhbench.MutationSwitch.tick(13);
+         if (name == null || name.isEmpty()) {
+             return LoggerSpaceManager.getLoggerBySpace("", BOLT_LOG_SPACE);
+         }
+diff --git a/com/alipay/remoting/rpc/DefaultInvokeFuture.java b/com/alipay/remoting/rpc/DefaultInvokeFuture.java
+index b1bd945..32dfb37 100644
+--- a/com/alipay/remoting/rpc/DefaultInvokeFuture.java
++++ b/com/alipay/remoting/rpc/DefaultInvokeFuture.java
+@@ -110,13 +110,13 @@ public class DefaultInvokeFuture implements InvokeFuture {
+     }
+ 
+     @Override
+-    public ResponseCommand waitResponse(long timeoutMillis) throws InterruptedException {
++    public ResponseCommand waitResponse(long timeoutMillis) throws InterruptedException { com.alipay.remoting.jmhbench.MutationSwitch.tick(33);
+         this.countDownLatch.await(timeoutMillis, TimeUnit.MILLISECONDS);
+         return this.responseCommand;
+     }
+ 
+     @Override
+-    public ResponseCommand waitResponse() throws InterruptedException {
++    public ResponseCommand waitResponse() throws InterruptedException { com.alipay.remoting.jmhbench.MutationSwitch.tick(37);
+         this.countDownLatch.await();
+         return this.responseCommand;
+     }
+diff --git a/com/alipay/remoting/rpc/HeartbeatHandler.java b/com/alipay/remoting/rpc/HeartbeatHandler.java
+index 16d9fd8..2fb4b69 100644
+--- a/com/alipay/remoting/rpc/HeartbeatHandler.java
++++ b/com/alipay/remoting/rpc/HeartbeatHandler.java
+@@ -40,7 +40,7 @@ public class HeartbeatHandler extends ChannelDuplexHandler {
+      * @see io.netty.channel.ChannelInboundHandlerAdapter#userEventTriggered(io.netty.channel.ChannelHandlerContext, java.lang.Object)
+      */
+     @Override
+-    public void userEventTriggered(final ChannelHandlerContext ctx, Object evt) throws Exception {
++    public void userEventTriggered(final ChannelHandlerContext ctx, Object evt) throws Exception { com.alipay.remoting.jmhbench.MutationSwitch.tick(41);
+         if (evt instanceof IdleStateEvent) {
+             ProtocolCode protocolCode = ctx.channel().attr(Connection.PROTOCOL).get();
+             Protocol protocol = ProtocolManager.getProtocol(protocolCode);
+diff --git a/com/alipay/remoting/rpc/ResponseCommand.java b/com/alipay/remoting/rpc/ResponseCommand.java
+index 8f5837c..c783395 100644
+--- a/com/alipay/remoting/rpc/ResponseCommand.java
++++ b/com/alipay/remoting/rpc/ResponseCommand.java
+@@ -64,7 +64,7 @@ public class ResponseCommand extends RpcCommand {
+      * 
+      * @return property value of responseTimeMillis
+      */
+-    public long getResponseTimeMillis() {
++    public long getResponseTimeMillis() { com.alipay.remoting.jmhbench.MutationSwitch.tick(45);
+         return responseTimeMillis;
+     }
+ 
+@@ -73,7 +73,7 @@ public class ResponseCommand extends RpcCommand {
+      * 
+      * @param responseTimeMillis value to be assigned to property responseTimeMillis
+      */
+-    public void setResponseTimeMillis(long responseTimeMillis) {
++    public void setResponseTimeMillis(long responseTimeMillis) { com.alipay.remoting.jmhbench.MutationSwitch.tick(49);
+         this.responseTimeMillis = responseTimeMillis;
+     }
+ 
+diff --git a/com/alipay/remoting/rpc/RpcAddressParser.java b/com/alipay/remoting/rpc/RpcAddressParser.java
+index 26cee4d..b9bf91a 100644
+--- a/com/alipay/remoting/rpc/RpcAddressParser.java
++++ b/com/alipay/remoting/rpc/RpcAddressParser.java
+@@ -53,7 +53,7 @@ public class RpcAddressParser implements RemotingAddressParser {
+      * @see com.alipay.remoting.RemotingAddressParser#parse(java.lang.String)
+      */
+     @Override
+-    public Url parse(String url) {
++    public Url parse(String url) { com.alipay.remoting.jmhbench.MutationSwitch.tick(6);
+         if (StringUtils.isBlank(url)) {
+             throw new IllegalArgumentException("Illegal format address string [" + url
+                                                + "], should not be blank! ");
+@@ -169,7 +169,7 @@ public class RpcAddressParser implements RemotingAddressParser {
+      * @see com.alipay.remoting.RemotingAddressParser#parseUniqueKey(java.lang.String)
+      */
+     @Override
+-    public String parseUniqueKey(String url) {
++    public String parseUniqueKey(String url) { com.alipay.remoting.jmhbench.MutationSwitch.tick(14);
+         boolean illegal = false;
+         if (StringUtils.isBlank(url)) {
+             illegal = true;
+diff --git a/com/alipay/remoting/rpc/RpcInvokeCallbackListener.java b/com/alipay/remoting/rpc/RpcInvokeCallbackListener.java
+index 424b927..40b9a5b 100644
+--- a/com/alipay/remoting/rpc/RpcInvokeCallbackListener.java
++++ b/com/alipay/remoting/rpc/RpcInvokeCallbackListener.java
+@@ -54,7 +54,7 @@ public class RpcInvokeCallbackListener implements InvokeCallbackListener {
+      * @see com.alipay.remoting.InvokeCallbackListener#onResponse(com.alipay.remoting.InvokeFuture)
+      */
+     @Override
+-    public void onResponse(InvokeFuture future) {
++    public void onResponse(InvokeFuture future) { com.alipay.remoting.jmhbench.MutationSwitch.tick(19);
+         InvokeCallback callback = future.getInvokeCallback();
+         if (callback != null) {
+             CallbackTask task = new CallbackTask(this.getRemoteAddress(), future);
+@@ -104,7 +104,7 @@ public class RpcInvokeCallbackListener implements InvokeCallbackListener {
+          * @see java.lang.Runnable#run()
+          */
+         @Override
+-        public void run() {
++        public void run() { com.alipay.remoting.jmhbench.MutationSwitch.tick(24);
+             InvokeCallback callback = future.getInvokeCallback();
+             // a lot of try-catches to protect thread pool
+             ResponseCommand response = null;
+diff --git a/com/alipay/remoting/rpc/protocol/RpcProtocolDecoder.java b/com/alipay/remoting/rpc/protocol/RpcProtocolDecoder.java
+index 13d8ae0..90ceeea 100644
+--- a/com/alipay/remoting/rpc/protocol/RpcProtocolDecoder.java
++++ b/com/alipay/remoting/rpc/protocol/RpcProtocolDecoder.java
+@@ -34,7 +34,7 @@ public class RpcProtocolDecoder extends ProtocolCodeBasedDecoder {
+     }
+ 
+     @Override
+-    protected byte decodeProtocolVersion(ByteBuf in) {
++    protected byte decodeProtocolVersion(ByteBuf in) { com.alipay.remoting.jmhbench.MutationSwitch.tick(29);
+         in.resetReaderIndex();
+         if (in.readableBytes() >= protocolCodeLength + DEFAULT_PROTOCOL_VERSION_LENGTH) {
+             byte rpcProtocolCodeByte = in.readByte();
+diff --git a/com/alipay/remoting/serialization/HessianSerializer.java b/com/alipay/remoting/serialization/HessianSerializer.java
+index 87fcec1..cff48a0 100644
+--- a/com/alipay/remoting/serialization/HessianSerializer.java
++++ b/com/alipay/remoting/serialization/HessianSerializer.java
+@@ -36,7 +36,7 @@ public class HessianSerializer implements Serializer {
+     private SerializerFactory                         serializerFactory    = new SerializerFactory();
+     private static ThreadLocal<ByteArrayOutputStream> localOutputByteArray = new ThreadLocal<ByteArrayOutputStream>() {
+                                                                                @Override
+-                                                                               protected ByteArrayOutputStream initialValue() {
++                                                                               protected ByteArrayOutputStream initialValue() { com.alipay.remoting.jmhbench.MutationSwitch.tick(7);
+                                                                                    return new ByteArrayOutputStream();
+                                                                                }
+                                                                            };
+@@ -45,7 +45,7 @@ public class HessianSerializer implements Serializer {
+      * @see com.alipay.remoting.serialization.Serializer#serialize(java.lang.Object)
+      */
+     @Override
+-    public byte[] serialize(Object obj) throws CodecException {
++    public byte[] serialize(Object obj) throws CodecException { com.alipay.remoting.jmhbench.MutationSwitch.tick(15);
+         ByteArrayOutputStream byteArray = localOutputByteArray.get();
+         byteArray.reset();
+         Hessian2Output output = new Hessian2Output(byteArray);
+diff --git a/com/alipay/remoting/serialization/SerializerManager.java b/com/alipay/remoting/serialization/SerializerManager.java
+index b30b36e..bca6c63 100644
+--- a/com/alipay/remoting/serialization/SerializerManager.java
++++ b/com/alipay/remoting/serialization/SerializerManager.java
+@@ -36,7 +36,7 @@ public class SerializerManager {
+ 
+     private static final ReentrantLock REENTRANT_LOCK = new ReentrantLock();
+ 
+-    public static Serializer getSerializer(int idx) {
++    public static Serializer getSerializer(int idx) { com.alipay.remoting.jmhbench.MutationSwitch.tick(20);
+         Serializer currentSerializer = serializers[idx];
+         if (currentSerializer == null && idx == Hessian2) {
+             REENTRANT_LOCK.lock();
+@@ -53,7 +53,7 @@ public class SerializerManager {
+         return currentSerializer;
+     }
+ 
+-    public static void addSerializer(int idx, Serializer serializer) {
++    public static void addSerializer(int idx, Serializer serializer) { com.alipay.remoting.jmhbench.MutationSwitch.tick(25);
+         if (serializers.length <= idx) {
+             Serializer[] newSerializers = new Serializer[idx + 5];
+             System.arraycopy(serializers, 0, newSerializers, 0, serializers.length);
+diff --git a/com/alipay/remoting/util/ConcurrentHashSet.java b/com/alipay/remoting/util/ConcurrentHashSet.java
+index 05bfe5d..8b1f17d 100644
+--- a/com/alipay/remoting/util/ConcurrentHashSet.java
++++ b/com/alipay/remoting/util/ConcurrentHashSet.java
+@@ -43,7 +43,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> {
+      * @see java.util.AbstractCollection#size()
+      */
+     @Override
+-    public int size() {
++    public int size() { com.alipay.remoting.jmhbench.MutationSwitch.tick(8);
+         return map.size();
+     }
+ 
+@@ -61,7 +61,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> {
+      * @see java.util.AbstractCollection#iterator()
+      */
+     @Override
+-    public Iterator<E> iterator() {
++    public Iterator<E> iterator() { com.alipay.remoting.jmhbench.MutationSwitch.tick(16);
+         return map.keySet().iterator();
+     }
+ 
+diff --git a/com/alipay/remoting/util/ConnectionUtil.java b/com/alipay/remoting/util/ConnectionUtil.java
+index 5d9ba8a..c24db3d 100644
+--- a/com/alipay/remoting/util/ConnectionUtil.java
++++ b/com/alipay/remoting/util/ConnectionUtil.java
+@@ -30,7 +30,7 @@ import io.netty.util.Attribute;
+  */
+ public class ConnectionUtil {
+ 
+-    public static Connection getConnectionFromChannel(Channel channel) {
++    public static Connection getConnectionFromChannel(Channel channel) { com.alipay.remoting.jmhbench.MutationSwitch.tick(21);
+         if (channel == null) {
+             return null;
+         }
+@@ -43,7 +43,7 @@ public class ConnectionUtil {
+         return null;
+     }
+ 
+-    public static void addIdPoolKeyMapping(Integer id, String group, Channel channel) {
++    public static void addIdPoolKeyMapping(Integer id, String group, Channel channel) { com.alipay.remoting.jmhbench.MutationSwitch.tick(26);
+         Connection connection = getConnectionFromChannel(channel);
+         if (connection != null) {
+             connection.addIdPoolKeyMapping(id, group);
+diff --git a/com/alipay/remoting/util/CrcUtil.java b/com/alipay/remoting/util/CrcUtil.java
+index a2dee5e..b8942cf 100644
+--- a/com/alipay/remoting/util/CrcUtil.java
++++ b/com/alipay/remoting/util/CrcUtil.java
+@@ -27,7 +27,7 @@ public class CrcUtil {
+ 
+     private static final ThreadLocal<CRC32> CRC_32_THREAD_LOCAL = new ThreadLocal<CRC32>() {
+                                                                     @Override
+-                                                                    protected CRC32 initialValue() {
++                                                                    protected CRC32 initialValue() { com.alipay.remoting.jmhbench.MutationSwitch.tick(30);
+                                                                         return new CRC32();
+                                                                     }
+                                                                 };
+@@ -38,7 +38,7 @@ public class CrcUtil {
+      * @param array
+      * @return
+      */
+-    public static final int crc32(byte[] array) {
++    public static final int crc32(byte[] array) { com.alipay.remoting.jmhbench.MutationSwitch.tick(34);
+         if (array != null) {
+             return crc32(array, 0, array.length);
+         }
+diff --git a/com/alipay/remoting/util/FutureTaskUtil.java b/com/alipay/remoting/util/FutureTaskUtil.java
+index c25f76f..75781eb 100644
+--- a/com/alipay/remoting/util/FutureTaskUtil.java
++++ b/com/alipay/remoting/util/FutureTaskUtil.java
+@@ -36,7 +36,7 @@ public class FutureTaskUtil {
+      * @param <T>
+      * @return
+      */
+-    public static <T> T getFutureTaskResult(RunStateRecordedFutureTask<T> task, Logger logger) {
++    public static <T> T getFutureTaskResult(RunStateRecordedFutureTask<T> task, Logger logger) { com.alipay.remoting.jmhbench.MutationSwitch.tick(38);
+         T t = null;
+         if (null != task) {
+             try {
+@@ -59,7 +59,7 @@ public class FutureTaskUtil {
+      *
+      * @param t
+      */
+-    public static void launderThrowable(Throwable t) {
++    public static void launderThrowable(Throwable t) { com.alipay.remoting.jmhbench.MutationSwitch.tick(42);
+         if (t instanceof RuntimeException) {
+             throw (RuntimeException) t;
+         } else if (t instanceof Error) {
+diff --git a/com/alipay/remoting/util/IoUtils.java b/com/alipay/remoting/util/IoUtils.java
+index 20155d2..d077a61 100644
+--- a/com/alipay/remoting/util/IoUtils.java
++++ b/com/alipay/remoting/util/IoUtils.java
+@@ -26,7 +26,7 @@ import java.io.IOException;
+  *
+  */
+ public class IoUtils {
+-    public static void closeQuietly(Closeable closeable) {
++    public static void closeQuietly(Closeable closeable) { com.alipay.remoting.jmhbench.MutationSwitch.tick(46);
+         try {
+             if (closeable != null) {
+                 closeable.close();
+diff --git a/com/alipay/remoting/util/NettyEventLoopUtil.java b/com/alipay/remoting/util/NettyEventLoopUtil.java
+index 66b4ba9..eec0005 100644
+--- a/com/alipay/remoting/util/NettyEventLoopUtil.java
++++ b/com/alipay/remoting/util/NettyEventLoopUtil.java
+@@ -58,7 +58,7 @@ public class NettyEventLoopUtil {
+      * @param threadFactory
+      * @return an EventLoopGroup suitable for the current platform
+      */
+-    public static EventLoopGroup newEventLoopGroup(int nThreads, ThreadFactory threadFactory) {
++    public static EventLoopGroup newEventLoopGroup(int nThreads, ThreadFactory threadFactory) { com.alipay.remoting.jmhbench.MutationSwitch.tick(50);
+         return ioUringEnabled ? new IOUringEventLoopGroup(nThreads, threadFactory)
+             : epollEnabled ? new EpollEventLoopGroup(nThreads, threadFactory)
+                 : new NioEventLoopGroup(nThreads, threadFactory);

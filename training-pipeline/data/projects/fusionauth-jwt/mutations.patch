@@ -1,0 +1,628 @@
+diff --git a/io/fusionauth/jwt/HexUtils.java b/io/fusionauth/jwt/HexUtils.java
+index 3de066c..08dd493 100644
+--- a/io/fusionauth/jwt/HexUtils.java
++++ b/io/fusionauth/jwt/HexUtils.java
+@@ -23,7 +23,7 @@ public class HexUtils {
+   @SuppressWarnings("SpellCheckingInspection")
+   private final static char[] HEX = "0123456789ABCDEF".toCharArray();
+ 
+-  public static String fromBytes(byte[] bytes) {
++  public static String fromBytes(byte[] bytes) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(1);
+     char[] hexChars = new char[bytes.length * 2];
+     for (int i = 0; i < bytes.length; i++) {
+       int v = bytes[i] & 0xFF;
+@@ -33,7 +33,7 @@ public class HexUtils {
+     return new String(hexChars);
+   }
+ 
+-  public static byte[] toBytes(String hexString) {
++  public static byte[] toBytes(String hexString) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(8);
+     int len = hexString.length();
+     byte[] data = new byte[len / 2];
+     for (int i = 0; i < len; i += 2) {
+diff --git a/io/fusionauth/jwt/JWTDecoder.java b/io/fusionauth/jwt/JWTDecoder.java
+index 7bdaf8f..d0fbea0 100644
+--- a/io/fusionauth/jwt/JWTDecoder.java
++++ b/io/fusionauth/jwt/JWTDecoder.java
+@@ -70,7 +70,7 @@ public class JWTDecoder {
+    * @param clockSkew the number of seconds allowed for clock skew.
+    * @return this
+    */
+-  public JWTDecoder withClockSkew(int clockSkew) {
++  public JWTDecoder withClockSkew(int clockSkew) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(15);
+     this.clockSkew = clockSkew;
+     return this;
+   }
+@@ -254,7 +254,7 @@ public class JWTDecoder {
+   /**
+    * @return the 'now' to be used to validate 'exp' and 'nbf' claims.
+    */
+-  protected ZonedDateTime now() {
++  protected ZonedDateTime now() { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(22);
+     return ZonedDateTime.now(ZoneOffset.UTC);
+   }
+ 
+diff --git a/io/fusionauth/jwt/JWTUtils.java b/io/fusionauth/jwt/JWTUtils.java
+index 0c20397..1469979 100644
+--- a/io/fusionauth/jwt/JWTUtils.java
++++ b/io/fusionauth/jwt/JWTUtils.java
+@@ -47,7 +47,7 @@ public class JWTUtils {
+    * @param fingerprint the SHA-1 or SHA-256 fingerprint
+    * @return a x5t hash.
+    */
+-  public static String convertFingerprintToThumbprint(String fingerprint) {
++  public static String convertFingerprintToThumbprint(String fingerprint) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(29);
+     byte[] bytes = HexUtils.toBytes(fingerprint);
+     return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+   }
+@@ -62,7 +62,7 @@ public class JWTUtils {
+    * @param x5tHash the x5t hash
+    * @return a SHA-1 or SHA-256 fingerprint
+    */
+-  public static String convertThumbprintToFingerprint(String x5tHash) {
++  public static String convertThumbprintToFingerprint(String x5tHash) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(36);
+     byte[] bytes = Base64.getUrlDecoder().decode(x5tHash.getBytes(StandardCharsets.UTF_8));
+     return HexUtils.fromBytes(bytes);
+   }
+@@ -76,7 +76,7 @@ public class JWTUtils {
+    * @param encodedJWT the encoded JWT
+    * @return a Header object
+    */
+-  public static Header decodeHeader(String encodedJWT) {
++  public static Header decodeHeader(String encodedJWT) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(42);
+     Objects.requireNonNull(encodedJWT);
+ 
+     String[] parts = encodedJWT.split("\\.");
+diff --git a/io/fusionauth/jwt/OpenIDConnect.java b/io/fusionauth/jwt/OpenIDConnect.java
+index 7f7606a..211031e 100644
+--- a/io/fusionauth/jwt/OpenIDConnect.java
++++ b/io/fusionauth/jwt/OpenIDConnect.java
+@@ -39,7 +39,7 @@ public class OpenIDConnect {
+    * @param algorithm   the algorithm to be used when encoding the Id Token
+    * @return a hash to be used as the <code>at_hash</code> claim in the Id Token claim payload
+    */
+-  public static String at_hash(String accessToken, Algorithm algorithm) {
++  public static String at_hash(String accessToken, Algorithm algorithm) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(50);
+     return generate_hash(accessToken, algorithm);
+   }
+ 
+diff --git a/io/fusionauth/jwt/TimeMachineJWTDecoder.java b/io/fusionauth/jwt/TimeMachineJWTDecoder.java
+index cb4547a..8bedbaa 100644
+--- a/io/fusionauth/jwt/TimeMachineJWTDecoder.java
++++ b/io/fusionauth/jwt/TimeMachineJWTDecoder.java
+@@ -31,7 +31,7 @@ public class TimeMachineJWTDecoder extends JWTDecoder {
+   }
+ 
+   @Override
+-  protected ZonedDateTime now() {
++  protected ZonedDateTime now() { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(46);
+     return now;
+   }
+ }
+diff --git a/io/fusionauth/jwt/domain/Algorithm.java b/io/fusionauth/jwt/domain/Algorithm.java
+index ff97796..002682c 100644
+--- a/io/fusionauth/jwt/domain/Algorithm.java
++++ b/io/fusionauth/jwt/domain/Algorithm.java
+@@ -116,7 +116,7 @@ public enum Algorithm {
+     this.algorithm = algorithm;
+   }
+ 
+-  public static Algorithm fromName(String name) {
++  public static Algorithm fromName(String name) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(2);
+     for (Algorithm alg : Algorithm.values()) {
+       if (alg.getName().toUpperCase(Locale.ROOT).equals(name.toUpperCase(Locale.ROOT))) {
+         return alg;
+@@ -126,11 +126,11 @@ public enum Algorithm {
+     return null;
+   }
+ 
+-  public String getName() {
++  public String getName() { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(9);
+     return algorithm;
+   }
+ 
+-  public String getDigest() {
++  public String getDigest() { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(16);
+     return switch (this) {
+       case PS256 -> "SHA-256";
+       case PS384 -> "SHA-384";
+diff --git a/io/fusionauth/jwt/domain/Header.java b/io/fusionauth/jwt/domain/Header.java
+index cb0b8d3..7a40475 100644
+--- a/io/fusionauth/jwt/domain/Header.java
++++ b/io/fusionauth/jwt/domain/Header.java
+@@ -55,7 +55,7 @@ public class Header {
+    * @return a map of properties to be serialized as if they were actual properties of this class.
+    */
+   @JsonAnyGetter
+-  public Map<String, Object> anyGetter() {
++  public Map<String, Object> anyGetter() { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(23);
+     return properties;
+   }
+ 
+@@ -63,7 +63,7 @@ public class Header {
+    * @param name the name of the key
+    * @return the string value of the object found by the requested key.
+    */
+-  public String getString(String name) {
++  public String getString(String name) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(30);
+     Object result = properties.get(name);
+     return result != null ? result.toString() : null;
+   }
+diff --git a/io/fusionauth/jwt/domain/JWT.java b/io/fusionauth/jwt/domain/JWT.java
+index f315af7..6d887e1 100644
+--- a/io/fusionauth/jwt/domain/JWT.java
++++ b/io/fusionauth/jwt/domain/JWT.java
+@@ -137,7 +137,7 @@ public class JWT {
+    *
+    * @return a JWT decoder.
+    */
+-  public static JWTDecoder getDecoder() {
++  public static JWTDecoder getDecoder() { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(37);
+     return new JWTDecoder();
+   }
+ 
+@@ -150,7 +150,7 @@ public class JWT {
+    * @param now a 'now' that can be in the past, present or future.
+    * @return a JWT decoder with time machine capability.
+    */
+-  public static JWTDecoder getTimeMachineDecoder(ZonedDateTime now) {
++  public static JWTDecoder getTimeMachineDecoder(ZonedDateTime now) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(43);
+     return new TimeMachineJWTDecoder(now);
+   }
+ 
+@@ -159,7 +159,7 @@ public class JWT {
+    *
+    * @return a JWT encoder.
+    */
+-  public static JWTEncoder getEncoder() {
++  public static JWTEncoder getEncoder() { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(47);
+     return new JWTEncoder();
+   }
+ 
+diff --git a/io/fusionauth/jwt/ec/ECDSASignature.java b/io/fusionauth/jwt/ec/ECDSASignature.java
+index 94bd614..ac821b8 100644
+--- a/io/fusionauth/jwt/ec/ECDSASignature.java
++++ b/io/fusionauth/jwt/ec/ECDSASignature.java
+@@ -64,7 +64,7 @@ public class ECDSASignature {
+    * @return a byte array containing the 'r' and the 's' elliptic signature components.
+    * @throws IOException when $%@! gets real.
+    */
+-  public byte[] derDecode(Algorithm algorithm) throws IOException {
++  public byte[] derDecode(Algorithm algorithm) throws IOException { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(3);
+     // Incoming DER Sequence [ r, s ]
+     DerValue[] sequence = new DerInputStream(bytes).getSequence();
+     byte[] r = sequence[0].getPositiveBigInteger().toByteArray();
+@@ -119,7 +119,7 @@ public class ECDSASignature {
+    * @return a DER encoded sequence containing the 'r' and the 's' elliptic signature components
+    * @throws IOException when $%@! gets real.
+    */
+-  public byte[] derEncode() throws IOException {
++  public byte[] derEncode() throws IOException { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(10);
+     // Split the ECDSA encoded signature into two parts, the r and s components
+     byte[] r = Arrays.copyOfRange(bytes, 0, bytes.length / 2);
+     byte[] s = Arrays.copyOfRange(bytes, bytes.length / 2, bytes.length);
+diff --git a/io/fusionauth/jwt/ec/ECSigner.java b/io/fusionauth/jwt/ec/ECSigner.java
+index 162768f..8f9517f 100644
+--- a/io/fusionauth/jwt/ec/ECSigner.java
++++ b/io/fusionauth/jwt/ec/ECSigner.java
+@@ -81,7 +81,7 @@ public class ECSigner implements Signer {
+    * @param privateKey The private key PEM expected to be in PKCS#1 or PKCS#8 format.
+    * @return a new EC signer.
+    */
+-  public static ECSigner newSHA256Signer(String privateKey) {
++  public static ECSigner newSHA256Signer(String privateKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(17);
+     return new ECSigner(Algorithm.ES256, privateKey, null);
+   }
+ 
+@@ -92,7 +92,7 @@ public class ECSigner implements Signer {
+    * @param kid        The key identifier. This will be used by the JWTEncoder to write the 'kid' header.
+    * @return a new EC signer.
+    */
+-  public static ECSigner newSHA256Signer(String privateKey, String kid) {
++  public static ECSigner newSHA256Signer(String privateKey, String kid) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(24);
+     return new ECSigner(Algorithm.ES256, privateKey, kid);
+   }
+ 
+@@ -102,7 +102,7 @@ public class ECSigner implements Signer {
+    * @param privateKey The private key.
+    * @return a new EC signer.
+    */
+-  public static ECSigner newSHA256Signer(PrivateKey privateKey) {
++  public static ECSigner newSHA256Signer(PrivateKey privateKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(31);
+     return new ECSigner(Algorithm.ES256, privateKey, null);
+   }
+ 
+diff --git a/io/fusionauth/jwt/ec/ECVerifier.java b/io/fusionauth/jwt/ec/ECVerifier.java
+index 50da9d5..201d450 100644
+--- a/io/fusionauth/jwt/ec/ECVerifier.java
++++ b/io/fusionauth/jwt/ec/ECVerifier.java
+@@ -71,7 +71,7 @@ public class ECVerifier implements Verifier {
+    * @param publicKey The EC public key PEM.
+    * @return a new instance of the EC verifier.
+    */
+-  public static ECVerifier newVerifier(String publicKey) {
++  public static ECVerifier newVerifier(String publicKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(38);
+     return new ECVerifier(publicKey);
+   }
+ 
+@@ -81,7 +81,7 @@ public class ECVerifier implements Verifier {
+    * @param publicKey The EC public key object.
+    * @return a new instance of the EC verifier.
+    */
+-  public static ECVerifier newVerifier(PublicKey publicKey) {
++  public static ECVerifier newVerifier(PublicKey publicKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(44);
+     return new ECVerifier(publicKey);
+   }
+ 
+@@ -91,7 +91,7 @@ public class ECVerifier implements Verifier {
+    * @param path The path to the EC public key PEM.
+    * @return a new instance of the EC verifier.
+    */
+-  public static ECVerifier newVerifier(Path path) {
++  public static ECVerifier newVerifier(Path path) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(48);
+     Objects.requireNonNull(path);
+ 
+     try {
+diff --git a/io/fusionauth/jwt/ed/EdDSASigner.java b/io/fusionauth/jwt/ed/EdDSASigner.java
+index 08005b3..cec8613 100644
+--- a/io/fusionauth/jwt/ed/EdDSASigner.java
++++ b/io/fusionauth/jwt/ed/EdDSASigner.java
+@@ -84,7 +84,7 @@ public class EdDSASigner implements Signer {
+    * @param kid        The key identifier. This will be used by the JWTEncoder to write the 'kid' header.
+    * @return a new EdDSA signer.
+    */
+-  public static EdDSASigner newSigner(PrivateKey privateKey, String kid) {
++  public static EdDSASigner newSigner(PrivateKey privateKey, String kid) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(4);
+     return new EdDSASigner(privateKey, kid);
+   }
+ 
+@@ -94,7 +94,7 @@ public class EdDSASigner implements Signer {
+    * @param privateKey The private key.
+    * @return a new EdDSA signer.
+    */
+-  public static EdDSASigner newSigner(PrivateKey privateKey) {
++  public static EdDSASigner newSigner(PrivateKey privateKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(11);
+     return new EdDSASigner(privateKey, null);
+   }
+ 
+@@ -105,7 +105,7 @@ public class EdDSASigner implements Signer {
+    * @param kid        The key identifier. This will be used by the JWTEncoder to write the 'kid' header.
+    * @return a new EdDSA signer.
+    */
+-  public static EdDSASigner newSigner(String privateKey, String kid) {
++  public static EdDSASigner newSigner(String privateKey, String kid) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(18);
+     return new EdDSASigner(privateKey, kid);
+   }
+ 
+diff --git a/io/fusionauth/jwt/ed/EdDSAVerifier.java b/io/fusionauth/jwt/ed/EdDSAVerifier.java
+index 4b71396..070fb96 100644
+--- a/io/fusionauth/jwt/ed/EdDSAVerifier.java
++++ b/io/fusionauth/jwt/ed/EdDSAVerifier.java
+@@ -82,7 +82,7 @@ public class EdDSAVerifier implements Verifier {
+    * @param path The path to the public key PEM.
+    * @return a new instance of the EdDSA verifier.
+    */
+-  public static EdDSAVerifier newVerifier(Path path) {
++  public static EdDSAVerifier newVerifier(Path path) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(25);
+     Objects.requireNonNull(path);
+ 
+     try {
+@@ -98,7 +98,7 @@ public class EdDSAVerifier implements Verifier {
+    * @param bytes The bytes of the public key in PEM format.
+    * @return a new instance of the EdDSA verifier.
+    */
+-  public static EdDSAVerifier newVerifier(byte[] bytes) {
++  public static EdDSAVerifier newVerifier(byte[] bytes) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(32);
+     Objects.requireNonNull(bytes);
+     return new EdDSAVerifier(new String(bytes));
+   }
+@@ -109,7 +109,7 @@ public class EdDSAVerifier implements Verifier {
+    * @param publicKey The public key object.
+    * @return a new instance of the EdDSA verifier.
+    */
+-  public static EdDSAVerifier newVerifier(PublicKey publicKey) {
++  public static EdDSAVerifier newVerifier(PublicKey publicKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(39);
+     return new EdDSAVerifier(publicKey);
+   }
+ 
+diff --git a/io/fusionauth/jwt/hmac/HMACSigner.java b/io/fusionauth/jwt/hmac/HMACSigner.java
+index a17726e..797182f 100644
+--- a/io/fusionauth/jwt/hmac/HMACSigner.java
++++ b/io/fusionauth/jwt/hmac/HMACSigner.java
+@@ -63,7 +63,7 @@ public class HMACSigner implements Signer {
+    * @param secret The secret used to generate the HMAC hash.
+    * @return a new HMAC signer.
+    */
+-  public static HMACSigner newSHA256Signer(byte[] secret) {
++  public static HMACSigner newSHA256Signer(byte[] secret) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(5);
+     return newSHA256Signer(secret, null);
+   }
+ 
+@@ -73,7 +73,7 @@ public class HMACSigner implements Signer {
+    * @param secret The secret used to generate the HMAC hash.
+    * @return a new HMAC signer.
+    */
+-  public static HMACSigner newSHA256Signer(String secret) {
++  public static HMACSigner newSHA256Signer(String secret) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(12);
+     return newSHA256Signer(secret, null);
+   }
+ 
+@@ -84,7 +84,7 @@ public class HMACSigner implements Signer {
+    * @param kid    The key identifier. This will be used by the JWTEncoder to write the 'kid' header.
+    * @return a new HMAC signer.
+    */
+-  public static HMACSigner newSHA256Signer(byte[] secret, String kid) {
++  public static HMACSigner newSHA256Signer(byte[] secret, String kid) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(19);
+     return new HMACSigner(Algorithm.HS256, secret, kid);
+   }
+ 
+diff --git a/io/fusionauth/jwt/hmac/HMACVerifier.java b/io/fusionauth/jwt/hmac/HMACVerifier.java
+index b1681bc..d3a1206 100644
+--- a/io/fusionauth/jwt/hmac/HMACVerifier.java
++++ b/io/fusionauth/jwt/hmac/HMACVerifier.java
+@@ -56,7 +56,7 @@ public class HMACVerifier implements Verifier {
+    * @param secret The secret.
+    * @return a new instance of the HMAC verifier.
+    */
+-  public static HMACVerifier newVerifier(String secret) {
++  public static HMACVerifier newVerifier(String secret) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(26);
+     Objects.requireNonNull(secret);
+     return new HMACVerifier(secret);
+   }
+@@ -67,7 +67,7 @@ public class HMACVerifier implements Verifier {
+    * @param path The path to the secret.
+    * @return a new instance of the HMAC verifier.
+    */
+-  public static HMACVerifier newVerifier(Path path) {
++  public static HMACVerifier newVerifier(Path path) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(33);
+     Objects.requireNonNull(path);
+ 
+     try {
+@@ -83,7 +83,7 @@ public class HMACVerifier implements Verifier {
+    * @param bytes The bytes of the secret.
+    * @return a new instance of the HMAC verifier.
+    */
+-  public static HMACVerifier newVerifier(byte[] bytes) {
++  public static HMACVerifier newVerifier(byte[] bytes) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(40);
+     Objects.requireNonNull(bytes);
+     return new HMACVerifier(bytes);
+   }
+diff --git a/io/fusionauth/jwt/jmhbench/MutationSwitch.java b/io/fusionauth/jwt/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..651e40e
+--- /dev/null
++++ b/io/fusionauth/jwt/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.fusionauth.jwt.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/io/fusionauth/jwt/json/Mapper.java b/io/fusionauth/jwt/json/Mapper.java
+index 483966f..4cf25d8 100644
+--- a/io/fusionauth/jwt/json/Mapper.java
++++ b/io/fusionauth/jwt/json/Mapper.java
+@@ -34,7 +34,7 @@ import java.io.InputStream;
+ public class Mapper {
+   private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+ 
+-  public static <T> T deserialize(byte[] bytes, Class<T> type) throws InvalidJWTException {
++  public static <T> T deserialize(byte[] bytes, Class<T> type) throws InvalidJWTException { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(6);
+     try {
+       return OBJECT_MAPPER.readValue(bytes, type);
+     } catch (IOException e) {
+@@ -42,7 +42,7 @@ public class Mapper {
+     }
+   }
+ 
+-  public static <T> T deserialize(InputStream is, Class<T> type) throws InvalidJWTException {
++  public static <T> T deserialize(InputStream is, Class<T> type) throws InvalidJWTException { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(13);
+     try {
+       return OBJECT_MAPPER.readValue(is, type);
+     } catch (IOException e) {
+@@ -50,7 +50,7 @@ public class Mapper {
+     }
+   }
+ 
+-  public static byte[] prettyPrint(Object object) throws InvalidJWTException {
++  public static byte[] prettyPrint(Object object) throws InvalidJWTException { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(20);
+     try {
+       return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsBytes(object);
+     } catch (JsonProcessingException e) {
+diff --git a/io/fusionauth/jwt/json/ZonedDateTimeDeserializer.java b/io/fusionauth/jwt/json/ZonedDateTimeDeserializer.java
+index cc253b5..237a55b 100644
+--- a/io/fusionauth/jwt/json/ZonedDateTimeDeserializer.java
++++ b/io/fusionauth/jwt/json/ZonedDateTimeDeserializer.java
+@@ -37,7 +37,7 @@ public class ZonedDateTimeDeserializer extends StdScalarDeserializer<ZonedDateTi
+   }
+ 
+   @Override
+-  public ZonedDateTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
++  public ZonedDateTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(27);
+     JsonToken t = jp.getCurrentToken();
+     long value;
+     if (t == JsonToken.VALUE_NUMBER_INT || t == JsonToken.VALUE_NUMBER_FLOAT) {
+diff --git a/io/fusionauth/jwt/json/ZonedDateTimeSerializer.java b/io/fusionauth/jwt/json/ZonedDateTimeSerializer.java
+index 72ba875..011451a 100644
+--- a/io/fusionauth/jwt/json/ZonedDateTimeSerializer.java
++++ b/io/fusionauth/jwt/json/ZonedDateTimeSerializer.java
+@@ -34,7 +34,7 @@ public class ZonedDateTimeSerializer extends StdScalarSerializer<ZonedDateTime>
+   }
+ 
+   @Override
+-  public void serialize(ZonedDateTime value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
++  public void serialize(ZonedDateTime value, JsonGenerator jgen, SerializerProvider provider) throws IOException { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(34);
+     if (value == null) {
+       jgen.writeNull();
+     } else {
+diff --git a/io/fusionauth/jwt/rsa/RSAPSSSigner.java b/io/fusionauth/jwt/rsa/RSAPSSSigner.java
+index f3caa9f..c4cb8ab 100644
+--- a/io/fusionauth/jwt/rsa/RSAPSSSigner.java
++++ b/io/fusionauth/jwt/rsa/RSAPSSSigner.java
+@@ -94,7 +94,7 @@ public class RSAPSSSigner implements Signer {
+    * @param privateKey The private key PEM expected to be in PKCS#1 or PKCS#8 format.
+    * @return a new RSA signer.
+    */
+-  public static RSAPSSSigner newSHA256Signer(String privateKey) {
++  public static RSAPSSSigner newSHA256Signer(String privateKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(7);
+     return new RSAPSSSigner(Algorithm.PS256, privateKey, null);
+   }
+ 
+@@ -105,7 +105,7 @@ public class RSAPSSSigner implements Signer {
+    * @param kid        The key identifier. This will be used by the JWTEncoder to write the 'kid' header.
+    * @return a new RSA signer.
+    */
+-  public static RSAPSSSigner newSHA256Signer(String privateKey, String kid) {
++  public static RSAPSSSigner newSHA256Signer(String privateKey, String kid) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(14);
+     return new RSAPSSSigner(Algorithm.PS256, privateKey, kid);
+   }
+ 
+@@ -115,7 +115,7 @@ public class RSAPSSSigner implements Signer {
+    * @param privateKey The private key.
+    * @return a new RSA signer.
+    */
+-  public static RSAPSSSigner newSHA256Signer(PrivateKey privateKey) {
++  public static RSAPSSSigner newSHA256Signer(PrivateKey privateKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(21);
+     return new RSAPSSSigner(Algorithm.PS256, privateKey, null);
+   }
+ 
+diff --git a/io/fusionauth/jwt/rsa/RSAPSSVerifier.java b/io/fusionauth/jwt/rsa/RSAPSSVerifier.java
+index bcddded..705305e 100644
+--- a/io/fusionauth/jwt/rsa/RSAPSSVerifier.java
++++ b/io/fusionauth/jwt/rsa/RSAPSSVerifier.java
+@@ -78,7 +78,7 @@ public class RSAPSSVerifier implements Verifier {
+    * @param publicKey The RSA public key object.
+    * @return a new instance of the RSA verifier.
+    */
+-  public static RSAPSSVerifier newVerifier(PublicKey publicKey) {
++  public static RSAPSSVerifier newVerifier(PublicKey publicKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(28);
+     return new RSAPSSVerifier(publicKey);
+   }
+ 
+@@ -88,7 +88,7 @@ public class RSAPSSVerifier implements Verifier {
+    * @param publicKey The RSA public key PEM.
+    * @return a new instance of the RSA verifier.
+    */
+-  public static RSAPSSVerifier newVerifier(String publicKey) {
++  public static RSAPSSVerifier newVerifier(String publicKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(35);
+     return new RSAPSSVerifier(publicKey);
+   }
+ 
+@@ -98,7 +98,7 @@ public class RSAPSSVerifier implements Verifier {
+    * @param path The path to the RSA public key PEM.
+    * @return a new instance of the RSA verifier.
+    */
+-  public static RSAPSSVerifier newVerifier(Path path) {
++  public static RSAPSSVerifier newVerifier(Path path) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(41);
+     Objects.requireNonNull(path);
+ 
+     try {
+diff --git a/io/fusionauth/jwt/rsa/RSASigner.java b/io/fusionauth/jwt/rsa/RSASigner.java
+index 8f541d3..f7ec74f 100644
+--- a/io/fusionauth/jwt/rsa/RSASigner.java
++++ b/io/fusionauth/jwt/rsa/RSASigner.java
+@@ -91,7 +91,7 @@ public class RSASigner implements Signer {
+    * @param privateKey The private key PEM expected to be in PKCS#1 or PKCS#8 format.
+    * @return a new RSA signer.
+    */
+-  public static RSASigner newSHA256Signer(String privateKey) {
++  public static RSASigner newSHA256Signer(String privateKey) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(45);
+     return new RSASigner(Algorithm.RS256, privateKey, null);
+   }
+ 
+@@ -102,7 +102,7 @@ public class RSASigner implements Signer {
+    * @param kid        The key identifier. This will be used by the JWTEncoder to write the 'kid' header.
+    * @return a new RSA signer.
+    */
+-  public static RSASigner newSHA256Signer(String privateKey, String kid) {
++  public static RSASigner newSHA256Signer(String privateKey, String kid) { io.fusionauth.jwt.jmhbench.MutationSwitch.tick(49);
+     return new RSASigner(Algorithm.RS256, privateKey, kid);
+   }
+ 

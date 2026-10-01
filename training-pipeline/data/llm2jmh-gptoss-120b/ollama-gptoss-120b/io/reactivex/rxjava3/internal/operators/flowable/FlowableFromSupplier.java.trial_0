@@ -1,0 +1,73 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Supplier;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableFromSupplier}.
+ *
+ * <p>Measures the throughput of the {@code get()} method and the subscription path
+ * which emits a single value. The benchmark follows best practices:
+ *
+ * <ul>
+ *   <li>Proper warm‑up and measurement iterations.</li>
+ *   <li>Multiple forks to reduce JVM warm‑up bias.</li>
+ *   <li>Thread‑local state to avoid contention.</li>
+ *   <li>Use of {@link Blackhole} to prevent dead‑code elimination.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class FlowableFromSupplierBenchmark {
+
+    /** Simple supplier returning a constant Integer. */
+    private Supplier<Integer> constantSupplier;
+
+    /** Flowable built from the constant supplier. */
+    private FlowableFromSupplier<Integer> flowableFromSupplier;
+
+    /** Blackhole for consuming values without optimisation. */
+    @Setup(Level.Trial)
+    public void setUp() {
+        constantSupplier = () -> 42;
+        flowableFromSupplier = new FlowableFromSupplier<>(constantSupplier);
+    }
+
+    /**
+     * Benchmark the direct {@code get()} call of the underlying supplier.
+     *
+     * @param bh Blackhole to consume the returned value.
+     */
+    @Benchmark
+    public void benchmarkSupplierGet(Blackhole bh) throws Throwable {
+        bh.consume(constantSupplier.get());
+    }
+
+    /**
+     * Benchmark the subscription path of {@link FlowableFromSupplier}.
+     *
+     * <p>The subscription is performed synchronously because the operator
+     * emits a single scalar value via {@link DeferredScalarSubscription}.
+     *
+     * @param bh Blackhole to consume the emitted item.
+     */
+    @Benchmark
+    public void benchmarkSubscribe(Blackhole bh) {
+        flowableFromSupplier.subscribe(new io.reactivex.rxjava3.core.Observer<Integer>() {
+            @Override public void onSubscribe(io.reactivex.rxjava3.disposables.Disposable d) { /* no‑op */ }
+            @Override public void onNext(Integer value) { bh.consume(value); }
+            @Override public void onError(Throwable e) { throw new RuntimeException(e); }
+            @Override public void onComplete() { /* no‑op */ }
+        });
+    }
+}
+```

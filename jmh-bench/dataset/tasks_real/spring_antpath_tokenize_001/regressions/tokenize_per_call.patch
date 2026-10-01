@@ -1,0 +1,26 @@
+--- a/bench/PathMatcher.java
++++ b/bench/PathMatcher.java
+@@ -1,14 +1,9 @@
+ package bench;
+-
+-import java.util.HashMap;
+-import java.util.Map;
+ 
+ public final class PathMatcher {
+ 
+-    private final Map<String, String[]> cache = new HashMap<>();
+-
+     public boolean matches(String pattern, String path) {
+-        String[] patTokens = cache.computeIfAbsent(pattern, this::tokenize);
++        String[] patTokens = tokenize(pattern);
+         String[] pathTokens = tokenize(path);
+         if (patTokens.length != pathTokens.length) return false;
+         for (int i = 0; i < patTokens.length; i++) {
+@@ -17,6 +12,7 @@
+         return true;
+     }
+ 
++    // Regressed: tokenize the pattern on every call instead of caching.
+     private String[] tokenize(String s) {
+         return s.split("/");
+     }

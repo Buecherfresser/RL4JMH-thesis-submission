@@ -1,0 +1,101 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SingleSubscribeOn}.
+ *
+ * The benchmark measures the throughput of subscribing to a {@link Single}
+ * that emits a constant value while the subscription is scheduled on a
+ * background {@link io.reactivex.rxjava3.core.Scheduler}.
+ *
+ * Best‑practice notes:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Warm‑up and measurement iterations are configured to let the JIT stabilize.</li>
+ *   <li>Blackhole is used to consume the result and prevent dead‑code elimination.</li>
+ *   <li>Forking isolates the benchmark from JVM warm‑up effects.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@Threads(1)
+@State(Scope.Thread)
+public class SingleSubscribeOnBenchmark {
+
+    /**
+     * The Single that will be subscribed to in each benchmark iteration.
+     */
+    private Single<Integer> single;
+
+    /**
+     * Scheduler used by {@link SingleSubscribeOn}.
+     */
+    private Scheduler scheduler;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a lightweight scheduler that does not create new threads per task.
+        // Schedulers.trampoline runs tasks on the current thread, which isolates the
+        // overhead of the operator itself from thread‑creation costs.
+        scheduler = Schedulers.trampoline();
+        // Create a source Single that immediately emits a constant value.
+        Single<Integer> source = Single.just(42);
+        // Wrap the source with the operator under test.
+        single = new SingleSubscribeOn<>(source, scheduler);
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Shut down the scheduler if it holds resources (trampoline does not, but this is safe for other schedulers).
+        scheduler.shutdown();
+    }
+
+    /**
+     * Benchmark method that subscribes to the {@link Single} and blocks until the value is emitted.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void subscribeOnThroughput(Blackhole bh) {
+        // blockingGet forces the subscription to happen and waits for completion.
+        int result = single.blockingGet();
+        bh.consume(result);
+    }
+}

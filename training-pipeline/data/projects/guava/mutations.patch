@@ -1,0 +1,631 @@
+diff --git a/com/google/common/base/FunctionalEquivalence.java b/com/google/common/base/FunctionalEquivalence.java
+index 367e176..8932cb9 100644
+--- a/com/google/common/base/FunctionalEquivalence.java
++++ b/com/google/common/base/FunctionalEquivalence.java
+@@ -44,12 +44,12 @@ final class FunctionalEquivalence<F, T> extends Equivalence<F> implements Serial
+   }
+ 
+   @Override
+-  protected boolean doEquivalent(F a, F b) {
++  protected boolean doEquivalent(F a, F b) { com.google.common.jmhbench.MutationSwitch.tick(1);
+     return resultEquivalence.equivalent(function.apply(a), function.apply(b));
+   }
+ 
+   @Override
+-  protected int doHash(F a) {
++  protected int doHash(F a) { com.google.common.jmhbench.MutationSwitch.tick(16);
+     return resultEquivalence.hash(function.apply(a));
+   }
+ 
+diff --git a/com/google/common/base/Functions.java b/com/google/common/base/Functions.java
+index 66b74f6..40a1fa3 100644
+--- a/com/google/common/base/Functions.java
++++ b/com/google/common/base/Functions.java
+@@ -64,7 +64,7 @@ public final class Functions {
+    * <p>For more important information about the transition from Guava's {@link Function} class to
+    * the JDK {@link java.util.function.Function} class, see {@link Function}.
+    */
+-  public static Function<Object, String> toStringFunction() {
++  public static Function<Object, String> toStringFunction() { com.google.common.jmhbench.MutationSwitch.tick(30);
+     return ToStringFunction.INSTANCE;
+   }
+ 
+@@ -73,7 +73,7 @@ public final class Functions {
+     INSTANCE;
+ 
+     @Override
+-    public String apply(Object o) {
++    public String apply(Object o) { com.google.common.jmhbench.MutationSwitch.tick(43);
+       checkNotNull(o); // eager for GWT.
+       return o.toString();
+     }
+diff --git a/com/google/common/cache/CacheBuilder.java b/com/google/common/cache/CacheBuilder.java
+index 1f89fdc..4e7bb62 100644
+--- a/com/google/common/cache/CacheBuilder.java
++++ b/com/google/common/cache/CacheBuilder.java
+@@ -208,10 +208,10 @@ public final class CacheBuilder<K, V> {
+       Suppliers.ofInstance(
+           new StatsCounter() {
+             @Override
+-            public void recordHits(int count) {}
++            public void recordHits(int count) { com.google.common.jmhbench.MutationSwitch.tick(2);}
+ 
+             @Override
+-            public void recordMisses(int count) {}
++            public void recordMisses(int count) { com.google.common.jmhbench.MutationSwitch.tick(17);}
+ 
+             @SuppressWarnings("GoodTime") // b/122668874
+             @Override
+diff --git a/com/google/common/cache/CacheBuilderSpec.java b/com/google/common/cache/CacheBuilderSpec.java
+index 7e87310..b92e185 100644
+--- a/com/google/common/cache/CacheBuilderSpec.java
++++ b/com/google/common/cache/CacheBuilderSpec.java
+@@ -143,7 +143,7 @@ public final class CacheBuilderSpec {
+    *
+    * @param cacheBuilderSpecification the string form
+    */
+-  public static CacheBuilderSpec parse(String cacheBuilderSpecification) {
++  public static CacheBuilderSpec parse(String cacheBuilderSpecification) { com.google.common.jmhbench.MutationSwitch.tick(31);
+     CacheBuilderSpec spec = new CacheBuilderSpec(cacheBuilderSpecification);
+     if (!cacheBuilderSpecification.isEmpty()) {
+       for (String keyValuePair : KEYS_SPLITTER.split(cacheBuilderSpecification)) {
+@@ -168,7 +168,7 @@ public final class CacheBuilderSpec {
+   }
+ 
+   /** Returns a CacheBuilderSpec that will prevent caching. */
+-  public static CacheBuilderSpec disableCaching() {
++  public static CacheBuilderSpec disableCaching() { com.google.common.jmhbench.MutationSwitch.tick(44);
+     // Maximum size of zero is one way to block caching
+     return parse("maximumSize=0");
+   }
+diff --git a/com/google/common/collect/ArrayListMultimap.java b/com/google/common/collect/ArrayListMultimap.java
+index d643d6c..a1a63a3 100644
+--- a/com/google/common/collect/ArrayListMultimap.java
++++ b/com/google/common/collect/ArrayListMultimap.java
+@@ -146,7 +146,7 @@ public final class ArrayListMultimap<K extends @Nullable Object, V extends @Null
+    *     call, or switch to a {@code HashMap<K, ArrayList<V>>}.
+    */
+   @Deprecated
+-  public void trimToSize() {
++  public void trimToSize() { com.google.common.jmhbench.MutationSwitch.tick(3);
+     for (Collection<V> collection : backingMap().values()) {
+       ArrayList<V> arrayList = (ArrayList<V>) collection;
+       arrayList.trimToSize();
+diff --git a/com/google/common/collect/ArrayTable.java b/com/google/common/collect/ArrayTable.java
+index a94e440..581b752 100644
+--- a/com/google/common/collect/ArrayTable.java
++++ b/com/google/common/collect/ArrayTable.java
+@@ -107,7 +107,7 @@ public final class ArrayTable<R, C, V> extends AbstractTable<R, C, @Nullable V>
+    *     or if exactly one of {@code rowKeys} or {@code columnKeys} is empty.
+    */
+   public static <R, C, V> ArrayTable<R, C, V> create(
+-      Iterable<? extends R> rowKeys, Iterable<? extends C> columnKeys) {
++      Iterable<? extends R> rowKeys, Iterable<? extends C> columnKeys) { com.google.common.jmhbench.MutationSwitch.tick(18);
+     return new ArrayTable<>(rowKeys, columnKeys);
+   }
+ 
+@@ -136,7 +136,7 @@ public final class ArrayTable<R, C, V> extends AbstractTable<R, C, @Nullable V>
+    * @throws NullPointerException if {@code table} has a null key
+    */
+   @SuppressWarnings("unchecked") // TODO(cpovirk): Make constructor accept wildcard types?
+-  public static <R, C, V> ArrayTable<R, C, V> create(Table<R, C, ? extends @Nullable V> table) {
++  public static <R, C, V> ArrayTable<R, C, V> create(Table<R, C, ? extends @Nullable V> table) { com.google.common.jmhbench.MutationSwitch.tick(32);
+     return (table instanceof ArrayTable)
+         ? new ArrayTable<R, C, V>((ArrayTable<R, C, V>) table)
+         : new ArrayTable<R, C, V>(table);
+diff --git a/com/google/common/collect/CartesianList.java b/com/google/common/collect/CartesianList.java
+index 7c5d2df..94057cc 100644
+--- a/com/google/common/collect/CartesianList.java
++++ b/com/google/common/collect/CartesianList.java
+@@ -68,7 +68,7 @@ final class CartesianList<E> extends AbstractList<List<E>> implements RandomAcce
+   }
+ 
+   @Override
+-  public int indexOf(@Nullable Object o) {
++  public int indexOf(@Nullable Object o) { com.google.common.jmhbench.MutationSwitch.tick(45);
+     if (!(o instanceof List)) {
+       return -1;
+     }
+diff --git a/com/google/common/escape/ArrayBasedEscaperMap.java b/com/google/common/escape/ArrayBasedEscaperMap.java
+index 68515df..18d2b4b 100644
+--- a/com/google/common/escape/ArrayBasedEscaperMap.java
++++ b/com/google/common/escape/ArrayBasedEscaperMap.java
+@@ -43,7 +43,7 @@ public final class ArrayBasedEscaperMap {
+    *
+    * @param replacements a map of characters to their escaped representations
+    */
+-  public static ArrayBasedEscaperMap create(Map<Character, String> replacements) {
++  public static ArrayBasedEscaperMap create(Map<Character, String> replacements) { com.google.common.jmhbench.MutationSwitch.tick(4);
+     return new ArrayBasedEscaperMap(createReplacementArray(replacements));
+   }
+ 
+diff --git a/com/google/common/escape/CharEscaperBuilder.java b/com/google/common/escape/CharEscaperBuilder.java
+index c32d6e2..cef53d0 100644
+--- a/com/google/common/escape/CharEscaperBuilder.java
++++ b/com/google/common/escape/CharEscaperBuilder.java
+@@ -52,7 +52,7 @@ public final class CharEscaperBuilder {
+      * array directly, saving a method call.
+      */
+     @Override
+-    public String escape(String s) {
++    public String escape(String s) { com.google.common.jmhbench.MutationSwitch.tick(19);
+       int slen = s.length();
+       for (int index = 0; index < slen; index++) {
+         char c = s.charAt(index);
+@@ -64,7 +64,7 @@ public final class CharEscaperBuilder {
+     }
+ 
+     @Override
+-    protected char @Nullable [] escape(char c) {
++    protected char @Nullable [] escape(char c) { com.google.common.jmhbench.MutationSwitch.tick(33);
+       return c < replaceLength ? replacements[c] : null;
+     }
+   }
+diff --git a/com/google/common/escape/Escapers.java b/com/google/common/escape/Escapers.java
+index cc83306..93e39ee 100644
+--- a/com/google/common/escape/Escapers.java
++++ b/com/google/common/escape/Escapers.java
+@@ -36,7 +36,7 @@ public final class Escapers {
+   /**
+    * Returns an {@link Escaper} that does no escaping, passing all character data through unchanged.
+    */
+-  public static Escaper nullEscaper() {
++  public static Escaper nullEscaper() { com.google.common.jmhbench.MutationSwitch.tick(46);
+     return NULL_ESCAPER;
+   }
+ 
+diff --git a/com/google/common/eventbus/DeadEvent.java b/com/google/common/eventbus/DeadEvent.java
+index 90910b9..8df7a38 100644
+--- a/com/google/common/eventbus/DeadEvent.java
++++ b/com/google/common/eventbus/DeadEvent.java
+@@ -49,7 +49,7 @@ public class DeadEvent {
+    *
+    * @return the source of this event.
+    */
+-  public Object getSource() {
++  public Object getSource() { com.google.common.jmhbench.MutationSwitch.tick(5);
+     return source;
+   }
+ 
+@@ -59,7 +59,7 @@ public class DeadEvent {
+    *
+    * @return the 'dead' event that could not be delivered.
+    */
+-  public Object getEvent() {
++  public Object getEvent() { com.google.common.jmhbench.MutationSwitch.tick(20);
+     return event;
+   }
+ 
+diff --git a/com/google/common/eventbus/EventBus.java b/com/google/common/eventbus/EventBus.java
+index 603f550..dd70ec3 100644
+--- a/com/google/common/eventbus/EventBus.java
++++ b/com/google/common/eventbus/EventBus.java
+@@ -203,7 +203,7 @@ public class EventBus {
+    *
+    * @since 19.0
+    */
+-  public final String identifier() {
++  public final String identifier() { com.google.common.jmhbench.MutationSwitch.tick(34);
+     return identifier;
+   }
+ 
+@@ -232,7 +232,7 @@ public class EventBus {
+    *
+    * @param object object whose subscriber methods should be registered.
+    */
+-  public void register(Object object) {
++  public void register(Object object) { com.google.common.jmhbench.MutationSwitch.tick(47);
+     subscribers.register(object);
+   }
+ 
+diff --git a/com/google/common/graph/GraphBuilder.java b/com/google/common/graph/GraphBuilder.java
+index 48dfd8f..354ea3f 100644
+--- a/com/google/common/graph/GraphBuilder.java
++++ b/com/google/common/graph/GraphBuilder.java
+@@ -76,12 +76,12 @@ public final class GraphBuilder<N> extends AbstractGraphBuilder<N> {
+   }
+ 
+   /** Returns a {@link GraphBuilder} for building directed graphs. */
+-  public static GraphBuilder<Object> directed() {
++  public static GraphBuilder<Object> directed() { com.google.common.jmhbench.MutationSwitch.tick(6);
+     return new GraphBuilder<>(true);
+   }
+ 
+   /** Returns a {@link GraphBuilder} for building undirected graphs. */
+-  public static GraphBuilder<Object> undirected() {
++  public static GraphBuilder<Object> undirected() { com.google.common.jmhbench.MutationSwitch.tick(21);
+     return new GraphBuilder<>(false);
+   }
+ 
+diff --git a/com/google/common/graph/InvalidatableSet.java b/com/google/common/graph/InvalidatableSet.java
+index 80e4a94..cdfd605 100644
+--- a/com/google/common/graph/InvalidatableSet.java
++++ b/com/google/common/graph/InvalidatableSet.java
+@@ -22,7 +22,7 @@ final class InvalidatableSet<E> extends ForwardingSet<E> {
+   }
+ 
+   @Override
+-  protected Set<E> delegate() {
++  protected Set<E> delegate() { com.google.common.jmhbench.MutationSwitch.tick(35);
+     validate();
+     return delegate;
+   }
+diff --git a/com/google/common/graph/MapIteratorCache.java b/com/google/common/graph/MapIteratorCache.java
+index 4f41559..a887656 100644
+--- a/com/google/common/graph/MapIteratorCache.java
++++ b/com/google/common/graph/MapIteratorCache.java
+@@ -102,7 +102,7 @@ class MapIteratorCache<K, V> {
+   final Set<K> unmodifiableKeySet() {
+     return new AbstractSet<K>() {
+       @Override
+-      public UnmodifiableIterator<K> iterator() {
++      public UnmodifiableIterator<K> iterator() { com.google.common.jmhbench.MutationSwitch.tick(48);
+         Iterator<Entry<K, V>> entryIterator = backingMap.entrySet().iterator();
+ 
+         return new UnmodifiableIterator<K>() {
+diff --git a/com/google/common/hash/ChecksumHashFunction.java b/com/google/common/hash/ChecksumHashFunction.java
+index b7d69b4..a431723 100644
+--- a/com/google/common/hash/ChecksumHashFunction.java
++++ b/com/google/common/hash/ChecksumHashFunction.java
+@@ -50,12 +50,12 @@ final class ChecksumHashFunction extends AbstractHashFunction implements Seriali
+   }
+ 
+   @Override
+-  public int bits() {
++  public int bits() { com.google.common.jmhbench.MutationSwitch.tick(7);
+     return bits;
+   }
+ 
+   @Override
+-  public Hasher newHasher() {
++  public Hasher newHasher() { com.google.common.jmhbench.MutationSwitch.tick(22);
+     return new ChecksumHasher(checksumSupplier.get());
+   }
+ 
+diff --git a/com/google/common/hash/Crc32cHashFunction.java b/com/google/common/hash/Crc32cHashFunction.java
+index 1a26b94..982a6e5 100644
+--- a/com/google/common/hash/Crc32cHashFunction.java
++++ b/com/google/common/hash/Crc32cHashFunction.java
+@@ -30,12 +30,12 @@ final class Crc32cHashFunction extends AbstractHashFunction {
+   static final HashFunction CRC_32_C = new Crc32cHashFunction();
+ 
+   @Override
+-  public int bits() {
++  public int bits() { com.google.common.jmhbench.MutationSwitch.tick(36);
+     return 32;
+   }
+ 
+   @Override
+-  public Hasher newHasher() {
++  public Hasher newHasher() { com.google.common.jmhbench.MutationSwitch.tick(49);
+     return new Crc32cHasher();
+   }
+ 
+diff --git a/com/google/common/html/HtmlEscapers.java b/com/google/common/html/HtmlEscapers.java
+index 68991d9..0154b28 100644
+--- a/com/google/common/html/HtmlEscapers.java
++++ b/com/google/common/html/HtmlEscapers.java
+@@ -49,7 +49,7 @@ public final class HtmlEscapers {
+    * numeric), so it does not replace non-ASCII code points with character references. This escaper
+    * escapes only the following five ASCII characters: {@code '"&<>}.
+    */
+-  public static Escaper htmlEscaper() {
++  public static Escaper htmlEscaper() { com.google.common.jmhbench.MutationSwitch.tick(8);
+     return HTML_ESCAPER;
+   }
+ 
+diff --git a/com/google/common/io/ByteStreams.java b/com/google/common/io/ByteStreams.java
+index b34d84a..133a748 100644
+--- a/com/google/common/io/ByteStreams.java
++++ b/com/google/common/io/ByteStreams.java
+@@ -238,7 +238,7 @@ public final class ByteStreams {
+    * @return a byte array containing all the bytes from the stream
+    * @throws IOException if an I/O error occurs
+    */
+-  public static byte[] toByteArray(InputStream in) throws IOException {
++  public static byte[] toByteArray(InputStream in) throws IOException { com.google.common.jmhbench.MutationSwitch.tick(9);
+     checkNotNull(in);
+     return toByteArrayInternal(in, new ArrayDeque<byte[]>(TO_BYTE_ARRAY_DEQUE_SIZE), 0);
+   }
+@@ -288,7 +288,7 @@ public final class ByteStreams {
+    * @since 20.0
+    */
+   @CanIgnoreReturnValue
+-  public static long exhaust(InputStream in) throws IOException {
++  public static long exhaust(InputStream in) throws IOException { com.google.common.jmhbench.MutationSwitch.tick(23);
+     long total = 0;
+     long read;
+     byte[] buf = createBuffer();
+diff --git a/com/google/common/io/CharStreams.java b/com/google/common/io/CharStreams.java
+index f6686e1..7bf8393 100644
+--- a/com/google/common/io/CharStreams.java
++++ b/com/google/common/io/CharStreams.java
+@@ -201,7 +201,7 @@ public final class CharStreams {
+    * @return a mutable {@link List} containing all the lines
+    * @throws IOException if an I/O error occurs
+    */
+-  public static List<String> readLines(Readable r) throws IOException {
++  public static List<String> readLines(Readable r) throws IOException { com.google.common.jmhbench.MutationSwitch.tick(37);
+     List<String> result = new ArrayList<>();
+     LineReader lineReader = new LineReader(r);
+     String line;
+@@ -227,7 +227,7 @@ public final class CharStreams {
+   @CanIgnoreReturnValue // some processors won't return a useful result
+   @ParametricNullness
+   public static <T extends @Nullable Object> T readLines(
+-      Readable readable, LineProcessor<T> processor) throws IOException {
++      Readable readable, LineProcessor<T> processor) throws IOException { com.google.common.jmhbench.MutationSwitch.tick(50);
+     checkNotNull(readable);
+     checkNotNull(processor);
+ 
+diff --git a/com/google/common/jmhbench/MutationSwitch.java b/com/google/common/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..7f38df0
+--- /dev/null
++++ b/com/google/common/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.google.common.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/google/common/math/BigDecimalMath.java b/com/google/common/math/BigDecimalMath.java
+index e4a1534..8f0e594 100644
+--- a/com/google/common/math/BigDecimalMath.java
++++ b/com/google/common/math/BigDecimalMath.java
+@@ -51,7 +51,7 @@ public final class BigDecimalMath {
+    *     is not precisely representable as a {@code double}
+    * @since 30.0
+    */
+-  public static double roundToDouble(BigDecimal x, RoundingMode mode) {
++  public static double roundToDouble(BigDecimal x, RoundingMode mode) { com.google.common.jmhbench.MutationSwitch.tick(10);
+     return BigDecimalToDoubleRounder.INSTANCE.roundToDouble(x, mode);
+   }
+ 
+diff --git a/com/google/common/math/BigIntegerMath.java b/com/google/common/math/BigIntegerMath.java
+index 98a88d3..4a71f66 100644
+--- a/com/google/common/math/BigIntegerMath.java
++++ b/com/google/common/math/BigIntegerMath.java
+@@ -54,7 +54,7 @@ public final class BigIntegerMath {
+    * @throws IllegalArgumentException if {@code x <= 0}
+    * @since 20.0
+    */
+-  public static BigInteger ceilingPowerOfTwo(BigInteger x) {
++  public static BigInteger ceilingPowerOfTwo(BigInteger x) { com.google.common.jmhbench.MutationSwitch.tick(24);
+     return BigInteger.ZERO.setBit(log2(x, CEILING));
+   }
+ 
+@@ -65,7 +65,7 @@ public final class BigIntegerMath {
+    * @throws IllegalArgumentException if {@code x <= 0}
+    * @since 20.0
+    */
+-  public static BigInteger floorPowerOfTwo(BigInteger x) {
++  public static BigInteger floorPowerOfTwo(BigInteger x) { com.google.common.jmhbench.MutationSwitch.tick(38);
+     return BigInteger.ZERO.setBit(log2(x, FLOOR));
+   }
+ 
+diff --git a/com/google/common/net/HostAndPort.java b/com/google/common/net/HostAndPort.java
+index d3f2639..0343c1d 100644
+--- a/com/google/common/net/HostAndPort.java
++++ b/com/google/common/net/HostAndPort.java
+@@ -93,12 +93,12 @@ public final class HostAndPort implements Serializable {
+    *
+    * @since 20.0 (since 10.0 as {@code getHostText})
+    */
+-  public String getHost() {
++  public String getHost() { com.google.common.jmhbench.MutationSwitch.tick(11);
+     return host;
+   }
+ 
+   /** Return true if this instance has a defined port. */
+-  public boolean hasPort() {
++  public boolean hasPort() { com.google.common.jmhbench.MutationSwitch.tick(25);
+     return port >= 0;
+   }
+ 
+diff --git a/com/google/common/net/HostSpecifier.java b/com/google/common/net/HostSpecifier.java
+index 4be093e..079fba3 100644
+--- a/com/google/common/net/HostSpecifier.java
++++ b/com/google/common/net/HostSpecifier.java
+@@ -75,7 +75,7 @@ public final class HostSpecifier {
+    *
+    * @throws IllegalArgumentException if the specifier is not valid.
+    */
+-  public static HostSpecifier fromValid(String specifier) {
++  public static HostSpecifier fromValid(String specifier) { com.google.common.jmhbench.MutationSwitch.tick(39);
+     // Verify that no port was specified, and strip optional brackets from
+     // IPv6 literals.
+     HostAndPort parsedHost = HostAndPort.fromString(specifier);
+diff --git a/com/google/common/primitives/ImmutableDoubleArray.java b/com/google/common/primitives/ImmutableDoubleArray.java
+index a5a6584..09c76e9 100644
+--- a/com/google/common/primitives/ImmutableDoubleArray.java
++++ b/com/google/common/primitives/ImmutableDoubleArray.java
+@@ -91,12 +91,12 @@ public final class ImmutableDoubleArray implements Serializable {
+   private static final ImmutableDoubleArray EMPTY = new ImmutableDoubleArray(new double[0]);
+ 
+   /** Returns the empty array. */
+-  public static ImmutableDoubleArray of() {
++  public static ImmutableDoubleArray of() { com.google.common.jmhbench.MutationSwitch.tick(12);
+     return EMPTY;
+   }
+ 
+   /** Returns an immutable array containing a single value. */
+-  public static ImmutableDoubleArray of(double e0) {
++  public static ImmutableDoubleArray of(double e0) { com.google.common.jmhbench.MutationSwitch.tick(26);
+     return new ImmutableDoubleArray(new double[] {e0});
+   }
+ 
+diff --git a/com/google/common/primitives/ImmutableIntArray.java b/com/google/common/primitives/ImmutableIntArray.java
+index e4663fd..29355e2 100644
+--- a/com/google/common/primitives/ImmutableIntArray.java
++++ b/com/google/common/primitives/ImmutableIntArray.java
+@@ -91,7 +91,7 @@ public final class ImmutableIntArray implements Serializable {
+   private static final ImmutableIntArray EMPTY = new ImmutableIntArray(new int[0]);
+ 
+   /** Returns the empty array. */
+-  public static ImmutableIntArray of() {
++  public static ImmutableIntArray of() { com.google.common.jmhbench.MutationSwitch.tick(40);
+     return EMPTY;
+   }
+ 
+diff --git a/com/google/common/reflect/ImmutableTypeToInstanceMap.java b/com/google/common/reflect/ImmutableTypeToInstanceMap.java
+index 383dcdd..2b4592a 100644
+--- a/com/google/common/reflect/ImmutableTypeToInstanceMap.java
++++ b/com/google/common/reflect/ImmutableTypeToInstanceMap.java
+@@ -32,12 +32,12 @@ public final class ImmutableTypeToInstanceMap<B> extends ForwardingMap<TypeToken
+     implements TypeToInstanceMap<B> {
+ 
+   /** Returns an empty type to instance map. */
+-  public static <B> ImmutableTypeToInstanceMap<B> of() {
++  public static <B> ImmutableTypeToInstanceMap<B> of() { com.google.common.jmhbench.MutationSwitch.tick(13);
+     return new ImmutableTypeToInstanceMap<>(ImmutableMap.of());
+   }
+ 
+   /** Returns a new builder. */
+-  public static <B> Builder<B> builder() {
++  public static <B> Builder<B> builder() { com.google.common.jmhbench.MutationSwitch.tick(27);
+     return new Builder<>();
+   }
+ 
+diff --git a/com/google/common/reflect/MutableTypeToInstanceMap.java b/com/google/common/reflect/MutableTypeToInstanceMap.java
+index 9a9939a..bd70a32 100644
+--- a/com/google/common/reflect/MutableTypeToInstanceMap.java
++++ b/com/google/common/reflect/MutableTypeToInstanceMap.java
+@@ -43,7 +43,7 @@ public final class MutableTypeToInstanceMap<B extends @Nullable Object>
+   private final Map<TypeToken<? extends @NonNull B>, B> backingMap = new HashMap<>();
+ 
+   @Override
+-  public <T extends @NonNull B> @Nullable T getInstance(Class<T> type) {
++  public <T extends @NonNull B> @Nullable T getInstance(Class<T> type) { com.google.common.jmhbench.MutationSwitch.tick(41);
+     return trustedGet(TypeToken.of(type));
+   }
+ 
+diff --git a/com/google/common/util/concurrent/AtomicDoubleArray.java b/com/google/common/util/concurrent/AtomicDoubleArray.java
+index f013ff1..25a1349 100644
+--- a/com/google/common/util/concurrent/AtomicDoubleArray.java
++++ b/com/google/common/util/concurrent/AtomicDoubleArray.java
+@@ -90,7 +90,7 @@ public class AtomicDoubleArray implements Serializable {
+    *
+    * @return the length of the array
+    */
+-  public final int length() {
++  public final int length() { com.google.common.jmhbench.MutationSwitch.tick(14);
+     return longs.length();
+   }
+ 
+@@ -124,7 +124,7 @@ public class AtomicDoubleArray implements Serializable {
+    * @param i the index
+    * @param newValue the new value
+    */
+-  public final void lazySet(int i, double newValue) {
++  public final void lazySet(int i, double newValue) { com.google.common.jmhbench.MutationSwitch.tick(28);
+     long next = doubleToRawLongBits(newValue);
+     longs.lazySet(i, next);
+   }
+diff --git a/com/google/common/util/concurrent/AtomicLongMap.java b/com/google/common/util/concurrent/AtomicLongMap.java
+index d7d96f4..bfe063e 100644
+--- a/com/google/common/util/concurrent/AtomicLongMap.java
++++ b/com/google/common/util/concurrent/AtomicLongMap.java
+@@ -66,7 +66,7 @@ public final class AtomicLongMap<K> implements Serializable {
+   }
+ 
+   /** Creates an {@code AtomicLongMap}. */
+-  public static <K> AtomicLongMap<K> create() {
++  public static <K> AtomicLongMap<K> create() { com.google.common.jmhbench.MutationSwitch.tick(42);
+     return new AtomicLongMap<>(new ConcurrentHashMap<>());
+   }
+ 
+diff --git a/com/google/common/xml/XmlEscapers.java b/com/google/common/xml/XmlEscapers.java
+index 9686801..f262ce9 100644
+--- a/com/google/common/xml/XmlEscapers.java
++++ b/com/google/common/xml/XmlEscapers.java
+@@ -69,7 +69,7 @@ public final class XmlEscapers {
+    * <p>This escaper does not treat surrogate pairs specially and does not perform Unicode
+    * validation on its input.
+    */
+-  public static Escaper xmlContentEscaper() {
++  public static Escaper xmlContentEscaper() { com.google.common.jmhbench.MutationSwitch.tick(15);
+     return XML_CONTENT_ESCAPER;
+   }
+ 
+@@ -94,7 +94,7 @@ public final class XmlEscapers {
+    * validation on its input.
+    */
+   @SuppressWarnings("EscapedEntity") // We do mean for the user to see &#x9;" etc.
+-  public static Escaper xmlAttributeEscaper() {
++  public static Escaper xmlAttributeEscaper() { com.google.common.jmhbench.MutationSwitch.tick(29);
+     return XML_ATTRIBUTE_ESCAPER;
+   }
+   private static final Escaper XML_CONTENT_ESCAPER;

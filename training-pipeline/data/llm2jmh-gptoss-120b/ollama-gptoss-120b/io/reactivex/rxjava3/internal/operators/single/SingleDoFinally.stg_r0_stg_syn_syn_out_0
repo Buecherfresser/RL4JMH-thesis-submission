@@ -1,0 +1,95 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmarks the overhead of the {@code SingleDoFinally} operator compared to a plain {@code Single.just}.
+ * The benchmark measures throughput (operations per second) under a single‑threaded subscription scenario.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between benchmark threads.
+ * - Warm‑up and measurement iterations are configured to let the JIT stabilize.
+ * - A no‑op {@code Action} is used to isolate the operator's structural overhead.
+ * - The benchmark returns the emitted value to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class SingleDoFinallyBenchmark {
+
+    /**
+     * Plain Single emitting a constant integer.
+     */
+    private Single<Integer> plainSingle;
+
+    /**
+     * Single wrapped with the internal SingleDoFinally operator.
+     */
+    private Single<Integer> doFinallySingle;
+
+    /**
+     * No‑op Action used by the operator.
+     */
+    private static final io.reactivex.rxjava3.functions.Action NOOP = () -> {
+        // intentionally empty
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        plainSingle = Single.just(1);
+        doFinallySingle = new SingleDoFinally<>(Single.just(1), NOOP);
+    }
+
+    /**
+     * Baseline benchmark: subscribe to a plain Single and block until the value is emitted.
+     */
+    @Benchmark
+    public int baseline() {
+        return plainSingle.blockingGet();
+    }
+
+    /**
+     * Benchmark the SingleDoFinally operator: subscribe, block, and ensure the finally Action runs.
+     */
+    @Benchmark
+    public int withDoFinally() {
+        return doFinallySingle.blockingGet();
+    }
+}

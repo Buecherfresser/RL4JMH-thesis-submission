@@ -1,0 +1,97 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableBuffer}.
+ * Measures throughput of the buffer operator with different count/skip configurations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ObservableBufferBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items per buffer.
+         */
+        @Param({ "1", "10", "100", "1000" })
+        public int count;
+
+        /**
+         * Skip value – when equal to {@code count} the operator works in exact mode,
+         * otherwise it works in skip mode (overlapping or gapped buffers).
+         */
+        @Param({ "1", "5", "10" })
+        public int skip;
+
+        /**
+         * Size of the source sequence for each benchmark iteration.
+         */
+        @Param({ "1000", "10000", "100000" })
+        public int sourceSize;
+
+        /**
+         * The source Observable emitting a deterministic range of integers.
+         */
+        public Observable<Integer> source;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // A simple finite range; each benchmark iteration will consume the whole range.
+            source = Observable.range(0, sourceSize);
+        }
+    }
+
+    /**
+     * Benchmark that applies the buffer operator and consumes all emitted collections.
+     * The buffer supplier creates a new {@link ArrayList} for each buffer.
+     *
+     * @param state shared benchmark state
+     * @param bh    JMH blackhole to consume the buffered collections
+     */
+    @Benchmark
+    public void bufferOperator(BenchmarkState state, Blackhole bh) {
+        state.source.buffer(state.count, state.skip, ArrayList::new).blockingSubscribe(bh::consume);
+    }
+}

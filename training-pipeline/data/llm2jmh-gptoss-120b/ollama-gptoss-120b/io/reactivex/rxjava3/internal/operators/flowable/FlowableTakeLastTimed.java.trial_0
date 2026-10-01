@@ -1,0 +1,92 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Scheduler;
+
+/**
+ * JMH benchmark for {@link FlowableTakeLastTimed}.
+ *
+ * The benchmark measures the throughput (items processed per second) of the
+ * takeLastTimed operator under different source sizes and configuration
+ * parameters.
+ *
+ * Best‑practice notes:
+ * • Use {@code Schedulers.trampoline()} to avoid asynchronous thread scheduling
+ *   overhead and keep the benchmark deterministic.
+ * • The source is a finite {@link Flowable#range} so the benchmark completes
+ *   quickly and can be measured accurately.
+ * • {@link Blackhole} consumes the emitted items to prevent dead‑code elimination.
+ * • Warm‑up, measurement, forks and time units follow common JMH recommendations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class FlowableTakeLastTimedBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the source Flowable. */
+        @Param({"1000", "10000", "100000"})
+        int sourceSize;
+
+        /** Maximum number of items to retain (count). */
+        @Param({"10", "100"})
+        long count;
+
+        /** Time window for retention (in milliseconds). */
+        @Param({"1000"})
+        long timeMs;
+
+        /** Queue buffer size – must be a power of two for SpscLinkedArrayQueue. */
+        @Param({"128"})
+        int bufferSize;
+
+        /** Whether errors are delayed until after the buffered items are emitted. */
+        @Param({"false", "true"})
+        boolean delayError;
+
+        /** Scheduler used by the operator (trampoline for deterministic timing). */
+        Scheduler scheduler = Schedulers.trampoline();
+
+        /** Source Flowable that emits a range of integers. */
+        Flowable<Integer> source;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Flowable.range(1, sourceSize);
+        }
+    }
+
+    @Benchmark
+    public void takeLastTimed(BenchmarkState state, Blackhole bh) {
+        // Construct the internal operator directly (same package) to benchmark its exact behavior.
+        new FlowableTakeLastTimed<>(
+                state.source,
+                state.count,
+                state.timeMs,
+                TimeUnit.MILLISECONDS,
+                state.scheduler,
+                state.bufferSize,
+                state.delayError
+        )
+        .subscribe(
+                bh::consume,
+                bh::consume,
+                () -> {}
+        );
+        // The subscription runs synchronously because we use the trampoline scheduler,
+        // so the benchmark method returns only after all items have been processed.
+    }
+}
+```

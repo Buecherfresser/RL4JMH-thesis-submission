@@ -1,0 +1,130 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableSampleTimed}.
+ *
+ * The benchmark measures the throughput (operations per second) of sampling a fast
+ * upstream {@link Flowable} with a timed interval. It uses a {@link Blackhole} to
+ * consume the downstream values and avoid dead‑code elimination.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup(Level.Trial) creates the upstream source once per trial.
+ * - @TearDown(Level.Trial) disposes resources.
+ * - The benchmark method does not allocate objects inside the timed section.
+ * - Use of Blackhole to consume values.
+ * - Warm‑up and measurement iterations are left to the JMH runner defaults
+ *   (or can be configured via command line).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableSampleTimedBenchmark {
+
+    /** Number of items emitted by the upstream source per trial. */
+    @Param({"1000000"})
+    public int upstreamItemCount;
+
+    /** Sampling period in milliseconds. */
+    @Param({"1"})
+    public long periodMs;
+
+    /** The upstream Flowable that emits a range of integers as fast as possible. */
+    private Flowable<Integer> upstream;
+
+    /** The sampled Flowable under test. */
+    private Flowable<Integer> sampled;
+
+    /** A reusable subscriber that forwards received items to a Blackhole. */
+    private BlackholeSubscriber subscriber;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Fast upstream emitting a fixed number of items on the computation scheduler.
+        upstream = Flowable.range(1, upstreamItemCount)
+                .subscribeOn(Schedulers.computation());
+
+        // Apply the operator under test: sample every {@code periodMs} milliseconds.
+        sampled = upstream.sample(periodMs, TimeUnit.MILLISECONDS, Schedulers.computation(), false, null);
+
+        subscriber = new BlackholeSubscriber();
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // Ensure any background work is cancelled.
+        subscriber.dispose();
+    }
+
+    /**
+     * Benchmark method that subscribes to the sampled Flowable, consumes all items,
+     * and blocks until completion. The throughput measured is the number of
+     * complete subscriptions per second.
+     *
+     * @param bh Blackhole provided by JMH to consume values.
+     */
+    @Benchmark
+    public void sampleTimedThroughput(Blackhole bh) {
+        // Replace the internal Blackhole with the one supplied by JMH.
+        subscriber.setBlackhole(bh);
+
+        // Subscribe and block until the upstream completes.
+        sampled.subscribe(subscriber);
+        subscriber.awaitCompletion();
+    }
+
+    /**
+     * Subscriber that forwards each received item to a Blackhole and signals
+     * completion via a latch.
+     */
+    private static final class BlackholeSubscriber extends DisposableSubscriber<Integer> {
+        private volatile Blackhole bh;
+        private final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        private final AtomicLong received = new AtomicLong();
+
+        void setBlackhole(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            // Consume the value to prevent dead‑code elimination.
+            if (bh != null) {
+                bh.consume(t);
+            }
+            received.incrementAndGet();
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // Propagate errors to JMH (they will be reported as benchmark failures).
+            t.printStackTrace();
+            latch.countDown();
+        }
+
+        @Override
+        public void onComplete() {
+            latch.countDown();
+        }
+
+        void awaitCompletion() {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}
+```

@@ -1,0 +1,103 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link FlowableReduceSeedSingle}.
+ *
+ * The benchmark measures the throughput (operations per second) of reducing a {@link Flowable}
+ * with a seed value using a simple integer addition reducer.
+ *
+ * Best practices applied:
+ * - @State(Scope.Benchmark) to share immutable data across iterations.
+ * - @Param to allow configurable source size.
+ * - @Setup(Level.Trial) to create the source once per trial.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations with reasonable defaults.
+ * - Mode.Throughput with TimeUnit.SECONDS for clear throughput numbers.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Benchmark)
+public class FlowableReduceSeedSingleBenchmark {
+
+    /**
+     * Number of elements emitted by the source Flowable.
+     * Typical values: 10_000, 100_000, 1_000_000.
+     */
+    @Param({ "10000", "100000", "1000000" })
+    public int size;
+
+    /**
+     * The source Flowable emitting a range of integers [1 .. size].
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * Reducer that sums two integers.
+     */
+    private static final BiFunction<Integer, Integer, Integer> SUM_REDUCER = Integer::sum;
+
+    /**
+     * Seed value for the reduction (zero for summation).
+     */
+    private static final Integer SEED = 0;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a hot source that can be subscribed to repeatedly without allocation overhead.
+        source = Flowable.range(1, size);
+    }
+
+    /**
+     * Benchmark the reduce‑with‑seed operation.
+     *
+     * The Single is subscribed to using {@code blockingGet()} to obtain the result synchronously.
+     * The result is consumed by the Blackhole to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void reduceWithSeed(Blackhole bh) {
+        Single<Integer> reduced = new FlowableReduceSeedSingle<>(source, SEED, SUM_REDUCER);
+        // blockingGet() forces the whole pipeline to execute and returns the final value.
+        Integer result = reduced.blockingGet();
+        bh.consume(result);
+    }
+}

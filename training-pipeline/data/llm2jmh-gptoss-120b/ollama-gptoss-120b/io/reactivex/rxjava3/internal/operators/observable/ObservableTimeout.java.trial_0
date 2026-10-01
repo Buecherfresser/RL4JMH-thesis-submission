@@ -1,0 +1,61 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Observable;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Microbenchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableTimeout}.
+ * Measures the throughput of the timeout operator when the timeout never fires.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+@State(Scope.Thread)
+public class ObservableTimeoutBenchmark {
+
+    /** Source emitting a fixed number of items synchronously. */
+    private Observable<Integer> source;
+
+    /** An Observable that never emits nor completes – used as a timeout indicator that never fires. */
+    private Observable<Object> neverTimeout;
+
+    /** Fallback Observable used in the variant with a fallback. */
+    private Observable<Integer> fallback;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Emit 10 000 integers synchronously; this size is large enough to amortize overhead.
+        source = Observable.range(0, 10_000);
+        neverTimeout = Observable.never();
+        fallback = Observable.empty(); // fallback that completes immediately
+    }
+
+    /**
+     * Benchmark the timeout operator without a fallback.
+     * The timeout indicator never fires, so the operator should behave like a pass‑through.
+     */
+    @Benchmark
+    public void timeoutWithoutFallback(Blackhole bh) {
+        source
+            .timeout(neverTimeout, i -> neverTimeout)
+            .subscribe(bh::consume, bh::consume);
+    }
+
+    /**
+     * Benchmark the timeout operator with a fallback Observable.
+     * The timeout indicator never fires, so the fallback is never used.
+     */
+    @Benchmark
+    public void timeoutWithFallback(Blackhole bh) {
+        source
+            .timeout(neverTimeout, i -> neverTimeout, fallback)
+            .subscribe(bh::consume, bh::consume);
+    }
+}
+```

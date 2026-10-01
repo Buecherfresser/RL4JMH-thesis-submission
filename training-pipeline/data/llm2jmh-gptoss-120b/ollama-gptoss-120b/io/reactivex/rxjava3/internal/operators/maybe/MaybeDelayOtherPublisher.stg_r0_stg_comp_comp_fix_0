@@ -1,0 +1,88 @@
+```java
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Publisher;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Blackhole;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@code MaybeDelayOtherPublisher}.
+ *
+ * The benchmark measures the throughput of the operator when the upstream
+ * Maybe succeeds and the "other" Publisher completes immediately.
+ *
+ * Best practices applied:
+ * - Use {@code @State(Scope.Thread)} to avoid sharing mutable state across threads.
+ * - Pre‑create the source and the delayed Maybe in {@code @Setup} to exclude
+ *   allocation overhead from the measured section.
+ * - Use {@code Blackhole} to consume the result and prevent dead‑code elimination.
+ * - Run in {@code Mode.Throughput} with a time unit of operations per millisecond.
+ * - Include a warm‑up and measurement iteration configuration via JMH defaults.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeDelayOtherPublisherBenchmark {
+
+    /**
+     * Upstream Maybe that emits a single value.
+     */
+    private Maybe<Integer> upstream;
+
+    /**
+     * Publisher used as the "other" source; completes immediately.
+     */
+    private Publisher<Object> other;
+
+    /**
+     * The Maybe after applying the delay operator.
+     */
+    private Maybe<Integer> delayedMaybe;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple upstream that emits a constant value.
+        upstream = Maybe.just(42);
+        // An "other" Publisher that completes instantly (no items emitted).
+        // Using Flowable.empty() which implements Publisher.
+        other = Flowable.empty();
+        // Apply the delay operator; this internally creates MaybeDelayOtherPublisher.
+        delayedMaybe = upstream.delay(other);
+    }
+
+    /**
+     * Benchmark the throughput of subscribing to the delayed Maybe and
+     * blocking until the terminal event. The result is consumed by Blackhole
+     * to avoid dead‑code elimination.
+     *
+     * @param bh Blackhole to consume the result.
+     */
+    @Benchmark
+    public void subscribeAndBlock(Blackhole bh) {
+        // blockingGet() will subscribe, wait for completion, and return the value (or null).
+        Integer result = delayedMaybe.blockingGet();
+        bh.consume(result);
+    }
+
+    /**
+     * Variant that uses non‑blocking subscription with a CountDownLatch to
+     * ensure the operation completes before the benchmark iteration ends.
+     * This demonstrates an alternative pattern that avoids blocking the thread.
+     *
+     * @param bh Blackhole to consume the result.
+     */
+    @Benchmark
+    public void subscribeWithObserver(Blackhole bh) throws InterruptedException {
+        final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        delayedMaybe.subscribe(bh::consume, bh::consume, latch::countDown);
+        latch.await();
+    }
+}
+```

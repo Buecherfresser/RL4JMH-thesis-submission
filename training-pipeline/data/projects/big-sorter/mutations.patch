@@ -1,0 +1,531 @@
+diff --git a/com/github/davidmoten/bigsorter/JsonArraySerializer.java b/com/github/davidmoten/bigsorter/JsonArraySerializer.java
+index 01e143c..85c31c8 100644
+--- a/com/github/davidmoten/bigsorter/JsonArraySerializer.java
++++ b/com/github/davidmoten/bigsorter/JsonArraySerializer.java
+@@ -21,7 +21,7 @@ final class JsonArraySerializer implements Serializer<ObjectNode> {
+     }
+ 
+     @Override
+-    public Reader<ObjectNode> createReader(InputStream in) {
++    public Reader<ObjectNode> createReader(InputStream in) { com.github.davidmoten.jmhbench.MutationSwitch.tick(1);
+         try {
+             JsonParser parser = mapper.getFactory().createParser(in);
+             if (parser.nextToken() != JsonToken.START_ARRAY) {
+@@ -43,7 +43,7 @@ final class JsonArraySerializer implements Serializer<ObjectNode> {
+                 }
+ 
+                 @Override
+-                public void close() throws IOException {
++                public void close() throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(2);
+                     parser.close();
+                 }
+             };
+@@ -53,7 +53,7 @@ final class JsonArraySerializer implements Serializer<ObjectNode> {
+     }
+ 
+     @Override
+-    public Writer<ObjectNode> createWriter(OutputStream out) {
++    public Writer<ObjectNode> createWriter(OutputStream out) { com.github.davidmoten.jmhbench.MutationSwitch.tick(3);
+ 
+         java.io.Writer w = new OutputStreamWriter(out);
+ 
+@@ -79,7 +79,7 @@ final class JsonArraySerializer implements Serializer<ObjectNode> {
+             }
+ 
+             @Override
+-            public void close() throws IOException {
++            public void close() throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(4);
+                 if (!closed) {
+                     w.write("\n]");
+                     w.close();
+diff --git a/com/github/davidmoten/bigsorter/NonClosingInputStream.java b/com/github/davidmoten/bigsorter/NonClosingInputStream.java
+index ef7190b..0629a73 100644
+--- a/com/github/davidmoten/bigsorter/NonClosingInputStream.java
++++ b/com/github/davidmoten/bigsorter/NonClosingInputStream.java
+@@ -37,22 +37,22 @@ public final class NonClosingInputStream extends InputStream {
+     }
+ 
+     @Override
+-    public void close() throws IOException {
++    public void close() throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(5);
+         // don't close in
+     }
+ 
+     @Override
+-    public synchronized void mark(int readlimit) {
++    public synchronized void mark(int readlimit) { com.github.davidmoten.jmhbench.MutationSwitch.tick(6);
+         in.mark(readlimit);
+     }
+ 
+     @Override
+-    public synchronized void reset() throws IOException {
++    public synchronized void reset() throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(7);
+         in.reset();
+     }
+ 
+     @Override
+-    public boolean markSupported() {
++    public boolean markSupported() { com.github.davidmoten.jmhbench.MutationSwitch.tick(8);
+         return in.markSupported();
+     }
+ }
+\ No newline at end of file
+diff --git a/com/github/davidmoten/bigsorter/Util.java b/com/github/davidmoten/bigsorter/Util.java
+index e5bc29b..6e0b77b 100644
+--- a/com/github/davidmoten/bigsorter/Util.java
++++ b/com/github/davidmoten/bigsorter/Util.java
+@@ -38,7 +38,7 @@ public final class Util {
+      *             I/O exception
+      */
+     public static <T> void findSame(Reader<? extends T> readerA, Reader<? extends T> readerB,
+-            Comparator<? super T> comparator, Writer<T> writer) throws IOException {
++            Comparator<? super T> comparator, Writer<T> writer) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(9);
+         // return A intersection B
+         T x = readerA.read();
+         T y = readerB.read();
+@@ -77,7 +77,7 @@ public final class Util {
+      *             I/O exception
+      */
+     public static <T> void findSame(File a, File b, Serializer<T> serializer, Comparator<? super T> comparator,
+-            File output) throws IOException {
++            File output) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(10);
+         try (Reader<T> readerA = serializer.createReader(a);
+                 Reader<T> readerB = serializer.createReader(b);
+                 Writer<T> writer = serializer.createWriter(output)) {
+@@ -104,7 +104,7 @@ public final class Util {
+      *             I/O exception
+      */
+     public static <T> void findDifferent(Reader<? extends T> readerA, Reader<? extends T> readerB,
+-            Comparator<? super T> comparator, Writer<T> writer) throws IOException {
++            Comparator<? super T> comparator, Writer<T> writer) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(11);
+         // returns those elements in (A union B) \ (A intersection B)
+         T x = readerA.read();
+         T y = readerB.read();
+@@ -152,7 +152,7 @@ public final class Util {
+      *             I/O exception
+      */
+     public static <T> void findDifferent(File a, File b, Serializer<T> serializer, Comparator<? super T> comparator,
+-            File output) throws IOException {
++            File output) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(12);
+         try (Reader<T> readerA = serializer.createReader(a);
+                 Reader<T> readerB = serializer.createReader(b);
+                 Writer<T> writer = serializer.createWriter(output)) {
+@@ -179,7 +179,7 @@ public final class Util {
+      *             I/O exception
+      */
+     public static <T> void findComplement(Reader<? extends T> readerA, Reader<? extends T> readerB,
+-            Comparator<? super T> comparator, Writer<T> writer) throws IOException {
++            Comparator<? super T> comparator, Writer<T> writer) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(13);
+         // returns those elements in A that are not present in B
+         T x = readerA.read();
+         T y = readerB.read();
+@@ -222,7 +222,7 @@ public final class Util {
+      *             I/O exception
+      */
+     public static <T> void findComplement(File a, File b, Serializer<T> serializer, Comparator<? super T> comparator,
+-            File output) throws IOException {
++            File output) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(14);
+         try (Reader<T> readerA = serializer.createReader(a);
+                 Reader<T> readerB = serializer.createReader(b);
+                 Writer<T> writer = serializer.createWriter(output)) {
+@@ -230,7 +230,7 @@ public final class Util {
+         }
+     }
+ 
+-    public static <T> List<File> splitByCount(File input, Serializer<T> serializer, long count) throws IOException {
++    public static <T> List<File> splitByCount(File input, Serializer<T> serializer, long count) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(15);
+         return splitByCount( //
+                 input, //
+                 serializer, //
+@@ -239,12 +239,12 @@ public final class Util {
+     }
+     
+     public static <T> List<File> splitByCount(File input, Serializer<T> serializer, Function<Integer, File> output,
+-            long count) throws IOException {
++            long count) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(16);
+         return splitByCount(Collections.singletonList(input), serializer, output, count);
+     }
+ 
+     public static <T> List<File> splitByCount(List<File> input, Serializer<T> serializer, Function<Integer, File> output,
+-            long count) throws IOException {
++            long count) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(17);
+         Preconditions.checkArgument(count > 0, "count must be greater than 0");
+         List<File> list = Lists.newArrayList();
+         T t;
+@@ -279,7 +279,7 @@ public final class Util {
+         return list;
+     }
+     
+-    public static <T> List<File> splitBySize(File input, Serializer<T> serializer, long maxSize) throws IOException {
++    public static <T> List<File> splitBySize(File input, Serializer<T> serializer, long maxSize) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(18);
+         return splitBySize( //
+                 input, //
+                 serializer, //
+@@ -288,12 +288,12 @@ public final class Util {
+     }
+     
+     public static <T> List<File> splitBySize(File input, Serializer<T> serializer, Function<Integer, File> output,
+-            long maxSize) throws IOException {
++            long maxSize) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(19);
+         return splitBySize(Collections.singletonList(input), serializer, output, maxSize);
+     }
+ 
+     public static <T> List<File> splitBySize(List<File> input, Serializer<T> serializer, Function<Integer, File> output,
+-            long maxSize) throws IOException {
++            long maxSize) throws IOException { com.github.davidmoten.jmhbench.MutationSwitch.tick(20);
+         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+         Writer<T> buffer = serializer.createWriter(bytes);
+         List<File> list = Lists.newArrayList();
+@@ -356,7 +356,7 @@ public final class Util {
+     }
+     
+     public static <S, T> void convert(File in, InputStreamReaderFactory<S> readerFactory, File out,
+-            OutputStreamWriterFactory<T> writerFactory, Function<? super S, ? extends T> mapper) {
++            OutputStreamWriterFactory<T> writerFactory, Function<? super S, ? extends T> mapper) { com.github.davidmoten.jmhbench.MutationSwitch.tick(21);
+         try (Reader<S> r = readerFactory.createReader(in); Writer<T> w = writerFactory.createWriter(out)) {
+             S s;
+             while ((s = r.read()) != null) {
+diff --git a/com/github/davidmoten/bigsorter/internal/ArrayList.java b/com/github/davidmoten/bigsorter/internal/ArrayList.java
+index 95e3058..46f56c5 100644
+--- a/com/github/davidmoten/bigsorter/internal/ArrayList.java
++++ b/com/github/davidmoten/bigsorter/internal/ArrayList.java
+@@ -205,7 +205,7 @@ public class ArrayList<E> extends AbstractList<E>
+      * list's current size.  An application can use this operation to minimize
+      * the storage of an <tt>ArrayList</tt> instance.
+      */
+-    public void trimToSize() {
++    public void trimToSize() { com.github.davidmoten.jmhbench.MutationSwitch.tick(22);
+         modCount++;
+         if (size < elementData.length) {
+             elementData = (size == 0)
+@@ -221,7 +221,7 @@ public class ArrayList<E> extends AbstractList<E>
+      *
+      * @param   minCapacity   the desired minimum capacity
+      */
+-    public void ensureCapacity(int minCapacity) {
++    public void ensureCapacity(int minCapacity) { com.github.davidmoten.jmhbench.MutationSwitch.tick(23);
+         int minExpand = (elementData != DEFAULTCAPACITY_EMPTY_ELEMENTDATA)
+             // any size if not default element table
+             ? 0
+@@ -292,7 +292,7 @@ public class ArrayList<E> extends AbstractList<E>
+      *
+      * @return the number of elements in this list
+      */
+-    public int size() {
++    public int size() { com.github.davidmoten.jmhbench.MutationSwitch.tick(24);
+         return size;
+     }
+ 
+@@ -301,7 +301,7 @@ public class ArrayList<E> extends AbstractList<E>
+      *
+      * @return <tt>true</tt> if this list contains no elements
+      */
+-    public boolean isEmpty() {
++    public boolean isEmpty() { com.github.davidmoten.jmhbench.MutationSwitch.tick(25);
+         return size == 0;
+     }
+ 
+@@ -325,7 +325,7 @@ public class ArrayList<E> extends AbstractList<E>
+      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
+      * or -1 if there is no such index.
+      */
+-    public int indexOf(Object o) {
++    public int indexOf(Object o) { com.github.davidmoten.jmhbench.MutationSwitch.tick(26);
+         if (o == null) {
+             for (int i = 0; i < size; i++)
+                 if (elementData[i]==null)
+@@ -345,7 +345,7 @@ public class ArrayList<E> extends AbstractList<E>
+      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
+      * or -1 if there is no such index.
+      */
+-    public int lastIndexOf(Object o) {
++    public int lastIndexOf(Object o) { com.github.davidmoten.jmhbench.MutationSwitch.tick(27);
+         if (o == null) {
+             for (int i = size-1; i >= 0; i--)
+                 if (elementData[i]==null)
+@@ -390,7 +390,7 @@ public class ArrayList<E> extends AbstractList<E>
+      * @return an array containing all of the elements in this list in
+      *         proper sequence
+      */
+-    public Object[] toArray() {
++    public Object[] toArray() { com.github.davidmoten.jmhbench.MutationSwitch.tick(28);
+         return Arrays.copyOf(elementData, size);
+     }
+ 
+@@ -419,7 +419,7 @@ public class ArrayList<E> extends AbstractList<E>
+      * @throws NullPointerException if the specified array is null
+      */
+     @SuppressWarnings("unchecked")
+-    public <T> T[] toArray(T[] a) {
++    public <T> T[] toArray(T[] a) { com.github.davidmoten.jmhbench.MutationSwitch.tick(29);
+         if (a.length < size)
+             // Make a new array of a's runtime type, but my contents:
+             return (T[]) Arrays.copyOf(elementData, size, a.getClass());
+@@ -568,7 +568,7 @@ public class ArrayList<E> extends AbstractList<E>
+      * Removes all of the elements from this list.  The list will
+      * be empty after this call returns.
+      */
+-    public void clear() {
++    public void clear() { com.github.davidmoten.jmhbench.MutationSwitch.tick(30);
+         modCount++;
+ 
+         // clear to let GC do its work
+@@ -591,7 +591,7 @@ public class ArrayList<E> extends AbstractList<E>
+      * @return <tt>true</tt> if this list changed as a result of the call
+      * @throws NullPointerException if the specified collection is null
+      */
+-    public boolean addAll(Collection<? extends E> c) {
++    public boolean addAll(Collection<? extends E> c) { com.github.davidmoten.jmhbench.MutationSwitch.tick(31);
+         Object[] a = c.toArray();
+         int numNew = a.length;
+         ensureCapacityInternal(size + numNew);  // Increments modCount
+@@ -615,7 +615,7 @@ public class ArrayList<E> extends AbstractList<E>
+      * @throws IndexOutOfBoundsException {@inheritDoc}
+      * @throws NullPointerException if the specified collection is null
+      */
+-    public boolean addAll(int index, Collection<? extends E> c) {
++    public boolean addAll(int index, Collection<? extends E> c) { com.github.davidmoten.jmhbench.MutationSwitch.tick(32);
+         rangeCheckForAdd(index);
+ 
+         Object[] a = c.toArray();
+@@ -646,7 +646,7 @@ public class ArrayList<E> extends AbstractList<E>
+      *          toIndex > size() ||
+      *          toIndex < fromIndex})
+      */
+-    protected void removeRange(int fromIndex, int toIndex) {
++    protected void removeRange(int fromIndex, int toIndex) { com.github.davidmoten.jmhbench.MutationSwitch.tick(33);
+         modCount++;
+         int numMoved = size - toIndex;
+         System.arraycopy(elementData, toIndex, elementData, fromIndex,
+@@ -703,7 +703,7 @@ public class ArrayList<E> extends AbstractList<E>
+      *         or if the specified collection is null
+      * @see Collection#contains(Object)
+      */
+-    public boolean removeAll(Collection<?> c) {
++    public boolean removeAll(Collection<?> c) { com.github.davidmoten.jmhbench.MutationSwitch.tick(34);
+         Objects.requireNonNull(c);
+         return batchRemove(c, false);
+     }
+@@ -724,7 +724,7 @@ public class ArrayList<E> extends AbstractList<E>
+      *         or if the specified collection is null
+      * @see Collection#contains(Object)
+      */
+-    public boolean retainAll(Collection<?> c) {
++    public boolean retainAll(Collection<?> c) { com.github.davidmoten.jmhbench.MutationSwitch.tick(35);
+         Objects.requireNonNull(c);
+         return batchRemove(c, true);
+     }
+@@ -826,7 +826,7 @@ public class ArrayList<E> extends AbstractList<E>
+      *
+      * @throws IndexOutOfBoundsException {@inheritDoc}
+      */
+-    public ListIterator<E> listIterator(int index) {
++    public ListIterator<E> listIterator(int index) { com.github.davidmoten.jmhbench.MutationSwitch.tick(36);
+         if (index < 0 || index > size)
+             throw new IndexOutOfBoundsException("Index: "+index);
+         return new ListItr(index);
+@@ -840,7 +840,7 @@ public class ArrayList<E> extends AbstractList<E>
+      *
+      * @see #listIterator(int)
+      */
+-    public ListIterator<E> listIterator() {
++    public ListIterator<E> listIterator() { com.github.davidmoten.jmhbench.MutationSwitch.tick(37);
+         return new ListItr(0);
+     }
+ 
+@@ -851,7 +851,7 @@ public class ArrayList<E> extends AbstractList<E>
+      *
+      * @return an iterator over the elements in this list in proper sequence
+      */
+-    public Iterator<E> iterator() {
++    public Iterator<E> iterator() { com.github.davidmoten.jmhbench.MutationSwitch.tick(38);
+         return new Itr();
+     }
+ 
+@@ -899,7 +899,7 @@ public class ArrayList<E> extends AbstractList<E>
+ 
+         @Override
+         @SuppressWarnings("unchecked")
+-        public void forEachRemaining(Consumer<? super E> consumer) {
++        public void forEachRemaining(Consumer<? super E> consumer) { com.github.davidmoten.jmhbench.MutationSwitch.tick(39);
+             Objects.requireNonNull(consumer);
+             final int size = ArrayList.this.size;
+             int i = cursor;
+@@ -934,20 +934,20 @@ public class ArrayList<E> extends AbstractList<E>
+             cursor = index;
+         }
+ 
+-        public boolean hasPrevious() {
++        public boolean hasPrevious() { com.github.davidmoten.jmhbench.MutationSwitch.tick(40);
+             return cursor != 0;
+         }
+ 
+-        public int nextIndex() {
++        public int nextIndex() { com.github.davidmoten.jmhbench.MutationSwitch.tick(41);
+             return cursor;
+         }
+ 
+-        public int previousIndex() {
++        public int previousIndex() { com.github.davidmoten.jmhbench.MutationSwitch.tick(42);
+             return cursor - 1;
+         }
+ 
+         @SuppressWarnings("unchecked")
+-        public E previous() {
++        public E previous() { com.github.davidmoten.jmhbench.MutationSwitch.tick(43);
+             checkForComodification();
+             int i = cursor - 1;
+             if (i < 0)
+@@ -1015,7 +1015,7 @@ public class ArrayList<E> extends AbstractList<E>
+      * @throws IndexOutOfBoundsException {@inheritDoc}
+      * @throws IllegalArgumentException {@inheritDoc}
+      */
+-    public List<E> subList(int fromIndex, int toIndex) {
++    public List<E> subList(int fromIndex, int toIndex) { com.github.davidmoten.jmhbench.MutationSwitch.tick(44);
+         subListRangeCheck(fromIndex, toIndex, size);
+         return new SubList(this, 0, fromIndex, toIndex);
+     }
+@@ -1059,7 +1059,7 @@ public class ArrayList<E> extends AbstractList<E>
+             return ArrayList.this.elementData(offset + index);
+         }
+ 
+-        public int size() {
++        public int size() { com.github.davidmoten.jmhbench.MutationSwitch.tick(45);
+             checkForComodification();
+             return this.size;
+         }
+@@ -1081,7 +1081,7 @@ public class ArrayList<E> extends AbstractList<E>
+             return result;
+         }
+ 
+-        protected void removeRange(int fromIndex, int toIndex) {
++        protected void removeRange(int fromIndex, int toIndex) { com.github.davidmoten.jmhbench.MutationSwitch.tick(46);
+             checkForComodification();
+             parent.removeRange(parentOffset + fromIndex,
+                                parentOffset + toIndex);
+@@ -1089,11 +1089,11 @@ public class ArrayList<E> extends AbstractList<E>
+             this.size -= toIndex - fromIndex;
+         }
+ 
+-        public boolean addAll(Collection<? extends E> c) {
++        public boolean addAll(Collection<? extends E> c) { com.github.davidmoten.jmhbench.MutationSwitch.tick(47);
+             return addAll(this.size, c);
+         }
+ 
+-        public boolean addAll(int index, Collection<? extends E> c) {
++        public boolean addAll(int index, Collection<? extends E> c) { com.github.davidmoten.jmhbench.MutationSwitch.tick(48);
+             rangeCheckForAdd(index);
+             int cSize = c.size();
+             if (cSize==0)
+@@ -1106,11 +1106,11 @@ public class ArrayList<E> extends AbstractList<E>
+             return true;
+         }
+ 
+-        public Iterator<E> iterator() {
++        public Iterator<E> iterator() { com.github.davidmoten.jmhbench.MutationSwitch.tick(49);
+             return listIterator();
+         }
+ 
+-        public ListIterator<E> listIterator(final int index) {
++        public ListIterator<E> listIterator(final int index) { com.github.davidmoten.jmhbench.MutationSwitch.tick(50);
+             checkForComodification();
+             rangeCheckForAdd(index);
+             final int offset = this.offset;
+diff --git a/com/github/davidmoten/jmhbench/MutationSwitch.java b/com/github/davidmoten/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..a466150
+--- /dev/null
++++ b/com/github/davidmoten/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.github.davidmoten.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

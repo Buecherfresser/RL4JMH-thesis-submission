@@ -1,0 +1,56 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Predicate;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ObservableRetryPredicateBenchmark {
+
+    @Param({ "10", "100", "1000" })
+    public int itemCount;
+
+    @Param({ "1", "5", "10" })
+    public long retryCount;
+
+    private Predicate<Throwable> alwaysRetry;
+
+    private Observable<Integer> source;
+
+    private Observable<Integer> retryObservable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        alwaysRetry = throwable -> true;
+
+        source = Observable.<Integer>create(emitter -> {
+            for (int i = 0; i < itemCount; i++) {
+                if (emitter.isDisposed()) {
+                    return;
+                }
+                emitter.onNext(i);
+            }
+            emitter.onError(new RuntimeException("forced failure"));
+        }).subscribeOn(Schedulers.computation());
+
+        // Apply the retry operator under test directly.
+        retryObservable = new ObservableRetryPredicate<>(source, retryCount, alwaysRetry);
+    }
+
+    @Benchmark
+    public void retryThroughput() {
+        // Convert any terminal error into normal completion to avoid throwing from blockingSubscribe.
+        retryObservable
+                .onErrorComplete()
+                .blockingSubscribe();
+    }
+}
+```

@@ -1,0 +1,118 @@
+```java
+package io.reactivex.rxjava3.internal.util.benchmark;
+
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.internal.util.AtomicThrowable;
+import io.reactivex.rxjava3.internal.util.HalfSerializer;
+import org.reactivestreams.Subscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * JMH microbenchmarks for {@link HalfSerializer}.
+ *
+ * <p>These benchmarks measure the throughput of the half‑serializer
+ * coordination methods under concurrent access. The benchmarks use
+ * lightweight dummy {@link Subscriber} and {@link Observer} implementations
+ * that perform no work, allowing us to focus on the overhead of the
+ * synchronization logic itself.</p>
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@code @State(Scope.Benchmark)} for shared mutable data
+ *       (the {@code AtomicInteger} and {@code AtomicThrowable}) to avoid
+ *       accidental re‑initialisation between benchmark iterations.</li>
+ *   <li>Use {@code @Threads} to simulate contention on the shared state.</li>
+ *   <li>Consume return values with {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Warm‑up and measurement iterations are left to the JMH runner defaults,
+ *       but can be tuned via command‑line options.</li>
+ * </ul>
+ * </p>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(4) // simulate 4 concurrent threads contending on the same wip/errors
+public class HalfSerializerBenchmark {
+
+    /**
+     * Shared state used by all benchmark threads.
+     */
+    @State(Scope.Benchmark)
+    public static class SharedState {
+        final AtomicInteger wip = new AtomicInteger();
+        final AtomicThrowable errors = new AtomicThrowable();
+
+        // Dummy Subscriber that does nothing.
+        final Subscriber<Object> subscriber = new Subscriber<Object>() {
+            @Override public void onSubscribe(org.reactivestreams.Subscription s) {}
+            @Override public void onNext(Object o) {}
+            @Override public void onError(Throwable t) {}
+            @Override public void onComplete() {}
+        };
+
+        // Dummy Observer that does nothing.
+        final Observer<Object> observer = new Observer<Object>() {
+            @Override public void onSubscribe(io.reactivex.rxjava3.disposables.Disposable d) {}
+            @Override public void onNext(Object o) {}
+            @Override public void onError(Throwable e) {}
+            @Override public void onComplete() {}
+        };
+    }
+
+    /**
+     * Benchmark for {@link HalfSerializer#onNext(Subscriber, Object, AtomicInteger, AtomicThrowable)}.
+     */
+    @Benchmark
+    public void onNextSubscriber(SharedState state, Blackhole bh) {
+        // The value is a constant; its content is irrelevant for the synchronization cost.
+        boolean emitted = HalfSerializer.onNext(state.subscriber, new Object(), state.wip, state.errors);
+        bh.consume(emitted);
+    }
+
+    /**
+     * Benchmark for {@link HalfSerializer#onError(Subscriber, Throwable, AtomicInteger, AtomicThrowable)}.
+     */
+    @Benchmark
+    public void onErrorSubscriber(SharedState state) {
+        HalfSerializer.onError(state.subscriber, new RuntimeException("test"), state.wip, state.errors);
+    }
+
+    /**
+     * Benchmark for {@link HalfSerializer#onComplete(Subscriber, AtomicInteger, AtomicThrowable)}.
+     */
+    @Benchmark
+    public void onCompleteSubscriber(SharedState state) {
+        HalfSerializer.onComplete(state.subscriber, state.wip, state.errors);
+    }
+
+    /**
+     * Benchmark for {@link HalfSerializer#onNext(Observer, Object, AtomicInteger, AtomicThrowable)}.
+     */
+    @Benchmark
+    public void onNextObserver(SharedState state) {
+        HalfSerializer.onNext(state.observer, new Object(), state.wip, state.errors);
+    }
+
+    /**
+     * Benchmark for {@link HalfSerializer#onError(Observer, Throwable, AtomicInteger, AtomicThrowable)}.
+     */
+    @Benchmark
+    public void onErrorObserver(SharedState state) {
+        HalfSerializer.onError(state.observer, new RuntimeException("test"), state.wip, state.errors);
+    }
+
+    /**
+     * Benchmark for {@link HalfSerializer#onComplete(Observer, AtomicInteger, AtomicThrowable)}.
+     */
+    @Benchmark
+    public void onCompleteObserver(SharedState state) {
+        HalfSerializer.onComplete(state.observer, state.wip, state.errors);
+    }
+}
+```

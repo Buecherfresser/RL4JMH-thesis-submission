@@ -1,0 +1,83 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@code Observable.repeatWhen} operator.
+ *
+ * The benchmark measures the throughput (operations per second) of an
+ * Observable that repeats a simple source a fixed number of times.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Initialize the Observable once per trial in @Setup to exclude construction cost.
+ * - Consume the emitted items with Blackhole to prevent dead-code elimination.
+ * - Configure warm‑up, measurement, and fork parameters for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ObservableRepeatWhenBenchmark {
+
+    /**
+     * Number of repetitions for the repeatWhen operator.
+     */
+    @Param({ "10", "100", "1000" })
+    public int repeatCount;
+
+    /**
+     * The Observable under test.
+     */
+    private Observable<Integer> repeatWhenObservable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source that emits a single integer.
+        Observable<Integer> source = Observable.just(1);
+        // repeatWhen handler that repeats the source {@code repeatCount} times.
+        repeatWhenObservable = source.repeatWhen(completed -> completed.take(repeatCount));
+    }
+
+    @Benchmark
+    public void repeatWhen(Blackhole bh) {
+        // Subscribe and consume all items; blockingForEach ensures the whole sequence is processed.
+        repeatWhenObservable.blockingForEach(bh::consume);
+    }
+}

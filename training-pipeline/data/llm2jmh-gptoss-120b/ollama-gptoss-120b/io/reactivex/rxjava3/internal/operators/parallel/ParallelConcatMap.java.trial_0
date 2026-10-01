@@ -1,0 +1,71 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.parallel.ParallelFlowable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.util.ErrorMode;
+import org.reactivestreams.Publisher;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.parallel.ParallelConcatMap}.
+ *
+ * The benchmark measures the throughput of the {@code concatMap} operator when applied
+ * to a {@link ParallelFlowable}. It uses {@code blockingSubscribe} to ensure that the
+ * measurement includes the complete processing of the stream.
+ *
+ * Best‑practice notes:
+ * • Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * • Parameters allow varying parallelism and prefetch size, which are the most
+ *   influential knobs for this operator.
+ * • The source is a simple range of integers; the mapper returns a {@code Flowable.just}
+ *   to isolate the overhead of the operator itself.
+ * • {@code Blackhole.consume} prevents dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class ParallelConcatMapBenchmark {
+
+    /** Number of parallel rails. */
+    @Param({"1", "2", "4", "8"})
+    public int parallelism;
+
+    /** Prefetch size for the inner {@code concatMap}. */
+    @Param({"32", "256", "1024"})
+    public int prefetch;
+
+    /** Source {@link ParallelFlowable}. */
+    private ParallelFlowable<Integer> source;
+
+    /** Mapper used by {@code concatMap}. */
+    private Function<Integer, Publisher<Integer>> mapper;
+
+    /** Setup executed once per JVM fork. */
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A large, deterministic source that can be split across parallel rails.
+        source = Flowable.range(1, 1_000_000)
+                .parallel(parallelism);
+
+        // Simple identity mapper – each item is wrapped into a Flowable.
+        mapper = v -> Flowable.just(v);
+    }
+
+    /**
+     * Measures the throughput of {@code ParallelConcatMap}.
+     *
+     * @param bh Blackhole to consume the emitted items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void concatMapThroughput(Blackhole bh) {
+        source
+            .concatMap(mapper, prefetch, ErrorMode.IMMEDIATE)
+            .sequential()
+            .blockingSubscribe(bh::consume);
+    }
+}
+```

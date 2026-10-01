@@ -1,0 +1,636 @@
+diff --git a/org/terracotta/offheapstore/MetadataTuple.java b/org/terracotta/offheapstore/MetadataTuple.java
+index 99503eb..8cce2d2 100644
+--- a/org/terracotta/offheapstore/MetadataTuple.java
++++ b/org/terracotta/offheapstore/MetadataTuple.java
+@@ -26,11 +26,11 @@ public final class MetadataTuple<V> {
+     this.metadata = metadata;
+   }
+ 
+-  public V value() {
++  public V value() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(42);
+     return value;
+   }
+ 
+-  public int metadata() {
++  public int metadata() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(47);
+     return metadata;
+   }
+ 
+diff --git a/org/terracotta/offheapstore/OffHeapHashMap.java b/org/terracotta/offheapstore/OffHeapHashMap.java
+index 0f79cfd..177c72f 100644
+--- a/org/terracotta/offheapstore/OffHeapHashMap.java
++++ b/org/terracotta/offheapstore/OffHeapHashMap.java
+@@ -212,12 +212,12 @@ public class OffHeapHashMap<K, V> extends AbstractMap<K, V> implements MapIntern
+   }
+ 
+   @Override
+-  public int size() {
++  public int size() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(1);
+     return size;
+   }
+ 
+   @Override
+-  public boolean containsKey(Object key) {
++  public boolean containsKey(Object key) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(10);
+     int hash = key.hashCode();
+ 
+     if (size == 0) {
+diff --git a/org/terracotta/offheapstore/ReadWriteLockedOffHeapHashMap.java b/org/terracotta/offheapstore/ReadWriteLockedOffHeapHashMap.java
+index a47d9c1..82fcdd7 100644
+--- a/org/terracotta/offheapstore/ReadWriteLockedOffHeapHashMap.java
++++ b/org/terracotta/offheapstore/ReadWriteLockedOffHeapHashMap.java
+@@ -54,12 +54,12 @@ public class ReadWriteLockedOffHeapHashMap<K, V> extends AbstractLockedOffHeapHa
+   }
+ 
+   @Override
+-  public Lock readLock() {
++  public Lock readLock() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(19);
+     return lock.readLock();
+   }
+ 
+   @Override
+-  public Lock writeLock() {
++  public Lock writeLock() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(26);
+     return lock.writeLock();
+   }
+ 
+diff --git a/org/terracotta/offheapstore/WriteLockedOffHeapHashMap.java b/org/terracotta/offheapstore/WriteLockedOffHeapHashMap.java
+index 7f0be66..82a380a 100644
+--- a/org/terracotta/offheapstore/WriteLockedOffHeapHashMap.java
++++ b/org/terracotta/offheapstore/WriteLockedOffHeapHashMap.java
+@@ -47,12 +47,12 @@ public class WriteLockedOffHeapHashMap<K, V> extends AbstractLockedOffHeapHashMa
+   }
+   
+   @Override
+-  public Lock readLock() {
++  public Lock readLock() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(32);
+     return lock;
+   }
+ 
+   @Override
+-  public Lock writeLock() {
++  public Lock writeLock() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(37);
+     return lock;
+   }
+ 
+diff --git a/org/terracotta/offheapstore/buffersource/HeapBufferSource.java b/org/terracotta/offheapstore/buffersource/HeapBufferSource.java
+index 5fac5e9..f082f5b 100644
+--- a/org/terracotta/offheapstore/buffersource/HeapBufferSource.java
++++ b/org/terracotta/offheapstore/buffersource/HeapBufferSource.java
+@@ -25,7 +25,7 @@ import java.nio.ByteBuffer;
+ public class HeapBufferSource implements BufferSource {
+ 
+   @Override
+-  public ByteBuffer allocateBuffer(int size) {
++  public ByteBuffer allocateBuffer(int size) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(2);
+     return ByteBuffer.allocate(size);
+   }
+ 
+diff --git a/org/terracotta/offheapstore/buffersource/OffHeapBufferSource.java b/org/terracotta/offheapstore/buffersource/OffHeapBufferSource.java
+index 778b528..27cd686 100644
+--- a/org/terracotta/offheapstore/buffersource/OffHeapBufferSource.java
++++ b/org/terracotta/offheapstore/buffersource/OffHeapBufferSource.java
+@@ -32,7 +32,7 @@ public class OffHeapBufferSource implements BufferSource {
+   
+   
+   @Override
+-  public ByteBuffer allocateBuffer(int size) {
++  public ByteBuffer allocateBuffer(int size) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(11);
+     try {
+       return ByteBuffer.allocateDirect(size);
+     } catch (OutOfMemoryError e) {
+diff --git a/org/terracotta/offheapstore/buffersource/TimingBufferSource.java b/org/terracotta/offheapstore/buffersource/TimingBufferSource.java
+index b2cb406..c926b45 100644
+--- a/org/terracotta/offheapstore/buffersource/TimingBufferSource.java
++++ b/org/terracotta/offheapstore/buffersource/TimingBufferSource.java
+@@ -39,7 +39,7 @@ public class TimingBufferSource implements BufferSource {
+   }
+ 
+   @Override
+-  public ByteBuffer allocateBuffer(int size) {
++  public ByteBuffer allocateBuffer(int size) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(20);
+     long beforeAllocationTime = System.nanoTime();
+     try {
+       return delegate.allocateBuffer(size);
+diff --git a/org/terracotta/offheapstore/concurrent/ReadWriteLockedOffHeapClockCacheFactory.java b/org/terracotta/offheapstore/concurrent/ReadWriteLockedOffHeapClockCacheFactory.java
+index 0c94af3..53dbfd3 100644
+--- a/org/terracotta/offheapstore/concurrent/ReadWriteLockedOffHeapClockCacheFactory.java
++++ b/org/terracotta/offheapstore/concurrent/ReadWriteLockedOffHeapClockCacheFactory.java
+@@ -100,7 +100,7 @@ public class ReadWriteLockedOffHeapClockCacheFactory<K, V> implements Factory<Re
+    * @return a new {@code ReadWriteLockedOffHeapClockCache}
+    */
+   @Override
+-  public ReadWriteLockedOffHeapClockCache<K, V> newInstance() {
++  public ReadWriteLockedOffHeapClockCache<K, V> newInstance() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(21);
+     StorageEngine<? super K, ? super V> storageEngine = storageEngineFactory.newInstance();
+     try {
+       if (evictionListener == null) {
+diff --git a/org/terracotta/offheapstore/concurrent/ReadWriteLockedOffHeapHashMapFactory.java b/org/terracotta/offheapstore/concurrent/ReadWriteLockedOffHeapHashMapFactory.java
+index 2976cf9..f8f59fc 100644
+--- a/org/terracotta/offheapstore/concurrent/ReadWriteLockedOffHeapHashMapFactory.java
++++ b/org/terracotta/offheapstore/concurrent/ReadWriteLockedOffHeapHashMapFactory.java
+@@ -80,7 +80,7 @@ public class ReadWriteLockedOffHeapHashMapFactory<K, V> implements Factory<ReadW
+    * @return a new {@code ReadWriteLockedOffHeapHashMap}
+    */
+   @Override
+-  public ReadWriteLockedOffHeapHashMap<K, V> newInstance() {
++  public ReadWriteLockedOffHeapHashMap<K, V> newInstance() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(3);
+     StorageEngine<? super K, ? super V> storageEngine = storageEngineFactory.newInstance();
+     try {
+       return new ReadWriteLockedOffHeapHashMap<>(tableSource, tableAllocationsSteal, storageEngine, tableSize);
+diff --git a/org/terracotta/offheapstore/concurrent/WriteLockedOffHeapClockCacheFactory.java b/org/terracotta/offheapstore/concurrent/WriteLockedOffHeapClockCacheFactory.java
+index c3bb504..ab8d2ff 100644
+--- a/org/terracotta/offheapstore/concurrent/WriteLockedOffHeapClockCacheFactory.java
++++ b/org/terracotta/offheapstore/concurrent/WriteLockedOffHeapClockCacheFactory.java
+@@ -101,7 +101,7 @@ public class WriteLockedOffHeapClockCacheFactory<K, V> implements Factory<WriteL
+    * @return a new {@code WriteLockedOffHeapClockCache}
+    */
+   @Override
+-  public WriteLockedOffHeapClockCache<K, V> newInstance() {
++  public WriteLockedOffHeapClockCache<K, V> newInstance() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(27);
+     StorageEngine<? super K, ? super V> storageEngine = storageEngineFactory.newInstance();
+     try {
+       if (evictionListener == null) {
+diff --git a/org/terracotta/offheapstore/concurrent/WriteLockedOffHeapHashMapFactory.java b/org/terracotta/offheapstore/concurrent/WriteLockedOffHeapHashMapFactory.java
+index ef99925..3fac1b0 100644
+--- a/org/terracotta/offheapstore/concurrent/WriteLockedOffHeapHashMapFactory.java
++++ b/org/terracotta/offheapstore/concurrent/WriteLockedOffHeapHashMapFactory.java
+@@ -69,7 +69,7 @@ public class WriteLockedOffHeapHashMapFactory<K, V> implements Factory<WriteLock
+    * @return a new {@code WriteLockedOffHeapHashMap}
+    */
+   @Override
+-  public WriteLockedOffHeapHashMap<K, V> newInstance() {
++  public WriteLockedOffHeapHashMap<K, V> newInstance() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(12);
+     StorageEngine<? super K, ? super V> storageEngine = storageEngineFactory.newInstance();
+     try {
+       return new WriteLockedOffHeapHashMap<>(tableSource, storageEngine, tableSize);
+diff --git a/org/terracotta/offheapstore/disk/paging/MappedPage.java b/org/terracotta/offheapstore/disk/paging/MappedPage.java
+index 5810272..fe921c4 100644
+--- a/org/terracotta/offheapstore/disk/paging/MappedPage.java
++++ b/org/terracotta/offheapstore/disk/paging/MappedPage.java
+@@ -31,7 +31,7 @@ public class MappedPage extends Page {
+   }
+ 
+   @Override
+-  public MappedByteBuffer asByteBuffer() {
++  public MappedByteBuffer asByteBuffer() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(4);
+     return (MappedByteBuffer) super.asByteBuffer();
+   }
+ }
+diff --git a/org/terracotta/offheapstore/disk/paging/MappedPageSource.java b/org/terracotta/offheapstore/disk/paging/MappedPageSource.java
+index 8a84ffb..7c0f99e 100644
+--- a/org/terracotta/offheapstore/disk/paging/MappedPageSource.java
++++ b/org/terracotta/offheapstore/disk/paging/MappedPageSource.java
+@@ -92,7 +92,7 @@ public class MappedPageSource implements PageSource {
+     this.allocator = new PowerOfTwoFileAllocator(size);
+   }
+ 
+-  public synchronized Long allocateRegion(long size) {
++  public synchronized Long allocateRegion(long size) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(13);
+     Long address = allocator.allocate(size);
+     if (address == null) {
+       return null;
+@@ -116,7 +116,7 @@ public class MappedPageSource implements PageSource {
+     return address;
+   }
+ 
+-  public synchronized void freeRegion(long address) {
++  public synchronized void freeRegion(long address) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(22);
+     AllocatedRegion r = allocated.remove(address);
+ 
+     if (r == null) {
+diff --git a/org/terracotta/offheapstore/disk/persistent/PersistentReadWriteLockedOffHeapHashMap.java b/org/terracotta/offheapstore/disk/persistent/PersistentReadWriteLockedOffHeapHashMap.java
+index 311c2df..7cc3dc1 100644
+--- a/org/terracotta/offheapstore/disk/persistent/PersistentReadWriteLockedOffHeapHashMap.java
++++ b/org/terracotta/offheapstore/disk/persistent/PersistentReadWriteLockedOffHeapHashMap.java
+@@ -38,12 +38,12 @@ public class PersistentReadWriteLockedOffHeapHashMap<K, V> extends AbstractPersi
+   }
+ 
+   @Override
+-  public Lock readLock() {
++  public Lock readLock() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(28);
+     return lock.readLock();
+   }
+ 
+   @Override
+-  public Lock writeLock() {
++  public Lock writeLock() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(33);
+     return lock.writeLock();
+   }
+ 
+diff --git a/org/terracotta/offheapstore/disk/persistent/PersistentReadWriteLockedOffHeapHashMapFactory.java b/org/terracotta/offheapstore/disk/persistent/PersistentReadWriteLockedOffHeapHashMapFactory.java
+index a1b9e0a..ab2d11c 100644
+--- a/org/terracotta/offheapstore/disk/persistent/PersistentReadWriteLockedOffHeapHashMapFactory.java
++++ b/org/terracotta/offheapstore/disk/persistent/PersistentReadWriteLockedOffHeapHashMapFactory.java
+@@ -52,7 +52,7 @@ public class PersistentReadWriteLockedOffHeapHashMapFactory<K, V> implements Fac
+   }
+ 
+   @Override
+-  public PersistentReadWriteLockedOffHeapHashMap<K, V> newInstance() {
++  public PersistentReadWriteLockedOffHeapHashMap<K, V> newInstance() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(38);
+     PersistentStorageEngine<? super K, ? super V> storageEngine = storageEngineFactory.newInstance();
+     try {
+       return new PersistentReadWriteLockedOffHeapHashMap<>(tableSource, storageEngine, tableSize, bootstrap);
+diff --git a/org/terracotta/offheapstore/disk/storage/portability/PersistentByteArrayPortability.java b/org/terracotta/offheapstore/disk/storage/portability/PersistentByteArrayPortability.java
+index 08986c7..d75b864 100644
+--- a/org/terracotta/offheapstore/disk/storage/portability/PersistentByteArrayPortability.java
++++ b/org/terracotta/offheapstore/disk/storage/portability/PersistentByteArrayPortability.java
+@@ -41,12 +41,12 @@ public class PersistentByteArrayPortability extends ByteArrayPortability impleme
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(43);
+     //no-op
+   }
+ 
+   @Override
+-  public void persist(ObjectOutput output) throws IOException {
++  public void persist(ObjectOutput output) throws IOException { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(48);
+     //no-op
+   }
+ 
+diff --git a/org/terracotta/offheapstore/eviction/EvictionListeningReadWriteLockedOffHeapClockCache.java b/org/terracotta/offheapstore/eviction/EvictionListeningReadWriteLockedOffHeapClockCache.java
+index e78d34e..d56e8fa 100644
+--- a/org/terracotta/offheapstore/eviction/EvictionListeningReadWriteLockedOffHeapClockCache.java
++++ b/org/terracotta/offheapstore/eviction/EvictionListeningReadWriteLockedOffHeapClockCache.java
+@@ -39,7 +39,7 @@ public class EvictionListeningReadWriteLockedOffHeapClockCache<K, V> extends Rea
+   }
+ 
+   @Override
+-  public boolean evict(final int index, boolean shrink) {
++  public boolean evict(final int index, boolean shrink) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(5);
+     boolean evicted;
+     try {
+       listener.evicting(() -> getEntryAtTableOffset(index));
+diff --git a/org/terracotta/offheapstore/eviction/EvictionListeningWriteLockedOffHeapClockCache.java b/org/terracotta/offheapstore/eviction/EvictionListeningWriteLockedOffHeapClockCache.java
+index 7d0d400..814c68d 100644
+--- a/org/terracotta/offheapstore/eviction/EvictionListeningWriteLockedOffHeapClockCache.java
++++ b/org/terracotta/offheapstore/eviction/EvictionListeningWriteLockedOffHeapClockCache.java
+@@ -39,7 +39,7 @@ public class EvictionListeningWriteLockedOffHeapClockCache<K, V> extends WriteLo
+   }
+ 
+   @Override
+-  public boolean evict(final int index, boolean shrink) {
++  public boolean evict(final int index, boolean shrink) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(14);
+     boolean evicted;
+     try {
+       listener.evicting(() -> getEntryAtTableOffset(index));
+diff --git a/org/terracotta/offheapstore/jmhbench/MutationSwitch.java b/org/terracotta/offheapstore/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..30cac1a
+--- /dev/null
++++ b/org/terracotta/offheapstore/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.terracotta.offheapstore.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/terracotta/offheapstore/paging/OffHeapStorageArea.java b/org/terracotta/offheapstore/paging/OffHeapStorageArea.java
+index f66ede1..8b52dde 100644
+--- a/org/terracotta/offheapstore/paging/OffHeapStorageArea.java
++++ b/org/terracotta/offheapstore/paging/OffHeapStorageArea.java
+@@ -128,7 +128,7 @@ public class OffHeapStorageArea {
+     this.victim = victim;
+   }
+ 
+-  public void clear() {
++  public void clear() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(6);
+     allocator.clear();
+     for (Iterator<Page> it = pages.values().iterator(); it.hasNext(); ) {
+       Page p = it.next();
+@@ -145,7 +145,7 @@ public class OffHeapStorageArea {
+     return pages.get(pageIndex).asByteBuffer().get(pageAddress);
+   }
+ 
+-  public short readShort(long address) {
++  public short readShort(long address) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(15);
+     int pageIndex = pageIndexFor(address);
+     int pageAddress = pageAddressFor(address);
+     int pageSize = pageSizeFor(pageIndex);
+diff --git a/org/terracotta/offheapstore/paging/Page.java b/org/terracotta/offheapstore/paging/Page.java
+index 1118e93..575aa1c 100644
+--- a/org/terracotta/offheapstore/paging/Page.java
++++ b/org/terracotta/offheapstore/paging/Page.java
+@@ -49,11 +49,11 @@ public class Page {
+     this.freeable = true;
+   }
+ 
+-  public ByteBuffer asByteBuffer() {
++  public ByteBuffer asByteBuffer() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(23);
+     return buffer;
+   }
+ 
+-  public IntBuffer asIntBuffer() {
++  public IntBuffer asIntBuffer() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(29);
+     return buffer.asIntBuffer();
+   }
+ 
+diff --git a/org/terracotta/offheapstore/paging/PhantomReferenceLimitedPageSource.java b/org/terracotta/offheapstore/paging/PhantomReferenceLimitedPageSource.java
+index 00a7a57..49216cc 100644
+--- a/org/terracotta/offheapstore/paging/PhantomReferenceLimitedPageSource.java
++++ b/org/terracotta/offheapstore/paging/PhantomReferenceLimitedPageSource.java
+@@ -58,7 +58,7 @@ public class PhantomReferenceLimitedPageSource implements PageSource {
+    * the buffer.
+    */
+   @Override
+-  public Page allocate(int size, boolean thief, boolean victim, OffHeapStorageArea owner) {
++  public Page allocate(int size, boolean thief, boolean victim, OffHeapStorageArea owner) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(34);
+       while (true) {
+           processQueue();
+           long now = max.get();
+@@ -85,7 +85,7 @@ public class PhantomReferenceLimitedPageSource implements PageSource {
+    * references.
+    */
+   @Override
+-  public void free(Page buffer) {
++  public void free(Page buffer) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(39);
+     //no-op
+   }
+ 
+diff --git a/org/terracotta/offheapstore/paging/UnlimitedPageSource.java b/org/terracotta/offheapstore/paging/UnlimitedPageSource.java
+index f9fac25..1d26174 100644
+--- a/org/terracotta/offheapstore/paging/UnlimitedPageSource.java
++++ b/org/terracotta/offheapstore/paging/UnlimitedPageSource.java
+@@ -33,7 +33,7 @@ public class UnlimitedPageSource implements PageSource {
+   }
+ 
+   @Override
+-  public Page allocate(final int size, boolean thief, boolean victim, OffHeapStorageArea owner) {
++  public Page allocate(final int size, boolean thief, boolean victim, OffHeapStorageArea owner) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(44);
+     ByteBuffer buffer = source.allocateBuffer(size);
+     if (buffer == null) {
+       return null;
+@@ -43,7 +43,7 @@ public class UnlimitedPageSource implements PageSource {
+   }
+ 
+   @Override
+-  public void free(Page page) {
++  public void free(Page page) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(49);
+     //no-op
+   }
+ }
+diff --git a/org/terracotta/offheapstore/set/OffHeapHashSet.java b/org/terracotta/offheapstore/set/OffHeapHashSet.java
+index c4b6386..dd34865 100644
+--- a/org/terracotta/offheapstore/set/OffHeapHashSet.java
++++ b/org/terracotta/offheapstore/set/OffHeapHashSet.java
+@@ -41,12 +41,12 @@ public class OffHeapHashSet<E> extends AbstractSet<E> {
+   }
+ 
+   @Override
+-  public int size() {
++  public int size() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(7);
+     return map.size();
+   }
+ 
+   @Override
+-  public boolean isEmpty() {
++  public boolean isEmpty() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(16);
+     return map.isEmpty();
+   }
+ 
+diff --git a/org/terracotta/offheapstore/storage/BooleanHalfStorageEngine.java b/org/terracotta/offheapstore/storage/BooleanHalfStorageEngine.java
+index d216ef2..4674596 100644
+--- a/org/terracotta/offheapstore/storage/BooleanHalfStorageEngine.java
++++ b/org/terracotta/offheapstore/storage/BooleanHalfStorageEngine.java
+@@ -36,7 +36,7 @@ public final class BooleanHalfStorageEngine implements HalfStorageEngine<Boolean
+   }
+ 
+   @Override
+-  public void free(int encoding) {
++  public void free(int encoding) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(50);
+     //no-op
+   }
+ 
+diff --git a/org/terracotta/offheapstore/storage/OffHeapBufferHalfStorageEngine.java b/org/terracotta/offheapstore/storage/OffHeapBufferHalfStorageEngine.java
+index 71002d2..618ee24 100644
+--- a/org/terracotta/offheapstore/storage/OffHeapBufferHalfStorageEngine.java
++++ b/org/terracotta/offheapstore/storage/OffHeapBufferHalfStorageEngine.java
+@@ -41,11 +41,11 @@ public class OffHeapBufferHalfStorageEngine<T> extends PortabilityBasedHalfStora
+   private static final int DATA_OFFSET = 8;
+   private static final int HEADER_LENGTH = DATA_OFFSET;
+ 
+-  public static <T> Factory<OffHeapBufferHalfStorageEngine<T>> createFactory(final PageSource source, final int pageSize, final Portability<? super T> portability) {
++  public static <T> Factory<OffHeapBufferHalfStorageEngine<T>> createFactory(final PageSource source, final int pageSize, final Portability<? super T> portability) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(8);
+     return createFactory(source, pageSize, portability, false, false);
+   }
+ 
+-  public static <T> Factory<OffHeapBufferHalfStorageEngine<T>> createFactory(final PageSource source, final int pageSize, final Portability<? super T> portability, final boolean thief, final boolean victim) {
++  public static <T> Factory<OffHeapBufferHalfStorageEngine<T>> createFactory(final PageSource source, final int pageSize, final Portability<? super T> portability, final boolean thief, final boolean victim) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(17);
+     return createFactory(source, pageSize, pageSize, portability, thief, victim);
+   }
+ 
+diff --git a/org/terracotta/offheapstore/storage/OffHeapBufferStorageEngine.java b/org/terracotta/offheapstore/storage/OffHeapBufferStorageEngine.java
+index 5433d83..2b12462 100644
+--- a/org/terracotta/offheapstore/storage/OffHeapBufferStorageEngine.java
++++ b/org/terracotta/offheapstore/storage/OffHeapBufferStorageEngine.java
+@@ -59,11 +59,11 @@ public class OffHeapBufferStorageEngine<K, V> extends PortabilityBasedStorageEng
+    * change in value types).
+    */
+ 
+-  public static <K, V> Factory<OffHeapBufferStorageEngine<K, V>> createFactory(final PointerSize width, final PageSource source, final int pageSize, final Portability<? super K> keyPortability, final Portability<? super V> valuePortability, final boolean thief, final boolean victim) {
++  public static <K, V> Factory<OffHeapBufferStorageEngine<K, V>> createFactory(final PointerSize width, final PageSource source, final int pageSize, final Portability<? super K> keyPortability, final Portability<? super V> valuePortability, final boolean thief, final boolean victim) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(24);
+     return () -> new OffHeapBufferStorageEngine<>(width, source, pageSize, keyPortability, valuePortability, thief, victim);
+   }
+ 
+-  public static <K, V> Factory<OffHeapBufferStorageEngine<K, V>> createFactory(final PointerSize width, final PageSource source, final int pageSize, final Portability<? super K> keyPortability, final Portability<? super V> valuePortability, final boolean thief, final boolean victim, final float compressThreshold) {
++  public static <K, V> Factory<OffHeapBufferStorageEngine<K, V>> createFactory(final PointerSize width, final PageSource source, final int pageSize, final Portability<? super K> keyPortability, final Portability<? super V> valuePortability, final boolean thief, final boolean victim, final float compressThreshold) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(30);
+     return () -> new OffHeapBufferStorageEngine<>(width, source, pageSize, keyPortability, valuePortability, thief, victim, compressThreshold);
+   }
+ 
+diff --git a/org/terracotta/offheapstore/storage/StringStorageEngine.java b/org/terracotta/offheapstore/storage/StringStorageEngine.java
+index 7150717..1a4dcc5 100644
+--- a/org/terracotta/offheapstore/storage/StringStorageEngine.java
++++ b/org/terracotta/offheapstore/storage/StringStorageEngine.java
+@@ -28,7 +28,7 @@ import org.terracotta.offheapstore.util.Factory;
+  */
+ public class StringStorageEngine extends OffHeapBufferStorageEngine<String, String> {
+ 
+-  public static Factory<StringStorageEngine> createFactory(final PointerSize width, final PageSource source, final int pageSize) {
++  public static Factory<StringStorageEngine> createFactory(final PointerSize width, final PageSource source, final int pageSize) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(35);
+     return () -> new StringStorageEngine(width, source, pageSize);
+   }
+ 
+diff --git a/org/terracotta/offheapstore/storage/portability/StringPortability.java b/org/terracotta/offheapstore/storage/portability/StringPortability.java
+index 765264e..ba97f8a 100644
+--- a/org/terracotta/offheapstore/storage/portability/StringPortability.java
++++ b/org/terracotta/offheapstore/storage/portability/StringPortability.java
+@@ -54,12 +54,12 @@ public class StringPortability implements PersistentPortability<String> {
+   }
+ 
+   @Override
+-  public void close() throws IOException {
++  public void close() throws IOException { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(40);
+     //no-op
+   }
+ 
+   @Override
+-  public void persist(ObjectOutput output) throws IOException {
++  public void persist(ObjectOutput output) throws IOException { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(45);
+     //no-op
+   }
+ 
+diff --git a/org/terracotta/offheapstore/util/AATreeSet.java b/org/terracotta/offheapstore/util/AATreeSet.java
+index 9842d24..1185f62 100644
+--- a/org/terracotta/offheapstore/util/AATreeSet.java
++++ b/org/terracotta/offheapstore/util/AATreeSet.java
+@@ -63,7 +63,7 @@ public class AATreeSet<T extends Comparable<? super T>> extends AbstractSet<T> i
+   }
+ 
+   @SuppressWarnings("unchecked")
+-  public T removeAndReturn(Object o) {
++  public T removeAndReturn(Object o) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(9);
+     try {
+       root = remove(root, (T) o);
+       if (mutated) {
+@@ -79,7 +79,7 @@ public class AATreeSet<T extends Comparable<? super T>> extends AbstractSet<T> i
+   }
+ 
+   @Override
+-  public void clear() {
++  public void clear() { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(18);
+     root = TerminalNode.terminal();
+     size = 0;
+   }
+diff --git a/org/terracotta/offheapstore/util/ByteBufferInputStream.java b/org/terracotta/offheapstore/util/ByteBufferInputStream.java
+index 1445dbc..a9e3b31 100644
+--- a/org/terracotta/offheapstore/util/ByteBufferInputStream.java
++++ b/org/terracotta/offheapstore/util/ByteBufferInputStream.java
+@@ -79,12 +79,12 @@ public class ByteBufferInputStream extends InputStream {
+   }
+ 
+   @Override
+-  public synchronized void mark(int readlimit) {
++  public synchronized void mark(int readlimit) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(25);
+     buffer.mark();
+   }
+ 
+   @Override
+-  public synchronized void reset() throws IOException {
++  public synchronized void reset() throws IOException { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(31);
+     try {
+       buffer.reset();
+     } catch (InvalidMarkException e) {
+diff --git a/org/terracotta/offheapstore/util/ByteBufferUtils.java b/org/terracotta/offheapstore/util/ByteBufferUtils.java
+index 518acf8..98f36d7 100644
+--- a/org/terracotta/offheapstore/util/ByteBufferUtils.java
++++ b/org/terracotta/offheapstore/util/ByteBufferUtils.java
+@@ -28,7 +28,7 @@ public final class ByteBufferUtils {
+     //no instances
+   }
+ 
+-  public static int totalLength(ByteBuffer[] buffers) {
++  public static int totalLength(ByteBuffer[] buffers) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(36);
+     int total = 0;
+     for (ByteBuffer buffer : buffers) {
+       total += buffer.remaining();
+@@ -36,7 +36,7 @@ public final class ByteBufferUtils {
+     return total;
+   }
+ 
+-  public static ByteBuffer aggregate(ByteBuffer[] buffers) {
++  public static ByteBuffer aggregate(ByteBuffer[] buffers) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(41);
+     if (buffers.length == 1) {
+       return buffers[0];
+     } else {
+diff --git a/org/terracotta/offheapstore/util/DebuggingUtils.java b/org/terracotta/offheapstore/util/DebuggingUtils.java
+index 637f471..8e561d7 100644
+--- a/org/terracotta/offheapstore/util/DebuggingUtils.java
++++ b/org/terracotta/offheapstore/util/DebuggingUtils.java
+@@ -37,7 +37,7 @@ public final class DebuggingUtils {
+     }
+   }
+ 
+-  public static String toBase2SuffixedString(long n) {
++  public static String toBase2SuffixedString(long n) { org.terracotta.offheapstore.jmhbench.MutationSwitch.tick(46);
+     if (n > 0 && Long.bitCount(n) == 1) {
+       int i = Long.numberOfTrailingZeros(Math.abs(n)) / 10;
+       return (n >> (i * 10)) + BASE_2_SUFFIXES[i];

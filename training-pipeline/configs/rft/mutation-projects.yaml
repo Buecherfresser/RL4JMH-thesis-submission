@@ -1,0 +1,41 @@
+# Unified RFT job for all performance-mutation corpora.
+#
+# Scheduling is **cross-project by default**: generate every corpus, then verify
+# every corpus, then build — so you can turn off the GPU after all ``generate``
+# phases finish and leave verify/build on the CPU VM.
+#
+#   uv run python scripts/run_rft_phases.py --manifest configs/rft/mutation-projects.yaml
+#
+# On bsc-gcp:
+#
+#   scripts/bsc-gcp/deploy.sh
+#   scripts/bsc-gcp/start-background.sh
+
+name: mutation-rft
+
+# Manifest-level M-step. The per-project phases still generate/verify/build
+# independently, but train merges every project's accepted samples and fits one
+# adapter for JMH benchmark generation, not one adapter per subject project.
+train:
+  config: configs/rft/mutation-merged.yaml
+
+projects:
+  - id: commons-lang
+    display_name: Apache Commons Lang
+    config: configs/rft/commons-lang-mutation.yaml
+    bsc_gcp_config: configs/rft/commons-lang-mutation-bsc-gcp.yaml
+    deploy:
+      source: data/external-src/commons-lang
+      classpath_jar: commons-lang-mutants.jar
+      make_mutants_id: commons-lang
+      mutation_sites: data/projects/commons-lang/mutation_sites.yaml
+
+  - id: fastutil
+    display_name: fastutil
+    config: configs/rft/fastutil-mutation.yaml
+    bsc_gcp_config: configs/rft/fastutil-mutation-bsc-gcp.yaml
+    deploy:
+      source: data/external-src/fastutil
+      classpath_jar: fastutil-mutants.jar
+      make_mutants_id: fastutil
+      mutation_sites: data/projects/fastutil/mutation_sites.yaml

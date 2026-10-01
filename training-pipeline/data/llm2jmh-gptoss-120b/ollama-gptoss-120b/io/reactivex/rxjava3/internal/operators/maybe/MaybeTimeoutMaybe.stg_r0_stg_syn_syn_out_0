@@ -1,0 +1,177 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link MaybeTimeoutMaybe}.
+ *
+ * The benchmarks cover three typical scenarios:
+ * <ul>
+ *   <li>Normal success: the source Maybe emits before the timeout signal.</li>
+ *   <li>Timeout with fallback: the timeout signal arrives, a fallback Maybe is subscribed and succeeds.</li>
+ *   <li>Timeout without fallback: the timeout signal arrives and the downstream receives a {@link TimeoutException}.</li>
+ * </ul>
+ *
+ * All benchmarks run in {@link Mode#Throughput} to measure how many operations can be performed per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 1)
+@State(Scope.Thread)
+public class MaybeTimeoutMaybeBenchmark {
+
+    // -------------------------------------------------------------------------
+    //  Benchmark state
+    // -------------------------------------------------------------------------
+    /**
+     * Source that immediately succeeds with the value 1.
+     */
+    private Maybe<Integer> sourceSuccess;
+
+    /**
+     * Source that never emits (used to trigger timeout).
+     */
+    private Maybe<Integer> sourceNever;
+
+    /**
+     * Timeout signal that completes immediately.
+     */
+    private Maybe<Object> timeoutSignal;
+
+    /**
+     * Fallback that immediately succeeds with the value 42.
+     */
+    private Maybe<Integer> fallbackSuccess;
+
+    /**
+     * The operator under test for the three scenarios.
+     */
+    private Maybe<Integer> operatorNormal;
+
+    private Maybe<Integer> operatorTimeoutWithFallback;
+
+    private Maybe<Integer> operatorTimeoutWithoutFallback;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Normal flow: source succeeds before timeout.
+        sourceSuccess = Maybe.just(1);
+        // never fires, so no timeout.
+        timeoutSignal = Maybe.never();
+        operatorNormal = new MaybeTimeoutMaybe<>(sourceSuccess, timeoutSignal, null);
+        // Timeout with fallback: timeout fires immediately, fallback succeeds.
+        sourceNever = Maybe.never();
+        // fires instantly.
+        timeoutSignal = Maybe.just(new Object());
+        fallbackSuccess = Maybe.just(42);
+        operatorTimeoutWithFallback = new MaybeTimeoutMaybe<>(sourceNever, timeoutSignal, fallbackSuccess);
+        // Timeout without fallback: timeout fires, no fallback provided.
+        operatorTimeoutWithoutFallback = new MaybeTimeoutMaybe<>(sourceNever, timeoutSignal, null);
+    }
+
+    // -------------------------------------------------------------------------
+    //  Benchmarks
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public void normalSuccess(Blackhole bh) {
+        // Blocking get is acceptable for a micro‑benchmark because the source completes synchronously.
+        Integer result = operatorNormal.blockingGet();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void timeoutWithFallback(Blackhole bh) {
+        Integer result = operatorTimeoutWithFallback.blockingGet();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void timeoutWithoutFallback(Blackhole bh) {
+        try {
+            operatorTimeoutWithoutFallback.blockingGet();
+            // Should not reach here; a TimeoutException is expected.
+            bh.consume(false);
+        } catch (TimeoutException expected) {
+            // Expected path – consume to avoid dead‑code elimination.
+            bh.consume(true);
+        } catch (Throwable t) {
+            // Any other exception is also consumed.
+            bh.consume(t);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    //  Helper observer for non‑blocking variant (optional)
+    // -------------------------------------------------------------------------
+    /**
+     * A simple {@link MaybeObserver} that forwards the terminal event to a {@link Blackhole}.
+     * This can be used for more realistic asynchronous benchmarks if needed.
+     */
+    private static final class BlackholeObserver<T> implements MaybeObserver<T> {
+
+        private final Blackhole bh;
+
+        private Disposable d;
+
+        BlackholeObserver(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            this.d = d;
+        }
+
+        @Override
+        public void onSuccess(T value) {
+            bh.consume(value);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            bh.consume(e);
+        }
+
+        @Override
+        public void onComplete() {
+            bh.consume(false);
+        }
+    }
+}

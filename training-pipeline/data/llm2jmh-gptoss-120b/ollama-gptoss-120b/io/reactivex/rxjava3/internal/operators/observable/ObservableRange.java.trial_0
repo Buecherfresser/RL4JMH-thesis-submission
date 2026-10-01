@@ -1,0 +1,99 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableRange}.
+ *
+ * The benchmark measures the throughput (operations per second) of emitting a range of integers
+ * using the public {@code Observable.range} API. It covers a typical use‑case where the downstream
+ * simply consumes the values via a {@link Blackhole} to avoid dead‑code elimination.
+ *
+ * The benchmark follows best practices:
+ * <ul>
+ *   <li>State is scoped to a single thread to avoid contention.</li>
+ *   <li>Parameters allow testing different range sizes.</li>
+ *   <li>Warm‑up and measurement iterations are defined.</li>
+ *   <li>Blackhole is used to consume values.</li>
+ *   <li>All allocations that are not part of the measured code are performed in @Setup.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableRangeBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the range operator.
+         * Typical values: small (10), medium (10_000), large (1_000_000).
+         */
+        @Param({"10", "10000", "1000000"})
+        public int count;
+
+        /** Starting value of the range. */
+        @Param({"0"})
+        public int start;
+
+        /** Observable instance created once per benchmark iteration. */
+        public Observable<Integer> observable;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            // Observable.range creates an instance of ObservableRange internally.
+            observable = Observable.range(start, count);
+        }
+    }
+
+    /**
+     * Consumes the emitted integers using a Blackhole.
+     */
+    private static final class BlackholeObserver implements Observer<Integer> {
+
+        private final Blackhole bh;
+
+        BlackholeObserver(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            // No special handling required.
+        }
+
+        @Override
+        public void onNext(Integer value) {
+            bh.consume(value);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // Propagate errors to the benchmark harness.
+            throw new RuntimeException(e);
+        }
+
+        @Override
+        public void onComplete() {
+            // No action needed.
+        }
+    }
+
+    @Benchmark
+    public void rangeThroughput(BenchmarkState state, Blackhole bh) {
+        // Subscribe a fresh observer for each benchmark invocation.
+        // The observer forwards each value to the Blackhole to ensure the work is not optimized away.
+        state.observable.subscribe(new BlackholeObserver(bh));
+    }
+}
+```

@@ -1,0 +1,107 @@
+# Curated performance-mutation sites for Apache Commons Lang.
+#
+# Hand-picked by reading the source: each entry is a concrete, benchmarkable class and a
+# genuinely hot, ~once-per-call public method a reasonable JMH benchmark would exercise.
+# Several distinct methods per class make `killed / in-class mutants` a real per-class
+# *coverage* reward (did the benchmark cover the methods worth measuring?).
+#
+# `match` disambiguates overloads: it must be a substring of the method header (parens
+# included to pin the exact parameter list). Classes >90k chars (StringUtils, ArrayUtils)
+# are intentionally excluded -- the RFT generate phase skips them (max_source_chars).
+#
+# Regenerate with:
+#   jmh-make-mutants commons-lang --source data/external-src/commons-lang \
+#       --sites data/projects/commons-lang/mutation_sites.yaml
+
+package_root: org.apache.commons.lang3
+
+sites:
+  # --- numeric parsing / reductions (math.NumberUtils) ---
+  - {class: org.apache.commons.lang3.math.NumberUtils, method: createNumber, match: "(final String str)", note: "parse arbitrary numeric string"}
+  - {class: org.apache.commons.lang3.math.NumberUtils, method: isCreatable, match: "(final String str)", note: "numeric-string validation scan"}
+  - {class: org.apache.commons.lang3.math.NumberUtils, method: toInt, match: "(final String str)", note: "string->int parse"}
+  - {class: org.apache.commons.lang3.math.NumberUtils, method: max, match: "(final int... array)", note: "linear max over int[]"}
+  - {class: org.apache.commons.lang3.math.NumberUtils, method: min, match: "(final int... array)", note: "linear min over int[]"}
+
+  # --- bit/byte conversion loops (Conversion) ---
+  - {class: org.apache.commons.lang3.Conversion, method: byteArrayToInt, note: "pack bytes -> int"}
+  - {class: org.apache.commons.lang3.Conversion, method: intToByteArray, note: "unpack int -> bytes"}
+  - {class: org.apache.commons.lang3.Conversion, method: hexToInt, note: "parse hex digits -> int"}
+  - {class: org.apache.commons.lang3.Conversion, method: intToHex, note: "format int -> hex digits"}
+
+  # --- regex apply (RegExUtils) ---
+  - {class: org.apache.commons.lang3.RegExUtils, method: replaceAll, match: "final CharSequence text, final Pattern", note: "compiled-pattern replaceAll"}
+  - {class: org.apache.commons.lang3.RegExUtils, method: removeAll, match: "final CharSequence text, final Pattern", note: "compiled-pattern removeAll"}
+
+  # --- rational arithmetic (math.Fraction) ---
+  - {class: org.apache.commons.lang3.math.Fraction, method: add, match: "(final Fraction fraction)", note: "fraction addition (gcd)"}
+  - {class: org.apache.commons.lang3.math.Fraction, method: multiplyBy, note: "fraction multiply (gcd reduce)"}
+  - {class: org.apache.commons.lang3.math.Fraction, method: pow, note: "fraction exponentiation"}
+  - {class: org.apache.commons.lang3.math.Fraction, method: reduce, note: "reduce to lowest terms (gcd)"}
+
+  # --- array sort (ArraySorter) ---
+  - {class: org.apache.commons.lang3.ArraySorter, method: sort, match: "(final int[] array)", note: "int[] sort"}
+
+  # --- reflection builders (hot: field walking) ---
+  - {class: org.apache.commons.lang3.builder.HashCodeBuilder, method: reflectionHashCode, match: "final Object object, final String... excludeFields", note: "reflective hashCode"}
+  - {class: org.apache.commons.lang3.builder.EqualsBuilder, method: reflectionEquals, match: "final String... excludeFields", note: "reflective equals"}
+  - {class: org.apache.commons.lang3.builder.ToStringBuilder, method: reflectionToString, match: "(final Object object)", note: "reflective toString"}
+
+  # --- floating-point reductions (math.IEEE754rUtils) ---
+  - {class: org.apache.commons.lang3.math.IEEE754rUtils, method: max, match: "(final double... array)", note: "IEEE754r max over double[]"}
+  - {class: org.apache.commons.lang3.math.IEEE754rUtils, method: min, match: "(final double... array)", note: "IEEE754r min over double[]"}
+
+  # --- duration formatting (time.DurationFormatUtils) ---
+  - {class: org.apache.commons.lang3.time.DurationFormatUtils, method: formatDuration, match: "(final long durationMillis, final String format)", note: "format millis by pattern"}
+  - {class: org.apache.commons.lang3.time.DurationFormatUtils, method: formatDurationHMS, match: "(final long durationMillis)", note: "format millis as H:M:S"}
+
+  # --- boolean parsing (BooleanUtils) ---
+  - {class: org.apache.commons.lang3.BooleanUtils, method: toBoolean, match: "(final String str)", note: "parse boolean string"}
+  - {class: org.apache.commons.lang3.BooleanUtils, method: toInteger, match: "(final boolean bool)", note: "boolean -> int"}
+
+  # --- char classification / parsing (CharUtils) ---
+  - {class: org.apache.commons.lang3.CharUtils, method: isAscii, match: "(final char ch)", note: "ASCII classification"}
+  - {class: org.apache.commons.lang3.CharUtils, method: toChar, match: "(final String str)", note: "string->char parse"}
+  - {class: org.apache.commons.lang3.CharUtils, method: toIntValue, match: "(final char ch)", note: "char digit->int"}
+  - {class: org.apache.commons.lang3.CharUtils, method: unicodeEscaped, match: "(final char ch)", note: "escape char to \\uXXXX"}
+
+  # --- random string generation (RandomStringUtils) ---
+  - {class: org.apache.commons.lang3.RandomStringUtils, method: random, match: "(final int count)", note: "random alphanumeric string"}
+  - {class: org.apache.commons.lang3.RandomStringUtils, method: randomAlphabetic, match: "(final int count)", note: "random A-Za-z string"}
+  - {class: org.apache.commons.lang3.RandomStringUtils, method: randomNumeric, match: "(final int count)", note: "random digit string"}
+  - {class: org.apache.commons.lang3.RandomStringUtils, method: randomGraph, match: "(final int count)", note: "random printable-ASCII string"}
+
+  # --- word transforms (text.WordUtils) ---
+  - {class: org.apache.commons.lang3.text.WordUtils, method: capitalize, match: "(final String str)", note: "capitalize first letter of words"}
+  - {class: org.apache.commons.lang3.text.WordUtils, method: wrap, match: "(final String str, final int wrapLength)", note: "wrap text to line length"}
+  - {class: org.apache.commons.lang3.text.WordUtils, method: swapCase, note: "swap character case"}
+  - {class: org.apache.commons.lang3.text.WordUtils, method: capitalizeFully, match: "(final String str)", note: "capitalize all word letters"}
+
+  # --- date format/parse (time.FastDateFormat) ---
+  - {class: org.apache.commons.lang3.time.FastDateFormat, method: format, match: "(final Date date)", note: "format Date to string"}
+  - {class: org.apache.commons.lang3.time.FastDateFormat, method: parse, match: "(final String source)", note: "parse string to Date"}
+  - {class: org.apache.commons.lang3.time.FastDateFormat, method: getInstance, match: "(final String pattern)", note: "factory for pattern"}
+
+  # --- calendar arithmetic (time.DateUtils) ---
+  - {class: org.apache.commons.lang3.time.DateUtils, method: addDays, match: "(final Date date, final int amount)", note: "add days to Date"}
+  - {class: org.apache.commons.lang3.time.DateUtils, method: truncate, match: "(final Date date, final int field)", note: "truncate Date field"}
+  - {class: org.apache.commons.lang3.time.DateUtils, method: round, match: "(final Date date, final int field)", note: "round Date field"}
+  - {class: org.apache.commons.lang3.time.DateUtils, method: isSameDay, match: "(final Date date1, final Date date2)", note: "same-day comparison"}
+
+  # --- argument validation (Validate) ---
+  - {class: org.apache.commons.lang3.Validate, method: isTrue, match: "(final boolean expression)", note: "boolean guard (no message)"}
+  - {class: org.apache.commons.lang3.Validate, method: notNull, match: "(final T object)", note: "non-null guard (no message)"}
+  - {class: org.apache.commons.lang3.Validate, method: matchesPattern, match: "(final CharSequence input, final String pattern)", note: "regex guard"}
+  - {class: org.apache.commons.lang3.Validate, method: inclusiveBetween, match: "(final long start, final long end, final long value)", note: "long range guard"}
+
+  # --- stream/collection helpers (stream.Streams) ---
+  - {class: org.apache.commons.lang3.stream.Streams, method: of, match: "(final Collection<E> collection)", note: "collection -> Stream"}
+  - {class: org.apache.commons.lang3.stream.Streams, method: nonNull, match: "(final Collection<E> collection)", note: "filter nulls from collection"}
+  - {class: org.apache.commons.lang3.stream.Streams, method: instancesOf, match: "(final Class<? super E> clazz, final Collection<? super E> collection)", note: "filter by type"}
+  - {class: org.apache.commons.lang3.stream.Streams, method: failableStream, match: "(final Collection<T> stream)", note: "collection -> FailableStream"}
+
+  # --- locale parsing (LocaleUtils) ---
+  - {class: org.apache.commons.lang3.LocaleUtils, method: toLocale, match: "(final String str)", note: "parse locale string"}
+  - {class: org.apache.commons.lang3.LocaleUtils, method: availableLocaleList, note: "list supported locales"}
+  - {class: org.apache.commons.lang3.LocaleUtils, method: isAvailableLocale, match: "(final Locale locale)", note: "locale availability check"}
+  - {class: org.apache.commons.lang3.LocaleUtils, method: languagesByCountry, match: "(final String countryCode)", note: "languages for country code"}

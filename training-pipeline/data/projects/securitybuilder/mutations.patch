@@ -1,0 +1,569 @@
+diff --git a/com/tersesystems/securitybuilder/AuthenticatedEncryptionBuilder.java b/com/tersesystems/securitybuilder/AuthenticatedEncryptionBuilder.java
+index b368867..7cd3b53 100644
+--- a/com/tersesystems/securitybuilder/AuthenticatedEncryptionBuilder.java
++++ b/com/tersesystems/securitybuilder/AuthenticatedEncryptionBuilder.java
+@@ -22,7 +22,7 @@ public class AuthenticatedEncryptionBuilder {
+   public static final String AES_GCM_TRANSFORMATION = "AES/GCM/NoPadding";
+   public static final int TAG_LENGTH = 128;
+ 
+-  public static InitialStage builder() {
++  public static InitialStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(1);
+     return new InitialStageImpl();
+   }
+ 
+@@ -46,7 +46,7 @@ public class AuthenticatedEncryptionBuilder {
+   private static class InitialStageImpl implements InitialStage {
+ 
+     @Override
+-    public IvStage withSecretKey(final SecretKey key) {
++    public IvStage withSecretKey(final SecretKey key) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(2);
+       requireNonNull(key, "SecretKey must not be null!");
+       if (!key.getAlgorithm().equals("AES")) {
+         throw new IllegalStateException("SecretKey algorithm must equal AES!");
+@@ -64,7 +64,7 @@ public class AuthenticatedEncryptionBuilder {
+     }
+ 
+     @Override
+-    public ModeStage withIv(final byte[] iv) {
++    public ModeStage withIv(final byte[] iv) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(3);
+       requireNonNull(iv, "Initialization vector must not be null!");
+       if (iv.length != EntropySource.DEFAULT_GCM_IV_LENGTH) {
+         throw new IllegalStateException(
+diff --git a/com/tersesystems/securitybuilder/CertificateBuilder.java b/com/tersesystems/securitybuilder/CertificateBuilder.java
+index 88a9821..6c4b090 100644
+--- a/com/tersesystems/securitybuilder/CertificateBuilder.java
++++ b/com/tersesystems/securitybuilder/CertificateBuilder.java
+@@ -28,7 +28,7 @@ public class CertificateBuilder {
+ 
+   private CertificateBuilder() {}
+ 
+-  public static InstanceStage builder() {
++  public static InstanceStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(4);
+     return new InstanceStageImpl();
+   }
+ 
+@@ -82,12 +82,12 @@ public class CertificateBuilder {
+       extends InstanceGenerator<CertificateFactory, CertificateException> implements InstanceStage {
+ 
+     @Override
+-    public InputStage<X509Certificate> withX509() {
++    public InputStage<X509Certificate> withX509() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(5);
+       return new InputStageImpl<>(getInstance().withAlgorithm("X.509"));
+     }
+ 
+     @Override
+-    public <T extends Certificate> InputStage<T> withAlgorithm(final String algorithm) {
++    public <T extends Certificate> InputStage<T> withAlgorithm(final String algorithm) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(6);
+       return new InputStageImpl<T>(getInstance().withAlgorithm(algorithm));
+     }
+ 
+diff --git a/com/tersesystems/securitybuilder/KeyAgreementBuilder.java b/com/tersesystems/securitybuilder/KeyAgreementBuilder.java
+index 6b82206..1b64202 100644
+--- a/com/tersesystems/securitybuilder/KeyAgreementBuilder.java
++++ b/com/tersesystems/securitybuilder/KeyAgreementBuilder.java
+@@ -36,17 +36,17 @@ public class KeyAgreementBuilder {
+   private static class InitialStageImpl implements InitialStage {
+ 
+     @Override
+-    public InitStage withAlgorithm(final String algorithm) {
++    public InitStage withAlgorithm(final String algorithm) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(7);
+       return new InitStageImpl(() -> KeyAgreement.getInstance(algorithm));
+     }
+ 
+     @Override
+-    public InitStage withAlgorithmAndProvider(final String algorithm, final String provider) {
++    public InitStage withAlgorithmAndProvider(final String algorithm, final String provider) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(8);
+       return new InitStageImpl(() -> KeyAgreement.getInstance(algorithm, provider));
+     }
+ 
+     @Override
+-    public InitStage withECDH() {
++    public InitStage withECDH() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(9);
+       return withAlgorithm("ECDH");
+     }
+ 
+diff --git a/com/tersesystems/securitybuilder/KeyManagerBuilder.java b/com/tersesystems/securitybuilder/KeyManagerBuilder.java
+index f9408f7..16bb347 100644
+--- a/com/tersesystems/securitybuilder/KeyManagerBuilder.java
++++ b/com/tersesystems/securitybuilder/KeyManagerBuilder.java
+@@ -21,7 +21,7 @@ public class KeyManagerBuilder {
+ 
+   private KeyManagerBuilder() {}
+ 
+-  public static KeyManagerFactoryStage builder() {
++  public static KeyManagerFactoryStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(10);
+     return new KeyManagerFactoryStageImpl();
+   }
+ 
+@@ -83,12 +83,12 @@ public class KeyManagerBuilder {
+       implements KeyManagerFactoryStage {
+ 
+     @Override
+-    public SunParametersStage withSunX509() {
++    public SunParametersStage withSunX509() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(11);
+       return new SunParametersStageImpl();
+     }
+ 
+     @Override
+-    public SunParametersStage withSunX509(final String provider) {
++    public SunParametersStage withSunX509(final String provider) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(12);
+       return new SunParametersStageImpl(provider);
+     }
+ 
+diff --git a/com/tersesystems/securitybuilder/KeyManagerKeyStoreBuilder.java b/com/tersesystems/securitybuilder/KeyManagerKeyStoreBuilder.java
+index 94e3368..fd6d0c2 100644
+--- a/com/tersesystems/securitybuilder/KeyManagerKeyStoreBuilder.java
++++ b/com/tersesystems/securitybuilder/KeyManagerKeyStoreBuilder.java
+@@ -17,7 +17,7 @@ public class KeyManagerKeyStoreBuilder extends PasswordSpecificKeyStoreBuilder {
+   }
+ 
+   public static KeyStore.Builder newInstance(
+-      final KeyStore keyStore, final Function<String, ProtectionParameter> passwordFunction) {
++      final KeyStore keyStore, final Function<String, ProtectionParameter> passwordFunction) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(13);
+     Objects.requireNonNull(keyStore);
+     Objects.requireNonNull(passwordFunction);
+ 
+@@ -26,7 +26,7 @@ public class KeyManagerKeyStoreBuilder extends PasswordSpecificKeyStoreBuilder {
+ 
+   public static KeyStore.Builder newInstance(
+       final Supplier<KeyStore> keyStoreSupplier,
+-      final Function<String, ProtectionParameter> passwordFunction) {
++      final Function<String, ProtectionParameter> passwordFunction) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(14);
+     Objects.requireNonNull(keyStoreSupplier);
+     Objects.requireNonNull(passwordFunction);
+ 
+@@ -34,7 +34,7 @@ public class KeyManagerKeyStoreBuilder extends PasswordSpecificKeyStoreBuilder {
+   }
+ 
+   public static KeyStore.Builder newInstance(
+-      final KeyStore keyStore, final char[] keyStorePassword) {
++      final KeyStore keyStore, final char[] keyStorePassword) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(15);
+     return newInstance(keyStore, new PasswordProtection(keyStorePassword));
+   }
+ 
+diff --git a/com/tersesystems/securitybuilder/KeyStoreBuilder.java b/com/tersesystems/securitybuilder/KeyStoreBuilder.java
+index b53a77d..b1230f9 100644
+--- a/com/tersesystems/securitybuilder/KeyStoreBuilder.java
++++ b/com/tersesystems/securitybuilder/KeyStoreBuilder.java
+@@ -15,15 +15,15 @@ public class KeyStoreBuilder {
+ 
+   private KeyStoreBuilder() {}
+ 
+-  public static InstanceStage builder() {
++  public static InstanceStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(16);
+     return new InstanceStageImpl();
+   }
+ 
+-  public static KeyStore empty() {
++  public static KeyStore empty() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(17);
+     return empty(KeyStore.getDefaultType());
+   }
+ 
+-  public static KeyStore empty(final String type) {
++  public static KeyStore empty(final String type) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(18);
+     try {
+       return new BuilderFinalImpl(
+               () -> {
+diff --git a/com/tersesystems/securitybuilder/MacBuilder.java b/com/tersesystems/securitybuilder/MacBuilder.java
+index 6c6d7fa..f10cfef 100644
+--- a/com/tersesystems/securitybuilder/MacBuilder.java
++++ b/com/tersesystems/securitybuilder/MacBuilder.java
+@@ -57,17 +57,17 @@ public class MacBuilder {
+   private static class InitialStageImpl implements InitialStage {
+ 
+     @Override
+-    public SecretKeySpecStage withHmacSHA256() {
++    public SecretKeySpecStage withHmacSHA256() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(19);
+       return withSecretKeySpec("HmacSHA256");
+     }
+ 
+     @Override
+-    public SecretKeySpecStage withHmacSHA384() {
++    public SecretKeySpecStage withHmacSHA384() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(20);
+       return withSecretKeySpec("HmacSHA384");
+     }
+ 
+     @Override
+-    public SecretKeySpecStage withHmacSHA512() {
++    public SecretKeySpecStage withHmacSHA512() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(21);
+       return withSecretKeySpec("HmacSHA512");
+     }
+ 
+diff --git a/com/tersesystems/securitybuilder/MessageDigestBuilder.java b/com/tersesystems/securitybuilder/MessageDigestBuilder.java
+index 7f5210e..19811da 100644
+--- a/com/tersesystems/securitybuilder/MessageDigestBuilder.java
++++ b/com/tersesystems/securitybuilder/MessageDigestBuilder.java
+@@ -15,15 +15,15 @@ public class MessageDigestBuilder {
+    * @return a MessageDigest configured for SHA-1.
+    */
+   @Deprecated
+-  public static MessageDigest sha1() throws NoSuchAlgorithmException {
++  public static MessageDigest sha1() throws NoSuchAlgorithmException { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(22);
+     return getInstance("SHA-1");
+   }
+ 
+-  public static MessageDigest sha224() throws NoSuchAlgorithmException {
++  public static MessageDigest sha224() throws NoSuchAlgorithmException { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(23);
+     return getInstance("SHA-224");
+   }
+ 
+-  public static MessageDigest sha256() throws NoSuchAlgorithmException {
++  public static MessageDigest sha256() throws NoSuchAlgorithmException { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(24);
+     return getInstance("SHA-256");
+   }
+ 
+diff --git a/com/tersesystems/securitybuilder/PKCS8EncodedKeySpecBuilder.java b/com/tersesystems/securitybuilder/PKCS8EncodedKeySpecBuilder.java
+index 334753a..e552d36 100644
+--- a/com/tersesystems/securitybuilder/PKCS8EncodedKeySpecBuilder.java
++++ b/com/tersesystems/securitybuilder/PKCS8EncodedKeySpecBuilder.java
+@@ -39,7 +39,7 @@ public class PKCS8EncodedKeySpecBuilder {
+ 
+   private PKCS8EncodedKeySpecBuilder() {}
+ 
+-  public static ContentStage builder() {
++  public static ContentStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(25);
+     return new ContentStageImpl();
+   }
+ 
+@@ -65,7 +65,7 @@ public class PKCS8EncodedKeySpecBuilder {
+   private static class ContentStageImpl implements ContentStage {
+ 
+     @Override
+-    public PasswordStage withContent(final String content) {
++    public PasswordStage withContent(final String content) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(26);
+       return new PasswordStageImpl(
+           () -> {
+             final Matcher matcher = KEY_PATTERN.matcher(content);
+@@ -77,7 +77,7 @@ public class PKCS8EncodedKeySpecBuilder {
+     }
+ 
+     @Override
+-    public PasswordStage withReader(final Reader reader) {
++    public PasswordStage withReader(final Reader reader) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(27);
+       return new PasswordStageImpl(
+           () -> {
+             final char[] arr = new char[16 * 1024];
+diff --git a/com/tersesystems/securitybuilder/PasswordBuilder.java b/com/tersesystems/securitybuilder/PasswordBuilder.java
+index f2bc77a..5924ee0 100644
+--- a/com/tersesystems/securitybuilder/PasswordBuilder.java
++++ b/com/tersesystems/securitybuilder/PasswordBuilder.java
+@@ -18,7 +18,7 @@ import org.slieb.throwables.SupplierWithThrowable;
+  */
+ public class PasswordBuilder {
+ 
+-  public static InitialStage builder() {
++  public static InitialStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(28);
+     return new InitialStageImpl();
+   }
+ 
+@@ -59,12 +59,12 @@ public class PasswordBuilder {
+   private static class InitialStageImpl implements InitialStage {
+ 
+     @Override
+-    public PasswordStage withAlgorithm(final String algorithm) {
++    public PasswordStage withAlgorithm(final String algorithm) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(29);
+       return new PasswordStageImpl(() -> SecretKeyFactory.getInstance(algorithm));
+     }
+ 
+     @Override
+-    public PasswordStage withAlgorithmAndProvider(final String algorithm, final String provider) {
++    public PasswordStage withAlgorithmAndProvider(final String algorithm, final String provider) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(30);
+       return new PasswordStageImpl(() -> SecretKeyFactory.getInstance(algorithm, provider));
+     }
+ 
+diff --git a/com/tersesystems/securitybuilder/PasswordSpecificKeyStoreBuilder.java b/com/tersesystems/securitybuilder/PasswordSpecificKeyStoreBuilder.java
+index f40c1fc..033f8ed 100644
+--- a/com/tersesystems/securitybuilder/PasswordSpecificKeyStoreBuilder.java
++++ b/com/tersesystems/securitybuilder/PasswordSpecificKeyStoreBuilder.java
+@@ -22,7 +22,7 @@ public class PasswordSpecificKeyStoreBuilder extends KeyStore.Builder {
+   }
+ 
+   public static KeyStore.Builder newInstance(
+-      final KeyStore keyStore, final Function<String, ProtectionParameter> passwordFunction) {
++      final KeyStore keyStore, final Function<String, ProtectionParameter> passwordFunction) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(31);
+     Objects.requireNonNull(keyStore);
+     Objects.requireNonNull(passwordFunction);
+ 
+@@ -31,7 +31,7 @@ public class PasswordSpecificKeyStoreBuilder extends KeyStore.Builder {
+ 
+   public static KeyStore.Builder newInstance(
+       final Supplier<KeyStore> keyStoreSupplier,
+-      final Function<String, ProtectionParameter> passwordFunction) {
++      final Function<String, ProtectionParameter> passwordFunction) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(32);
+     Objects.requireNonNull(keyStoreSupplier);
+     Objects.requireNonNull(passwordFunction);
+ 
+@@ -39,7 +39,7 @@ public class PasswordSpecificKeyStoreBuilder extends KeyStore.Builder {
+   }
+ 
+   @Override
+-  public KeyStore getKeyStore() throws KeyStoreException {
++  public KeyStore getKeyStore() throws KeyStoreException { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(33);
+     return keyStoreSupplier.get();
+   }
+ 
+diff --git a/com/tersesystems/securitybuilder/PrivateKeyBuilder.java b/com/tersesystems/securitybuilder/PrivateKeyBuilder.java
+index d61d83e..3114c6a 100644
+--- a/com/tersesystems/securitybuilder/PrivateKeyBuilder.java
++++ b/com/tersesystems/securitybuilder/PrivateKeyBuilder.java
+@@ -18,7 +18,7 @@ import org.slieb.throwables.SupplierWithThrowable;
+ /** Builds a private key from input bytes. */
+ public class PrivateKeyBuilder {
+ 
+-  public static InstanceStage builder() {
++  public static InstanceStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(34);
+     return new InstanceStageImpl();
+   }
+ 
+@@ -69,13 +69,13 @@ public class PrivateKeyBuilder {
+       extends InstanceGenerator<KeyFactory, GeneralSecurityException> implements InstanceStage {
+ 
+     @Override
+-    public <T extends PrivateKey> PrivateKeySpecStage<T> withAlgorithm(final String algorithm) {
++    public <T extends PrivateKey> PrivateKeySpecStage<T> withAlgorithm(final String algorithm) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(35);
+       return new PrivateKeySpecStageImpl<>(getInstance().withAlgorithm(algorithm));
+     }
+ 
+     @Override
+     public <T extends PrivateKey> PrivateKeySpecStage<T> withAlgorithmAndProvider(
+-        final String algorithm, final String provider) {
++        final String algorithm, final String provider) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(36);
+       return new PrivateKeySpecStageImpl<>(
+           getInstance().withAlgorithmAndProvider(algorithm, provider));
+     }
+diff --git a/com/tersesystems/securitybuilder/PublicKeyBuilder.java b/com/tersesystems/securitybuilder/PublicKeyBuilder.java
+index 117763d..04b1e61 100644
+--- a/com/tersesystems/securitybuilder/PublicKeyBuilder.java
++++ b/com/tersesystems/securitybuilder/PublicKeyBuilder.java
+@@ -17,7 +17,7 @@ import org.slieb.throwables.SupplierWithThrowable;
+ 
+ public class PublicKeyBuilder {
+ 
+-  public static InstanceStage builder() {
++  public static InstanceStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(37);
+     return new InstanceStageImpl();
+   }
+ 
+@@ -69,13 +69,13 @@ public class PublicKeyBuilder {
+       extends InstanceGenerator<KeyFactory, GeneralSecurityException> implements InstanceStage {
+ 
+     @Override
+-    public <PK extends PublicKey> ParametersStage<PK> withAlgorithm(final String algorithm) {
++    public <PK extends PublicKey> ParametersStage<PK> withAlgorithm(final String algorithm) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(38);
+       return new ParametersStageImpl<>(getInstance().withAlgorithm(algorithm));
+     }
+ 
+     @Override
+     public <PK extends PublicKey> ParametersStage<PK> withAlgorithmAndProvider(
+-        final String algorithm, final String provider) {
++        final String algorithm, final String provider) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(39);
+       return new ParametersStageImpl<>(getInstance().withAlgorithmAndProvider(algorithm, provider));
+     }
+ 
+diff --git a/com/tersesystems/securitybuilder/SSLContextBuilder.java b/com/tersesystems/securitybuilder/SSLContextBuilder.java
+index 2f454bf..09a5391 100644
+--- a/com/tersesystems/securitybuilder/SSLContextBuilder.java
++++ b/com/tersesystems/securitybuilder/SSLContextBuilder.java
+@@ -19,7 +19,7 @@ public class SSLContextBuilder {
+ 
+   private SSLContextBuilder() {}
+ 
+-  public static InstanceStage builder() {
++  public static InstanceStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(40);
+     return new InstanceStageImpl();
+   }
+ 
+@@ -55,12 +55,12 @@ public class SSLContextBuilder {
+       extends InstanceGenerator<SSLContext, GeneralSecurityException> implements InstanceStage {
+ 
+     @Override
+-    public BuildFinal withTLS() {
++    public BuildFinal withTLS() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(41);
+       return new BuildFinalImpl(getInstance().withProtocol("TLS"));
+     }
+ 
+     @Override
+-    public BuildFinal withTLS12() {
++    public BuildFinal withTLS12() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(42);
+       return new BuildFinalImpl(getInstance().withProtocol("TLSv1.2"));
+     }
+ 
+diff --git a/com/tersesystems/securitybuilder/SecretKeyBuilder.java b/com/tersesystems/securitybuilder/SecretKeyBuilder.java
+index 693990c..f6d39e0 100644
+--- a/com/tersesystems/securitybuilder/SecretKeyBuilder.java
++++ b/com/tersesystems/securitybuilder/SecretKeyBuilder.java
+@@ -43,12 +43,12 @@ public class SecretKeyBuilder {
+   private static class InitialStageImpl implements InitialStage {
+ 
+     @Override
+-    public DataStage withSecretKeySpec(final String algorithm) {
++    public DataStage withSecretKeySpec(final String algorithm) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(43);
+       return new SecretKeySpecDataStageImpl(bytes -> new SecretKeySpec(bytes, algorithm));
+     }
+ 
+     @Override
+-    public DataStage withAES() {
++    public DataStage withAES() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(44);
+       return new SecretKeySpecDataStageImpl(bytes -> new SecretKeySpec(bytes, "AES"));
+     }
+   }
+@@ -64,7 +64,7 @@ public class SecretKeyBuilder {
+     }
+ 
+     @Override
+-    public BuildFinal withData(final byte[] bytes) {
++    public BuildFinal withData(final byte[] bytes) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(45);
+       return new SecretKeySpecBuildFinal(() -> keySpecFunction.apply(bytes));
+     }
+   }
+diff --git a/com/tersesystems/securitybuilder/SignatureBuilder.java b/com/tersesystems/securitybuilder/SignatureBuilder.java
+index eee36a9..146fe59 100644
+--- a/com/tersesystems/securitybuilder/SignatureBuilder.java
++++ b/com/tersesystems/securitybuilder/SignatureBuilder.java
+@@ -25,7 +25,7 @@ import org.slieb.throwables.SupplierWithThrowable;
+  */
+ public class SignatureBuilder {
+ 
+-  public static InstanceStage builder() {
++  public static InstanceStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(46);
+     return new InstanceStageImpl();
+   }
+ 
+@@ -76,7 +76,7 @@ public class SignatureBuilder {
+ 
+     @Override
+     public <PR extends PrivateKey, PU extends PublicKey> InitializeStage<PR, PU> withAlgorithm(
+-        final String algorithm) {
++        final String algorithm) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(47);
+       return new InitializeStageImpl<>(getInstance().withAlgorithm(algorithm));
+     }
+ 
+@@ -88,7 +88,7 @@ public class SignatureBuilder {
+     }
+ 
+     @Override
+-    public InitializeStage<RSAPrivateKey, RSAPublicKey> withSHA256withRSA() {
++    public InitializeStage<RSAPrivateKey, RSAPublicKey> withSHA256withRSA() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(48);
+       return withAlgorithm("SHA256withRSA");
+     }
+ 
+diff --git a/com/tersesystems/securitybuilder/TrustManagerBuilder.java b/com/tersesystems/securitybuilder/TrustManagerBuilder.java
+index 8850ce5..0ca6117 100644
+--- a/com/tersesystems/securitybuilder/TrustManagerBuilder.java
++++ b/com/tersesystems/securitybuilder/TrustManagerBuilder.java
+@@ -16,7 +16,7 @@ public class TrustManagerBuilder {
+ 
+   private TrustManagerBuilder() {}
+ 
+-  public static InstanceStage builder() {
++  public static InstanceStage builder() { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(49);
+     return new InstanceStageImpl();
+   }
+ 
+@@ -55,7 +55,7 @@ public class TrustManagerBuilder {
+       implements InstanceStage {
+ 
+     @Override
+-    public ParametersStage withAlgorithm(final String algorithm) {
++    public ParametersStage withAlgorithm(final String algorithm) { com.tersesystems.securitybuilder.jmhbench.MutationSwitch.tick(50);
+       return new ParametersStageImpl(getInstance().withAlgorithm(algorithm));
+     }
+ 
+diff --git a/com/tersesystems/securitybuilder/jmhbench/MutationSwitch.java b/com/tersesystems/securitybuilder/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..4d42fe2
+--- /dev/null
++++ b/com/tersesystems/securitybuilder/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.tersesystems.securitybuilder.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

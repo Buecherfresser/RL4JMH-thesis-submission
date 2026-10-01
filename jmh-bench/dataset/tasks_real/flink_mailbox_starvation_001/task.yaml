@@ -1,0 +1,25 @@
+instance_id: flink_mailbox_starvation_001
+target_class: bench.Worker
+expected_input_shapes: []
+tags:
+- loops
+- flink
+- real-world
+provenance:
+  project: apache/flink
+  url: https://github.com/apache/flink/pull/10009
+  commit: 809533e5b5c686e2d21b64361d22178ccb92ec26
+  description: 'Inspired by Flink PR #10009 ([FLINK-14304] task starvation
+
+    with mailbox). The simplified SUT here is a tight per-item
+
+    accumulator; the full real class is not extracted, so the
+
+    SUT may be expanded later by following the linked PR.
+
+    '
+junit_test_path: tests/WorkerTest.java
+regressions:
+- id: yield_per_item
+  patch: regressions/yield_per_item.patch
+  description: Call Thread.yield() once per loop iteration.

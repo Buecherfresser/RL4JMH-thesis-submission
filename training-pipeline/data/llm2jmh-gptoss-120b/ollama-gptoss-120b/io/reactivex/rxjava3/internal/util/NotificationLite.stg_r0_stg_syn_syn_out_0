@@ -1,0 +1,264 @@
+package io.reactivex.rxjava3.internal.util;
+
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmarks for {@link NotificationLite}.
+ *
+ * The benchmarks focus on the most frequently used paths:
+ * - creation of notifications (next, complete, error)
+ * - type checks (isComplete, isError, isSubscription, isDisposable)
+ * - accept/acceptFull dispatch logic for Subscriber and Observer
+ *
+ * All benchmarks run in {@link Mode#Throughput} to measure operations per time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class NotificationLiteBenchmark {
+
+    // Payloads used for the benchmarks
+    private Integer intValue;
+
+    private Throwable error;
+
+    private Subscription subscription;
+
+    private Disposable disposable;
+
+    // Pre‑created notification objects to avoid allocation overhead in the accept benchmarks
+    private Object nextNotification;
+
+    private Object completeNotification;
+
+    private Object errorNotification;
+
+    private Object subscriptionNotification;
+
+    private Object disposableNotification;
+
+    // Minimal no‑op Subscriber and Observer implementations
+    private Subscriber<Integer> subscriber;
+
+    private Observer<Integer> observer;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        intValue = 42;
+        error = new RuntimeException("benchmark error");
+        subscription = new Subscription() {
+
+            @Override
+            public void request(long n) {
+            }
+
+            @Override
+            public void cancel() {
+            }
+        };
+        disposable = new Disposable() {
+
+            @Override
+            public void dispose() {
+            }
+
+            @Override
+            public boolean isDisposed() {
+                return false;
+            }
+        };
+        nextNotification = NotificationLite.next(intValue);
+        completeNotification = NotificationLite.complete();
+        errorNotification = NotificationLite.error(error);
+        subscriptionNotification = NotificationLite.subscription(subscription);
+        disposableNotification = NotificationLite.disposable(disposable);
+        subscriber = new Subscriber<Integer>() {
+
+            @Override
+            public void onSubscribe(Subscription s) {
+            }
+
+            @Override
+            public void onNext(Integer t) {
+            }
+
+            @Override
+            public void onError(Throwable t) {
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        };
+        observer = new Observer<Integer>() {
+
+            @Override
+            public void onSubscribe(Disposable d) {
+            }
+
+            @Override
+            public void onNext(Integer t) {
+            }
+
+            @Override
+            public void onError(Throwable e) {
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        };
+    }
+
+    // -------------------------------------------------------------------------
+    // Creation benchmarks
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public Object createNext() {
+        return NotificationLite.next(intValue);
+    }
+
+    @Benchmark
+    public Object createComplete() {
+        return NotificationLite.complete();
+    }
+
+    @Benchmark
+    public Object createError() {
+        return NotificationLite.error(error);
+    }
+
+    @Benchmark
+    public Object createSubscription() {
+        return NotificationLite.subscription(subscription);
+    }
+
+    @Benchmark
+    public Object createDisposable() {
+        return NotificationLite.disposable(disposable);
+    }
+
+    // -------------------------------------------------------------------------
+    // Type‑check benchmarks
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public boolean isComplete() {
+        return NotificationLite.isComplete(completeNotification);
+    }
+
+    @Benchmark
+    public boolean isError() {
+        return NotificationLite.isError(errorNotification);
+    }
+
+    @Benchmark
+    public boolean isSubscription() {
+        return NotificationLite.isSubscription(subscriptionNotification);
+    }
+
+    @Benchmark
+    public boolean isDisposable() {
+        return NotificationLite.isDisposable(disposableNotification);
+    }
+
+    // -------------------------------------------------------------------------
+    // Accept benchmarks (Subscriber)
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public boolean acceptNextSubscriber(Blackhole bh) {
+        boolean terminal = NotificationLite.accept(nextNotification, subscriber);
+        bh.consume(terminal);
+        return terminal;
+    }
+
+    @Benchmark
+    public boolean acceptCompleteSubscriber(Blackhole bh) {
+        boolean terminal = NotificationLite.accept(completeNotification, subscriber);
+        bh.consume(terminal);
+        return terminal;
+    }
+
+    @Benchmark
+    public boolean acceptErrorSubscriber(Blackhole bh) {
+        boolean terminal = NotificationLite.accept(errorNotification, subscriber);
+        bh.consume(terminal);
+        return terminal;
+    }
+
+    @Benchmark
+    public boolean acceptFullWithSubscriptionSubscriber(Blackhole bh) {
+        boolean terminal = NotificationLite.acceptFull(subscriptionNotification, subscriber);
+        bh.consume(terminal);
+        return terminal;
+    }
+
+    // -------------------------------------------------------------------------
+    // Accept benchmarks (Observer)
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public boolean acceptNextObserver(Blackhole bh) {
+        boolean terminal = NotificationLite.accept(nextNotification, observer);
+        bh.consume(terminal);
+        return terminal;
+    }
+
+    @Benchmark
+    public boolean acceptCompleteObserver(Blackhole bh) {
+        boolean terminal = NotificationLite.accept(completeNotification, observer);
+        bh.consume(terminal);
+        return terminal;
+    }
+
+    @Benchmark
+    public boolean acceptErrorObserver(Blackhole bh) {
+        boolean terminal = NotificationLite.accept(errorNotification, observer);
+        bh.consume(terminal);
+        return terminal;
+    }
+
+    @Benchmark
+    public boolean acceptFullWithDisposableObserver(Blackhole bh) {
+        boolean terminal = NotificationLite.acceptFull(disposableNotification, observer);
+        bh.consume(terminal);
+        return terminal;
+    }
+}

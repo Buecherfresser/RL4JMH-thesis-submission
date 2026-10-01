@@ -1,0 +1,504 @@
+diff --git a/com/googlecode/concurrentlinkedhashmap/ConcurrentHashMapV8.java b/com/googlecode/concurrentlinkedhashmap/ConcurrentHashMapV8.java
+index c17b75e..38087c6 100644
+--- a/com/googlecode/concurrentlinkedhashmap/ConcurrentHashMapV8.java
++++ b/com/googlecode/concurrentlinkedhashmap/ConcurrentHashMapV8.java
+@@ -614,15 +614,15 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+         }
+ 
+         @Override
+-        public final K getKey()       { return key; }
++        public final K getKey()       { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(1); return key; }
+         @Override
+-        public final V getValue()     { return val; }
++        public final V getValue()     { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(2); return val; }
+         @Override
+         public final int hashCode()   { return key.hashCode() ^ val.hashCode(); }
+         @Override
+         public final String toString(){ return key + "=" + val; }
+         @Override
+-        public final V setValue(V value) {
++        public final V setValue(V value) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(3);
+             throw new UnsupportedOperationException();
+         }
+ 
+@@ -902,7 +902,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * {@inheritDoc}
+      */
+     @Override
+-    public int size() {
++    public int size() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(4);
+         long n = sumCount();
+         return ((n < 0L) ? 0 :
+                 (n > Integer.MAX_VALUE) ? Integer.MAX_VALUE :
+@@ -913,7 +913,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * {@inheritDoc}
+      */
+     @Override
+-    public boolean isEmpty() {
++    public boolean isEmpty() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(5);
+         return sumCount() <= 0L; // ignore transient negative values
+     }
+ 
+@@ -959,7 +959,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @throws NullPointerException if the specified key is null
+      */
+     @Override
+-    public boolean containsKey(Object key) {
++    public boolean containsKey(Object key) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(6);
+         return get(key) != null;
+     }
+ 
+@@ -974,7 +974,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @throws NullPointerException if the specified value is null
+      */
+     @Override
+-    public boolean containsValue(Object value) {
++    public boolean containsValue(Object value) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(7);
+         if (value == null)
+             throw new NullPointerException();
+         Node<K,V>[] t;
+@@ -1080,7 +1080,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @param m mappings to be stored in this map
+      */
+     @Override
+-    public void putAll(Map<? extends K, ? extends V> m) {
++    public void putAll(Map<? extends K, ? extends V> m) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(8);
+         tryPresize(m.size());
+         for (Map.Entry<? extends K, ? extends V> e : m.entrySet())
+             putVal(e.getKey(), e.getValue(), false);
+@@ -1180,7 +1180,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * Removes all of the mappings from this map.
+      */
+     @Override
+-    public void clear() {
++    public void clear() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(9);
+         long delta = 0L; // negative number of deletions
+         int i = 0;
+         Node<K,V>[] tab = table;
+@@ -1231,7 +1231,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @return the set view
+      */
+     @Override
+-    public KeySetView<K,V> keySet() {
++    public KeySetView<K,V> keySet() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(10);
+         KeySetView<K,V> ks;
+         return (ks = keySet) != null ? ks : (keySet = new KeySetView<K,V>(this, null));
+     }
+@@ -1255,7 +1255,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @return the collection view
+      */
+     @Override
+-    public Collection<V> values() {
++    public Collection<V> values() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(11);
+         ValuesView<K,V> vs;
+         return (vs = values) != null ? vs : (values = new ValuesView<K,V>(this));
+     }
+@@ -1278,7 +1278,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @return the set view
+      */
+     @Override
+-    public Set<Map.Entry<K,V>> entrySet() {
++    public Set<Map.Entry<K,V>> entrySet() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(12);
+         EntrySetView<K,V> es;
+         return (es = entrySet) != null ? es : (entrySet = new EntrySetView<K,V>(this));
+     }
+@@ -1539,7 +1539,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @throws NullPointerException if the specified key or value is null
+      */
+     @Override
+-    public V putIfAbsent(K key, V value) {
++    public V putIfAbsent(K key, V value) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(13);
+         return putVal(key, value, true);
+     }
+ 
+@@ -1561,7 +1561,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @throws NullPointerException if any of the arguments are null
+      */
+     @Override
+-    public boolean replace(K key, V oldValue, V newValue) {
++    public boolean replace(K key, V oldValue, V newValue) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(14);
+         if (key == null || oldValue == null || newValue == null)
+             throw new NullPointerException();
+         return replaceNode(key, newValue, oldValue) != null;
+@@ -1575,7 +1575,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @throws NullPointerException if the specified key or value is null
+      */
+     @Override
+-    public V replace(K key, V value) {
++    public V replace(K key, V value) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(15);
+         if (key == null || value == null)
+             throw new NullPointerException();
+         return replaceNode(key, value, null);
+@@ -1594,12 +1594,12 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @return the mapping for the key, if present; else the default value
+      * @throws NullPointerException if the specified key is null
+      */
+-    public V getOrDefault(Object key, V defaultValue) {
++    public V getOrDefault(Object key, V defaultValue) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(16);
+         V v;
+         return (v = get(key)) == null ? defaultValue : v;
+     }
+ 
+-    public void forEach(BiAction<? super K, ? super V> action) {
++    public void forEach(BiAction<? super K, ? super V> action) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(17);
+         if (action == null) throw new NullPointerException();
+         Node<K,V>[] t;
+         if ((t = table) != null) {
+@@ -1610,7 +1610,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+         }
+     }
+ 
+-    public void replaceAll(BiFun<? super K, ? super V, ? extends V> function) {
++    public void replaceAll(BiFun<? super K, ? super V, ? extends V> function) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(18);
+         if (function == null) throw new NullPointerException();
+         Node<K,V>[] t;
+         if ((t = table) != null) {
+@@ -1651,7 +1651,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @throws RuntimeException or Error if the mappingFunction does so,
+      *         in which case the mapping is left unestablished
+      */
+-    public V computeIfAbsent(K key, Fun<? super K, ? extends V> mappingFunction) {
++    public V computeIfAbsent(K key, Fun<? super K, ? extends V> mappingFunction) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(19);
+         if (key == null || mappingFunction == null)
+             throw new NullPointerException();
+         int h = spread(key.hashCode());
+@@ -1752,7 +1752,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @throws RuntimeException or Error if the remappingFunction does so,
+      *         in which case the mapping is unchanged
+      */
+-    public V computeIfPresent(K key, BiFun<? super K, ? super V, ? extends V> remappingFunction) {
++    public V computeIfPresent(K key, BiFun<? super K, ? super V, ? extends V> remappingFunction) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(20);
+         if (key == null || remappingFunction == null)
+             throw new NullPointerException();
+         int h = spread(key.hashCode());
+@@ -1968,7 +1968,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @throws RuntimeException or Error if the remappingFunction does so,
+      *         in which case the mapping is unchanged
+      */
+-    public V merge(K key, V value, BiFun<? super V, ? super V, ? extends V> remappingFunction) {
++    public V merge(K key, V value, BiFun<? super V, ? super V, ? extends V> remappingFunction) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(21);
+         if (key == null || value == null || remappingFunction == null)
+             throw new NullPointerException();
+         int h = spread(key.hashCode());
+@@ -2084,7 +2084,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @return an enumeration of the keys in this table
+      * @see #keySet()
+      */
+-    public Enumeration<K> keys() {
++    public Enumeration<K> keys() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(22);
+         Node<K,V>[] t;
+         int f = (t = table) == null ? 0 : t.length;
+         return new KeyIterator<K,V>(t, f, 0, f, this);
+@@ -2096,7 +2096,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @return an enumeration of the values in this table
+      * @see #values()
+      */
+-    public Enumeration<V> elements() {
++    public Enumeration<V> elements() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(23);
+         Node<K,V>[] t;
+         int f = (t = table) == null ? 0 : t.length;
+         return new ValueIterator<K,V>(t, f, 0, f, this);
+@@ -2114,7 +2114,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @return the number of mappings
+      * @since 1.8
+      */
+-    public long mappingCount() {
++    public long mappingCount() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(24);
+         long n = sumCount();
+         return (n < 0L) ? 0L : n; // ignore transient negative values
+     }
+@@ -2126,7 +2126,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @return the new set
+      * @since 1.8
+      */
+-    public static <K> KeySetView<K,Boolean> newKeySet() {
++    public static <K> KeySetView<K,Boolean> newKeySet() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(25);
+         return new KeySetView<K,Boolean>
+             (new ConcurrentHashMapV8<K,Boolean>(), Boolean.TRUE);
+     }
+@@ -2142,7 +2142,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * elements is negative
+      * @since 1.8
+      */
+-    public static <K> KeySetView<K,Boolean> newKeySet(int initialCapacity) {
++    public static <K> KeySetView<K,Boolean> newKeySet(int initialCapacity) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(26);
+         return new KeySetView<K,Boolean>
+             (new ConcurrentHashMapV8<K,Boolean>(initialCapacity), Boolean.TRUE);
+     }
+@@ -2158,7 +2158,7 @@ class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
+      * @return the set view
+      * @throws NullPointerException if the mappedValue is null
+      */
+-    public KeySetView<K,V> keySet(V mappedValue) {
++    public KeySetView<K,V> keySet(V mappedValue) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(27);
+         if (mappedValue == null)
+             throw new NullPointerException();
+         return new KeySetView<K,V>(this, mappedValue);
+@@ -3239,7 +3239,7 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         public final boolean hasNext() { return next != null; }
+-        public final boolean hasMoreElements() { return next != null; }
++        public final boolean hasMoreElements() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(28); return next != null; }
+ 
+         public final void remove() {
+             Node<K,V> p;
+@@ -3269,7 +3269,7 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public final K nextElement() { return next(); }
++        public final K nextElement() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(29); return next(); }
+     }
+ 
+     static final class ValueIterator<K,V> extends BaseIterator<K,V>
+@@ -3291,7 +3291,7 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public final V nextElement() { return next(); }
++        public final V nextElement() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(30); return next(); }
+     }
+ 
+     static final class EntryIterator<K,V> extends BaseIterator<K,V>
+@@ -3327,9 +3327,9 @@ final Node<K,V> find(int h, Object k) {
+             this.map = map;
+         }
+         @Override
+-        public K getKey()        { return key; }
++        public K getKey()        { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(31); return key; }
+         @Override
+-        public V getValue()      { return val; }
++        public V getValue()      { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(32); return val; }
+         @Override
+         public int hashCode()    { return key.hashCode() ^ val.hashCode(); }
+         @Override
+@@ -3354,7 +3354,7 @@ final Node<K,V> find(int h, Object k) {
+          * re-establish). We do not and cannot guarantee more.
+          */
+         @Override
+-        public V setValue(V value) {
++        public V setValue(V value) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(33);
+             if (value == null) throw new NullPointerException();
+             V v = val;
+             val = value;
+@@ -3373,7 +3373,7 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public ConcurrentHashMapSpliterator<K> trySplit() {
++        public ConcurrentHashMapSpliterator<K> trySplit() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(34);
+             int i, f, h;
+             return (h = ((i = baseIndex) + (f = baseLimit)) >>> 1) <= i ? null :
+                 new KeySpliterator<K,V>(tab, baseSize, baseLimit = h,
+@@ -3381,14 +3381,14 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public void forEachRemaining(Action<? super K> action) {
++        public void forEachRemaining(Action<? super K> action) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(35);
+             if (action == null) throw new NullPointerException();
+             for (Node<K,V> p; (p = advance()) != null;)
+                 action.apply(p.key);
+         }
+ 
+         @Override
+-        public boolean tryAdvance(Action<? super K> action) {
++        public boolean tryAdvance(Action<? super K> action) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(36);
+             if (action == null) throw new NullPointerException();
+             Node<K,V> p;
+             if ((p = advance()) == null)
+@@ -3398,7 +3398,7 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public long estimateSize() { return est; }
++        public long estimateSize() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(37); return est; }
+ 
+     }
+ 
+@@ -3412,7 +3412,7 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public ConcurrentHashMapSpliterator<V> trySplit() {
++        public ConcurrentHashMapSpliterator<V> trySplit() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(38);
+             int i, f, h;
+             return (h = ((i = baseIndex) + (f = baseLimit)) >>> 1) <= i ? null :
+                 new ValueSpliterator<K,V>(tab, baseSize, baseLimit = h,
+@@ -3420,14 +3420,14 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public void forEachRemaining(Action<? super V> action) {
++        public void forEachRemaining(Action<? super V> action) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(39);
+             if (action == null) throw new NullPointerException();
+             for (Node<K,V> p; (p = advance()) != null;)
+                 action.apply(p.val);
+         }
+ 
+         @Override
+-        public boolean tryAdvance(Action<? super V> action) {
++        public boolean tryAdvance(Action<? super V> action) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(40);
+             if (action == null) throw new NullPointerException();
+             Node<K,V> p;
+             if ((p = advance()) == null)
+@@ -3437,7 +3437,7 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public long estimateSize() { return est; }
++        public long estimateSize() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(41); return est; }
+ 
+     }
+ 
+@@ -3453,7 +3453,7 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public ConcurrentHashMapSpliterator<Map.Entry<K,V>> trySplit() {
++        public ConcurrentHashMapSpliterator<Map.Entry<K,V>> trySplit() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(42);
+             int i, f, h;
+             return (h = ((i = baseIndex) + (f = baseLimit)) >>> 1) <= i ? null :
+                 new EntrySpliterator<K,V>(tab, baseSize, baseLimit = h,
+@@ -3461,14 +3461,14 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public void forEachRemaining(Action<? super Map.Entry<K,V>> action) {
++        public void forEachRemaining(Action<? super Map.Entry<K,V>> action) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(43);
+             if (action == null) throw new NullPointerException();
+             for (Node<K,V> p; (p = advance()) != null; )
+                 action.apply(new MapEntry<K,V>(p.key, p.val, map));
+         }
+ 
+         @Override
+-        public boolean tryAdvance(Action<? super Map.Entry<K,V>> action) {
++        public boolean tryAdvance(Action<? super Map.Entry<K,V>> action) { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(44);
+             if (action == null) throw new NullPointerException();
+             Node<K,V> p;
+             if ((p = advance()) == null)
+@@ -3478,7 +3478,7 @@ final Node<K,V> find(int h, Object k) {
+         }
+ 
+         @Override
+-        public long estimateSize() { return est; }
++        public long estimateSize() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(45); return est; }
+ 
+     }
+ 
+@@ -3498,18 +3498,18 @@ final Node<K,V> find(int h, Object k) {
+          *
+          * @return the map backing this view
+          */
+-        public ConcurrentHashMapV8<K,V> getMap() { return map; }
++        public ConcurrentHashMapV8<K,V> getMap() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(46); return map; }
+ 
+         /**
+          * Removes all of the elements from this view, by removing all
+          * the mappings from the map backing this view.
+          */
+         @Override
+-        public final void clear()      { map.clear(); }
++        public final void clear()      { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(47); map.clear(); }
+         @Override
+-        public final int size()        { return map.size(); }
++        public final int size()        { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(48); return map.size(); }
+         @Override
+-        public final boolean isEmpty() { return map.isEmpty(); }
++        public final boolean isEmpty() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(49); return map.isEmpty(); }
+ 
+         // implementations below rely on concrete classes supplying these
+         // abstract methods
+@@ -3531,7 +3531,7 @@ final Node<K,V> find(int h, Object k) {
+         private static final String oomeMsg = "Required array size too large";
+ 
+         @Override
+-        public final Object[] toArray() {
++        public final Object[] toArray() { com.googlecode.concurrentlinkedhashmap.jmhbench.MutationSwitch.tick(50);
+             long sz = map.mappingCount();
+             if (sz > MAX_ARRAY_SIZE)
+                 throw new OutOfMemoryError(oomeMsg);
+diff --git a/com/googlecode/concurrentlinkedhashmap/jmhbench/MutationSwitch.java b/com/googlecode/concurrentlinkedhashmap/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..e20c2d4
+--- /dev/null
++++ b/com/googlecode/concurrentlinkedhashmap/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.googlecode.concurrentlinkedhashmap.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

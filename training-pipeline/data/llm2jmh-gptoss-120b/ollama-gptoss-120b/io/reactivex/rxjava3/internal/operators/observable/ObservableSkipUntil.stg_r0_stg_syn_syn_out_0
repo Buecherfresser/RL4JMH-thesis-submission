@@ -1,0 +1,95 @@
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableSkipUntil}
+ * measuring throughput (operations per second).
+ *
+ * The benchmark creates a source Observable emitting a configurable number of items
+ * and a trigger Observable that emits a single item immediately. The {@code skipUntil}
+ * operator should start forwarding items after the trigger fires.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state across threads.
+ * - Reuse Observable instances across benchmark iterations to reduce allocation overhead.
+ * - Use Blackhole to consume emitted items and prevent dead-code elimination.
+ * - Configure warm‑up, measurement, forks and time units for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3)
+@Threads(1)
+public class ObservableSkipUntilBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted by the source Observable.
+         */
+        @Param({ "1000", "10000", "100000" })
+        public int size;
+
+        /**
+         * Source Observable emitting a range of integers.
+         */
+        Observable<Integer> source;
+
+        /**
+         * Trigger Observable that emits a single item immediately.
+         */
+        Observable<Integer> trigger;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a cold source Observable; each subscription will get a fresh range.
+            source = Observable.range(0, size);
+            // Trigger Observable emits once and completes; this will cause skipUntil to start forwarding.
+            trigger = Observable.just(1);
+        }
+    }
+
+    @Benchmark
+    public void skipUntilThroughput(BenchmarkState state, Blackhole bh) {
+        // Apply skipUntil operator and consume all items using blockingSubscribe.
+        // The Blackhole ensures the emitted values are used.
+        state.source.skipUntil(state.trigger).blockingSubscribe(bh::consume);
+    }
+}

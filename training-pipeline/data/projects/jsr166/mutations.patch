@@ -1,0 +1,619 @@
+diff --git a/java/util/concurrent/ArrayBlockingQueue.java b/java/util/concurrent/ArrayBlockingQueue.java
+index d52d18a..cb06597 100644
+--- a/java/util/concurrent/ArrayBlockingQueue.java
++++ b/java/util/concurrent/ArrayBlockingQueue.java
+@@ -338,7 +338,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
+      *
+      * @throws NullPointerException if the specified element is null
+      */
+-    public boolean offer(E e) {
++    public boolean offer(E e) { java.util.concurrent.jmhbench.MutationSwitch.tick(1);
+         Objects.requireNonNull(e);
+         final ReentrantLock lock = this.lock;
+         lock.lock();
+@@ -383,7 +383,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
+      * @throws NullPointerException {@inheritDoc}
+      */
+     public boolean offer(E e, long timeout, TimeUnit unit)
+-        throws InterruptedException {
++        throws InterruptedException { java.util.concurrent.jmhbench.MutationSwitch.tick(4);
+ 
+         Objects.requireNonNull(e);
+         long nanos = unit.toNanos(timeout);
+diff --git a/java/util/concurrent/CompletableFuture.java b/java/util/concurrent/CompletableFuture.java
+index 3254515..68be827 100644
+--- a/java/util/concurrent/CompletableFuture.java
++++ b/java/util/concurrent/CompletableFuture.java
+@@ -483,7 +483,7 @@ public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {
+ 
+     /** Fallback if ForkJoinPool.commonPool() cannot support parallelism */
+     private static final class ThreadPerTaskExecutor implements Executor {
+-        public void execute(Runnable r) {
++        public void execute(Runnable r) { java.util.concurrent.jmhbench.MutationSwitch.tick(33);
+             Objects.requireNonNull(r);
+             new Thread(r).start();
+         }
+@@ -523,7 +523,7 @@ public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {
+         /** Returns true if possibly still triggerable. Used by cleanStack. */
+         abstract boolean isLive();
+ 
+-        public final void run()                { tryFire(ASYNC); }
++        public final void run()                { java.util.concurrent.jmhbench.MutationSwitch.tick(35); tryFire(ASYNC); }
+         public final boolean exec()            { tryFire(ASYNC); return false; }
+         public final Void getRawResult()       { return null; }
+         public final void setRawResult(Void v) {}
+diff --git a/java/util/concurrent/ConcurrentHashMap.java b/java/util/concurrent/ConcurrentHashMap.java
+index 4df4f73..d053b9c 100644
+--- a/java/util/concurrent/ConcurrentHashMap.java
++++ b/java/util/concurrent/ConcurrentHashMap.java
+@@ -639,8 +639,8 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
+             this.next = next;
+         }
+ 
+-        public final K getKey()     { return key; }
+-        public final V getValue()   { return val; }
++        public final K getKey()     { java.util.concurrent.jmhbench.MutationSwitch.tick(7); return key; }
++        public final V getValue()   { java.util.concurrent.jmhbench.MutationSwitch.tick(10); return val; }
+         public final int hashCode() { return key.hashCode() ^ val.hashCode(); }
+         public final String toString() {
+             return Helpers.mapEntryToString(key, val);
+diff --git a/java/util/concurrent/ConcurrentLinkedDeque.java b/java/util/concurrent/ConcurrentLinkedDeque.java
+index 91ddabd..621b342 100644
+--- a/java/util/concurrent/ConcurrentLinkedDeque.java
++++ b/java/util/concurrent/ConcurrentLinkedDeque.java
+@@ -823,7 +823,7 @@ public class ConcurrentLinkedDeque<E>
+      *
+      * @throws NullPointerException if the specified element is null
+      */
+-    public void addFirst(E e) {
++    public void addFirst(E e) { java.util.concurrent.jmhbench.MutationSwitch.tick(37);
+         linkFirst(e);
+     }
+ 
+@@ -836,7 +836,7 @@ public class ConcurrentLinkedDeque<E>
+      *
+      * @throws NullPointerException if the specified element is null
+      */
+-    public void addLast(E e) {
++    public void addLast(E e) { java.util.concurrent.jmhbench.MutationSwitch.tick(39);
+         linkLast(e);
+     }
+ 
+diff --git a/java/util/concurrent/ConcurrentLinkedQueue.java b/java/util/concurrent/ConcurrentLinkedQueue.java
+index eac8ee7..862a7da 100644
+--- a/java/util/concurrent/ConcurrentLinkedQueue.java
++++ b/java/util/concurrent/ConcurrentLinkedQueue.java
+@@ -351,7 +351,7 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
+      * @return {@code true} (as specified by {@link Queue#offer})
+      * @throws NullPointerException if the specified element is null
+      */
+-    public boolean offer(E e) {
++    public boolean offer(E e) { java.util.concurrent.jmhbench.MutationSwitch.tick(41);
+         final Node<E> newNode = new Node<E>(Objects.requireNonNull(e));
+ 
+         for (Node<E> t = tail, p = t;;) {
+@@ -380,7 +380,7 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
+         }
+     }
+ 
+-    public E poll() {
++    public E poll() { java.util.concurrent.jmhbench.MutationSwitch.tick(43);
+         restartFromHead: for (;;) {
+             for (Node<E> h = head, p = h, q;; p = q) {
+                 final E item;
+diff --git a/java/util/concurrent/ConcurrentSkipListMap.java b/java/util/concurrent/ConcurrentSkipListMap.java
+index e8dafaa..9b75966 100644
+--- a/java/util/concurrent/ConcurrentSkipListMap.java
++++ b/java/util/concurrent/ConcurrentSkipListMap.java
+@@ -1292,7 +1292,7 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
+      *         with the keys currently in the map
+      * @throws NullPointerException if the specified key is null
+      */
+-    public boolean containsKey(Object key) {
++    public boolean containsKey(Object key) { java.util.concurrent.jmhbench.MutationSwitch.tick(13);
+         return doGet(key) != null;
+     }
+ 
+@@ -1325,7 +1325,7 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
+      * @throws NullPointerException if the specified key is null
+      * @since 1.8
+      */
+-    public V getOrDefault(Object key, V defaultValue) {
++    public V getOrDefault(Object key, V defaultValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(16);
+         V v;
+         return (v = doGet(key)) == null ? defaultValue : v;
+     }
+diff --git a/java/util/concurrent/ConcurrentSkipListSet.java b/java/util/concurrent/ConcurrentSkipListSet.java
+index 3a72c4f..6dc7da3 100644
+--- a/java/util/concurrent/ConcurrentSkipListSet.java
++++ b/java/util/concurrent/ConcurrentSkipListSet.java
+@@ -200,7 +200,7 @@ public class ConcurrentSkipListSet<E>
+      *
+      * @return the number of elements in this set
+      */
+-    public int size() {
++    public int size() { java.util.concurrent.jmhbench.MutationSwitch.tick(19);
+         return m.size();
+     }
+ 
+@@ -208,7 +208,7 @@ public class ConcurrentSkipListSet<E>
+      * Returns {@code true} if this set contains no elements.
+      * @return {@code true} if this set contains no elements
+      */
+-    public boolean isEmpty() {
++    public boolean isEmpty() { java.util.concurrent.jmhbench.MutationSwitch.tick(22);
+         return m.isEmpty();
+     }
+ 
+diff --git a/java/util/concurrent/CopyOnWriteArrayList.java b/java/util/concurrent/CopyOnWriteArrayList.java
+index 7182f98..bd7e182 100644
+--- a/java/util/concurrent/CopyOnWriteArrayList.java
++++ b/java/util/concurrent/CopyOnWriteArrayList.java
+@@ -167,7 +167,7 @@ public class CopyOnWriteArrayList<E>
+      *
+      * @return the number of elements in this list
+      */
+-    public int size() {
++    public int size() { java.util.concurrent.jmhbench.MutationSwitch.tick(25);
+         return getArray().length;
+     }
+ 
+@@ -176,7 +176,7 @@ public class CopyOnWriteArrayList<E>
+      *
+      * @return {@code true} if this list contains no elements
+      */
+-    public boolean isEmpty() {
++    public boolean isEmpty() { java.util.concurrent.jmhbench.MutationSwitch.tick(27);
+         return size() == 0;
+     }
+ 
+diff --git a/java/util/concurrent/CopyOnWriteArraySet.java b/java/util/concurrent/CopyOnWriteArraySet.java
+index ab48a44..fd44ce0 100644
+--- a/java/util/concurrent/CopyOnWriteArraySet.java
++++ b/java/util/concurrent/CopyOnWriteArraySet.java
+@@ -132,7 +132,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
+      *
+      * @return the number of elements in this set
+      */
+-    public int size() {
++    public int size() { java.util.concurrent.jmhbench.MutationSwitch.tick(29);
+         return al.size();
+     }
+ 
+@@ -141,7 +141,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
+      *
+      * @return {@code true} if this set contains no elements
+      */
+-    public boolean isEmpty() {
++    public boolean isEmpty() { java.util.concurrent.jmhbench.MutationSwitch.tick(31);
+         return al.isEmpty();
+     }
+ 
+diff --git a/java/util/concurrent/CountDownLatch.java b/java/util/concurrent/CountDownLatch.java
+index 3b41b49..6571f65 100644
+--- a/java/util/concurrent/CountDownLatch.java
++++ b/java/util/concurrent/CountDownLatch.java
+@@ -168,11 +168,11 @@ public class CountDownLatch {
+             return getState();
+         }
+ 
+-        protected int tryAcquireShared(int acquires) {
++        protected int tryAcquireShared(int acquires) { java.util.concurrent.jmhbench.MutationSwitch.tick(45);
+             return (getState() == 0) ? 1 : -1;
+         }
+ 
+-        protected boolean tryReleaseShared(int releases) {
++        protected boolean tryReleaseShared(int releases) { java.util.concurrent.jmhbench.MutationSwitch.tick(47);
+             // Decrement count; signal when transition to zero
+             for (;;) {
+                 int c = getState();
+diff --git a/java/util/concurrent/CyclicBarrier.java b/java/util/concurrent/CyclicBarrier.java
+index 87e498d..f1cb007 100644
+--- a/java/util/concurrent/CyclicBarrier.java
++++ b/java/util/concurrent/CyclicBarrier.java
+@@ -301,7 +301,7 @@ public class CyclicBarrier {
+      *
+      * @return the number of parties required to trip this barrier
+      */
+-    public int getParties() {
++    public int getParties() { java.util.concurrent.jmhbench.MutationSwitch.tick(49);
+         return parties;
+     }
+ 
+diff --git a/java/util/concurrent/atomic/AtomicBoolean.java b/java/util/concurrent/atomic/AtomicBoolean.java
+index d8cb986..7f10505 100644
+--- a/java/util/concurrent/atomic/AtomicBoolean.java
++++ b/java/util/concurrent/atomic/AtomicBoolean.java
+@@ -98,7 +98,7 @@ public class AtomicBoolean implements java.io.Serializable {
+      * @return {@code true} if successful. False return indicates that
+      * the actual value was not equal to the expected value.
+      */
+-    public final boolean compareAndSet(boolean expectedValue, boolean newValue) {
++    public final boolean compareAndSet(boolean expectedValue, boolean newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(20);
+         return VALUE.compareAndSet(this,
+                                    (expectedValue ? 1 : 0),
+                                    (newValue ? 1 : 0));
+@@ -121,7 +121,7 @@ public class AtomicBoolean implements java.io.Serializable {
+      * @see #weakCompareAndSetPlain
+      */
+     @Deprecated(since="9")
+-    public boolean weakCompareAndSet(boolean expectedValue, boolean newValue) {
++    public boolean weakCompareAndSet(boolean expectedValue, boolean newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(23);
+         return VALUE.weakCompareAndSetPlain(this,
+                                             (expectedValue ? 1 : 0),
+                                             (newValue ? 1 : 0));
+diff --git a/java/util/concurrent/atomic/AtomicInteger.java b/java/util/concurrent/atomic/AtomicInteger.java
+index 4f08ed3..bec991a 100644
+--- a/java/util/concurrent/atomic/AtomicInteger.java
++++ b/java/util/concurrent/atomic/AtomicInteger.java
+@@ -107,7 +107,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
+      * @param newValue the new value
+      * @since 1.6
+      */
+-    public final void lazySet(int newValue) {
++    public final void lazySet(int newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(26);
+         U.putIntRelease(this, VALUE, newValue);
+     }
+ 
+@@ -118,7 +118,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
+      * @param newValue the new value
+      * @return the previous value
+      */
+-    public final int getAndSet(int newValue) {
++    public final int getAndSet(int newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(28);
+         return U.getAndSetInt(this, VALUE, newValue);
+     }
+ 
+diff --git a/java/util/concurrent/atomic/AtomicIntegerArray.java b/java/util/concurrent/atomic/AtomicIntegerArray.java
+index 676788e..950d0a3 100644
+--- a/java/util/concurrent/atomic/AtomicIntegerArray.java
++++ b/java/util/concurrent/atomic/AtomicIntegerArray.java
+@@ -80,7 +80,7 @@ public class AtomicIntegerArray implements java.io.Serializable {
+      *
+      * @return the length of the array
+      */
+-    public final int length() {
++    public final int length() { java.util.concurrent.jmhbench.MutationSwitch.tick(2);
+         return array.length;
+     }
+ 
+@@ -114,7 +114,7 @@ public class AtomicIntegerArray implements java.io.Serializable {
+      * @param newValue the new value
+      * @since 1.6
+      */
+-    public final void lazySet(int i, int newValue) {
++    public final void lazySet(int i, int newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(5);
+         AA.setRelease(array, i, newValue);
+     }
+ 
+diff --git a/java/util/concurrent/atomic/AtomicLong.java b/java/util/concurrent/atomic/AtomicLong.java
+index e446df8..3f47f03 100644
+--- a/java/util/concurrent/atomic/AtomicLong.java
++++ b/java/util/concurrent/atomic/AtomicLong.java
+@@ -108,7 +108,7 @@ public class AtomicLong extends Number implements java.io.Serializable {
+      * @param newValue the new value
+      * @since 1.6
+      */
+-    public final void lazySet(long newValue) {
++    public final void lazySet(long newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(30);
+         U.putLongRelease(this, VALUE, newValue);
+     }
+ 
+@@ -119,7 +119,7 @@ public class AtomicLong extends Number implements java.io.Serializable {
+      * @param newValue the new value
+      * @return the previous value
+      */
+-    public final long getAndSet(long newValue) {
++    public final long getAndSet(long newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(32);
+         return U.getAndSetLong(this, VALUE, newValue);
+     }
+ 
+diff --git a/java/util/concurrent/atomic/AtomicLongArray.java b/java/util/concurrent/atomic/AtomicLongArray.java
+index af2ff67..1022d98 100644
+--- a/java/util/concurrent/atomic/AtomicLongArray.java
++++ b/java/util/concurrent/atomic/AtomicLongArray.java
+@@ -80,7 +80,7 @@ public class AtomicLongArray implements java.io.Serializable {
+      *
+      * @return the length of the array
+      */
+-    public final int length() {
++    public final int length() { java.util.concurrent.jmhbench.MutationSwitch.tick(8);
+         return array.length;
+     }
+ 
+@@ -114,7 +114,7 @@ public class AtomicLongArray implements java.io.Serializable {
+      * @param newValue the new value
+      * @since 1.6
+      */
+-    public final void lazySet(int i, long newValue) {
++    public final void lazySet(int i, long newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(11);
+         AA.setRelease(array, i, newValue);
+     }
+ 
+diff --git a/java/util/concurrent/atomic/AtomicMarkableReference.java b/java/util/concurrent/atomic/AtomicMarkableReference.java
+index 8e1727c..606ab53 100644
+--- a/java/util/concurrent/atomic/AtomicMarkableReference.java
++++ b/java/util/concurrent/atomic/AtomicMarkableReference.java
+@@ -82,7 +82,7 @@ public class AtomicMarkableReference<V> {
+      *
+      * @return the current value of the reference
+      */
+-    public V getReference() {
++    public V getReference() { java.util.concurrent.jmhbench.MutationSwitch.tick(34);
+         return pair.reference;
+     }
+ 
+@@ -91,7 +91,7 @@ public class AtomicMarkableReference<V> {
+      *
+      * @return the current value of the mark
+      */
+-    public boolean isMarked() {
++    public boolean isMarked() { java.util.concurrent.jmhbench.MutationSwitch.tick(36);
+         return pair.mark;
+     }
+ 
+diff --git a/java/util/concurrent/atomic/AtomicReference.java b/java/util/concurrent/atomic/AtomicReference.java
+index b2c692d..33785fe 100644
+--- a/java/util/concurrent/atomic/AtomicReference.java
++++ b/java/util/concurrent/atomic/AtomicReference.java
+@@ -105,7 +105,7 @@ public class AtomicReference<V> implements java.io.Serializable {
+      * @param newValue the new value
+      * @since 1.6
+      */
+-    public final void lazySet(V newValue) {
++    public final void lazySet(V newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(38);
+         VALUE.setRelease(this, newValue);
+     }
+ 
+@@ -119,7 +119,7 @@ public class AtomicReference<V> implements java.io.Serializable {
+      * @return {@code true} if successful. False return indicates that
+      * the actual value was not equal to the expected value.
+      */
+-    public final boolean compareAndSet(V expectedValue, V newValue) {
++    public final boolean compareAndSet(V expectedValue, V newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(40);
+         return VALUE.compareAndSet(this, expectedValue, newValue);
+     }
+ 
+diff --git a/java/util/concurrent/atomic/AtomicReferenceArray.java b/java/util/concurrent/atomic/AtomicReferenceArray.java
+index f85fb93..d10932c 100644
+--- a/java/util/concurrent/atomic/AtomicReferenceArray.java
++++ b/java/util/concurrent/atomic/AtomicReferenceArray.java
+@@ -85,7 +85,7 @@ public class AtomicReferenceArray<E> implements java.io.Serializable {
+      *
+      * @return the length of the array
+      */
+-    public final int length() {
++    public final int length() { java.util.concurrent.jmhbench.MutationSwitch.tick(14);
+         return array.length;
+     }
+ 
+@@ -120,7 +120,7 @@ public class AtomicReferenceArray<E> implements java.io.Serializable {
+      * @param newValue the new value
+      * @since 1.6
+      */
+-    public final void lazySet(int i, E newValue) {
++    public final void lazySet(int i, E newValue) { java.util.concurrent.jmhbench.MutationSwitch.tick(17);
+         AA.setRelease(array, i, newValue);
+     }
+ 
+diff --git a/java/util/concurrent/atomic/AtomicStampedReference.java b/java/util/concurrent/atomic/AtomicStampedReference.java
+index b4152c5..88d1f51 100644
+--- a/java/util/concurrent/atomic/AtomicStampedReference.java
++++ b/java/util/concurrent/atomic/AtomicStampedReference.java
+@@ -82,7 +82,7 @@ public class AtomicStampedReference<V> {
+      *
+      * @return the current value of the reference
+      */
+-    public V getReference() {
++    public V getReference() { java.util.concurrent.jmhbench.MutationSwitch.tick(42);
+         return pair.reference;
+     }
+ 
+@@ -91,7 +91,7 @@ public class AtomicStampedReference<V> {
+      *
+      * @return the current value of the stamp
+      */
+-    public int getStamp() {
++    public int getStamp() { java.util.concurrent.jmhbench.MutationSwitch.tick(44);
+         return pair.stamp;
+     }
+ 
+diff --git a/java/util/concurrent/atomic/DoubleAccumulator.java b/java/util/concurrent/atomic/DoubleAccumulator.java
+index d04b825..40b7b4b 100644
+--- a/java/util/concurrent/atomic/DoubleAccumulator.java
++++ b/java/util/concurrent/atomic/DoubleAccumulator.java
+@@ -105,7 +105,7 @@ public class DoubleAccumulator extends Striped64 implements Serializable {
+      *
+      * @param x the value
+      */
+-    public void accumulate(double x) {
++    public void accumulate(double x) { java.util.concurrent.jmhbench.MutationSwitch.tick(46);
+         Cell[] cs; long b, v, r; int m; Cell c;
+         if ((cs = cells) != null
+             || ((r = doubleToRawLongBits
+@@ -154,7 +154,7 @@ public class DoubleAccumulator extends Striped64 implements Serializable {
+      * only be used when it is known that no threads are concurrently
+      * updating.
+      */
+-    public void reset() {
++    public void reset() { java.util.concurrent.jmhbench.MutationSwitch.tick(48);
+         Cell[] cs = cells;
+         base = identity;
+         if (cs != null) {
+diff --git a/java/util/concurrent/atomic/DoubleAdder.java b/java/util/concurrent/atomic/DoubleAdder.java
+index 70a714e..bdc3d2b 100644
+--- a/java/util/concurrent/atomic/DoubleAdder.java
++++ b/java/util/concurrent/atomic/DoubleAdder.java
+@@ -115,7 +115,7 @@ public class DoubleAdder extends Striped64 implements Serializable {
+      *
+      * @return the sum
+      */
+-    public double sum() {
++    public double sum() { java.util.concurrent.jmhbench.MutationSwitch.tick(50);
+         Cell[] cs = cells;
+         double sum = Double.longBitsToDouble(base);
+         if (cs != null) {
+diff --git a/java/util/concurrent/jmhbench/MutationSwitch.java b/java/util/concurrent/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..2e1ca54
+--- /dev/null
++++ b/java/util/concurrent/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package java.util.concurrent.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/java/util/concurrent/locks/LockSupport.java b/java/util/concurrent/locks/LockSupport.java
+index 28fe0d4..ed19037 100644
+--- a/java/util/concurrent/locks/LockSupport.java
++++ b/java/util/concurrent/locks/LockSupport.java
+@@ -158,7 +158,7 @@ public class LockSupport {
+      * @param blocker the blocker object
+      * @since 14
+      */
+-    public static void setCurrentBlocker(Object blocker) {
++    public static void setCurrentBlocker(Object blocker) { java.util.concurrent.jmhbench.MutationSwitch.tick(3);
+         U.putReferenceOpaque(Thread.currentThread(), PARKBLOCKER, blocker);
+     }
+ 
+@@ -173,7 +173,7 @@ public class LockSupport {
+      * @param thread the thread to unpark, or {@code null}, in which case
+      *        this operation has no effect
+      */
+-    public static void unpark(Thread thread) {
++    public static void unpark(Thread thread) { java.util.concurrent.jmhbench.MutationSwitch.tick(6);
+         if (thread != null) {
+             if (thread.isVirtual()) {
+                 VirtualThreads.unpark(thread);
+diff --git a/java/util/concurrent/locks/ReentrantLock.java b/java/util/concurrent/locks/ReentrantLock.java
+index 3378ce3..9c83978 100644
+--- a/java/util/concurrent/locks/ReentrantLock.java
++++ b/java/util/concurrent/locks/ReentrantLock.java
+@@ -170,7 +170,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
+         }
+ 
+         @ReservedStackAccess
+-        protected final boolean tryRelease(int releases) {
++        protected final boolean tryRelease(int releases) { java.util.concurrent.jmhbench.MutationSwitch.tick(9);
+             int c = getState() - releases;
+             if (getExclusiveOwnerThread() != Thread.currentThread())
+                 throw new IllegalMonitorStateException();
+@@ -181,7 +181,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
+             return free;
+         }
+ 
+-        protected final boolean isHeldExclusively() {
++        protected final boolean isHeldExclusively() { java.util.concurrent.jmhbench.MutationSwitch.tick(12);
+             // While we must in general read state before owner,
+             // we don't need to do so to check if current thread is owner
+             return getExclusiveOwnerThread() == Thread.currentThread();
+diff --git a/java/util/concurrent/locks/ReentrantReadWriteLock.java b/java/util/concurrent/locks/ReentrantReadWriteLock.java
+index 517708e..11e8176 100644
+--- a/java/util/concurrent/locks/ReentrantReadWriteLock.java
++++ b/java/util/concurrent/locks/ReentrantReadWriteLock.java
+@@ -244,8 +244,8 @@ public class ReentrantReadWriteLock
+         writerLock = new WriteLock(this);
+     }
+ 
+-    public ReentrantReadWriteLock.WriteLock writeLock() { return writerLock; }
+-    public ReentrantReadWriteLock.ReadLock  readLock()  { return readerLock; }
++    public ReentrantReadWriteLock.WriteLock writeLock() { java.util.concurrent.jmhbench.MutationSwitch.tick(15); return writerLock; }
++    public ReentrantReadWriteLock.ReadLock  readLock()  { java.util.concurrent.jmhbench.MutationSwitch.tick(18); return readerLock; }
+ 
+     /**
+      * Synchronization implementation for ReentrantReadWriteLock.
+diff --git a/java/util/concurrent/locks/StampedLock.java b/java/util/concurrent/locks/StampedLock.java
+index b9f0e93..42d2fe0 100644
+--- a/java/util/concurrent/locks/StampedLock.java
++++ b/java/util/concurrent/locks/StampedLock.java
+@@ -470,7 +470,7 @@ public class StampedLock implements java.io.Serializable {
+      * @return a write stamp that can be used to unlock or convert mode
+      */
+     @ReservedStackAccess
+-    public long writeLock() {
++    public long writeLock() { java.util.concurrent.jmhbench.MutationSwitch.tick(21);
+         // try unconditional CAS confirming weak read
+         long s = U.getLongOpaque(this, STATE) & ~ABITS, nextState;
+         if (casState(s, nextState = s | WBIT)) {
+@@ -486,7 +486,7 @@ public class StampedLock implements java.io.Serializable {
+      * @return a write stamp that can be used to unlock or convert mode,
+      * or zero if the lock is not available
+      */
+-    public long tryWriteLock() {
++    public long tryWriteLock() { java.util.concurrent.jmhbench.MutationSwitch.tick(24);
+         return tryAcquireWrite();
+     }
+ 

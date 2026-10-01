@@ -1,0 +1,116 @@
+```java
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.schedulers.SchedulerWhen;
+import io.reactivex.rxjava3.processors.UnicastProcessor;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * Benchmark for {@link SchedulerWhen} measuring the throughput of scheduling
+ * immediate actions. The benchmark creates a SchedulerWhen that merges the
+ * scheduled actions using {@link Completable#merge(Iterable)} which is a
+ * realistic combine function used in RxJava internal tests.
+ *
+ * The benchmark runs in {@link Mode#Throughput} mode, reporting operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class SchedulerWhenThroughputBenchmark {
+
+    /** Simple no‑op runnable used as the scheduled action. */
+    private static final Runnable NOOP = () -> { /* no work */ };
+
+    /** Scheduler used as the underlying actual scheduler (single‑threaded for determinism). */
+    private Scheduler actualScheduler;
+
+    /** SchedulerWhen instance under test. */
+    private SchedulerWhen schedulerWhen;
+
+    /** Disposable representing the subscription to the combine function; kept to prevent premature disposal. */
+    private Disposable combineDisposable;
+
+    /** Counter to ensure actions are not optimized away. */
+    private final AtomicInteger counter = new AtomicInteger();
+
+    /**
+     * Set up the benchmark state. Creates a SchedulerWhen that merges all scheduled
+     * Completable actions and completes when all have finished.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a single‑threaded scheduler to avoid contention that would mask the overhead of SchedulerWhen.
+        actualScheduler = Schedulers.single();
+
+        // Combine function merges all inner Completable streams and completes when all are done.
+        Function<Flowable<Flowable<Completable>>, Completable> combine = flows ->
+                Completable.merge(flows.flatMapCompletable(inner -> inner));
+
+        schedulerWhen = new SchedulerWhen(combine, actualScheduler);
+
+        // Keep a reference to the disposable returned by the combine function to prevent GC.
+        // The SchedulerWhen constructor already subscribes; we just store it for completeness.
+        combineDisposable = schedulerWhen;
+    }
+
+    /**
+     * Benchmark method that schedules an immediate no‑op action on the SchedulerWhen.
+     * The returned Disposable is consumed by Blackhole to avoid dead‑code elimination.
+     *
+     * @param bh Blackhole to consume results.
+     * @return the Disposable representing the scheduled action.
+     */
+    @Benchmark
+    public Disposable scheduleImmediate(Blackhole bh) {
+        SchedulerWhen.Worker worker = schedulerWhen.createWorker();
+        Disposable d = worker.schedule(NOOP);
+        // Increment a counter to make the method side‑effectful.
+        counter.incrementAndGet();
+        bh.consume(d);
+        // Dispose the worker to avoid resource leakage; this is cheap compared to scheduling.
+        worker.dispose();
+        return d;
+    }
+
+    /**
+     * Benchmark method that schedules a delayed action (1 ms) on the SchedulerWhen.
+     * This measures the overhead of handling delayed scheduling.
+     *
+     * @param bh Blackhole to consume results.
+     * @return the Disposable representing the scheduled action.
+     */
+    @Benchmark
+    public Disposable scheduleDelayed(Blackhole bh) {
+        SchedulerWhen.Worker worker = schedulerWhen.createWorker();
+        Disposable d = worker.schedule(NOOP, 1, TimeUnit.MILLISECONDS);
+        counter.incrementAndGet();
+        bh.consume(d);
+        worker.dispose();
+        return d;
+    }
+
+    /**
+     * Tear down the benchmark state, disposing the underlying scheduler.
+     */
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        if (combineDisposable != null && !combineDisposable.isDisposed()) {
+            combineDisposable.dispose();
+        }
+        if (actualScheduler != null) {
+            actualScheduler.shutdown();
+        }
+    }
+}
+```

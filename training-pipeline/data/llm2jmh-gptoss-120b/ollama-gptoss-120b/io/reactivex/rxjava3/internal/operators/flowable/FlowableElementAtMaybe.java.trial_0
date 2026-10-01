@@ -1,0 +1,69 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableElementAtMaybe;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link FlowableElementAtMaybe}.
+ *
+ * Measures the throughput of retrieving an element at a given index from a {@link Flowable}
+ * using the {@code elementAt} operator implemented as a {@link Maybe}.
+ *
+ * The benchmark covers three typical scenarios:
+ * <ul>
+ *   <li>index = 0 (first element)</li>
+ *   <li>index = middle of the stream</li>
+ *   <li>index = last element (or not present)</li>
+ * </ul>
+ *
+ * Best practices applied:
+ * <ul>
+ *   <li>State is scoped to a thread to avoid contention.</li>
+ *   <li>All allocations are performed in {@link #setup()} to keep the measured code focused on the operator.</li>
+ *   <li>Blackhole is used to consume the result and prevent dead‑code elimination.</li>
+ *   <li>Warm‑up and measurement iterations are configured to let the JIT stabilize.</li>
+ *   <li>Throughput mode reports operations per second, which is the most relevant metric for reactive pipelines.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableElementAtMaybeBenchmark {
+
+    /** Size of the source Flowable. */
+    @Param({"1000", "1000000"})
+    public int sourceSize;
+
+    /** Index to retrieve. */
+    @Param({"0", "500", "999"}) // values will be adjusted by JMH according to sourceSize
+    public int index;
+
+    private Flowable<Integer> source;
+    private Maybe<Integer> maybe;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Create a deterministic source of integers [1 .. sourceSize]
+        source = Flowable.range(1, sourceSize);
+        // Build the Maybe that will emit the element at the requested index
+        maybe = new FlowableElementAtMaybe<>(source, index);
+    }
+
+    @Benchmark
+    public void elementAtMaybe(Blackhole bh) {
+        // blockingGet() forces the subscription to complete synchronously,
+        // which is appropriate for a micro‑benchmark measuring the operator's overhead.
+        Integer result = maybe.blockingGet();
+        bh.consume(result);
+    }
+}
+```

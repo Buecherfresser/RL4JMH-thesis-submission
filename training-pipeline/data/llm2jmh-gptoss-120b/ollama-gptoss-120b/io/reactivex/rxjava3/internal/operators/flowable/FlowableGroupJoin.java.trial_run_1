@@ -1,0 +1,84 @@
+```java
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Publisher;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link FlowableGroupJoin}.
+ *
+ * The benchmark creates two finite Flowables (left and right) of configurable size,
+ * joins them with never‑ending end publishers (so groups stay open for the whole
+ * stream), and materialises the result selector into a simple {@code String}.
+ *
+ * Throughput mode measures how many join operations can be performed per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableGroupJoinBenchmark {
+
+    /**
+     * Number of items emitted by each source Flowable.
+     */
+    @Param({ "1000", "10000" })
+    public int size;
+
+    private Flowable<String> joined;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Simple integer sources.
+        Flowable<Integer> left = Flowable.range(1, size);
+        Flowable<Integer> right = Flowable.range(1, size);
+        // Keep each group open for the whole stream.
+        Function<Integer, Publisher<Object>> leftEnd = v -> Flowable.never();
+        Function<Integer, Publisher<Object>> rightEnd = v -> Flowable.never();
+        // Result selector: avoid blocking operations; just emit a placeholder string.
+        BiFunction<Integer, Flowable<Integer>, String> resultSelector =
+                (l, rs) -> l + ":group";
+        // Build the operator under test.
+        joined = new FlowableGroupJoin<>(left, right, leftEnd, rightEnd, resultSelector);
+    }
+
+    @Benchmark
+    public void groupJoin(Blackhole bh) {
+        // Subscribe and consume all emitted items. blockingSubscribe ensures the benchmark
+        // measures the full lifecycle of the operator.
+        joined.blockingSubscribe(bh::consume);
+    }
+}
+```

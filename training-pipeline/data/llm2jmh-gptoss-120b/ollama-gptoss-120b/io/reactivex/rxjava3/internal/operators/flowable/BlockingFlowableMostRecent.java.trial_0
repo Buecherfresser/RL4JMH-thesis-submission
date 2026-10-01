@@ -1,0 +1,71 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable.benchmark;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.internal.operators.flowable.BlockingFlowableMostRecent;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Microbenchmark for {@link BlockingFlowableMostRecent}.
+ *
+ * The benchmark measures the throughput of iterating over a {@code BlockingFlowableMostRecent}
+ * that wraps a hot {@link Flowable} emitting a fixed number of integer values.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Perform all heavyweight setup in @Setup(Level.Trial) to exclude it from measurement.
+ * - Consume values with Blackhole to prevent dead‑code elimination.
+ * - Use a warm‑up phase and a measurement phase with stable iteration times.
+ * - Run in Mode.Throughput (operations per second) as requested.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class BlockingFlowableMostRecentBenchmark {
+
+    /** Number of items emitted by the source Flowable. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** The source Flowable that emits a range of integers on a dedicated scheduler. */
+    private Flowable<Integer> source;
+
+    /** The BlockingFlowableMostRecent instance under test. */
+    private BlockingFlowableMostRecent<Integer> mostRecent;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a hot Flowable that emits the requested number of items.
+        // Using a dedicated scheduler ensures the emission happens asynchronously,
+        // mimicking realistic usage where the source may be producing values concurrently.
+        source = Flowable.range(1, itemCount)
+                .subscribeOn(Schedulers.single())
+                .publish()
+                .autoConnect();
+
+        // The initial value is a sentinel that will be replaced by the first onNext.
+        mostRecent = new BlockingFlowableMostRecent<>(source, -1);
+    }
+
+    /**
+     * Benchmark that iterates over the BlockingFlowableMostRecent and consumes each element.
+     *
+     * Each operation creates a fresh iterator, walks through all emitted items,
+     * and feeds them into a Blackhole to avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void iterateAll(Blackhole bh) {
+        Iterator<Integer> it = mostRecent.iterator();
+        while (it.hasNext()) {
+            bh.consume(it.next());
+        }
+    }
+}
+```

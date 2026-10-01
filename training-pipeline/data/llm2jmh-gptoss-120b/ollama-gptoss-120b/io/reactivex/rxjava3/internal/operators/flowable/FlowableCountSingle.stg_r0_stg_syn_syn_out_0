@@ -1,0 +1,95 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableCountSingle}
+ * measuring the throughput of counting elements in a {@link Flowable}.
+ *
+ * The benchmark creates a hot {@link Flowable} emitting a fixed number of integers.
+ * Each iteration subscribes to the {@code count()} operator and blocks for the result.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source {@link Flowable} in @Setup to exclude its construction from the measurement.
+ * - Use {@code blockingGet()} to obtain the result synchronously, ensuring the benchmark measures the full
+ *   operator pipeline.
+ * - Consume the result with {@link Blackhole} to prevent dead‑code elimination.
+ * - Configure warm‑up and measurement iterations, as well as throughput mode.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:MaxInlineSize=100", "-XX:FreqInlineSize=100", "-XX:CompileThreshold=1500" })
+@State(Scope.Thread)
+public class FlowableCountSingleBenchmark {
+
+    /**
+     * Number of elements emitted by the source Flowable.
+     */
+    @Param({ "1000", "10000", "100000", "1000000" })
+    public int elementCount;
+
+    /**
+     * Source Flowable emitting a range of integers.
+     */
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Use a cold Flowable that generates the range on each subscription.
+        // This ensures the benchmark measures only the counting operator,
+        // not the cost of pre‑materializing a data structure.
+        source = Flowable.range(1, elementCount);
+    }
+
+    /**
+     * Benchmark that subscribes to {@code source.count()} and blocks for the result.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void countSingle(Blackhole bh) {
+        // Create the Single that counts the elements.
+        Single<Long> countSingle = source.count();
+        // Block until the count is computed.
+        long result = countSingle.blockingGet();
+        // Consume the result so the JIT does not eliminate the call.
+        bh.consume(result);
+    }
+}

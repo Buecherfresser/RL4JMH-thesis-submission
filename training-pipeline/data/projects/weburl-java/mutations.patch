@@ -1,0 +1,561 @@
+diff --git a/org/glavo/url/WebURLParseException.java b/org/glavo/url/WebURLParseException.java
+index 97076c7..c8d269b 100644
+--- a/org/glavo/url/WebURLParseException.java
++++ b/org/glavo/url/WebURLParseException.java
+@@ -370,19 +370,19 @@ public final class WebURLParseException extends IllegalArgumentException {
+ 
+         /// Returns the URL Standard validation error name.
+         @Contract(pure = true)
+-        public String getErrorName() {
++        public String getErrorName() { org.glavo.url.jmhbench.MutationSwitch.tick(1);
+             return errorName;
+         }
+ 
+         /// Returns the default human-readable parse failure reason.
+         @Contract(pure = true)
+-        public String getReason() {
++        public String getReason() { org.glavo.url.jmhbench.MutationSwitch.tick(3);
+             return reason;
+         }
+ 
+         /// Returns whether this validation error is recoverable by a non-strict parser.
+         @Contract(pure = true)
+-        public boolean isRecoverable() {
++        public boolean isRecoverable() { org.glavo.url.jmhbench.MutationSwitch.tick(5);
+             return recoverable;
+         }
+     }
+@@ -441,7 +441,7 @@ public final class WebURLParseException extends IllegalArgumentException {
+ 
+     /// Returns the parsed input string.
+     @Contract(pure = true)
+-    public String getInput() {
++    public String getInput() { org.glavo.url.jmhbench.MutationSwitch.tick(7);
+         return input;
+     }
+ 
+diff --git a/org/glavo/url/internal/IndexRanges.java b/org/glavo/url/internal/IndexRanges.java
+index 39c2689..8858e6a 100644
+--- a/org/glavo/url/internal/IndexRanges.java
++++ b/org/glavo/url/internal/IndexRanges.java
+@@ -33,7 +33,7 @@ public final class IndexRanges {
+     }
+ 
+     /// Returns a packed index range for the given start and end indexes.
+-    public static @IndexRange long of(int start, int end) {
++    public static @IndexRange long of(int start, int end) { org.glavo.url.jmhbench.MutationSwitch.tick(2);
+         if (start < 0) {
+             throw new IndexOutOfBoundsException("start must be non-negative: " + start);
+         }
+@@ -45,17 +45,17 @@ public final class IndexRanges {
+     }
+ 
+     /// Returns a packed index range for indexes that have already been validated.
+-    public static @IndexRange long ofUnchecked(int start, int end) {
++    public static @IndexRange long ofUnchecked(int start, int end) { org.glavo.url.jmhbench.MutationSwitch.tick(4);
+         return ((long) start << Integer.SIZE) | (end & LOW_INT_MASK);
+     }
+ 
+     /// Returns the start index of the packed range, or `-1` for `ABSENT`.
+-    public static int start(@IndexRange long range) {
++    public static int start(@IndexRange long range) { org.glavo.url.jmhbench.MutationSwitch.tick(6);
+         return (int) (range >> Integer.SIZE);
+     }
+ 
+     /// Returns the end index of the packed range, or `-1` for `ABSENT`.
+-    public static int end(@IndexRange long range) {
++    public static int end(@IndexRange long range) { org.glavo.url.jmhbench.MutationSwitch.tick(8);
+         return (int) range;
+     }
+ 
+diff --git a/org/glavo/url/internal/PercentEncoding.java b/org/glavo/url/internal/PercentEncoding.java
+index 203e23f..f28ef7a 100644
+--- a/org/glavo/url/internal/PercentEncoding.java
++++ b/org/glavo/url/internal/PercentEncoding.java
+@@ -38,13 +38,13 @@ public final class PercentEncoding {
+     }
+ 
+     /// Decodes percent triplets from the UTF-8 bytes of a string.
+-    public static byte[] percentDecodeString(String input) {
++    public static byte[] percentDecodeString(String input) { org.glavo.url.jmhbench.MutationSwitch.tick(33);
+         int firstTriplet = firstValidPercentTriplet(input);
+         return firstTriplet < 0 ? Utf8.encode(input) : percentDecodeString(input, firstTriplet);
+     }
+ 
+     /// Decodes valid percent triplets in a URL component as UTF-8.
+-    public static String percentDecodeUtf8(String input) {
++    public static String percentDecodeUtf8(String input) { org.glavo.url.jmhbench.MutationSwitch.tick(34);
+         int firstTriplet = firstValidPercentTriplet(input);
+         return firstTriplet < 0 ? input : Utf8.decode(percentDecodeString(input, firstTriplet));
+     }
+@@ -87,7 +87,7 @@ public final class PercentEncoding {
+     }
+ 
+     /// Percent-encodes one Unicode code point with the given byte predicate.
+-    public static String utf8PercentEncodeCodePoint(int codePoint, BytePredicate percentEncodePredicate) {
++    public static String utf8PercentEncodeCodePoint(int codePoint, BytePredicate percentEncodePredicate) { org.glavo.url.jmhbench.MutationSwitch.tick(35);
+         if (codePoint >= 0 && codePoint <= 0x7f) {
+             return percentEncodePredicate.test(codePoint)
+                     ? percentEncodedByteString(codePoint)
+@@ -97,7 +97,7 @@ public final class PercentEncoding {
+     }
+ 
+     /// Percent-encodes a string with the given byte predicate.
+-    public static String utf8PercentEncodeString(String input, BytePredicate percentEncodePredicate) {
++    public static String utf8PercentEncodeString(String input, BytePredicate percentEncodePredicate) { org.glavo.url.jmhbench.MutationSwitch.tick(36);
+         for (int index = 0; index < input.length(); ) {
+             int codePoint = input.codePointAt(index);
+             if (codePoint > 0x7f || percentEncodePredicate.test(codePoint)) {
+diff --git a/org/glavo/url/internal/StringUtils.java b/org/glavo/url/internal/StringUtils.java
+index 2466ffd..f21795f 100644
+--- a/org/glavo/url/internal/StringUtils.java
++++ b/org/glavo/url/internal/StringUtils.java
+@@ -25,22 +25,22 @@ public final class StringUtils {
+     }
+ 
+     /// Returns whether the code point is an ASCII digit.
+-    public static boolean isAsciiDigit(int codePoint) {
++    public static boolean isAsciiDigit(int codePoint) { org.glavo.url.jmhbench.MutationSwitch.tick(9);
+         return codePoint >= '0' && codePoint <= '9';
+     }
+ 
+     /// Returns whether the code point is an ASCII alphabetic code point.
+-    public static boolean isAsciiAlpha(int codePoint) {
++    public static boolean isAsciiAlpha(int codePoint) { org.glavo.url.jmhbench.MutationSwitch.tick(10);
+         return (codePoint >= 'A' && codePoint <= 'Z') || (codePoint >= 'a' && codePoint <= 'z');
+     }
+ 
+     /// Returns whether the code point is an ASCII alphanumeric code point.
+-    public static boolean isAsciiAlphanumeric(int codePoint) {
++    public static boolean isAsciiAlphanumeric(int codePoint) { org.glavo.url.jmhbench.MutationSwitch.tick(11);
+         return isAsciiAlpha(codePoint) || isAsciiDigit(codePoint);
+     }
+ 
+     /// Returns whether the code point is an ASCII hexadecimal digit.
+-    public static boolean isAsciiHex(int codePoint) {
++    public static boolean isAsciiHex(int codePoint) { org.glavo.url.jmhbench.MutationSwitch.tick(12);
+         return isAsciiDigit(codePoint)
+                 || (codePoint >= 'A' && codePoint <= 'F')
+                 || (codePoint >= 'a' && codePoint <= 'f');
+diff --git a/org/glavo/url/internal/UrlParser.java b/org/glavo/url/internal/UrlParser.java
+index 75541cf..8876f77 100644
+--- a/org/glavo/url/internal/UrlParser.java
++++ b/org/glavo/url/internal/UrlParser.java
+@@ -36,7 +36,7 @@ public final class UrlParser {
+     }
+ 
+     /// Parses a URL without a base URL.
+-    public static @Nullable WebURLImpl parseUrl(String input) {
++    public static @Nullable WebURLImpl parseUrl(String input) { org.glavo.url.jmhbench.MutationSwitch.tick(13);
+         return basicParse(input, null, null, null);
+     }
+ 
+@@ -46,7 +46,7 @@ public final class UrlParser {
+             @Nullable WebURLImpl baseUrl,
+             @Nullable UrlRecord url,
+             @Nullable State stateOverride
+-    ) {
++    ) { org.glavo.url.jmhbench.MutationSwitch.tick(14);
+         return basicParse(input, baseUrl, url, stateOverride, Set.of());
+     }
+ 
+@@ -57,7 +57,7 @@ public final class UrlParser {
+             @Nullable UrlRecord url,
+             @Nullable State stateOverride,
+             @Unmodifiable Set<WebURLParseException.ErrorType> rejectedValidationErrors
+-    ) {
++    ) { org.glavo.url.jmhbench.MutationSwitch.tick(15);
+         try {
+             return basicParseRequired(input, baseUrl, url, stateOverride, rejectedValidationErrors);
+         } catch (IllegalArgumentException ignored) {
+@@ -71,7 +71,7 @@ public final class UrlParser {
+             @Nullable WebURLImpl baseUrl,
+             @Nullable UrlRecord url,
+             @Nullable State stateOverride
+-    ) {
++    ) { org.glavo.url.jmhbench.MutationSwitch.tick(16);
+         return basicParseRequired(input, baseUrl, url, stateOverride, Set.of());
+     }
+ 
+diff --git a/org/glavo/url/internal/WebURLBuilderImpl.java b/org/glavo/url/internal/WebURLBuilderImpl.java
+index f82dee3..2ac7a14 100644
+--- a/org/glavo/url/internal/WebURLBuilderImpl.java
++++ b/org/glavo/url/internal/WebURLBuilderImpl.java
+@@ -99,26 +99,26 @@ public final class WebURLBuilderImpl implements WebURL.Builder {
+ 
+     /// Sets the URL scheme.
+     @Override
+-    public WebURL.Builder setScheme(String scheme) {
++    public WebURL.Builder setScheme(String scheme) { org.glavo.url.jmhbench.MutationSwitch.tick(17);
+         this.scheme = normalizeScheme(Objects.requireNonNull(scheme, "scheme"));
+         return this;
+     }
+ 
+     /// Sets the decoded username.
+     @Override
+-    public WebURL.Builder setUsername(@Nullable String username) {
++    public WebURL.Builder setUsername(@Nullable String username) { org.glavo.url.jmhbench.MutationSwitch.tick(18);
+         return setUsernameInput(username, false);
+     }
+ 
+     /// Sets the raw username.
+     @Override
+-    public WebURL.Builder setRawUsername(@Nullable String username) {
++    public WebURL.Builder setRawUsername(@Nullable String username) { org.glavo.url.jmhbench.MutationSwitch.tick(19);
+         return setUsernameInput(username, true);
+     }
+ 
+     /// Sets the decoded password.
+     @Override
+-    public WebURL.Builder setPassword(@Nullable String password) {
++    public WebURL.Builder setPassword(@Nullable String password) { org.glavo.url.jmhbench.MutationSwitch.tick(20);
+         return setPasswordInput(password, false);
+     }
+ 
+diff --git a/org/glavo/url/internal/WebURLImpl.java b/org/glavo/url/internal/WebURLImpl.java
+index 2cee954..4b98c38 100644
+--- a/org/glavo/url/internal/WebURLImpl.java
++++ b/org/glavo/url/internal/WebURLImpl.java
+@@ -214,13 +214,13 @@ public final class WebURLImpl implements WebURL {
+ 
+     /// Returns the serialized URL.
+     @Override
+-    public String href() {
++    public String href() { org.glavo.url.jmhbench.MutationSwitch.tick(37);
+         return href;
+     }
+ 
+     /// Returns a human-readable display string.
+     @Override
+-    public String toDisplayString() {
++    public String toDisplayString() { org.glavo.url.jmhbench.MutationSwitch.tick(38);
+         @Nullable String cached = displayString;
+         if (cached != null) {
+             return cached;
+@@ -286,7 +286,7 @@ public final class WebURLImpl implements WebURL {
+ 
+     /// Returns the serialized origin.
+     @Override
+-    public String origin() {
++    public String origin() { org.glavo.url.jmhbench.MutationSwitch.tick(39);
+         @Nullable String cached = origin;
+         if (cached != null) {
+             return cached;
+@@ -324,7 +324,7 @@ public final class WebURLImpl implements WebURL {
+ 
+     /// Returns the scheme.
+     @Override
+-    public String getScheme() {
++    public String getScheme() { org.glavo.url.jmhbench.MutationSwitch.tick(40);
+         return scheme;
+     }
+ 
+diff --git a/org/glavo/url/internal/WebURLParserImpl.java b/org/glavo/url/internal/WebURLParserImpl.java
+index 6baae26..7045046 100644
+--- a/org/glavo/url/internal/WebURLParserImpl.java
++++ b/org/glavo/url/internal/WebURLParserImpl.java
+@@ -60,7 +60,7 @@ public final class WebURLParserImpl implements WebURLParser {
+ 
+     /// Returns the recoverable validation errors rejected by this parser.
+     @Override
+-    public @Unmodifiable Set<WebURLParseException.ErrorType> getRejectedValidationErrors() {
++    public @Unmodifiable Set<WebURLParseException.ErrorType> getRejectedValidationErrors() { org.glavo.url.jmhbench.MutationSwitch.tick(21);
+         return rejectedValidationErrors;
+     }
+ 
+@@ -92,20 +92,20 @@ public final class WebURLParserImpl implements WebURLParser {
+ 
+     /// Parses an absolute input string and returns the parsed URL.
+     @Override
+-    public WebURL parse(String input) {
++    public WebURL parse(String input) { org.glavo.url.jmhbench.MutationSwitch.tick(22);
+         return parseRequired(input, null, rejectedValidationErrors, "Invalid URL");
+     }
+ 
+     /// Parses an input string against a base URL string and returns the parsed URL.
+     @Override
+-    public WebURL parse(String input, String base) {
++    public WebURL parse(String input, String base) { org.glavo.url.jmhbench.MutationSwitch.tick(23);
+         return parseRequired(input, parseBaseRequired(base, rejectedValidationErrors), rejectedValidationErrors,
+                 "Invalid URL");
+     }
+ 
+     /// Parses an input string against a base URL and returns the parsed URL.
+     @Override
+-    public WebURL parse(String input, WebURL base) {
++    public WebURL parse(String input, WebURL base) { org.glavo.url.jmhbench.MutationSwitch.tick(24);
+         return parseRequired(input, implementation(base), rejectedValidationErrors, "Invalid URL");
+     }
+ 
+diff --git a/org/glavo/url/internal/WebURLPatternBuilderImpl.java b/org/glavo/url/internal/WebURLPatternBuilderImpl.java
+index 61cfbbc..68acbff 100644
+--- a/org/glavo/url/internal/WebURLPatternBuilderImpl.java
++++ b/org/glavo/url/internal/WebURLPatternBuilderImpl.java
+@@ -67,7 +67,7 @@ public final class WebURLPatternBuilderImpl implements WebURLPattern.Builder {
+     /// Sets the scheme component pattern string.
+     @Override
+     @Contract("_ -> this")
+-    public WebURLPattern.Builder setSchemePattern(@Nullable String schemePattern) {
++    public WebURLPattern.Builder setSchemePattern(@Nullable String schemePattern) { org.glavo.url.jmhbench.MutationSwitch.tick(25);
+         this.scheme = schemePattern;
+         return this;
+     }
+@@ -75,7 +75,7 @@ public final class WebURLPatternBuilderImpl implements WebURLPattern.Builder {
+     /// Sets the username component pattern string.
+     @Override
+     @Contract("_ -> this")
+-    public WebURLPattern.Builder setUsernamePattern(@Nullable String usernamePattern) {
++    public WebURLPattern.Builder setUsernamePattern(@Nullable String usernamePattern) { org.glavo.url.jmhbench.MutationSwitch.tick(26);
+         this.username = usernamePattern;
+         return this;
+     }
+@@ -83,7 +83,7 @@ public final class WebURLPatternBuilderImpl implements WebURLPattern.Builder {
+     /// Sets the password component pattern string.
+     @Override
+     @Contract("_ -> this")
+-    public WebURLPattern.Builder setPasswordPattern(@Nullable String passwordPattern) {
++    public WebURLPattern.Builder setPasswordPattern(@Nullable String passwordPattern) { org.glavo.url.jmhbench.MutationSwitch.tick(27);
+         this.password = passwordPattern;
+         return this;
+     }
+@@ -91,7 +91,7 @@ public final class WebURLPatternBuilderImpl implements WebURLPattern.Builder {
+     /// Sets the host component pattern string.
+     @Override
+     @Contract("_ -> this")
+-    public WebURLPattern.Builder setHostPattern(@Nullable String hostPattern) {
++    public WebURLPattern.Builder setHostPattern(@Nullable String hostPattern) { org.glavo.url.jmhbench.MutationSwitch.tick(28);
+         this.host = hostPattern;
+         return this;
+     }
+diff --git a/org/glavo/url/internal/WebURLPatternComponentResultImpl.java b/org/glavo/url/internal/WebURLPatternComponentResultImpl.java
+index 9b67d53..b935d77 100644
+--- a/org/glavo/url/internal/WebURLPatternComponentResultImpl.java
++++ b/org/glavo/url/internal/WebURLPatternComponentResultImpl.java
+@@ -73,28 +73,28 @@ public final class WebURLPatternComponentResultImpl implements WebURLPattern.Com
+     /// Returns the start index of the whole component match.
+     @Override
+     @Contract(pure = true)
+-    public int start() {
++    public int start() { org.glavo.url.jmhbench.MutationSwitch.tick(41);
+         return IndexRanges.start(range);
+     }
+ 
+     /// Returns the start index of one Java-style capture group.
+     @Override
+     @Contract(pure = true)
+-    public int start(int group) {
++    public int start(int group) { org.glavo.url.jmhbench.MutationSwitch.tick(42);
+         return group == 0 ? start() : groupRangeStart(group - 1);
+     }
+ 
+     /// Returns the start index of one named Java-style capture group.
+     @Override
+     @Contract(pure = true)
+-    public int start(String name) {
++    public int start(String name) { org.glavo.url.jmhbench.MutationSwitch.tick(43);
+         return start(namedGroupIndex(name));
+     }
+ 
+     /// Returns the end index of the whole component match.
+     @Override
+     @Contract(pure = true)
+-    public int end() {
++    public int end() { org.glavo.url.jmhbench.MutationSwitch.tick(44);
+         return IndexRanges.end(range);
+     }
+ 
+diff --git a/org/glavo/url/internal/WebURLPatternImpl.java b/org/glavo/url/internal/WebURLPatternImpl.java
+index 9bd3017..32db52a 100644
+--- a/org/glavo/url/internal/WebURLPatternImpl.java
++++ b/org/glavo/url/internal/WebURLPatternImpl.java
+@@ -43,7 +43,7 @@ public final class WebURLPatternImpl implements WebURLPattern {
+             @Nullable String baseURL,
+             boolean ignoreCase,
+             WebURLPatternParser.RegExpPolicy regExpPolicy
+-    ) {
++    ) { org.glavo.url.jmhbench.MutationSwitch.tick(45);
+         return new WebURLPatternImpl(WebURLPatternEngine.compile(input, baseURL, ignoreCase, regExpPolicy));
+     }
+ 
+@@ -52,7 +52,7 @@ public final class WebURLPatternImpl implements WebURLPattern {
+             WebURLPattern.Builder builder,
+             boolean ignoreCase,
+             WebURLPatternParser.RegExpPolicy regExpPolicy
+-    ) {
++    ) { org.glavo.url.jmhbench.MutationSwitch.tick(46);
+         WebURLPatternBuilderImpl implementation = implementation(Objects.requireNonNull(builder, "builder"));
+         return new WebURLPatternImpl(WebURLPatternEngine.compile(implementation.toPatternInit(), ignoreCase,
+                 regExpPolicy));
+@@ -61,14 +61,14 @@ public final class WebURLPatternImpl implements WebURLPattern {
+     /// Tests a URL string.
+     @Override
+     @Contract(pure = true)
+-    public boolean test(String input) {
++    public boolean test(String input) { org.glavo.url.jmhbench.MutationSwitch.tick(47);
+         return match(input) != null;
+     }
+ 
+     /// Tests a URL string with a base URL.
+     @Override
+     @Contract(pure = true)
+-    public boolean test(String input, String baseURL) {
++    public boolean test(String input, String baseURL) { org.glavo.url.jmhbench.MutationSwitch.tick(48);
+         return match(input, baseURL) != null;
+     }
+ 
+diff --git a/org/glavo/url/internal/WebURLPatternParserImpl.java b/org/glavo/url/internal/WebURLPatternParserImpl.java
+index 8b3cf7e..bd326f7 100644
+--- a/org/glavo/url/internal/WebURLPatternParserImpl.java
++++ b/org/glavo/url/internal/WebURLPatternParserImpl.java
+@@ -52,28 +52,28 @@ public final class WebURLPatternParserImpl implements WebURLPatternParser {
+     /// Returns whether this parser compiles case-insensitive patterns.
+     @Override
+     @Contract(pure = true)
+-    public boolean isIgnoreCase() {
++    public boolean isIgnoreCase() { org.glavo.url.jmhbench.MutationSwitch.tick(29);
+         return ignoreCase;
+     }
+ 
+     /// Returns a parser with case-insensitive matching enabled.
+     @Override
+     @Contract(pure = true)
+-    public WebURLPatternParser withIgnoreCase() {
++    public WebURLPatternParser withIgnoreCase() { org.glavo.url.jmhbench.MutationSwitch.tick(30);
+         return withIgnoreCase(true);
+     }
+ 
+     /// Returns a parser with the specified case sensitivity policy.
+     @Override
+     @Contract(pure = true)
+-    public WebURLPatternParser withIgnoreCase(boolean ignoreCase) {
++    public WebURLPatternParser withIgnoreCase(boolean ignoreCase) { org.glavo.url.jmhbench.MutationSwitch.tick(31);
+         return withOptions(ignoreCase, regExpPolicy);
+     }
+ 
+     /// Returns a parser with the specified regular-expression element policy.
+     @Override
+     @Contract(pure = true)
+-    public WebURLPatternParser withRegExpPolicy(RegExpPolicy policy) {
++    public WebURLPatternParser withRegExpPolicy(RegExpPolicy policy) { org.glavo.url.jmhbench.MutationSwitch.tick(32);
+         return withOptions(ignoreCase, Objects.requireNonNull(policy, "policy"));
+     }
+ 
+diff --git a/org/glavo/url/internal/WebURLPatternResultImpl.java b/org/glavo/url/internal/WebURLPatternResultImpl.java
+index 2092e6d..b0c7fad 100644
+--- a/org/glavo/url/internal/WebURLPatternResultImpl.java
++++ b/org/glavo/url/internal/WebURLPatternResultImpl.java
+@@ -75,14 +75,14 @@ public final class WebURLPatternResultImpl implements WebURLPattern.Result {
+     /// Returns the scheme component result.
+     @Override
+     @Contract(pure = true)
+-    public WebURLPattern.ComponentResult getScheme() {
++    public WebURLPattern.ComponentResult getScheme() { org.glavo.url.jmhbench.MutationSwitch.tick(49);
+         return scheme;
+     }
+ 
+     /// Returns the username component result.
+     @Override
+     @Contract(pure = true)
+-    public WebURLPattern.ComponentResult getUsername() {
++    public WebURLPattern.ComponentResult getUsername() { org.glavo.url.jmhbench.MutationSwitch.tick(50);
+         return username;
+     }
+ 
+diff --git a/org/glavo/url/jmhbench/MutationSwitch.java b/org/glavo/url/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..5253560
+--- /dev/null
++++ b/org/glavo/url/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.glavo.url.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

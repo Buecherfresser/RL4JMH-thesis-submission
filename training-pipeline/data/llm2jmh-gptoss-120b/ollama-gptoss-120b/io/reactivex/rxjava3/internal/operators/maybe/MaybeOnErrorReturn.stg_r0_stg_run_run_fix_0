@@ -1,0 +1,72 @@
+```
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Microbenchmark for {@code MaybeOnErrorReturn}.
+ *
+ * Measures the throughput of the {@code onErrorReturn} operator when the upstream
+ * terminates with an error, and provides baseline measurements for error‑only
+ * and success cases.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeOnErrorReturnBenchmark {
+
+    /** Source that immediately fails with a RuntimeException. */
+    private Maybe<Integer> errorSource;
+
+    /** The same source wrapped with {@code onErrorReturn}. */
+    private Maybe<Integer> errorWithFallback;
+
+    /** Baseline source that succeeds (used to compare against the error path). */
+    private Maybe<Integer> successSource;
+
+    @Setup
+    public void setUp() {
+        Function<Throwable, Integer> fallback = throwable -> 42;
+        errorSource = Maybe.error(new RuntimeException("boom"));
+        errorWithFallback = errorSource.onErrorReturn(fallback);
+        successSource = Maybe.just(1);
+    }
+
+    /** Benchmark the operator handling an error and emitting the fallback value. */
+    @Benchmark
+    public void onErrorReturnThroughput(Blackhole bh) {
+        Integer result = errorWithFallback.blockingGet(); // never throws
+        bh.consume(result);
+    }
+
+    /**
+     * Baseline benchmark for a failing {@code Maybe} without error handling.
+     * The RuntimeException is caught to prevent the benchmark from aborting.
+     */
+    @Benchmark
+    public void errorBaselineThroughput(Blackhole bh) {
+        Integer result;
+        try {
+            result = errorSource.blockingGet(); // throws
+        } catch (Throwable ex) {
+            // In the error‑only baseline we treat the outcome as a null value.
+            result = null;
+        }
+        bh.consume(result);
+    }
+
+    /** Baseline benchmark for a successful {@code Maybe}. */
+    @Benchmark
+    public void successBaselineThroughput(Blackhole bh) {
+        Integer result = successSource.blockingGet();
+        bh.consume(result);
+    }
+}
+```

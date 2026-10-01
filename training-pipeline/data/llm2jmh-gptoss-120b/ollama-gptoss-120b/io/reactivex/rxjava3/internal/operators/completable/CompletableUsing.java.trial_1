@@ -1,0 +1,63 @@
+```
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableSource;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Supplier;
+
+/**
+ * JMH benchmark for {@link CompletableUsing}.
+ *
+ * Measures the throughput of subscribing to a Completable created via CompletableUsing
+ * with eager and non‑eager resource disposal.
+ *
+ * The benchmark uses a trivial resource (an Integer) and a no‑op disposer to isolate
+ * the overhead of the operator itself.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class CompletableUsingBenchmark {
+
+    private Completable eagerCompletable;
+    private Completable nonEagerCompletable;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // cheap resource
+        Supplier<Integer> resourceSupplier = () -> 42;
+        Function<Integer, CompletableSource> completableFunction = r -> Completable.complete();
+        Consumer<Integer> disposer = r -> {
+            // no‑op disposer; in real code this would release the resource
+        };
+
+        // eager disposal
+        eagerCompletable = Completable.using(resourceSupplier, completableFunction, disposer, true);
+        // non‑eager disposal
+        nonEagerCompletable = Completable.using(resourceSupplier, completableFunction, disposer, false);
+    }
+
+    @Benchmark
+    public void eager(Blackhole bh) {
+        // blockingAwait returns void; we consume a dummy value to avoid dead‑code elimination
+        eagerCompletable.blockingAwait();
+        bh.consume(1);
+    }
+
+    @Benchmark
+    public void nonEager(Blackhole bh) {
+        nonEagerCompletable.blockingAwait();
+        bh.consume(1);
+    }
+}
+```

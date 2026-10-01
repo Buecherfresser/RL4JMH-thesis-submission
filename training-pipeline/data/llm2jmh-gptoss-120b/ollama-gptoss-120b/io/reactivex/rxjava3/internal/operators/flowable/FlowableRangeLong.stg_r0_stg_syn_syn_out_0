@@ -1,0 +1,217 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link FlowableRangeLong}.
+ *
+ * Measures throughput of the fast‑path (unbounded request) and the slow‑path
+ * (bounded request) for both regular and conditional subscribers.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableRangeLongBenchmark {
+
+    /**
+     * Number of elements emitted by the range.
+     */
+    @Param({ "1000", "1000000", "10000000" })
+    public long count;
+
+    /**
+     * The Flowable under test.
+     */
+    private Flowable<Long> flowable;
+
+    /**
+     * Subscriber that consumes values via Blackhole (regular).
+     */
+    private Subscriber<Long> subscriber;
+
+    /**
+     * ConditionalSubscriber that consumes values via Blackhole.
+     */
+    private ConditionalSubscriber<Long> conditionalSubscriber;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        flowable = new FlowableRangeLong(0, count);
+        subscriber = new BlackholeSubscriber();
+        conditionalSubscriber = new BlackholeConditionalSubscriber();
+    }
+
+    /**
+     * Fast‑path benchmark: request Long.MAX_VALUE (unbounded).
+     */
+    @Benchmark
+    public void fastPathRegular(Blackhole bh) {
+        flowable.subscribe(new BlackholeSubscriber(bh));
+    }
+
+    /**
+     * Fast‑path benchmark with ConditionalSubscriber.
+     */
+    @Benchmark
+    public void fastPathConditional(Blackhole bh) {
+        flowable.subscribe(new BlackholeConditionalSubscriber(bh));
+    }
+
+    /**
+     * Slow‑path benchmark: request a finite number of items (count).
+     */
+    @Benchmark
+    public void slowPathRegular(Blackhole bh) {
+        flowable.subscribe(new BlackholeSubscriber(bh, count));
+    }
+
+    /**
+     * Slow‑path benchmark with ConditionalSubscriber.
+     */
+    @Benchmark
+    public void slowPathConditional(Blackhole bh) {
+        flowable.subscribe(new BlackholeConditionalSubscriber(bh, count));
+    }
+
+    /**
+     * Simple Subscriber that forwards each onNext to a Blackhole.
+     */
+    static final class BlackholeSubscriber implements Subscriber<Long> {
+
+        private final Blackhole bh;
+
+        private Subscription upstream;
+
+        private final long requestAmount;
+
+        BlackholeSubscriber() {
+            this(null, Long.MAX_VALUE);
+        }
+
+        BlackholeSubscriber(Blackhole bh) {
+            this(bh, Long.MAX_VALUE);
+        }
+
+        BlackholeSubscriber(Blackhole bh, long requestAmount) {
+            this.bh = bh;
+            this.requestAmount = requestAmount;
+        }
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            this.upstream = s;
+            s.request(requestAmount);
+        }
+
+        @Override
+        public void onNext(Long t) {
+            if (bh != null) {
+                bh.consume(t);
+            }
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // No‑op for benchmark
+        }
+
+        @Override
+        public void onComplete() {
+            // No‑op for benchmark
+        }
+    }
+
+    /**
+     * ConditionalSubscriber that forwards each successful tryOnNext to a Blackhole.
+     */
+    static final class BlackholeConditionalSubscriber implements ConditionalSubscriber<Long> {
+
+        private final Blackhole bh;
+
+        private Subscription upstream;
+
+        private final long requestAmount;
+
+        BlackholeConditionalSubscriber() {
+            this(null, Long.MAX_VALUE);
+        }
+
+        BlackholeConditionalSubscriber(Blackhole bh) {
+            this(bh, Long.MAX_VALUE);
+        }
+
+        BlackholeConditionalSubscriber(Blackhole bh, long requestAmount) {
+            this.bh = bh;
+            this.requestAmount = requestAmount;
+        }
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            this.upstream = s;
+            s.request(requestAmount);
+        }
+
+        @Override
+        public void onNext(Long t) {
+            // Not used; tryOnNext is the primary path
+        }
+
+        @Override
+        public boolean tryOnNext(Long t) {
+            if (bh != null) {
+                bh.consume(t);
+            }
+            // count every element as "accepted"
+            return true;
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // No‑op for benchmark
+        }
+
+        @Override
+        public void onComplete() {
+            // No‑op for benchmark
+        }
+    }
+}

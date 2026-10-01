@@ -1,0 +1,75 @@
+```
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Maybe;
+
+/**
+ * Benchmark for the {@code MaybeIgnoreElement} operator (exposed via {@code Maybe.ignoreElement()}).
+ * Measures the throughput of subscribing to a {@code Maybe} that emits a single item,
+ * ignoring the item and completing.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * - State is scoped to a single thread to avoid contention.
+ * - Sources are created once in {@link #setup()} to exclude allocation overhead.
+ * - {@link Blackhole} is used to consume the result and prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are defined.
+ * - Forking isolates the benchmark from JVM warm‑up effects.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeIgnoreElementBenchmark {
+
+    /** A {@code Maybe} that emits a single integer value. */
+    private Maybe<Integer> justSource;
+
+    /** A {@code Maybe} that completes without emitting any value. */
+    private Maybe<Integer> emptySource;
+
+    /** The {@code Completable} obtained after applying {@code ignoreElement()} to {@code justSource}. */
+    private Completable justIgnore;
+
+    /** The {@code Completable} obtained after applying {@code ignoreElement()} to {@code emptySource}. */
+    private Completable emptyIgnore;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Create sources once per trial to avoid measuring allocation costs.
+        justSource = Maybe.just(1);
+        emptySource = Maybe.empty();
+
+        // Apply the operator under test.
+        justIgnore = justSource.ignoreElement();
+        emptyIgnore = emptySource.ignoreElement();
+    }
+
+    /**
+     * Benchmark the throughput of ignoring an element from a {@code Maybe} that emits a value.
+     *
+     * @param bh Blackhole to consume the result and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void ignoreElementFromJust(Blackhole bh) {
+        justIgnore.blockingAwait();          // wait for completion
+        bh.consume(justIgnore);              // consume to avoid dead‑code elimination
+    }
+
+    /**
+     * Benchmark the throughput of ignoring an element from an empty {@code Maybe}.
+     *
+     * @param bh Blackhole to consume the result and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void ignoreElementFromEmpty(Blackhole bh) {
+        emptyIgnore.blockingAwait();         // wait for completion
+        bh.consume(emptyIgnore);             // consume to avoid dead‑code elimination
+    }
+}
+```

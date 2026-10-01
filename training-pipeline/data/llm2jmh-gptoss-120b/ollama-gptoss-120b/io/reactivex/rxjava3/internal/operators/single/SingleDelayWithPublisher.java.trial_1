@@ -1,0 +1,66 @@
+```
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscription;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleSource;
+import io.reactivex.rxjava3.core.SingleObserver;
+
+/**
+ * Benchmark for {@link SingleDelayWithPublisher}.
+ *
+ * Measures throughput when the upstream {@link Single} emits immediately
+ * and the delaying {@link Publisher} also emits a single item immediately.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class SingleDelayWithPublisherBenchmark {
+
+    /** Source Single that emits a constant value. */
+    private SingleSource<Integer> source;
+
+    /** Publisher that emits a single item and completes. */
+    private Publisher<String> other;
+
+    /** The operator under test. */
+    private Single<Integer> delayedSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple source that immediately emits 1
+        source = observer -> observer.onSuccess(1);
+
+        // Publisher that immediately emits a dummy value and completes
+        other = new Publisher<String>() {
+            @Override
+            public void subscribe(org.reactivestreams.Subscriber<? super String> s) {
+                s.onSubscribe(new Subscription() {
+                    @Override public void request(long n) { /* no backpressure needed */ }
+                    @Override public void cancel() { /* no-op */ }
+                });
+                s.onNext("trigger");
+                s.onComplete();
+            }
+        };
+
+        // Create the operator instance
+        delayedSingle = new SingleDelayWithPublisher<>(source, other);
+    }
+
+    /**
+     * Benchmark method that subscribes to the delayed Single and blocks for the result.
+     *
+     * @param bh Blackhole to consume the emitted value.
+     */
+    @Benchmark
+    public void delayedSingleThroughput(Blackhole bh) {
+        int result = delayedSingle.blockingGet();
+        bh.consume(result);
+    }
+}
+```

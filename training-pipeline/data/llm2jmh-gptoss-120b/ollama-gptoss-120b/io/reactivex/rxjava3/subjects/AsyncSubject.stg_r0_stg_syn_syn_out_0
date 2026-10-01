@@ -1,0 +1,158 @@
+package io.reactivex.rxjava3.subjects;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link AsyncSubject}.
+ *
+ * <p>These benchmarks focus on the most common operations:
+ * <ul>
+ *   <li>subscribing an observer</li>
+ *   <li>emitting a value via {@code onNext}</li>
+ *   <li>completing the subject via {@code onComplete}</li>
+ *   <li>signalling an error via {@code onError}</li>
+ * </ul>
+ *
+ * <p>All benchmarks run in {@link Mode#Throughput} mode, measuring the number of
+ * operations per second. The {@code @State(Scope.Benchmark)} ensures a single
+ * {@code AsyncSubject} instance is shared across all benchmark threads, which
+ * reflects realistic usage where many observers interact with the same subject.
+ *
+ * <p>Best‑practice notes:
+ * <ul>
+ *   <li>Use {@code @Setup(Level.Iteration)} to reset the subject before each
+ *       measurement iteration, avoiding state leakage.</li>
+ *   <li>Keep the observer implementation lightweight to isolate the cost of the
+ *       subject itself.</li>
+ *   <li>Parameterise the number of concurrent observers to explore scaling
+ *       behaviour.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
+public class AsyncSubjectBenchmark {
+
+    /**
+     * Number of observers that will be subscribed before each iteration.
+     */
+    @Param({ "1", "10", "100", "1000" })
+    public int subscriberCount;
+
+    /**
+     * The subject under test.
+     */
+    private AsyncSubject<Integer> subject;
+
+    /**
+     * Simple no‑op observer used for subscription.
+     */
+    private static final Observer<Integer> NOOP_OBSERVER = new Observer<Integer>() {
+
+        @Override
+        public void onSubscribe(Disposable d) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onNext(Integer value) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            /* no‑op */
+        }
+
+        @Override
+        public void onComplete() {
+            /* no‑op */
+        }
+    };
+
+    /**
+     * Counter used to generate distinct values for {@code onNext}.
+     */
+    private final AtomicInteger valueGenerator = new AtomicInteger();
+
+    /**
+     * Creates a fresh {@link AsyncSubject} and pre‑subscribes the requested
+     * number of observers. This method runs before each measurement iteration.
+     */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        subject = AsyncSubject.create();
+        for (int i = 0; i < subscriberCount; i++) {
+            subject.subscribe(NOOP_OBSERVER);
+        }
+        // Reset the value generator to avoid overflow during long runs.
+        valueGenerator.set(0);
+    }
+
+    /**
+     * Benchmark: subscribe a new observer to the subject.
+     */
+    @Benchmark
+    public void subscribe() {
+        subject.subscribe(NOOP_OBSERVER);
+    }
+
+    /**
+     * Benchmark: emit a single value via {@code onNext}.
+     */
+    @Benchmark
+    public void onNext() {
+        subject.onNext(valueGenerator.incrementAndGet());
+    }
+
+    /**
+     * Benchmark: complete the subject.
+     */
+    @Benchmark
+    public void onComplete() {
+        subject.onComplete();
+    }
+
+    /**
+     * Benchmark: signal an error.
+     */
+    @Benchmark
+    public void onError() {
+        subject.onError(new RuntimeException("benchmark"));
+    }
+}

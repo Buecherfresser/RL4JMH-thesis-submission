@@ -1,0 +1,657 @@
+diff --git a/org/ta4j/core/BaseBarSeriesBuilder.java b/org/ta4j/core/BaseBarSeriesBuilder.java
+index 71af7b0..84073b9 100644
+--- a/org/ta4j/core/BaseBarSeriesBuilder.java
++++ b/org/ta4j/core/BaseBarSeriesBuilder.java
+@@ -48,7 +48,7 @@ public class BaseBarSeriesBuilder implements BarSeriesBuilder {
+      *                             exceed {@link Integer#MAX_VALUE}
+      */
+     @Override
+-    public BaseBarSeries build() {
++    public BaseBarSeries build() { org.ta4j.core.jmhbench.MutationSwitch.tick(1);
+         int beginIndex = -1;
+         int endIndex = -1;
+         if (!bars.isEmpty()) {
+@@ -90,7 +90,7 @@ public class BaseBarSeriesBuilder implements BarSeriesBuilder {
+      *             default constrained behavior).
+      */
+     @Deprecated(since = "0.22.2")
+-    public BaseBarSeriesBuilder setConstrained(boolean constrained) {
++    public BaseBarSeriesBuilder setConstrained(boolean constrained) { org.ta4j.core.jmhbench.MutationSwitch.tick(15);
+         this.constrained = constrained;
+         return this;
+     }
+diff --git a/org/ta4j/core/ConcurrentBarSeriesBuilder.java b/org/ta4j/core/ConcurrentBarSeriesBuilder.java
+index f74e1c1..6c913c2 100644
+--- a/org/ta4j/core/ConcurrentBarSeriesBuilder.java
++++ b/org/ta4j/core/ConcurrentBarSeriesBuilder.java
+@@ -52,7 +52,7 @@ public class ConcurrentBarSeriesBuilder implements BarSeriesBuilder {
+      *                             exceed {@link Integer#MAX_VALUE}
+      */
+     @Override
+-    public ConcurrentBarSeries build() {
++    public ConcurrentBarSeries build() { org.ta4j.core.jmhbench.MutationSwitch.tick(29);
+         int beginIndex = -1;
+         int endIndex = -1;
+         if (!bars.isEmpty()) {
+@@ -77,7 +77,7 @@ public class ConcurrentBarSeriesBuilder implements BarSeriesBuilder {
+      *
+      * @since 0.22.2
+      */
+-    public ConcurrentBarSeriesBuilder withNumFactory(NumFactory numFactory) {
++    public ConcurrentBarSeriesBuilder withNumFactory(NumFactory numFactory) { org.ta4j.core.jmhbench.MutationSwitch.tick(42);
+         this.numFactory = numFactory;
+         return this;
+     }
+diff --git a/org/ta4j/core/aggregator/BaseBarSeriesAggregator.java b/org/ta4j/core/aggregator/BaseBarSeriesAggregator.java
+index 66418b2..1b3bc25 100644
+--- a/org/ta4j/core/aggregator/BaseBarSeriesAggregator.java
++++ b/org/ta4j/core/aggregator/BaseBarSeriesAggregator.java
+@@ -28,7 +28,7 @@ public class BaseBarSeriesAggregator implements BarSeriesAggregator {
+     }
+ 
+     @Override
+-    public BarSeries aggregate(BarSeries series, String aggregatedSeriesName) {
++    public BarSeries aggregate(BarSeries series, String aggregatedSeriesName) { org.ta4j.core.jmhbench.MutationSwitch.tick(16);
+         final List<Bar> aggregatedBars = barAggregator.aggregate(series.getBarData());
+         return new BaseBarSeriesBuilder().withName(aggregatedSeriesName).withBars(aggregatedBars).build();
+     }
+diff --git a/org/ta4j/core/aggregator/DurationBarAggregator.java b/org/ta4j/core/aggregator/DurationBarAggregator.java
+index 866c1ef..e550e99 100644
+--- a/org/ta4j/core/aggregator/DurationBarAggregator.java
++++ b/org/ta4j/core/aggregator/DurationBarAggregator.java
+@@ -55,7 +55,7 @@ public class DurationBarAggregator implements BarAggregator {
+      *                                  multiplication of actual {@code timePeriod}
+      */
+     @Override
+-    public List<Bar> aggregate(List<Bar> bars) {
++    public List<Bar> aggregate(List<Bar> bars) { org.ta4j.core.jmhbench.MutationSwitch.tick(30);
+         final List<Bar> aggregated = new ArrayList<>();
+         if (bars.isEmpty()) {
+             return aggregated;
+diff --git a/org/ta4j/core/aggregator/HeikinAshiBarAggregator.java b/org/ta4j/core/aggregator/HeikinAshiBarAggregator.java
+index 7e7e145..f9f4ee3 100644
+--- a/org/ta4j/core/aggregator/HeikinAshiBarAggregator.java
++++ b/org/ta4j/core/aggregator/HeikinAshiBarAggregator.java
+@@ -18,7 +18,7 @@ import java.util.List;
+ public class HeikinAshiBarAggregator implements BarAggregator {
+ 
+     @Override
+-    public List<Bar> aggregate(List<Bar> ohlcBars) {
++    public List<Bar> aggregate(List<Bar> ohlcBars) { org.ta4j.core.jmhbench.MutationSwitch.tick(43);
+         var heikinAshiBars = new ArrayList<Bar>();
+         var haBuilder = new HeikinAshiBarBuilder();
+         Num previousOpen = null;
+diff --git a/org/ta4j/core/aggregator/RangeBarAggregator.java b/org/ta4j/core/aggregator/RangeBarAggregator.java
+index 1f5a039..c8357d9 100644
+--- a/org/ta4j/core/aggregator/RangeBarAggregator.java
++++ b/org/ta4j/core/aggregator/RangeBarAggregator.java
+@@ -77,7 +77,7 @@ public class RangeBarAggregator implements BarAggregator {
+      *                                  non-contiguous
+      */
+     @Override
+-    public List<Bar> aggregate(List<Bar> bars) {
++    public List<Bar> aggregate(List<Bar> bars) { org.ta4j.core.jmhbench.MutationSwitch.tick(2);
+         Objects.requireNonNull(bars, "bars");
+         if (bars.isEmpty()) {
+             return new ArrayList<>();
+diff --git a/org/ta4j/core/analysis/AnalysisContext.java b/org/ta4j/core/analysis/AnalysisContext.java
+index a83cf9b..b61a614 100644
+--- a/org/ta4j/core/analysis/AnalysisContext.java
++++ b/org/ta4j/core/analysis/AnalysisContext.java
+@@ -34,7 +34,7 @@ import java.util.Objects;
+  * @since 0.22.4
+  */
+ public record AnalysisContext(MissingHistoryPolicy missingHistoryPolicy,
+-        PositionInclusionPolicy positionInclusionPolicy, OpenPositionHandling openPositionHandling, Instant asOf) {
++        PositionInclusionPolicy positionInclusionPolicy, OpenPositionHandling openPositionHandling, Instant asOf) { org.ta4j.core.jmhbench.MutationSwitch.tick(3);
+ 
+     /**
+      * Policy for unavailable historical bars.
+@@ -92,7 +92,7 @@ public record AnalysisContext(MissingHistoryPolicy missingHistoryPolicy,
+      * @return default window analysis context
+      * @since 0.22.4
+      */
+-    public static AnalysisContext defaults() {
++    public static AnalysisContext defaults() { org.ta4j.core.jmhbench.MutationSwitch.tick(17);
+         return new AnalysisContext();
+     }
+ 
+diff --git a/org/ta4j/core/analysis/CashFlow.java b/org/ta4j/core/analysis/CashFlow.java
+index b512aae..1894bfb 100644
+--- a/org/ta4j/core/analysis/CashFlow.java
++++ b/org/ta4j/core/analysis/CashFlow.java
+@@ -201,7 +201,7 @@ public class CashFlow implements PerformanceIndicator {
+      * @since 0.22.2
+      */
+     @Override
+-    public void calculatePosition(Position position, int finalIndex) {
++    public void calculatePosition(Position position, int finalIndex) { org.ta4j.core.jmhbench.MutationSwitch.tick(31);
+         Trade entry = position.getEntry();
+         if (entry == null) {
+             return;
+@@ -276,7 +276,7 @@ public class CashFlow implements PerformanceIndicator {
+      * @return the cash flow value at the index-th position
+      */
+     @Override
+-    public Num getValue(int index) {
++    public Num getValue(int index) { org.ta4j.core.jmhbench.MutationSwitch.tick(44);
+         return getStoredValue(index);
+     }
+ 
+diff --git a/org/ta4j/core/backtest/BacktestExecutionResult.java b/org/ta4j/core/backtest/BacktestExecutionResult.java
+index df1edb0..6a7a49b 100644
+--- a/org/ta4j/core/backtest/BacktestExecutionResult.java
++++ b/org/ta4j/core/backtest/BacktestExecutionResult.java
+@@ -25,7 +25,7 @@ import java.util.*;
+  * @since 0.19
+  */
+ public record BacktestExecutionResult(BarSeries barSeries, List<TradingStatement> tradingStatements,
+-        BacktestRuntimeReport runtimeReport) implements TradingStatementExecutionResult<BacktestRuntimeReport> {
++        BacktestRuntimeReport runtimeReport) implements TradingStatementExecutionResult<BacktestRuntimeReport> { org.ta4j.core.jmhbench.MutationSwitch.tick(4);
+ 
+     /**
+      * Ensures properties are non-null.
+@@ -43,7 +43,7 @@ public record BacktestExecutionResult(BarSeries barSeries, List<TradingStatement
+     }
+ 
+     @Override
+-    public BarSeries barSeries() {
++    public BarSeries barSeries() { org.ta4j.core.jmhbench.MutationSwitch.tick(18);
+         return snapshotSeries(barSeries);
+     }
+ 
+diff --git a/org/ta4j/core/backtest/BacktestExecutor.java b/org/ta4j/core/backtest/BacktestExecutor.java
+index 2f8eb5a..0efb1f1 100644
+--- a/org/ta4j/core/backtest/BacktestExecutor.java
++++ b/org/ta4j/core/backtest/BacktestExecutor.java
+@@ -174,7 +174,7 @@ public class BacktestExecutor {
+      * @param amount     the amount used to open/close the position
+      * @return a list of TradingStatements
+      */
+-    public List<TradingStatement> execute(List<Strategy> strategies, Num amount) {
++    public List<TradingStatement> execute(List<Strategy> strategies, Num amount) { org.ta4j.core.jmhbench.MutationSwitch.tick(32);
+         return execute(strategies, amount, Trade.TradeType.BUY);
+     }
+ 
+@@ -187,7 +187,7 @@ public class BacktestExecutor {
+      * @return a list of TradingStatements
+      * @since 0.22.9
+      */
+-    public List<TradingStatement> execute(List<Strategy> strategies, PositionSizer positionSizer) {
++    public List<TradingStatement> execute(List<Strategy> strategies, PositionSizer positionSizer) { org.ta4j.core.jmhbench.MutationSwitch.tick(45);
+         return execute(strategies, positionSizer, Trade.TradeType.BUY);
+     }
+ 
+diff --git a/org/ta4j/core/bars/AmountBarBuilder.java b/org/ta4j/core/bars/AmountBarBuilder.java
+index 660ffd0..145847f 100644
+--- a/org/ta4j/core/bars/AmountBarBuilder.java
++++ b/org/ta4j/core/bars/AmountBarBuilder.java
+@@ -129,13 +129,13 @@ public class AmountBarBuilder implements BarBuilder {
+     }
+ 
+     @Override
+-    public BarBuilder timePeriod(final Duration timePeriod) {
++    public BarBuilder timePeriod(final Duration timePeriod) { org.ta4j.core.jmhbench.MutationSwitch.tick(5);
+         this.timePeriod = this.timePeriod == null ? timePeriod : this.timePeriod.plus(timePeriod);
+         return this;
+     }
+ 
+     @Override
+-    public BarBuilder beginTime(final Instant beginTime) {
++    public BarBuilder beginTime(final Instant beginTime) { org.ta4j.core.jmhbench.MutationSwitch.tick(19);
+         this.beginTime = beginTime;
+         return this;
+     }
+diff --git a/org/ta4j/core/bars/AmountBarBuilderFactory.java b/org/ta4j/core/bars/AmountBarBuilderFactory.java
+index b116e4d..9d549f5 100644
+--- a/org/ta4j/core/bars/AmountBarBuilderFactory.java
++++ b/org/ta4j/core/bars/AmountBarBuilderFactory.java
+@@ -89,7 +89,7 @@ public class AmountBarBuilderFactory implements BarBuilderFactory {
+     }
+ 
+     @Override
+-    public synchronized BarBuilder createBarBuilder(final BarSeries series) {
++    public synchronized BarBuilder createBarBuilder(final BarSeries series) { org.ta4j.core.jmhbench.MutationSwitch.tick(33);
+         final BarSeries requestedSeries = Objects.requireNonNull(series);
+         return builders().computeIfAbsent(requestedSeries, this::createBoundBuilder);
+     }
+diff --git a/org/ta4j/core/bars/HeikinAshiBarBuilder.java b/org/ta4j/core/bars/HeikinAshiBarBuilder.java
+index d27bf62..c936fb5 100644
+--- a/org/ta4j/core/bars/HeikinAshiBarBuilder.java
++++ b/org/ta4j/core/bars/HeikinAshiBarBuilder.java
+@@ -24,7 +24,7 @@ public class HeikinAshiBarBuilder extends TimeBarBuilder {
+         super(numFactory);
+     }
+ 
+-    public HeikinAshiBarBuilder previousHeikinAshiOpenPrice(Num previousOpen) {
++    public HeikinAshiBarBuilder previousHeikinAshiOpenPrice(Num previousOpen) { org.ta4j.core.jmhbench.MutationSwitch.tick(46);
+         previousHeikinAshiOpenPrice = previousOpen;
+         return this;
+     }
+diff --git a/org/ta4j/core/criteria/NumberOfBarsCriterion.java b/org/ta4j/core/criteria/NumberOfBarsCriterion.java
+index 5ec8eb3..df82054 100644
+--- a/org/ta4j/core/criteria/NumberOfBarsCriterion.java
++++ b/org/ta4j/core/criteria/NumberOfBarsCriterion.java
+@@ -17,7 +17,7 @@ import org.ta4j.core.num.Num;
+ public class NumberOfBarsCriterion extends AbstractAnalysisCriterion {
+ 
+     @Override
+-    public Num calculate(BarSeries series, Position position) {
++    public Num calculate(BarSeries series, Position position) { org.ta4j.core.jmhbench.MutationSwitch.tick(6);
+         if (position.isClosed()) {
+             final int exitIndex = position.getExit().getIndex();
+             final int entryIndex = position.getEntry().getIndex();
+@@ -27,7 +27,7 @@ public class NumberOfBarsCriterion extends AbstractAnalysisCriterion {
+     }
+ 
+     @Override
+-    public Num calculate(BarSeries series, TradingRecord tradingRecord) {
++    public Num calculate(BarSeries series, TradingRecord tradingRecord) { org.ta4j.core.jmhbench.MutationSwitch.tick(20);
+         return tradingRecord.getPositions()
+                 .stream()
+                 .filter(Position::isClosed)
+diff --git a/org/ta4j/core/criteria/NumberOfBreakEvenPositionsCriterion.java b/org/ta4j/core/criteria/NumberOfBreakEvenPositionsCriterion.java
+index 9fa8d71..e817969 100644
+--- a/org/ta4j/core/criteria/NumberOfBreakEvenPositionsCriterion.java
++++ b/org/ta4j/core/criteria/NumberOfBreakEvenPositionsCriterion.java
+@@ -14,12 +14,12 @@ import org.ta4j.core.num.Num;
+ public class NumberOfBreakEvenPositionsCriterion extends AbstractAnalysisCriterion {
+ 
+     @Override
+-    public Num calculate(BarSeries series, Position position) {
++    public Num calculate(BarSeries series, Position position) { org.ta4j.core.jmhbench.MutationSwitch.tick(34);
+         return isBreakEvenPosition(position) ? series.numFactory().one() : series.numFactory().zero();
+     }
+ 
+     @Override
+-    public Num calculate(BarSeries series, TradingRecord tradingRecord) {
++    public Num calculate(BarSeries series, TradingRecord tradingRecord) { org.ta4j.core.jmhbench.MutationSwitch.tick(47);
+         long numberOfBreakEvenTrades = tradingRecord.getPositions()
+                 .stream()
+                 .filter(Position::isClosed)
+diff --git a/org/ta4j/core/indicators/IndicatorUtils.java b/org/ta4j/core/indicators/IndicatorUtils.java
+index 0f07ae1..0930b74 100644
+--- a/org/ta4j/core/indicators/IndicatorUtils.java
++++ b/org/ta4j/core/indicators/IndicatorUtils.java
+@@ -32,7 +32,7 @@ public final class IndicatorUtils {
+      * @since 0.22.3
+      */
+     public static BarSeries requireSameSeries(Indicator<?> firstIndicator, Indicator<?> secondIndicator,
+-            Indicator<?>... additionalIndicators) {
++            Indicator<?>... additionalIndicators) { org.ta4j.core.jmhbench.MutationSwitch.tick(7);
+         Indicator<?> validatedFirst = Objects.requireNonNull(firstIndicator, "firstIndicator must not be null");
+         Indicator<?> validatedSecond = Objects.requireNonNull(secondIndicator, "secondIndicator must not be null");
+         Indicator<?>[] validatedAdditional = Objects.requireNonNull(additionalIndicators,
+@@ -58,7 +58,7 @@ public final class IndicatorUtils {
+      * @return {@code true} when both references share the same backing series
+      * @since 0.22.9
+      */
+-    public static boolean isSameSeries(BarSeries firstSeries, BarSeries secondSeries) {
++    public static boolean isSameSeries(BarSeries firstSeries, BarSeries secondSeries) { org.ta4j.core.jmhbench.MutationSwitch.tick(21);
+         return AbstractIndicator.unwrapBarSeries(firstSeries) == AbstractIndicator.unwrapBarSeries(secondSeries);
+     }
+ 
+diff --git a/org/ta4j/core/indicators/elliott/ElliottScenarioComparator.java b/org/ta4j/core/indicators/elliott/ElliottScenarioComparator.java
+index afbc9cd..50e0d0c 100644
+--- a/org/ta4j/core/indicators/elliott/ElliottScenarioComparator.java
++++ b/org/ta4j/core/indicators/elliott/ElliottScenarioComparator.java
+@@ -51,7 +51,7 @@ public final class ElliottScenarioComparator {
+      * @return divergence score (0.0 = identical, 1.0 = completely divergent)
+      * @since 0.22.0
+      */
+-    public Num divergenceScore(final ElliottScenario scenario1, final ElliottScenario scenario2) {
++    public Num divergenceScore(final ElliottScenario scenario1, final ElliottScenario scenario2) { org.ta4j.core.jmhbench.MutationSwitch.tick(35);
+         if (scenario1 == null || scenario2 == null) {
+             return numFactory.one();
+         }
+@@ -104,7 +104,7 @@ public final class ElliottScenarioComparator {
+      *         directions
+      * @since 0.22.0
+      */
+-    public Num sharedInvalidation(final Collection<ElliottScenario> scenarios) {
++    public Num sharedInvalidation(final Collection<ElliottScenario> scenarios) { org.ta4j.core.jmhbench.MutationSwitch.tick(48);
+         if (scenarios == null || scenarios.isEmpty()) {
+             return NaN;
+         }
+diff --git a/org/ta4j/core/jmhbench/MutationSwitch.java b/org/ta4j/core/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..f377be1
+--- /dev/null
++++ b/org/ta4j/core/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.ta4j.core.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/ta4j/core/named/NamedAssetRegistry.java b/org/ta4j/core/named/NamedAssetRegistry.java
+index 698dcac..ffe2a98 100644
+--- a/org/ta4j/core/named/NamedAssetRegistry.java
++++ b/org/ta4j/core/named/NamedAssetRegistry.java
+@@ -62,7 +62,7 @@ public final class NamedAssetRegistry {
+      * @return immutable default registry
+      * @since 0.23.1
+      */
+-    public static NamedAssetRegistry defaultRegistry() {
++    public static NamedAssetRegistry defaultRegistry() { org.ta4j.core.jmhbench.MutationSwitch.tick(8);
+         NamedAssetRegistry existing = DEFAULT_REGISTRY.get();
+         if (existing != null) {
+             return existing;
+@@ -84,7 +84,7 @@ public final class NamedAssetRegistry {
+      * @return builder
+      * @since 0.23.1
+      */
+-    public static Builder builder() {
++    public static Builder builder() { org.ta4j.core.jmhbench.MutationSwitch.tick(22);
+         return new Builder();
+     }
+ 
+diff --git a/org/ta4j/core/num/DecimalNum.java b/org/ta4j/core/num/DecimalNum.java
+index 0db90f2..8429ee6 100644
+--- a/org/ta4j/core/num/DecimalNum.java
++++ b/org/ta4j/core/num/DecimalNum.java
+@@ -123,7 +123,7 @@ public final class DecimalNum implements Num {
+      * @return the {@code Num} with a precision of {@link #DEFAULT_PRECISION}
+      * @throws NumberFormatException if {@code val} is {@code "NaN"}
+      */
+-    public static DecimalNum valueOf(final String val) {
++    public static DecimalNum valueOf(final String val) { org.ta4j.core.jmhbench.MutationSwitch.tick(9);
+         if (val.equalsIgnoreCase("NAN")) {
+             throw new NumberFormatException();
+         }
+@@ -139,7 +139,7 @@ public final class DecimalNum implements Num {
+      * @return the {@code Num} with a precision of {@code precision}
+      * @throws NumberFormatException if {@code val} is {@code "NaN"}
+      */
+-    public static DecimalNum valueOf(final String val, final MathContext mathContext) {
++    public static DecimalNum valueOf(final String val, final MathContext mathContext) { org.ta4j.core.jmhbench.MutationSwitch.tick(23);
+         if (val.equalsIgnoreCase("NAN")) {
+             throw new NumberFormatException();
+         }
+diff --git a/org/ta4j/core/num/DecimalNumFactory.java b/org/ta4j/core/num/DecimalNumFactory.java
+index 8f75cc2..517b420 100644
+--- a/org/ta4j/core/num/DecimalNumFactory.java
++++ b/org/ta4j/core/num/DecimalNumFactory.java
+@@ -27,11 +27,11 @@ public class DecimalNumFactory implements NumFactory {
+         this.thousand = DecimalNum.valueOf(1000, mathContext);
+     }
+ 
+-    public static NumFactory getInstance() {
++    public static NumFactory getInstance() { org.ta4j.core.jmhbench.MutationSwitch.tick(36);
+         return getInstance(DecimalNum.getDefaultMathContext());
+     }
+ 
+-    public static NumFactory getInstance(final int precision) {
++    public static NumFactory getInstance(final int precision) { org.ta4j.core.jmhbench.MutationSwitch.tick(49);
+         final var roundingMode = DecimalNum.getDefaultMathContext().getRoundingMode();
+         return new DecimalNumFactory(new MathContext(precision, roundingMode));
+     }
+diff --git a/org/ta4j/core/reports/BasePerformanceReport.java b/org/ta4j/core/reports/BasePerformanceReport.java
+index 258fc7a..1c47412 100644
+--- a/org/ta4j/core/reports/BasePerformanceReport.java
++++ b/org/ta4j/core/reports/BasePerformanceReport.java
+@@ -44,13 +44,13 @@ public class BasePerformanceReport implements PerformanceReport {
+ 
+     /** @return {@link #totalProfitLoss} */
+     @Deprecated
+-    public Num getTotalProfitLoss() {
++    public Num getTotalProfitLoss() { org.ta4j.core.jmhbench.MutationSwitch.tick(10);
+         return totalProfitLoss;
+     }
+ 
+     /** @return {@link #totalProfitLossPercentage} */
+     @Deprecated
+-    public Num getTotalProfitLossPercentage() {
++    public Num getTotalProfitLossPercentage() { org.ta4j.core.jmhbench.MutationSwitch.tick(24);
+         return totalProfitLossPercentage;
+     }
+ 
+diff --git a/org/ta4j/core/reports/BaseTradingStatement.java b/org/ta4j/core/reports/BaseTradingStatement.java
+index 352e252..4c63c83 100644
+--- a/org/ta4j/core/reports/BaseTradingStatement.java
++++ b/org/ta4j/core/reports/BaseTradingStatement.java
+@@ -81,7 +81,7 @@ public class BaseTradingStatement implements TradingStatement {
+      *
+      * @return the strategy used to generate this statement
+      */
+-    public Strategy getStrategy() {
++    public Strategy getStrategy() { org.ta4j.core.jmhbench.MutationSwitch.tick(37);
+         return strategy;
+     }
+ 
+@@ -91,7 +91,7 @@ public class BaseTradingStatement implements TradingStatement {
+      * @return the position statistics report
+      */
+     @Override
+-    public PositionStatsReport getPositionStatsReport() {
++    public PositionStatsReport getPositionStatsReport() { org.ta4j.core.jmhbench.MutationSwitch.tick(50);
+         return positionStatsReport;
+     }
+ 
+diff --git a/org/ta4j/core/rules/AndRule.java b/org/ta4j/core/rules/AndRule.java
+index 306d308..5ae684c 100644
+--- a/org/ta4j/core/rules/AndRule.java
++++ b/org/ta4j/core/rules/AndRule.java
+@@ -36,7 +36,7 @@ public class AndRule extends AbstractRule {
+     }
+ 
+     @Override
+-    public boolean isSatisfied(int index, TradingRecord tradingRecord) {
++    public boolean isSatisfied(int index, TradingRecord tradingRecord) { org.ta4j.core.jmhbench.MutationSwitch.tick(38);
+         final boolean firstSatisfied = evaluateChildRule(rule1, "rule1", index, tradingRecord);
+         final boolean satisfied;
+         final boolean secondEvaluated;
+diff --git a/org/ta4j/core/rules/TimeRangeRule.java b/org/ta4j/core/rules/TimeRangeRule.java
+index 8e43857..7bd4473 100644
+--- a/org/ta4j/core/rules/TimeRangeRule.java
++++ b/org/ta4j/core/rules/TimeRangeRule.java
+@@ -29,7 +29,7 @@ import org.ta4j.core.indicators.helpers.DateTimeIndicator;
+  */
+ public class TimeRangeRule extends AbstractRule {
+ 
+-    public record TimeRange(LocalTime from, LocalTime to) {
++    public record TimeRange(LocalTime from, LocalTime to) { org.ta4j.core.jmhbench.MutationSwitch.tick(11);
+     }
+ 
+     private final List<TimeRange> timeRanges;
+@@ -93,7 +93,7 @@ public class TimeRangeRule extends AbstractRule {
+ 
+     /** This rule does not use the {@code tradingRecord}. */
+     @Override
+-    public boolean isSatisfied(int index, TradingRecord tradingRecord) {
++    public boolean isSatisfied(int index, TradingRecord tradingRecord) { org.ta4j.core.jmhbench.MutationSwitch.tick(25);
+         var localTime = LocalTime.ofInstant(timeIndicator.getValue(index), ZoneOffset.UTC);
+         final boolean satisfied = timeRanges.stream().anyMatch(range -> {
+             return !localTime.isBefore(range.from()) && !localTime.isAfter(range.to());
+diff --git a/org/ta4j/core/serialization/AnalysisCriterionSerialization.java b/org/ta4j/core/serialization/AnalysisCriterionSerialization.java
+index 3f4bfb4..31d9f6f 100644
+--- a/org/ta4j/core/serialization/AnalysisCriterionSerialization.java
++++ b/org/ta4j/core/serialization/AnalysisCriterionSerialization.java
+@@ -52,7 +52,7 @@ public final class AnalysisCriterionSerialization {
+      *                                  cannot be represented safely
+      * @since 0.23.1
+      */
+-    public static String toJson(AnalysisCriterion criterion) {
++    public static String toJson(AnalysisCriterion criterion) { org.ta4j.core.jmhbench.MutationSwitch.tick(12);
+         return ComponentSerialization.toJson(describe(criterion));
+     }
+ 
+@@ -65,7 +65,7 @@ public final class AnalysisCriterionSerialization {
+      *                                  cannot be represented safely
+      * @since 0.23.1
+      */
+-    public static ComponentDescriptor describe(AnalysisCriterion criterion) {
++    public static ComponentDescriptor describe(AnalysisCriterion criterion) { org.ta4j.core.jmhbench.MutationSwitch.tick(26);
+         Objects.requireNonNull(criterion, "criterion");
+         String type = simplifyCriterionType(criterion.getClass());
+         Map<String, Object> parameters = describeParameters(criterion);
+diff --git a/org/ta4j/core/serialization/ComponentDescriptor.java b/org/ta4j/core/serialization/ComponentDescriptor.java
+index 753554f..056eaaa 100644
+--- a/org/ta4j/core/serialization/ComponentDescriptor.java
++++ b/org/ta4j/core/serialization/ComponentDescriptor.java
+@@ -40,7 +40,7 @@ public final class ComponentDescriptor {
+      * @param type component type
+      * @return descriptor instance
+      */
+-    public static ComponentDescriptor typeOnly(String type) {
++    public static ComponentDescriptor typeOnly(String type) { org.ta4j.core.jmhbench.MutationSwitch.tick(39);
+         return builder().withType(type).build();
+     }
+ 
+diff --git a/org/ta4j/core/utils/BarSeriesUtils.java b/org/ta4j/core/utils/BarSeriesUtils.java
+index c7a392a..27bac4d 100644
+--- a/org/ta4j/core/utils/BarSeriesUtils.java
++++ b/org/ta4j/core/utils/BarSeriesUtils.java
+@@ -44,7 +44,7 @@ public final class BarSeriesUtils {
+      * @param aggregatedSeriesName the name of the aggregated barSeries
+      * @return the aggregated barSeries
+      */
+-    public static BarSeries aggregateBars(BarSeries barSeries, Duration timePeriod, String aggregatedSeriesName) {
++    public static BarSeries aggregateBars(BarSeries barSeries, Duration timePeriod, String aggregatedSeriesName) { org.ta4j.core.jmhbench.MutationSwitch.tick(13);
+         final BarAggregator durationAggregator = new DurationBarAggregator(timePeriod, true);
+         final BarSeriesAggregator seriesAggregator = new BaseBarSeriesAggregator(durationAggregator);
+         return seriesAggregator.aggregate(barSeries, aggregatedSeriesName);
+@@ -67,7 +67,7 @@ public final class BarSeriesUtils {
+      *                                       the series implementation does not
+      *                                       expose a supported replacement path
+      */
+-    public static Bar replaceBarIfChanged(BarSeries barSeries, Bar newBar) {
++    public static Bar replaceBarIfChanged(BarSeries barSeries, Bar newBar) { org.ta4j.core.jmhbench.MutationSwitch.tick(27);
+         List<Bar> bars = barSeries.getBarData();
+         if (bars == null || bars.isEmpty())
+             return null;
+diff --git a/org/ta4j/core/utils/DeprecationNotifier.java b/org/ta4j/core/utils/DeprecationNotifier.java
+index e3ded0a..93832f3 100644
+--- a/org/ta4j/core/utils/DeprecationNotifier.java
++++ b/org/ta4j/core/utils/DeprecationNotifier.java
+@@ -38,7 +38,7 @@ public final class DeprecationNotifier {
+      * @param removalVersion  target removal version, or null/blank when unscheduled
+      * @since 0.22.3
+      */
+-    public static void warnOnce(Class<?> deprecatedType, String replacementType, String removalVersion) {
++    public static void warnOnce(Class<?> deprecatedType, String replacementType, String removalVersion) { org.ta4j.core.jmhbench.MutationSwitch.tick(40);
+         Objects.requireNonNull(deprecatedType, "deprecatedType");
+         Objects.requireNonNull(replacementType, "replacementType");
+         if (replacementType.isBlank()) {
+diff --git a/org/ta4j/core/walkforward/AnchoredExpandingWalkForwardSplitter.java b/org/ta4j/core/walkforward/AnchoredExpandingWalkForwardSplitter.java
+index 2e6ff74..f76fc39 100644
+--- a/org/ta4j/core/walkforward/AnchoredExpandingWalkForwardSplitter.java
++++ b/org/ta4j/core/walkforward/AnchoredExpandingWalkForwardSplitter.java
+@@ -23,7 +23,7 @@ import org.ta4j.core.BarSeries;
+ public final class AnchoredExpandingWalkForwardSplitter implements WalkForwardSplitter {
+ 
+     @Override
+-    public List<WalkForwardSplit> split(BarSeries series, WalkForwardConfig config) {
++    public List<WalkForwardSplit> split(BarSeries series, WalkForwardConfig config) { org.ta4j.core.jmhbench.MutationSwitch.tick(14);
+         Objects.requireNonNull(series, "series");
+         Objects.requireNonNull(config, "config");
+         if (series.isEmpty()) {
+diff --git a/org/ta4j/core/walkforward/PredictionSnapshot.java b/org/ta4j/core/walkforward/PredictionSnapshot.java
+index fe8bd54..9984502 100644
+--- a/org/ta4j/core/walkforward/PredictionSnapshot.java
++++ b/org/ta4j/core/walkforward/PredictionSnapshot.java
+@@ -18,7 +18,7 @@ import java.util.Objects;
+  * @since 0.22.4
+  */
+ public record PredictionSnapshot<P>(String foldId, int decisionIndex, List<RankedPrediction<P>> topPredictions,
+-        Map<String, String> metadata) {
++        Map<String, String> metadata) { org.ta4j.core.jmhbench.MutationSwitch.tick(28);
+ 
+     /**
+      * Creates a validated prediction snapshot.
+@@ -39,7 +39,7 @@ public record PredictionSnapshot<P>(String foldId, int decisionIndex, List<Ranke
+      * @return stable snapshot key for grouping observations
+      * @since 0.22.4
+      */
+-    public String snapshotKey() {
++    public String snapshotKey() { org.ta4j.core.jmhbench.MutationSwitch.tick(41);
+         return foldId + "@" + decisionIndex;
+     }
+ }

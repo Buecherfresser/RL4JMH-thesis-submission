@@ -1,0 +1,167 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableOnBackpressureDrop}.
+ *
+ * The benchmark measures the throughput (items/second) when a fast upstream emits
+ * a large number of items and the downstream simply consumes them via a {@link Blackhole}.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} isolates benchmark state per thread.
+ * - Reuse the {@link Flowable} and {@link DisposableSubscriber} across iterations to avoid allocation overhead.
+ * - Use {@code Blackhole} to prevent dead‑code elimination.
+ * - Configure warm‑up and measurement iterations.
+ * - Use {@code Mode.Throughput} with {@code TimeUnit.SECONDS}.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class FlowableOnBackpressureDropBenchmark {
+
+    /**
+     * Benchmark state containing the hot source and the subscriber.
+     */
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of items emitted per iteration.
+         */
+        static final int BATCH_SIZE = 1_000_000;
+
+        /**
+         * Hot source that emits items as fast as possible.
+         */
+        Flowable<Integer> source;
+
+        /**
+         * Subscriber that requests {@code Long.MAX_VALUE} once and discards items via Blackhole.
+         */
+        TestSubscriber subscriber;
+
+        /**
+         * Counter used to generate distinct values (not required for the benchmark logic).
+         */
+        AtomicInteger counter = new AtomicInteger();
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a hot source that can be triggered manually.
+            source = Flowable.<Integer>create(emitter -> {
+                // No emission here; emission is driven by the benchmark method.
+                // The emitter is stored so we can push items from the benchmark thread.
+                emitter.setCancellable(() -> {
+                    /* no‑op */
+                });
+                // Keep a reference for later emission.
+                this.emitter = emitter;
+            }, io.reactivex.rxjava3.core.BackpressureStrategy.MISSING).onBackpressureDrop().publish().autoConnect();
+            subscriber = new TestSubscriber();
+            source.subscribe(subscriber);
+        }
+
+        /**
+         * Reference to the emitter used to push items in the benchmark method.
+         */
+        private io.reactivex.rxjava3.core.FlowableEmitter<Integer> emitter;
+
+        /**
+         * Emits {@code BATCH_SIZE} items to the source.
+         */
+        void emitBatch() {
+            for (int i = 0; i < BATCH_SIZE; i++) {
+                emitter.onNext(counter.getAndIncrement());
+            }
+        }
+
+        /**
+         * Simple subscriber that requests an unbounded number of items once
+         * and forwards each received item to a Blackhole.
+         */
+        static final class TestSubscriber extends DisposableSubscriber<Integer> {
+
+            @Override
+            public void onStart() {
+                // Request an unbounded number of items.
+                request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                // No work here; the benchmark method will consume via Blackhole.
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Errors are unexpected in this benchmark.
+                t.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+                // Not used.
+            }
+        }
+    }
+
+    /**
+     * Benchmark method that pushes a batch of items through the {@code onBackpressureDrop}
+     * operator and consumes them via {@link Blackhole}.
+     *
+     * @param state shared benchmark state
+     * @param bh    Blackhole to consume items and prevent dead‑code elimination
+     */
+    @Benchmark
+    public void backpressureDropThroughput(BenchmarkState state, Blackhole bh) {
+        // Emit a batch of items; the operator will drop none because the subscriber
+        // requests Long.MAX_VALUE.
+        state.emitBatch();
+        // Drain the subscriber's internal queue by consuming all items that have arrived.
+        // Since the subscriber does not store items, we rely on the fact that the
+        // Flowable's internal mechanisms will deliver items to the Blackhole via the
+        // onNext hook we set up in the subscriber.
+        // To make the consumption visible to JMH, we subscribe a temporary consumer
+        // that forwards to Blackhole.
+        state.source.subscribe(bh::consume);
+    }
+}

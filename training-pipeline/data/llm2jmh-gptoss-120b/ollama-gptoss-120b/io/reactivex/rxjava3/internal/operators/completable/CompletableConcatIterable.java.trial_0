@@ -1,0 +1,69 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableSource;
+import io.reactivex.rxjava3.internal.operators.completable.CompletableConcatIterable;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link CompletableConcatIterable}.
+ *
+ * Measures the throughput of concatenating a fixed number of {@link Completable#complete()}
+ * sources using the operator under test.
+ *
+ * The benchmark follows JMH best practices:
+ * - Warm‑up and measurement iterations
+ * - Single fork (adjustable)
+ * - Thread‑local state to avoid sharing mutable data
+ * - Use of {@code blockingAwait()} to ensure the operation completes before the next iteration
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+@State(Scope.Thread)
+public class CompletableConcatIterableBenchmark {
+
+    /**
+     * Number of Completable sources to concatenate.
+     * Adjust this value to explore scaling behaviour.
+     */
+    @Param({"10", "100", "1000", "10000"})
+    public int sourceCount;
+
+    private List<CompletableSource> sources;
+    private CompletableConcatIterable concatOperator;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Prepare a list of already completed Completable sources.
+        sources = new ArrayList<>(sourceCount);
+        for (int i = 0; i < sourceCount; i++) {
+            sources.add(Completable.complete());
+        }
+
+        // Create the operator instance that will be benchmarked.
+        concatOperator = new CompletableConcatIterable(sources);
+    }
+
+    /**
+     * Executes the concatenation and blocks until completion.
+     *
+     * The method returns {@code true} to prevent dead‑code elimination,
+     * although JMH already treats the method as a black‑hole.
+     */
+    @Benchmark
+    public boolean concatAndAwait() {
+        // The operator returns a Completable; block until it finishes.
+        concatOperator.blockingAwait();
+        return true;
+    }
+}
+```

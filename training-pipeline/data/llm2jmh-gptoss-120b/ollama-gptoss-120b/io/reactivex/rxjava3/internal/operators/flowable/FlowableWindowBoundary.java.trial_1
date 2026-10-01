@@ -1,0 +1,61 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.processors.PublishProcessor;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import org.openjdk.jmh.annotations.*;
+
+@State(Scope.Thread)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class FlowableWindowBoundaryBenchmark {
+
+    @Param({ "1000000" })
+    public int itemCount;
+
+    @Param({ "1000" })
+    public int windowSize;
+
+    private Flowable<Integer> source;
+    private Flowable<Long> boundary;
+    private TestSubscriber<Flowable<Integer>> testSubscriber;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        source = Flowable.range(1, itemCount)
+                .subscribeOn(Schedulers.computation());
+
+        PublishProcessor<Long> boundaryProcessor = PublishProcessor.create();
+        boundary = boundaryProcessor
+                .onBackpressureBuffer()
+                .subscribeOn(Schedulers.computation());
+
+        new Thread(() -> {
+            long signals = itemCount / windowSize;
+            for (long i = 0; i < signals; i++) {
+                boundaryProcessor.onNext(i);
+            }
+            boundaryProcessor.onComplete();
+        }, "boundary-emitter").start();
+
+        testSubscriber = new TestSubscriber<>();
+    }
+
+    @Benchmark
+    public void windowBoundaryThroughput() {
+        source.window(boundary).subscribe(testSubscriber);
+        testSubscriber.awaitDone(1, TimeUnit.MINUTES);
+        testSubscriber.cancel();
+        testSubscriber = new TestSubscriber<>();
+    }
+}
+```

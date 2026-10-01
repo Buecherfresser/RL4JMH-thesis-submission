@@ -1,0 +1,549 @@
+diff --git a/com/flipkart/zjsonpatch/CompatibilityFlags.java b/com/flipkart/zjsonpatch/CompatibilityFlags.java
+index 0025f85..c8a0de7 100644
+--- a/com/flipkart/zjsonpatch/CompatibilityFlags.java
++++ b/com/flipkart/zjsonpatch/CompatibilityFlags.java
+@@ -27,7 +27,7 @@ public enum CompatibilityFlags {
+     ALLOW_MISSING_TARGET_OBJECT_ON_REPLACE,
+     FORBID_REMOVE_MISSING_OBJECT;
+ 
+-    public static EnumSet<CompatibilityFlags> defaults() {
++    public static EnumSet<CompatibilityFlags> defaults() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(1);
+         return EnumSet.noneOf(CompatibilityFlags.class);
+     }
+ }
+diff --git a/com/flipkart/zjsonpatch/CopyingApplyProcessor.java b/com/flipkart/zjsonpatch/CopyingApplyProcessor.java
+index 132315f..6a2d205 100644
+--- a/com/flipkart/zjsonpatch/CopyingApplyProcessor.java
++++ b/com/flipkart/zjsonpatch/CopyingApplyProcessor.java
+@@ -15,7 +15,7 @@ class CopyingApplyProcessor extends InPlaceApplyProcessor {
+     }
+ 
+     @Override
+-    protected boolean allowRootReplacement() {
++    protected boolean allowRootReplacement() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(3);
+         return true;
+     }
+ }
+diff --git a/com/flipkart/zjsonpatch/Diff.java b/com/flipkart/zjsonpatch/Diff.java
+index d4def3f..96690b3 100644
+--- a/com/flipkart/zjsonpatch/Diff.java
++++ b/com/flipkart/zjsonpatch/Diff.java
+@@ -51,15 +51,15 @@ class Diff {
+         this.srcValue = srcValue;
+     }
+ 
+-    public Operation getOperation() {
++    public Operation getOperation() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(5);
+         return operation;
+     }
+ 
+-    public AbstractJsonPointer getPath() {
++    public AbstractJsonPointer getPath() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(7);
+         return path;
+     }
+ 
+-    public JsonNodeWrapper getValue() {
++    public JsonNodeWrapper getValue() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(9);
+         return value;
+     }
+ 
+diff --git a/com/flipkart/zjsonpatch/DiffFlags.java b/com/flipkart/zjsonpatch/DiffFlags.java
+index 7d40ac0..1300a48 100644
+--- a/com/flipkart/zjsonpatch/DiffFlags.java
++++ b/com/flipkart/zjsonpatch/DiffFlags.java
+@@ -72,11 +72,11 @@ public enum DiffFlags {
+     EMIT_TEST_OPERATIONS;
+ 
+ 
+-    public static EnumSet<DiffFlags> defaults() {
++    public static EnumSet<DiffFlags> defaults() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(11);
+         return EnumSet.of(OMIT_VALUE_ON_REMOVE);
+     }
+ 
+-    public static EnumSet<DiffFlags> dontNormalizeOpIntoMoveAndCopy() {
++    public static EnumSet<DiffFlags> dontNormalizeOpIntoMoveAndCopy() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(13);
+         return EnumSet.of(OMIT_MOVE_OPERATION, OMIT_COPY_OPERATION);
+     }
+ }
+diff --git a/com/flipkart/zjsonpatch/InPlaceApplyProcessor.java b/com/flipkart/zjsonpatch/InPlaceApplyProcessor.java
+index 58ceea6..a0b6e1d 100644
+--- a/com/flipkart/zjsonpatch/InPlaceApplyProcessor.java
++++ b/com/flipkart/zjsonpatch/InPlaceApplyProcessor.java
+@@ -37,16 +37,16 @@ class InPlaceApplyProcessor implements JsonPatchProcessor {
+         this.flags = flags;
+     }
+ 
+-    public JsonNodeWrapper result() {
++    public JsonNodeWrapper result() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(15);
+         return target;
+     }
+ 
+-    protected boolean allowRootReplacement() {
++    protected boolean allowRootReplacement() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(17);
+         return false;
+     }
+ 
+     @Override
+-    public void move(JsonPointer fromPath, JsonPointer toPath) throws JsonPointerEvaluationException {
++    public void move(JsonPointer fromPath, JsonPointer toPath) throws JsonPointerEvaluationException { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(19);
+         JsonNodeWrapper valueNode = fromPath.evaluate(target);
+         remove(fromPath);
+         set(toPath, valueNode, Operation.MOVE);
+diff --git a/com/flipkart/zjsonpatch/Jackson3JsonDiff.java b/com/flipkart/zjsonpatch/Jackson3JsonDiff.java
+index 2b349cc..191def2 100644
+--- a/com/flipkart/zjsonpatch/Jackson3JsonDiff.java
++++ b/com/flipkart/zjsonpatch/Jackson3JsonDiff.java
+@@ -41,16 +41,16 @@ public final class Jackson3JsonDiff extends AbstractJsonDiff {
+     }
+ 
+     @Override
+-    protected Jackson3JsonPointer getJsonPointerRoot() {
++    protected Jackson3JsonPointer getJsonPointerRoot() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(21);
+         return Jackson3JsonPointer.ROOT;
+     }
+ 
+     @Override
+-    protected Jackson3JsonPointer createJsonPointerInstance(List<RefToken> tokens) {
++    protected Jackson3JsonPointer createJsonPointerInstance(List<RefToken> tokens) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(23);
+         return new Jackson3JsonPointer(tokens);
+     }
+ 
+-    public static JsonNode asJson(final JsonNode source, final JsonNode target) {
++    public static JsonNode asJson(final JsonNode source, final JsonNode target) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(25);
+         return asJson(source, target, DiffFlags.defaults());
+     }
+ 
+diff --git a/com/flipkart/zjsonpatch/Jackson3JsonPatch.java b/com/flipkart/zjsonpatch/Jackson3JsonPatch.java
+index fd9ad9f..078ce18 100644
+--- a/com/flipkart/zjsonpatch/Jackson3JsonPatch.java
++++ b/com/flipkart/zjsonpatch/Jackson3JsonPatch.java
+@@ -37,15 +37,15 @@ public final class Jackson3JsonPatch extends AbstractJsonPatch {
+     private Jackson3JsonPatch() {
+     }
+ 
+-    public static void validate(JsonNode patch, EnumSet<CompatibilityFlags> flags) throws InvalidJsonPatchException {
++    public static void validate(JsonNode patch, EnumSet<CompatibilityFlags> flags) throws InvalidJsonPatchException { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(27);
+         process(JacksonVersionBridge.wrap(patch), NoopProcessor.INSTANCE, flags, FACTORY);
+     }
+ 
+-    public static void validate(JsonNode patch) throws InvalidJsonPatchException {
++    public static void validate(JsonNode patch) throws InvalidJsonPatchException { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(29);
+         validate(patch, CompatibilityFlags.defaults());
+     }
+ 
+-    public static JsonNode apply(JsonNode patch, JsonNode source, EnumSet<CompatibilityFlags> flags) throws JsonPatchApplicationException {
++    public static JsonNode apply(JsonNode patch, JsonNode source, EnumSet<CompatibilityFlags> flags) throws JsonPatchApplicationException { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(31);
+         CopyingApplyProcessor processor = new CopyingApplyProcessor(JacksonVersionBridge.wrap(source), flags);
+         process(JacksonVersionBridge.wrap(patch), processor, flags, FACTORY);
+         return JacksonVersionBridge.unwrap(processor.result());
+diff --git a/com/flipkart/zjsonpatch/Jackson3JsonPointer.java b/com/flipkart/zjsonpatch/Jackson3JsonPointer.java
+index d0a3f39..9341eb7 100644
+--- a/com/flipkart/zjsonpatch/Jackson3JsonPointer.java
++++ b/com/flipkart/zjsonpatch/Jackson3JsonPointer.java
+@@ -80,7 +80,7 @@ public final class Jackson3JsonPointer extends AbstractJsonPointer {
+      * @return An instance of {@link Jackson3JsonPointer} conforming to the specified string representation.
+      * @throws IllegalArgumentException The specified JSON Pointer is invalid.
+      */
+-    public static Jackson3JsonPointer parse(String path) throws IllegalArgumentException {
++    public static Jackson3JsonPointer parse(String path) throws IllegalArgumentException { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(33);
+         List<RefToken> tokens = parseTokens(path);
+         return tokens.isEmpty() ? ROOT : new Jackson3JsonPointer(tokens);
+     }
+@@ -92,7 +92,7 @@ public final class Jackson3JsonPointer extends AbstractJsonPointer {
+      *
+      * @return A {@link Jackson3JsonPointer} to the parent node.
+      */
+-    public Jackson3JsonPointer getParent() {
++    public Jackson3JsonPointer getParent() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(35);
+         return isRoot() ? this : new Jackson3JsonPointer(Arrays.copyOf(getTokens(), getTokens().length - 1));
+     }
+ 
+@@ -106,7 +106,7 @@ public final class Jackson3JsonPointer extends AbstractJsonPointer {
+      * @return The {@link JsonNode} resolved by evaluating this JSON pointer.
+      * @throws JsonPointerEvaluationException The pointer could not be evaluated.
+      */
+-    public JsonNode evaluate(final JsonNode document) throws JsonPointerEvaluationException {
++    public JsonNode evaluate(final JsonNode document) throws JsonPointerEvaluationException { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(37);
+         try {
+             JsonNodeWrapper wrappedDocument = JacksonVersionBridge.wrap(document);
+             JsonNodeWrapper result = evaluate(wrappedDocument);
+diff --git a/com/flipkart/zjsonpatch/JsonDiff.java b/com/flipkart/zjsonpatch/JsonDiff.java
+index eb8dcf3..5428db3 100644
+--- a/com/flipkart/zjsonpatch/JsonDiff.java
++++ b/com/flipkart/zjsonpatch/JsonDiff.java
+@@ -39,16 +39,16 @@ public final class JsonDiff extends AbstractJsonDiff {
+     }
+ 
+     @Override
+-    protected JsonPointer getJsonPointerRoot() {
++    protected JsonPointer getJsonPointerRoot() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(39);
+         return JsonPointer.ROOT;
+     }
+ 
+     @Override
+-    protected JsonPointer createJsonPointerInstance(List<RefToken> tokens) {
++    protected JsonPointer createJsonPointerInstance(List<RefToken> tokens) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(41);
+         return new JsonPointer(tokens);
+     }
+ 
+-    public static JsonNode asJson(final JsonNode source, final JsonNode target) {
++    public static JsonNode asJson(final JsonNode source, final JsonNode target) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(43);
+         return asJson(source, target, DiffFlags.defaults());
+     }
+ 
+diff --git a/com/flipkart/zjsonpatch/JsonPatch.java b/com/flipkart/zjsonpatch/JsonPatch.java
+index 90abdf3..e3ac752 100644
+--- a/com/flipkart/zjsonpatch/JsonPatch.java
++++ b/com/flipkart/zjsonpatch/JsonPatch.java
+@@ -36,15 +36,15 @@ public final class JsonPatch extends AbstractJsonPatch {
+     private JsonPatch() {
+     }
+ 
+-    public static void validate(JsonNode patch, EnumSet<CompatibilityFlags> flags) throws InvalidJsonPatchException {
++    public static void validate(JsonNode patch, EnumSet<CompatibilityFlags> flags) throws InvalidJsonPatchException { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(45);
+         process(JacksonVersionBridge.wrap(patch), NoopProcessor.INSTANCE, flags, FACTORY);
+     }
+ 
+-    public static void validate(JsonNode patch) throws InvalidJsonPatchException {
++    public static void validate(JsonNode patch) throws InvalidJsonPatchException { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(47);
+         validate(patch, CompatibilityFlags.defaults());
+     }
+ 
+-    public static JsonNode apply(JsonNode patch, JsonNode source, EnumSet<CompatibilityFlags> flags) throws JsonPatchApplicationException {
++    public static JsonNode apply(JsonNode patch, JsonNode source, EnumSet<CompatibilityFlags> flags) throws JsonPatchApplicationException { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(49);
+         CopyingApplyProcessor processor = new CopyingApplyProcessor(JacksonVersionBridge.wrap(source), flags);
+         process(JacksonVersionBridge.wrap(patch), processor, flags, FACTORY);
+         return JacksonVersionBridge.unwrap(processor.result());
+diff --git a/com/flipkart/zjsonpatch/jmhbench/MutationSwitch.java b/com/flipkart/zjsonpatch/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..5fbe1fa
+--- /dev/null
++++ b/com/flipkart/zjsonpatch/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.flipkart.zjsonpatch.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/flipkart/zjsonpatch/mapping/JacksonVersionBridge.java b/com/flipkart/zjsonpatch/mapping/JacksonVersionBridge.java
+index 6314920..5d59b9f 100644
+--- a/com/flipkart/zjsonpatch/mapping/JacksonVersionBridge.java
++++ b/com/flipkart/zjsonpatch/mapping/JacksonVersionBridge.java
+@@ -61,7 +61,7 @@ public final class JacksonVersionBridge {
+      * @throws IllegalArgumentException if the node type is unsupported for the selected Jackson version
+      * @throws JacksonVersionException if wrapper classes cannot be loaded or instantiated
+      */
+-    public static JsonNodeWrapper wrap(Object nativeNode) {
++    public static JsonNodeWrapper wrap(Object nativeNode) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(16);
+         if (nativeNode == null) return null;
+ 
+         try {
+@@ -202,7 +202,7 @@ public final class JacksonVersionBridge {
+      * @param wrapper the wrapper to unwrap
+      * @return the underlying Jackson JsonNode, or null if wrapper is null
+      */
+-    public static <T> T unwrap(JsonNodeWrapper wrapper) {
++    public static <T> T unwrap(JsonNodeWrapper wrapper) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(18);
+         if (wrapper == null) return null;
+         return (T) wrapper.getUnderlyingNode();
+     }
+diff --git a/com/flipkart/zjsonpatch/mapping/ListIteratorDecorator.java b/com/flipkart/zjsonpatch/mapping/ListIteratorDecorator.java
+index 57ab889..da1b1fc 100644
+--- a/com/flipkart/zjsonpatch/mapping/ListIteratorDecorator.java
++++ b/com/flipkart/zjsonpatch/mapping/ListIteratorDecorator.java
+@@ -46,17 +46,17 @@ public class ListIteratorDecorator<E> implements ListIterator<JsonNodeWrapper> {
+     }
+ 
+     @Override
+-    public int nextIndex() {
++    public int nextIndex() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(2);
+         return iterator.nextIndex();
+     }
+ 
+     @Override
+-    public boolean hasPrevious() {
++    public boolean hasPrevious() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(4);
+         return iterator.hasPrevious();
+     }
+ 
+     @Override
+-    public JsonNodeWrapper previous() {
++    public JsonNodeWrapper previous() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(6);
+         final E previous = iterator.previous();
+         return JacksonVersionBridge.wrap(previous);
+     }
+diff --git a/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2ArrayNodeWrapper.java b/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2ArrayNodeWrapper.java
+index 4b19597..269ec55 100644
+--- a/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2ArrayNodeWrapper.java
++++ b/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2ArrayNodeWrapper.java
+@@ -52,7 +52,7 @@ public class Jackson2ArrayNodeWrapper extends Jackson2NodeWrapper implements Arr
+     }
+     
+     @Override
+-    public ArrayNodeWrapper insert(int index, JsonNodeWrapper value) {
++    public ArrayNodeWrapper insert(int index, JsonNodeWrapper value) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(8);
+         Jackson2NodeWrapper jackson2Value = (Jackson2NodeWrapper) value;
+         arrayNode.insert(index, jackson2Value.getJackson2Node());
+         return this;
+@@ -65,7 +65,7 @@ public class Jackson2ArrayNodeWrapper extends Jackson2NodeWrapper implements Arr
+     
+ 
+     @Override
+-    public Iterator<JsonNodeWrapper> iterator() {
++    public Iterator<JsonNodeWrapper> iterator() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(10);
+         return new ListIteratorDecorator<>((ListIterator<JsonNode>) arrayNode.iterator());
+     }
+ }
+diff --git a/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2NodeFactory.java b/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2NodeFactory.java
+index 52ac4f9..8ef238a 100644
+--- a/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2NodeFactory.java
++++ b/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2NodeFactory.java
+@@ -35,17 +35,17 @@ public class Jackson2NodeFactory implements JsonNodeFactoryWrapper {
+     private final JsonNodeFactory factory = JsonNodeFactory.instance;
+     
+     @Override
+-    public ArrayNodeWrapper arrayNode() {
++    public ArrayNodeWrapper arrayNode() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(20);
+         return new Jackson2ArrayNodeWrapper(factory.arrayNode());
+     }
+     
+     @Override
+-    public ObjectNodeWrapper objectNode() {
++    public ObjectNodeWrapper objectNode() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(22);
+         return new Jackson2ObjectNodeWrapper(factory.objectNode());
+     }
+     
+     @Override
+-    public JsonNodeWrapper nullNode() {
++    public JsonNodeWrapper nullNode() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(24);
+         return new Jackson2NodeWrapper(NullNode.getInstance());
+     }
+     
+diff --git a/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2NodeWrapper.java b/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2NodeWrapper.java
+index 1a4f96c..5140809 100644
+--- a/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2NodeWrapper.java
++++ b/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2NodeWrapper.java
+@@ -38,17 +38,17 @@ public class Jackson2NodeWrapper implements JsonNodeWrapper {
+     }
+     
+     @Override
+-    public boolean isArray() {
++    public boolean isArray() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(26);
+         return node.isArray();
+     }
+     
+     @Override
+-    public boolean isObject() {
++    public boolean isObject() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(28);
+         return node.isObject();
+     }
+     
+     @Override
+-    public boolean isTextual() {
++    public boolean isTextual() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(30);
+         return node.isTextual();
+     }
+     
+diff --git a/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2ObjectNodeWrapper.java b/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2ObjectNodeWrapper.java
+index 2bb122b..489993d 100644
+--- a/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2ObjectNodeWrapper.java
++++ b/com/flipkart/zjsonpatch/mapping/jackson2/Jackson2ObjectNodeWrapper.java
+@@ -60,7 +60,7 @@ public class Jackson2ObjectNodeWrapper extends Jackson2NodeWrapper implements Ob
+     }
+     
+     @Override
+-    public JsonNodeWrapper replace(String fieldName, JsonNodeWrapper value) {
++    public JsonNodeWrapper replace(String fieldName, JsonNodeWrapper value) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(32);
+         if (value == null) {
+             com.fasterxml.jackson.databind.JsonNode result = objectNode.replace(fieldName, null);
+             return result != null ? new Jackson2NodeWrapper(result) : null;
+@@ -77,7 +77,7 @@ public class Jackson2ObjectNodeWrapper extends Jackson2NodeWrapper implements Ob
+     
+ 
+     @Override
+-    public Iterator<JsonNodeWrapper> iterator() {
++    public Iterator<JsonNodeWrapper> iterator() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(34);
+         return new IteratorDecorator<>(objectNode.iterator());
+     }
+ }
+diff --git a/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3ArrayNodeWrapper.java b/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3ArrayNodeWrapper.java
+index 448ac06..ca650ce 100644
+--- a/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3ArrayNodeWrapper.java
++++ b/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3ArrayNodeWrapper.java
+@@ -52,7 +52,7 @@ public class Jackson3ArrayNodeWrapper extends Jackson3NodeWrapper implements Arr
+     }
+     
+     @Override
+-    public ArrayNodeWrapper insert(int index, JsonNodeWrapper value) {
++    public ArrayNodeWrapper insert(int index, JsonNodeWrapper value) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(12);
+         Jackson3NodeWrapper jackson3Value = (Jackson3NodeWrapper) value;
+         arrayNode.insert(index, jackson3Value.getJackson3Node());
+         return this;
+@@ -65,7 +65,7 @@ public class Jackson3ArrayNodeWrapper extends Jackson3NodeWrapper implements Arr
+     
+ 
+     @Override
+-    public Iterator<JsonNodeWrapper> iterator() {
++    public Iterator<JsonNodeWrapper> iterator() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(14);
+         return new IteratorDecorator<>(arrayNode.iterator());
+     }
+ }
+diff --git a/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3NodeFactory.java b/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3NodeFactory.java
+index 7c940bd..d9cc8bd 100644
+--- a/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3NodeFactory.java
++++ b/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3NodeFactory.java
+@@ -38,17 +38,17 @@ public class Jackson3NodeFactory implements JsonNodeFactoryWrapper {
+     private final JsonNodeFactory factory = JsonNodeFactory.instance;
+     
+     @Override
+-    public ArrayNodeWrapper arrayNode() {
++    public ArrayNodeWrapper arrayNode() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(36);
+         return new Jackson3ArrayNodeWrapper(factory.arrayNode());
+     }
+     
+     @Override
+-    public ObjectNodeWrapper objectNode() {
++    public ObjectNodeWrapper objectNode() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(38);
+         return new Jackson3ObjectNodeWrapper(factory.objectNode());
+     }
+     
+     @Override
+-    public JsonNodeWrapper nullNode() {
++    public JsonNodeWrapper nullNode() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(40);
+         return new Jackson3NodeWrapper(NullNode.getInstance());
+     }
+     
+diff --git a/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3NodeWrapper.java b/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3NodeWrapper.java
+index a86a4d9..07ed0ca 100644
+--- a/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3NodeWrapper.java
++++ b/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3NodeWrapper.java
+@@ -37,17 +37,17 @@ public class Jackson3NodeWrapper implements JsonNodeWrapper {
+     }
+     
+     @Override
+-    public boolean isArray() {
++    public boolean isArray() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(42);
+         return node.isArray();
+     }
+     
+     @Override
+-    public boolean isObject() {
++    public boolean isObject() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(44);
+         return node.isObject();
+     }
+     
+     @Override
+-    public boolean isTextual() {
++    public boolean isTextual() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(46);
+         return node.isString();
+     }
+     
+diff --git a/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3ObjectNodeWrapper.java b/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3ObjectNodeWrapper.java
+index e8d1e98..5f59a4c 100644
+--- a/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3ObjectNodeWrapper.java
++++ b/com/flipkart/zjsonpatch/mapping/jackson3/Jackson3ObjectNodeWrapper.java
+@@ -58,7 +58,7 @@ public class Jackson3ObjectNodeWrapper extends Jackson3NodeWrapper implements Ob
+     }
+     
+     @Override
+-    public JsonNodeWrapper replace(String fieldName, JsonNodeWrapper value) {
++    public JsonNodeWrapper replace(String fieldName, JsonNodeWrapper value) { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(48);
+         if (value == null) {
+             tools.jackson.databind.JsonNode result = objectNode.replace(fieldName, null);
+             return result != null ? new Jackson3NodeWrapper(result) : null;
+@@ -75,7 +75,7 @@ public class Jackson3ObjectNodeWrapper extends Jackson3NodeWrapper implements Ob
+     
+ 
+     @Override
+-    public Iterator<JsonNodeWrapper> iterator() {
++    public Iterator<JsonNodeWrapper> iterator() { com.flipkart.zjsonpatch.jmhbench.MutationSwitch.tick(50);
+         return new IteratorDecorator<>(objectNode.iterator());
+     }
+ }

@@ -1,0 +1,634 @@
+diff --git a/com/hendrix/erdos/Erdos.java b/com/hendrix/erdos/Erdos.java
+index 8014e4f..0c78ac7 100644
+--- a/com/hendrix/erdos/Erdos.java
++++ b/com/hendrix/erdos/Erdos.java
+@@ -87,12 +87,12 @@ public class Erdos {
+                                                                                      final boolean multiEdges) {
+         return new DirectedGraph() {
+             @Override
+-            public boolean hasMultiEdges() {
++            public boolean hasMultiEdges() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(1);
+                 return multiEdges;
+             }
+ 
+             @Override
+-            public boolean hasSelfLoops() {
++            public boolean hasSelfLoops() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(6);
+                 return selfLoops;
+             }
+ 
+diff --git a/com/hendrix/erdos/algorithms/AbstractGraphAlgorithm.java b/com/hendrix/erdos/algorithms/AbstractGraphAlgorithm.java
+index ae0dbf8..8972633 100644
+--- a/com/hendrix/erdos/algorithms/AbstractGraphAlgorithm.java
++++ b/com/hendrix/erdos/algorithms/AbstractGraphAlgorithm.java
+@@ -30,7 +30,7 @@ abstract public class AbstractGraphAlgorithm<T, E extends IGraph> implements IGr
+     public AbstractGraphAlgorithm() {}
+ 
+         @Override
+-    public void setInputGraph(E graph) {
++    public void setInputGraph(E graph) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(2);
+         if(_graph_input != null)
+             throw new AlgorithmException("InputGraph can only be set once!!", this);
+ 
+@@ -38,7 +38,7 @@ abstract public class AbstractGraphAlgorithm<T, E extends IGraph> implements IGr
+     }
+ 
+     @Override
+-    public E getInputGraph() {
++    public E getInputGraph() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(7);
+         return _graph_input;
+     }
+ 
+diff --git a/com/hendrix/erdos/algorithms/AbstractShortestPathAlgorithm.java b/com/hendrix/erdos/algorithms/AbstractShortestPathAlgorithm.java
+index 044bc84..1645885 100644
+--- a/com/hendrix/erdos/algorithms/AbstractShortestPathAlgorithm.java
++++ b/com/hendrix/erdos/algorithms/AbstractShortestPathAlgorithm.java
+@@ -48,7 +48,7 @@ abstract public class AbstractShortestPathAlgorithm<E extends IGraph> extends Ab
+      *
+      * @param vertex the starting vertex
+      */
+-    public AbstractShortestPathAlgorithm<E> setStartVertex(IVertex vertex) {
++    public AbstractShortestPathAlgorithm<E> setStartVertex(IVertex vertex) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(11);
+         _startVertex = vertex;
+ 
+         return this;
+@@ -59,7 +59,7 @@ abstract public class AbstractShortestPathAlgorithm<E extends IGraph> extends Ab
+      *
+      * @param weightFunction the optional weight function
+      */
+-    public AbstractShortestPathAlgorithm<E> setWeightFunction(EdgeFunction weightFunction) {
++    public AbstractShortestPathAlgorithm<E> setWeightFunction(EdgeFunction weightFunction) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(14);
+         _weightFunction = weightFunction;
+ 
+         return this;
+diff --git a/com/hendrix/erdos/algorithms/AllPairsShortPathResult.java b/com/hendrix/erdos/algorithms/AllPairsShortPathResult.java
+index c9821b4..ccd52bd 100644
+--- a/com/hendrix/erdos/algorithms/AllPairsShortPathResult.java
++++ b/com/hendrix/erdos/algorithms/AllPairsShortPathResult.java
+@@ -63,7 +63,7 @@ public class AllPairsShortPathResult implements ITag{
+      *
+      * @return the shortest path distance, or {@code Float.POSITIVE_INFINITY} if no path exists
+      */
+-    public float shortDistanceBetween(IVertex u, IVertex v) {
++    public float shortDistanceBetween(IVertex u, IVertex v) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(17);
+         int u_index = indexOf(u);
+         int v_index = indexOf(v);
+ 
+@@ -79,7 +79,7 @@ public class AllPairsShortPathResult implements ITag{
+      *
+      * @throws java.lang.UnsupportedOperationException if the algorithm did not supply predecessor info
+      */
+-    public ShortestPathsTree shortestPathsTreeOf(IVertex u) {
++    public ShortestPathsTree shortestPathsTreeOf(IVertex u) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(19);
+         if(_PIE == null)
+             throw new UnsupportedOperationException(getTag() + " does not support this operation");
+ 
+diff --git a/com/hendrix/erdos/algorithms/BFS.java b/com/hendrix/erdos/algorithms/BFS.java
+index 24b7fc1..62297d9 100644
+--- a/com/hendrix/erdos/algorithms/BFS.java
++++ b/com/hendrix/erdos/algorithms/BFS.java
+@@ -52,7 +52,7 @@ public class BFS extends AbstractGraphAlgorithm<BreadthFirstTree, IGraph>
+ 
+     @Override
+     public BreadthFirstTree applyAlgorithm()
+-    {
++    { com.hendrix.erdos.jmhbench.MutationSwitch.tick(21);
+         if(_sourceIVertex==null || _graph_input==null)
+             throw new AlgorithmException("_sourceIVertex==null || _graph_input==null", this);
+ 
+@@ -65,7 +65,7 @@ public class BFS extends AbstractGraphAlgorithm<BreadthFirstTree, IGraph>
+     }
+ 
+     @SuppressWarnings("UnusedDeclaration")
+-    public IVertex getSourceIVertex() {
++    public IVertex getSourceIVertex() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(23);
+         return _sourceIVertex;
+     }
+     @SuppressWarnings("UnusedDeclaration")
+diff --git a/com/hendrix/erdos/algorithms/BellmanFordShortestPath.java b/com/hendrix/erdos/algorithms/BellmanFordShortestPath.java
+index f2fc83b..30b1260 100644
+--- a/com/hendrix/erdos/algorithms/BellmanFordShortestPath.java
++++ b/com/hendrix/erdos/algorithms/BellmanFordShortestPath.java
+@@ -30,7 +30,7 @@ public class BellmanFordShortestPath extends AbstractShortestPathAlgorithm<IDire
+      * @throws GraphContainsNegativeWeightCycle
+      */
+     @Override
+-    public ShortestPathsTree applyAlgorithm() {
++    public ShortestPathsTree applyAlgorithm() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(25);
+         if(_graph_input==null)
+             throw new AlgorithmException("_graph_input==null", this);
+ 
+@@ -61,7 +61,7 @@ public class BellmanFordShortestPath extends AbstractShortestPathAlgorithm<IDire
+      * @throws GraphContainsNegativeWeightCycle
+      */
+     protected void shortest()
+-    {
++    { com.hendrix.erdos.jmhbench.MutationSwitch.tick(27);
+         IVertex s = _startVertex;
+         IVertex u, v;
+ 
+diff --git a/com/hendrix/erdos/algorithms/DFS.java b/com/hendrix/erdos/algorithms/DFS.java
+index d8091cd..b97f156 100644
+--- a/com/hendrix/erdos/algorithms/DFS.java
++++ b/com/hendrix/erdos/algorithms/DFS.java
+@@ -90,9 +90,9 @@ public class DFS extends AbstractGraphAlgorithm<DFS.DepthFirstForest, IGraph>
+      * a flag indication of whether to classify edges
+      */
+     @SuppressWarnings("UnusedDeclaration")
+-    public boolean isFlagClassifyEdges() { return _flagClassifyEdges;}
++    public boolean isFlagClassifyEdges() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(29); return _flagClassifyEdges;}
+     @SuppressWarnings("UnusedDeclaration")
+-    public DFS setFlagClassifyEdges(boolean flagClassifyEdges) {
++    public DFS setFlagClassifyEdges(boolean flagClassifyEdges) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(31);
+         _flagClassifyEdges = flagClassifyEdges;
+ 
+         return this;
+diff --git a/com/hendrix/erdos/algorithms/DagShortestPaths.java b/com/hendrix/erdos/algorithms/DagShortestPaths.java
+index 5028cbc..90377f0 100644
+--- a/com/hendrix/erdos/algorithms/DagShortestPaths.java
++++ b/com/hendrix/erdos/algorithms/DagShortestPaths.java
+@@ -27,7 +27,7 @@ public class DagShortestPaths extends AbstractShortestPathAlgorithm<IDirectedGra
+     }
+ 
+     @Override
+-    public ShortestPathsTree applyAlgorithm() {
++    public ShortestPathsTree applyAlgorithm() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(33);
+         if(_graph_input==null)
+             throw new AlgorithmException("_graph_input==null", this);
+ 
+@@ -51,7 +51,7 @@ public class DagShortestPaths extends AbstractShortestPathAlgorithm<IDirectedGra
+     5              do RELAX(u, v, w)
+     */
+     protected void shortest()
+-    {
++    { com.hendrix.erdos.jmhbench.MutationSwitch.tick(35);
+         IVertex s = _startVertex;
+ 
+         LinkedList<IVertex> topologicalSort = new TopologicalSort(_graph_input).applyAlgorithm();
+diff --git a/com/hendrix/erdos/algorithms/DijkstraShortestPath.java b/com/hendrix/erdos/algorithms/DijkstraShortestPath.java
+index 926a41f..0c922c6 100644
+--- a/com/hendrix/erdos/algorithms/DijkstraShortestPath.java
++++ b/com/hendrix/erdos/algorithms/DijkstraShortestPath.java
+@@ -29,7 +29,7 @@ public class DijkstraShortestPath extends AbstractShortestPathAlgorithm<IDirecte
+     }
+ 
+     @Override
+-    public ShortestPathsTree applyAlgorithm() {
++    public ShortestPathsTree applyAlgorithm() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(37);
+         if(_graph_input==null)
+             throw new AlgorithmException("_graph_input==null", this);
+ 
+@@ -56,7 +56,7 @@ public class DijkstraShortestPath extends AbstractShortestPathAlgorithm<IDirecte
+     8             do RELAX(u, v, w)
+     */
+     protected void shortest()
+-    {
++    { com.hendrix.erdos.jmhbench.MutationSwitch.tick(39);
+         IVertex s = _startVertex;
+         IVertex u;
+ 
+diff --git a/com/hendrix/erdos/algorithms/FloydWarshall.java b/com/hendrix/erdos/algorithms/FloydWarshall.java
+index 0be679f..063a488 100644
+--- a/com/hendrix/erdos/algorithms/FloydWarshall.java
++++ b/com/hendrix/erdos/algorithms/FloydWarshall.java
+@@ -16,7 +16,7 @@ public class FloydWarshall extends AbstractGraphAlgorithm<AllPairsShortPathResul
+     }
+ 
+     @Override
+-    public AllPairsShortPathResult applyAlgorithm() {
++    public AllPairsShortPathResult applyAlgorithm() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(41);
+ 
+         floydWarshall();
+ 
+diff --git a/com/hendrix/erdos/algorithms/Johnson.java b/com/hendrix/erdos/algorithms/Johnson.java
+index 8b7f471..267a0b1 100644
+--- a/com/hendrix/erdos/algorithms/Johnson.java
++++ b/com/hendrix/erdos/algorithms/Johnson.java
+@@ -46,7 +46,7 @@ public class Johnson extends AbstractGraphAlgorithm<AllPairsShortPathResult, IDi
+      * @throws NegativeEdgeWeightException if negative weight for edges are used
+      */
+     @Override
+-    public AllPairsShortPathResult applyAlgorithm() {
++    public AllPairsShortPathResult applyAlgorithm() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(43);
+ 
+         johnson();
+ 
+diff --git a/com/hendrix/erdos/algorithms/MSTKruskal.java b/com/hendrix/erdos/algorithms/MSTKruskal.java
+index 6d8f881..2ee9ea8 100644
+--- a/com/hendrix/erdos/algorithms/MSTKruskal.java
++++ b/com/hendrix/erdos/algorithms/MSTKruskal.java
+@@ -26,7 +26,7 @@ public class MSTKruskal extends AbstractGraphAlgorithm<UndirectedGraph, IUndirec
+     }
+ 
+     @Override
+-    public UndirectedGraph applyAlgorithm() {
++    public UndirectedGraph applyAlgorithm() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(45);
+         if(_graph_input==null)
+             throw new AlgorithmException("_graph_input==null", this);
+ 
+@@ -51,7 +51,7 @@ public class MSTKruskal extends AbstractGraphAlgorithm<UndirectedGraph, IUndirec
+     9  return A
+     */
+     protected void mst()
+-    {
++    { com.hendrix.erdos.jmhbench.MutationSwitch.tick(47);
+         _result_algorithm = new SimpleGraph();
+         _result_algorithm.setTag(getTag() + " result");
+ 
+diff --git a/com/hendrix/erdos/algorithms/MSTPrim.java b/com/hendrix/erdos/algorithms/MSTPrim.java
+index bccc0a9..9f80367 100644
+--- a/com/hendrix/erdos/algorithms/MSTPrim.java
++++ b/com/hendrix/erdos/algorithms/MSTPrim.java
+@@ -37,7 +37,7 @@ public class MSTPrim extends AbstractGraphAlgorithm<UndirectedGraph, IUndirected
+     }
+ 
+     @Override
+-    public UndirectedGraph applyAlgorithm() {
++    public UndirectedGraph applyAlgorithm() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(49);
+         if(_graph_input==null)
+             throw new AlgorithmException("_graph_input==null", this);
+ 
+diff --git a/com/hendrix/erdos/graphs/AbstractGraph.java b/com/hendrix/erdos/graphs/AbstractGraph.java
+index cd7ced5..22218f7 100644
+--- a/com/hendrix/erdos/graphs/AbstractGraph.java
++++ b/com/hendrix/erdos/graphs/AbstractGraph.java
+@@ -46,7 +46,7 @@ abstract public class AbstractGraph implements IGraph {
+      * @return an Iterator.
+      */
+     @Override
+-    public Iterator<IVertex> iterator() {
++    public Iterator<IVertex> iterator() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(3);
+         return getGraphEngine().iterator();
+     }
+ 
+@@ -57,7 +57,7 @@ abstract public class AbstractGraph implements IGraph {
+      * @return get V of G=(V, E)
+      */
+     @Override
+-    public Collection<IVertex> vertices() {
++    public Collection<IVertex> vertices() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(8);
+         return getGraphEngine().vertices();
+     }
+ 
+diff --git a/com/hendrix/erdos/graphs/DirectedGraph.java b/com/hendrix/erdos/graphs/DirectedGraph.java
+index 09cec14..17b33e6 100644
+--- a/com/hendrix/erdos/graphs/DirectedGraph.java
++++ b/com/hendrix/erdos/graphs/DirectedGraph.java
+@@ -19,7 +19,7 @@ abstract public class DirectedGraph extends AbstractGraph implements IDirectedGr
+      * @return the out degree of  the vertex
+      *
+      */
+-    public int outDegreeOfVertex(IVertex vertex) {
++    public int outDegreeOfVertex(IVertex vertex) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(12);
+         return getGraphEngine().outDegreeOfVertex(vertex);
+     }
+ 
+@@ -30,7 +30,7 @@ abstract public class DirectedGraph extends AbstractGraph implements IDirectedGr
+      *
+      */
+     @SuppressWarnings("UnusedDeclaration")
+-    public int inDegreeOfVertex(IVertex vertex) {
++    public int inDegreeOfVertex(IVertex vertex) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(15);
+         return getGraphEngine().inDegreeOfVertex(vertex);
+     }
+ 
+diff --git a/com/hendrix/erdos/graphs/DirectedPseudoGraph.java b/com/hendrix/erdos/graphs/DirectedPseudoGraph.java
+index bba4753..9b6e7ab 100644
+--- a/com/hendrix/erdos/graphs/DirectedPseudoGraph.java
++++ b/com/hendrix/erdos/graphs/DirectedPseudoGraph.java
+@@ -10,12 +10,12 @@ import com.hendrix.erdos.graphs.engines.IGraphEngine;
+ public class DirectedPseudoGraph extends DirectedGraph {
+ 
+     @Override
+-    public boolean hasMultiEdges() {
++    public boolean hasMultiEdges() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(18);
+         return true;
+     }
+ 
+     @Override
+-    public boolean hasSelfLoops() {
++    public boolean hasSelfLoops() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(20);
+         return true;
+     }
+ 
+diff --git a/com/hendrix/erdos/graphs/MultiDigraph.java b/com/hendrix/erdos/graphs/MultiDigraph.java
+index 2240a75..0fc7364 100644
+--- a/com/hendrix/erdos/graphs/MultiDigraph.java
++++ b/com/hendrix/erdos/graphs/MultiDigraph.java
+@@ -23,7 +23,7 @@ public class MultiDigraph extends DirectedGraph {
+      *
+      * @throws java.lang.UnsupportedOperationException if the engine does not support multi edges
+      */
+-    public Collection<Edge> getMultiEdges(IVertex u, IVertex v) {
++    public Collection<Edge> getMultiEdges(IVertex u, IVertex v) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(22);
+         return getGraphEngine().getMultiEdges(u, v);
+     }
+ 
+@@ -38,7 +38,7 @@ public class MultiDigraph extends DirectedGraph {
+      * @throws java.lang.UnsupportedOperationException if the engine does not support multi edges
+      */
+     public Collection<Edge> removeMultiEdges(IVertex u, IVertex v)
+-    {
++    { com.hendrix.erdos.jmhbench.MutationSwitch.tick(24);
+         return getGraphEngine().removeMultiEdges(u, v);
+     }
+ 
+diff --git a/com/hendrix/erdos/graphs/MultiGraph.java b/com/hendrix/erdos/graphs/MultiGraph.java
+index 4f098e4..8968c18 100644
+--- a/com/hendrix/erdos/graphs/MultiGraph.java
++++ b/com/hendrix/erdos/graphs/MultiGraph.java
+@@ -23,7 +23,7 @@ public class MultiGraph extends UndirectedGraph {
+      *
+      * @throws java.lang.UnsupportedOperationException if the engine does not support multi edges
+      */
+-    public Collection<Edge> getMultiEdges(IVertex u, IVertex v) {
++    public Collection<Edge> getMultiEdges(IVertex u, IVertex v) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(26);
+         return getGraphEngine().getMultiEdges(u, v);
+     }
+ 
+@@ -38,7 +38,7 @@ public class MultiGraph extends UndirectedGraph {
+      * @throws java.lang.UnsupportedOperationException if the engine does not support multi edges
+      */
+     public Collection<Edge> removeMultiEdges(IVertex u, IVertex v)
+-    {
++    { com.hendrix.erdos.jmhbench.MutationSwitch.tick(28);
+         return getGraphEngine().removeMultiEdges(u, v);
+     }
+ 
+diff --git a/com/hendrix/erdos/graphs/PredecessorSubGraph.java b/com/hendrix/erdos/graphs/PredecessorSubGraph.java
+index 22c26e8..5ed4788 100644
+--- a/com/hendrix/erdos/graphs/PredecessorSubGraph.java
++++ b/com/hendrix/erdos/graphs/PredecessorSubGraph.java
+@@ -42,7 +42,7 @@ public class PredecessorSubGraph extends SimpleDirectedGraph {
+      * @param PIE a mapping of vertex to it's parent
+      * @param startVertex start vertex, in case of a tree (Optional)
+      */
+-    public void commitPredecessorList(HashMap<IVertex, IVertex> PIE, IVertex startVertex) {
++    public void commitPredecessorList(HashMap<IVertex, IVertex> PIE, IVertex startVertex) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(30);
+         _PIE = PIE;
+         _startVertex = startVertex;
+ 
+@@ -66,7 +66,7 @@ public class PredecessorSubGraph extends SimpleDirectedGraph {
+      *
+      * @return the start vertex
+      */
+-    public IVertex getStartVertex() {
++    public IVertex getStartVertex() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(32);
+         return _startVertex;
+     }
+ 
+diff --git a/com/hendrix/erdos/graphs/PseudoGraph.java b/com/hendrix/erdos/graphs/PseudoGraph.java
+index 74e035f..1deff0e 100644
+--- a/com/hendrix/erdos/graphs/PseudoGraph.java
++++ b/com/hendrix/erdos/graphs/PseudoGraph.java
+@@ -10,12 +10,12 @@ import com.hendrix.erdos.graphs.engines.IGraphEngine;
+ public class PseudoGraph extends UndirectedGraph {
+ 
+     @Override
+-    public boolean hasMultiEdges() {
++    public boolean hasMultiEdges() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(34);
+         return true;
+     }
+ 
+     @Override
+-    public boolean hasSelfLoops() {
++    public boolean hasSelfLoops() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(36);
+         return true;
+     }
+ 
+diff --git a/com/hendrix/erdos/graphs/SimpleDirectedGraph.java b/com/hendrix/erdos/graphs/SimpleDirectedGraph.java
+index 0dd912b..7aa8814 100644
+--- a/com/hendrix/erdos/graphs/SimpleDirectedGraph.java
++++ b/com/hendrix/erdos/graphs/SimpleDirectedGraph.java
+@@ -14,12 +14,12 @@ public class SimpleDirectedGraph extends DirectedGraph {
+     }
+ 
+     @Override
+-    public boolean hasMultiEdges() {
++    public boolean hasMultiEdges() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(38);
+         return false;
+     }
+ 
+     @Override
+-    public boolean hasSelfLoops() {
++    public boolean hasSelfLoops() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(40);
+         return false;
+     }
+ 
+diff --git a/com/hendrix/erdos/graphs/SimpleGraph.java b/com/hendrix/erdos/graphs/SimpleGraph.java
+index d8cb86a..77f5124 100644
+--- a/com/hendrix/erdos/graphs/SimpleGraph.java
++++ b/com/hendrix/erdos/graphs/SimpleGraph.java
+@@ -11,12 +11,12 @@ import com.hendrix.erdos.graphs.engines.AdjIncidenceGraphEngine;
+ public class SimpleGraph extends UndirectedGraph {
+ 
+     @Override
+-    public boolean hasMultiEdges() {
++    public boolean hasMultiEdges() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(42);
+         return false;
+     }
+ 
+     @Override
+-    public boolean hasSelfLoops() {
++    public boolean hasSelfLoops() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(44);
+         return false;
+     }
+ 
+diff --git a/com/hendrix/erdos/graphs/UndirectedGraph.java b/com/hendrix/erdos/graphs/UndirectedGraph.java
+index 6729d88..de02cc6 100644
+--- a/com/hendrix/erdos/graphs/UndirectedGraph.java
++++ b/com/hendrix/erdos/graphs/UndirectedGraph.java
+@@ -9,7 +9,7 @@ import com.hendrix.erdos.types.Edge;
+ abstract public class UndirectedGraph extends AbstractGraph implements IUndirectedGraph {
+ 
+     @Override
+-    public Edge.EDGE_DIRECTION getGraphType() {
++    public Edge.EDGE_DIRECTION getGraphType() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(46);
+         return Edge.EDGE_DIRECTION.UNDIRECTED;
+     }
+ 
+@@ -20,7 +20,7 @@ abstract public class UndirectedGraph extends AbstractGraph implements IUndirect
+      * @return the out degree of  the vertex
+      */
+     @Override
+-    public int degreeOfVertex(IVertex vertex) {
++    public int degreeOfVertex(IVertex vertex) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(48);
+         return getGraphEngine().inDegreeOfVertex(vertex);
+     }
+ }
+diff --git a/com/hendrix/erdos/graphs/engines/AbstractGraphEngine.java b/com/hendrix/erdos/graphs/engines/AbstractGraphEngine.java
+index 6c06e52..5c91bb5 100644
+--- a/com/hendrix/erdos/graphs/engines/AbstractGraphEngine.java
++++ b/com/hendrix/erdos/graphs/engines/AbstractGraphEngine.java
+@@ -43,7 +43,7 @@ abstract public class AbstractGraphEngine implements IGraphEngine {
+      * @return the graph
+      */
+     @Override
+-    public IGraph getGraph() {
++    public IGraph getGraph() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(50);
+         return _graph;
+     }
+ 
+diff --git a/com/hendrix/erdos/jmhbench/MutationSwitch.java b/com/hendrix/erdos/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..f5b84aa
+--- /dev/null
++++ b/com/hendrix/erdos/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.hendrix.erdos.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/hendrix/erdos/types/Edge.java b/com/hendrix/erdos/types/Edge.java
+index 4973c7a..e33220d 100644
+--- a/com/hendrix/erdos/types/Edge.java
++++ b/com/hendrix/erdos/types/Edge.java
+@@ -71,7 +71,7 @@ public class Edge implements IIdImmutable, ITag, IData<Object>
+      *
+      * @return the identifier
+      */
+-    public static String getEdgeDesc(IVertex v1, IVertex v2, EDGE_DIRECTION edgeType) {
++    public static String getEdgeDesc(IVertex v1, IVertex v2, EDGE_DIRECTION edgeType) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(4);
+         String res      = null;
+ 
+         if(edgeType==EDGE_DIRECTION.DIRECTED) {
+@@ -92,7 +92,7 @@ public class Edge implements IIdImmutable, ITag, IData<Object>
+      * @see #getEdgeDesc(IVertex, IVertex, Edge.EDGE_DIRECTION)
+      */
+     public static String getEdgeDesc(Edge edge, EDGE_DIRECTION edgeType)
+-    {
++    { com.hendrix.erdos.jmhbench.MutationSwitch.tick(9);
+         return getEdgeDesc(edge.getV1(), edge.getV2(), edgeType);
+     }
+ 
+diff --git a/com/hendrix/erdos/types/Vertex.java b/com/hendrix/erdos/types/Vertex.java
+index 3aab1d5..2ecf121 100644
+--- a/com/hendrix/erdos/types/Vertex.java
++++ b/com/hendrix/erdos/types/Vertex.java
+@@ -37,14 +37,14 @@ public class Vertex<T> implements IVertex<T>
+     /**
+      * {@inheritDoc}
+      */
+-    public int getColor() {
++    public int getColor() { com.hendrix.erdos.jmhbench.MutationSwitch.tick(13);
+         return _color;
+     }
+ 
+     /**
+      * {@inheritDoc}
+      */
+-    public void setColor(int color) {
++    public void setColor(int color) { com.hendrix.erdos.jmhbench.MutationSwitch.tick(16);
+         _color = color;
+     }
+ 
+diff --git a/com/hendrix/erdos/utils/EdgeFunction.java b/com/hendrix/erdos/utils/EdgeFunction.java
+index d788b13..d8c2219 100644
+--- a/com/hendrix/erdos/utils/EdgeFunction.java
++++ b/com/hendrix/erdos/utils/EdgeFunction.java
+@@ -39,7 +39,7 @@ public class EdgeFunction implements IDisposable {
+      *
+      * @param edges a {@link java.util.Collection} of edges
+      */
+-    public void addAll(Collection<Edge> edges){
++    public void addAll(Collection<Edge> edges){ com.hendrix.erdos.jmhbench.MutationSwitch.tick(5);
+         for (Edge edge : edges) {
+             addValue(edge, edge.getWeight());
+         }
+@@ -52,7 +52,7 @@ public class EdgeFunction implements IDisposable {
+      * @param v     second vertex
+      * @param value the value
+      */
+-    public void addValue(IVertex u, IVertex v, float value){
++    public void addValue(IVertex u, IVertex v, float value){ com.hendrix.erdos.jmhbench.MutationSwitch.tick(10);
+         String edgeDesc = Edge.getEdgeDesc(u, v, Edge.EDGE_DIRECTION.DIRECTED);
+ 
+         _mapEdges.put(edgeDesc, value);

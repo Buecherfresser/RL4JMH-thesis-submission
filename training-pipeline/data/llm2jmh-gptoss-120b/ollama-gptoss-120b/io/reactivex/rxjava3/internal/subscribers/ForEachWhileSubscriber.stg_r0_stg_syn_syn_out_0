@@ -1,0 +1,96 @@
+package io.reactivex.rxjava3.internal.subscribers;
+
+import org.reactivestreams.Subscription;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class ForEachWhileSubscriberBenchmark {
+
+    private ForEachWhileSubscriber<Integer> subscriberContinue;
+
+    private ForEachWhileSubscriber<Integer> subscriberStop;
+
+    private ForEachWhileSubscriber<Integer> subscriberError;
+
+    private static final Subscription DUMMY_SUBSCRIPTION = new Subscription() {
+
+        @Override
+        public void request(long n) {
+        }
+
+        @Override
+        public void cancel() {
+        }
+    };
+
+    @Setup
+    public void setup() {
+        subscriberContinue = new ForEachWhileSubscriber<>(// always continue
+        v -> true, Throwable::printStackTrace, () -> {
+        });
+        subscriberContinue.onSubscribe(DUMMY_SUBSCRIPTION);
+        subscriberStop = new ForEachWhileSubscriber<>(// stop after first item
+        v -> false, Throwable::printStackTrace, () -> {
+        });
+        subscriberStop.onSubscribe(DUMMY_SUBSCRIPTION);
+        subscriberError = new ForEachWhileSubscriber<>(v -> {
+            throw new RuntimeException("test");
+        }, Throwable::printStackTrace, () -> {
+        });
+        subscriberError.onSubscribe(DUMMY_SUBSCRIPTION);
+    }
+
+    @Benchmark
+    public void onNextContinue(Blackhole bh) {
+        subscriberContinue.onNext(1);
+        bh.consume(subscriberContinue);
+    }
+
+    @Benchmark
+    public void onNextStop(Blackhole bh) {
+        subscriberStop.onNext(1);
+        bh.consume(subscriberStop);
+    }
+
+    @Benchmark
+    public void onNextError(Blackhole bh) {
+        subscriberError.onNext(1);
+        bh.consume(subscriberError);
+    }
+}

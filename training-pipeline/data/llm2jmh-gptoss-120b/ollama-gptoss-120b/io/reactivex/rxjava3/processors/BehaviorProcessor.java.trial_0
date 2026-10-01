@@ -1,0 +1,94 @@
+```
+package benchmark;
+
+import io.reactivex.rxjava3.processors.BehaviorProcessor;
+import io.reactivex.rxjava3.core.FlowableSubscriber;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Subscription;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link BehaviorProcessor}.
+ *
+ * Measures the throughput of {@code onNext} and {@code offer} under a typical
+ * subscription scenario (single subscriber requesting unbounded demand).
+ *
+ * The benchmark follows best‑practice JMH settings:
+ * - Warm‑up iterations to let the JIT stabilize
+ * - Measurement iterations for reliable results
+ * - Single fork (can be increased for CI)
+ * - Throughput mode (operations per second)
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class BehaviorProcessorBenchmark {
+
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+        // The processor under test
+        BehaviorProcessor<Integer> processor;
+
+        // A simple immutable value used for onNext/offer
+        Integer value = 42;
+
+        // A no‑op subscriber that requests Long.MAX_VALUE (unbounded)
+        @SuppressWarnings("rawtypes")
+        FlowableSubscriber<Integer> subscriber = new FlowableSubscriber<Integer>() {
+            @Override
+            public void onSubscribe(Subscription s) {
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override public void onNext(Integer integer) { /* no‑op */ }
+            @Override public void onError(Throwable t) { /* no‑op */ }
+            @Override public void onComplete() { /* no‑op */ }
+        };
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            processor = BehaviorProcessor.create();
+            // Subscribe once; the subscription cost is not part of the benchmark
+            processor.subscribe(subscriber);
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            processor.onComplete();
+        }
+    }
+
+    /**
+     * Benchmark the raw {@code onNext} path.
+     *
+     * This measures how many {@code onNext} calls can be processed per second
+     * when a single subscriber is present and has unbounded demand.
+     */
+    @Benchmark
+    public void onNextThroughput(BenchmarkState state, Blackhole bh) {
+        // The Blackhole ensures the value is not optimized away
+        state.processor.onNext(state.value);
+        // Consume the value to prevent dead‑code elimination
+        bh.consume(state.value);
+    }
+
+    /**
+     * Benchmark the {@code offer} method, which performs a fast‑path check
+     * before emitting.
+     *
+     * The semantics are identical to {@code onNext} when the downstream can
+     * accept the value, making it a useful alternative to measure.
+     */
+    @Benchmark
+    public void offerThroughput(BenchmarkState state, Blackhole bh) {
+        // offer returns a boolean; we consume it to avoid dead‑code elimination
+        boolean accepted = state.processor.offer(state.value);
+        bh.consume(accepted);
+    }
+}
+```

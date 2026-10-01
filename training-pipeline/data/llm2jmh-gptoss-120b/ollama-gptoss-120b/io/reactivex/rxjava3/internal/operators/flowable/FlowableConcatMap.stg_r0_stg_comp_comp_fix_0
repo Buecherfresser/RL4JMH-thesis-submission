@@ -1,0 +1,42 @@
+```java
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Publisher;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link FlowableConcatMap} in throughput mode.
+ * Measures how many items per second can be processed when using concatMap
+ * with a simple synchronous mapper.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableConcatMapBenchmark {
+
+    @Param({ "1000", "10000" })
+    public int size;
+
+    private Flowable<Integer> source;
+    private Function<Integer, Publisher<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Flowable.range(1, size);
+        mapper = v -> Flowable.just(v * 2);
+    }
+
+    @Benchmark
+    public void concatMapThroughput(Blackhole bh) {
+        source.concatMap(mapper, 128, FlowableConcatMap.ErrorMode.IMMEDIATE)
+              .blockingForEach(bh::consume);
+    }
+}
+```

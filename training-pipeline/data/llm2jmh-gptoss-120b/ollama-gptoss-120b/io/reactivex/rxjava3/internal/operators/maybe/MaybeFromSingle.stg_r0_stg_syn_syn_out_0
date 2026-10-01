@@ -1,0 +1,104 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link MaybeFromSingle}.
+ *
+ * Measures the throughput of subscribing a {@link MaybeFromSingle}
+ * that wraps a {@link Single} emitting a single value.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * - @State with Scope.Thread to avoid sharing mutable state across threads.
+ * - @Setup to create immutable objects once per thread.
+ * - No allocation inside the benchmark method.
+ * - Warm‑up and measurement iterations with a reasonable fork count.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class MaybeFromSingleBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        // A Single that immediately emits the integer 1.
+        SingleSource<Integer> source;
+
+        // The Maybe wrapper we want to benchmark.
+        Maybe<Integer> maybeFromSingle;
+
+        // A no‑op MaybeObserver; allocated once per thread.
+        MaybeObserver<Integer> observer;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Single.just(1);
+            maybeFromSingle = new MaybeFromSingle<>(source);
+            observer = new MaybeObserver<Integer>() {
+
+                @Override
+                public void onSubscribe(Disposable d) {
+                    /* no‑op */
+                }
+
+                @Override
+                public void onSuccess(Integer value) {
+                    /* no‑op */
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    /* no‑op */
+                }
+
+                @Override
+                public void onComplete() {
+                    /* no‑op */
+                }
+            };
+        }
+    }
+
+    @Benchmark
+    public void subscribe(BenchmarkState state) {
+        // The operation under test: subscribe the Maybe to the observer.
+        state.maybeFromSingle.subscribe(state.observer);
+    }
+}

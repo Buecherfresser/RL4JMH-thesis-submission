@@ -1,0 +1,97 @@
+package io.reactivex.rxjava3.internal.operators.mixed;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link FlowableConcatMapSingle}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * concatMapSingle operator when processing a fixed-size synchronous source.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create immutable source and mapper once per benchmark iteration.
+ * - @Param to allow experimentation with different prefetch sizes.
+ * - Blackhole consumption to prevent dead-code elimination.
+ * - Mode.Throughput with TimeUnit.SECONDS for clear throughput numbers.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableConcatMapSingleBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     */
+    @Param({ "1000" })
+    public int itemCount;
+
+    /**
+     * Prefetch size for the operator.
+     */
+    @Param({ "32", "64", "128" })
+    public int prefetch;
+
+    /**
+     * Error handling mode.
+     */
+    public ErrorMode errorMode = ErrorMode.IMMEDIATE;
+
+    private Flowable<Integer> source;
+
+    private Function<Integer, SingleSource<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Synchronous source emitting a known number of integers.
+        source = Flowable.range(1, itemCount);
+        // Simple mapper that returns a Single emitting the doubled value.
+        mapper = v -> Single.just(v * 2);
+    }
+
+    /**
+     * Executes the concatMapSingle operator and consumes all resulting items.
+     *
+     * The use of {@code blockingSubscribe} guarantees that the benchmark method
+     * returns only after the whole stream has been processed, providing a
+     * deterministic measurement of throughput.
+     */
+    @Benchmark
+    public void concatMapSingleThroughput(Blackhole bh) {
+        source.concatMapSingle(mapper, errorMode, prefetch).blockingSubscribe(bh::consume);
+    }
+}

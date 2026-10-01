@@ -1,0 +1,210 @@
+package io.reactivex.rxjava3.internal.subscriptions;
+
+import org.reactivestreams.Subscription;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link SubscriptionHelper}.
+ *
+ * The benchmarks focus on the most frequently used static methods that involve
+ * atomic operations and back‑pressure handling. Each benchmark runs in
+ * {@link Mode#Throughput} to measure how many operations can be performed per
+ * time unit under steady‑state conditions.
+ *
+ * Best‑practice notes:
+ * • {@code @State(Scope.Thread)} isolates benchmark state per thread to avoid
+ *   contention unless the method itself is designed to be shared.
+ * • {@code Blackhole} consumes return values to prevent dead‑code elimination.
+ * • Warm‑up and measurement iterations are configured to let the JVM reach a
+ *   stable compilation tier.
+ * • Forks are used to isolate JVMs and reduce the impact of JVM start‑up.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@Threads(4)
+public class SubscriptionHelperBenchmark {
+
+    /**
+     * Simple {@link Subscription} implementation used for testing.
+     */
+    static final class DummySubscription implements Subscription {
+
+        volatile long requested;
+
+        volatile boolean cancelled;
+
+        @Override
+        public void request(long n) {
+            // Simulate request handling without side effects.
+            requested += n;
+        }
+
+        @Override
+        public void cancel() {
+            cancelled = true;
+        }
+    }
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        AtomicReference<Subscription> ref;
+
+        AtomicLong requested;
+
+        DummySubscription sub1;
+
+        DummySubscription sub2;
+
+        @Setup(Level.Iteration)
+        public void setUp() {
+            ref = new AtomicReference<>(null);
+            requested = new AtomicLong(0L);
+            sub1 = new DummySubscription();
+            sub2 = new DummySubscription();
+        }
+
+        @TearDown(Level.Iteration)
+        public void tearDown() {
+            // Ensure any lingering subscription is cancelled to avoid side effects
+            Subscription s = ref.getAndSet(null);
+            if (s != null) {
+                s.cancel();
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Benchmark: validate(long)
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public boolean benchmarkValidatePositive(BenchmarkState state) {
+        // Positive value (valid)
+        return SubscriptionHelper.validate(1L);
+    }
+
+    @Benchmark
+    public boolean benchmarkValidateZero(BenchmarkState state) {
+        // Zero is invalid, triggers error handling
+        return SubscriptionHelper.validate(0L);
+    }
+
+    // -------------------------------------------------------------------------
+    // Benchmark: set(AtomicReference<Subscription>, Subscription)
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public boolean benchmarkSet(BenchmarkState state, Blackhole bh) {
+        // Reset reference to null before each call
+        state.ref.set(null);
+        boolean result = SubscriptionHelper.set(state.ref, state.sub1);
+        bh.consume(result);
+        return result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Benchmark: setOnce(AtomicReference<Subscription>, Subscription)
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public boolean benchmarkSetOnce(BenchmarkState state, Blackhole bh) {
+        // Reset reference to null before each call
+        state.ref.set(null);
+        boolean result = SubscriptionHelper.setOnce(state.ref, state.sub1);
+        bh.consume(result);
+        return result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Benchmark: replace(AtomicReference<Subscription>, Subscription)
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public boolean benchmarkReplace(BenchmarkState state, Blackhole bh) {
+        // Ensure there is an existing subscription
+        state.ref.set(state.sub1);
+        boolean result = SubscriptionHelper.replace(state.ref, state.sub2);
+        bh.consume(result);
+        return result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Benchmark: cancel(AtomicReference<Subscription>)
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public boolean benchmarkCancel(BenchmarkState state, Blackhole bh) {
+        // Ensure there is an active subscription
+        state.ref.set(state.sub1);
+        boolean result = SubscriptionHelper.cancel(state.ref);
+        bh.consume(result);
+        return result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Benchmark: deferredSetOnce(AtomicReference<Subscription>, AtomicLong, Subscription)
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public boolean benchmarkDeferredSetOnce(BenchmarkState state, Blackhole bh) {
+        // Reset state
+        state.ref.set(null);
+        state.requested.set(5L);
+        boolean result = SubscriptionHelper.deferredSetOnce(state.ref, state.requested, state.sub1);
+        bh.consume(result);
+        return result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Benchmark: deferredRequest(AtomicReference<Subscription>, AtomicLong, long)
+    // -------------------------------------------------------------------------
+    @Benchmark
+    public void benchmarkDeferredRequest(BenchmarkState state, Blackhole bh) {
+        // Scenario 1: subscription already present
+        state.ref.set(state.sub1);
+        SubscriptionHelper.deferredRequest(state.ref, state.requested, 3L);
+        bh.consume(state.sub1.requested);
+        // Scenario 2: subscription absent, request is accumulated
+        state.ref.set(null);
+        state.requested.set(0L);
+        SubscriptionHelper.deferredRequest(state.ref, state.requested, 4L);
+        bh.consume(state.requested.get());
+        // Now set the subscription to trigger the pending request
+        state.ref.set(state.sub2);
+        SubscriptionHelper.deferredRequest(state.ref, state.requested, 0L);
+        bh.consume(state.sub2.requested);
+    }
+}

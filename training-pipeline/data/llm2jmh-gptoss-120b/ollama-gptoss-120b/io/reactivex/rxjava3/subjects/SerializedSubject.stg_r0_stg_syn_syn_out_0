@@ -1,0 +1,119 @@
+package io.reactivex.rxjava3.subjects;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for SerializedSubject. Measures throughput of the main
+ * reactive signals (onNext, onError, onComplete) under concurrent access.
+ *
+ * The benchmark creates a fresh SerializedSubject for each iteration to
+ * avoid state leakage between measurements.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
+public class SerializedSubjectBenchmark {
+
+    /**
+     * Subject used as the underlying actual implementation.
+     */
+    private PublishSubject<Integer> actual;
+
+    /**
+     * Serialized wrapper that is the target of the benchmark.
+     */
+    private SerializedSubject<Integer> serialized;
+
+    /**
+     * Dummy observer to keep the subject alive and avoid back‑pressure effects.
+     */
+    private final Observer<Integer> dummyObserver = new Observer<Integer>() {
+
+        @Override
+        public void onSubscribe(Disposable d) {
+        }
+
+        @Override
+        public void onNext(Integer t) {
+        }
+
+        @Override
+        public void onError(Throwable e) {
+        }
+
+        @Override
+        public void onComplete() {
+        }
+    };
+
+    /**
+     * Re‑initialise the subject before each iteration.
+     */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        actual = PublishSubject.create();
+        serialized = new SerializedSubject<>(actual);
+        serialized.subscribe(dummyObserver);
+    }
+
+    /**
+     * Benchmark for the hot path: emitting a value.
+     */
+    @Benchmark
+    // simulate concurrent producers
+    @Threads(4)
+    public void onNext() {
+        serialized.onNext(1);
+    }
+
+    /**
+     * Benchmark for error propagation.
+     */
+    @Benchmark
+    @Threads(4)
+    public void onError() {
+        serialized.onError(new RuntimeException("benchmark"));
+    }
+
+    /**
+     * Benchmark for completion signalling.
+     */
+    @Benchmark
+    @Threads(4)
+    public void onComplete() {
+        serialized.onComplete();
+    }
+}

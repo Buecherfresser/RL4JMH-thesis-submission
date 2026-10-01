@@ -1,0 +1,579 @@
+diff --git a/org/beryx/streamplify/BigIntegerIndexedSpliterator.java b/org/beryx/streamplify/BigIntegerIndexedSpliterator.java
+index 2a22e1a..6f265c7 100644
+--- a/org/beryx/streamplify/BigIntegerIndexedSpliterator.java
++++ b/org/beryx/streamplify/BigIntegerIndexedSpliterator.java
+@@ -48,7 +48,7 @@ public class BigIntegerIndexedSpliterator<T, S extends BigIntegerIndexedSplitera
+     }
+ 
+     @SuppressWarnings("unchecked")
+-	public final S withAdditionalCharacteristics(int additionalCharacteristics) {
++	public final S withAdditionalCharacteristics(int additionalCharacteristics) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(1);
+         this.characteristics |= additionalCharacteristics;
+         return (S)this;
+     }
+@@ -59,7 +59,7 @@ public class BigIntegerIndexedSpliterator<T, S extends BigIntegerIndexedSplitera
+      * @return this instance
+      */
+     @SuppressWarnings("unchecked")
+-    public final S withShuffler(BigIntegerShuffler shuffler) {
++    public final S withShuffler(BigIntegerShuffler shuffler) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(10);
+         this.shuffler = shuffler;
+         return (S)this;
+     }
+@@ -69,26 +69,26 @@ public class BigIntegerIndexedSpliterator<T, S extends BigIntegerIndexedSplitera
+      * @return this instance
+      */
+     @SuppressWarnings("unchecked")
+-    public final S withValueSupplier(Splittable.BigIntegerIndexed<T> valueSupplier) {
++    public final S withValueSupplier(Splittable.BigIntegerIndexed<T> valueSupplier) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(16);
+         this.valueSupplier = valueSupplier;
+         return (S)this;
+     }
+ 
+-    protected BigInteger getIndex() {
++    protected BigInteger getIndex() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(21);
+         return index;
+     }
+     
+-    protected BigInteger getFence() {
++    protected BigInteger getFence() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(24);
+         return fence;
+     }
+ 
+     @Override
+-    public Stream<T> stream() {
++    public Stream<T> stream() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(26);
+         return StreamSupport.stream(this, false);
+     }
+ 
+     @Override
+-    public Stream<T> parallelStream() {
++    public Stream<T> parallelStream() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(28);
+         return StreamSupport.stream(this, true);
+     }
+ 
+@@ -102,7 +102,7 @@ public class BigIntegerIndexedSpliterator<T, S extends BigIntegerIndexedSplitera
+     }
+ 
+     @Override
+-    public BigInteger bigCount() {
++    public BigInteger bigCount() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(30);
+         return fence.subtract(index);
+     }
+ 
+@@ -122,18 +122,18 @@ public class BigIntegerIndexedSpliterator<T, S extends BigIntegerIndexedSplitera
+     }
+ 
+     @Override
+-    public long estimateSize() {
++    public long estimateSize() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(32);
+         long size = count();
+         return size < 0 ? Long.MAX_VALUE : size;
+     }
+ 
+     @Override
+-    public int characteristics() {
++    public int characteristics() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(33);
+         return characteristics;
+     }
+ 
+     @Override
+-    public boolean tryAdvance(Consumer<? super T> action) {
++    public boolean tryAdvance(Consumer<? super T> action) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(34);
+         if (action == null) throw new NullPointerException();
+         if (index.compareTo(BigInteger.ZERO) >= 0 && index.compareTo(fence) < 0) {
+             BigInteger shuffledIndex = shuffler.getShuffledIndex(index);
+@@ -146,7 +146,7 @@ public class BigIntegerIndexedSpliterator<T, S extends BigIntegerIndexedSplitera
+     }
+ 
+     @Override
+-    public Spliterator<T> trySplit() {
++    public Spliterator<T> trySplit() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(35);
+         BigInteger mid = index.add(fence).divide(BigInteger.valueOf(2));
+         if(index.compareTo(mid) >= 0) return null;
+         S spliterator = (S)new BigIntegerIndexedSpliterator<T,S>(index, mid)
+@@ -158,7 +158,7 @@ public class BigIntegerIndexedSpliterator<T, S extends BigIntegerIndexedSplitera
+     }
+ 
+     @Override
+-    public void forEachRemaining(Consumer<? super T> action) {
++    public void forEachRemaining(Consumer<? super T> action) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(36);
+         if (action == null) throw new NullPointerException();
+         if(index.compareTo(BigInteger.ZERO) >= 0 && index.compareTo(fence) < 0) {
+             for(BigInteger i = index; i.compareTo(fence) < 0; i = i.add(BigInteger.ONE)) {
+@@ -172,7 +172,7 @@ public class BigIntegerIndexedSpliterator<T, S extends BigIntegerIndexedSplitera
+ 
+     @SuppressWarnings("unchecked")
+     @Override
+-    public S shuffle(Random rnd) {
++    public S shuffle(Random rnd) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(37);
+         shuffler = new DefaultBigIntegerShuffler(fence, rnd);
+         return (S)this;
+     }
+diff --git a/org/beryx/streamplify/LongIndexedSpliterator.java b/org/beryx/streamplify/LongIndexedSpliterator.java
+index 43b4b7d..a3abbe4 100644
+--- a/org/beryx/streamplify/LongIndexedSpliterator.java
++++ b/org/beryx/streamplify/LongIndexedSpliterator.java
+@@ -47,7 +47,7 @@ public class LongIndexedSpliterator<T, S extends LongIndexedSpliterator<T, S>> i
+     }
+ 
+     @SuppressWarnings("unchecked")
+-	public final S withAdditionalCharacteristics(int additionalCharacteristics) {
++	public final S withAdditionalCharacteristics(int additionalCharacteristics) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(38);
+         this.characteristics |= additionalCharacteristics;
+         return (S)this;
+     }
+@@ -58,7 +58,7 @@ public class LongIndexedSpliterator<T, S extends LongIndexedSpliterator<T, S>> i
+      * @return this instance
+      */
+     @SuppressWarnings("unchecked")
+-    public final S withShuffler(LongShuffler shuffler) {
++    public final S withShuffler(LongShuffler shuffler) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(39);
+         this.shuffler = shuffler;
+         return (S)this;
+     }
+@@ -68,26 +68,26 @@ public class LongIndexedSpliterator<T, S extends LongIndexedSpliterator<T, S>> i
+      * @return this instance
+      */
+     @SuppressWarnings("unchecked")
+-    public final S withValueSupplier(Splittable.LongIndexed<T> valueSupplier) {
++    public final S withValueSupplier(Splittable.LongIndexed<T> valueSupplier) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(40);
+         this.valueSupplier = valueSupplier;
+         return (S)this;
+     }
+ 
+-    protected final long getIndex() {
++    protected final long getIndex() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(41);
+         return index;
+     }
+     
+-    protected final long getFence() {
++    protected final long getFence() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(42);
+         return fence;
+     }
+ 
+     @Override
+-    public Stream<T> stream() {
++    public Stream<T> stream() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(43);
+         return StreamSupport.stream(this, false);
+     }
+ 
+     @Override
+-    public Stream<T> parallelStream() {
++    public Stream<T> parallelStream() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(44);
+         return StreamSupport.stream(this, true);
+     }
+ 
+@@ -97,7 +97,7 @@ public class LongIndexedSpliterator<T, S extends LongIndexedSpliterator<T, S>> i
+     }
+ 
+     @Override
+-    public BigInteger bigCount() {
++    public BigInteger bigCount() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(45);
+         return BigInteger.valueOf(count());
+     }
+ 
+@@ -123,17 +123,17 @@ public class LongIndexedSpliterator<T, S extends LongIndexedSpliterator<T, S>> i
+     }
+ 
+     @Override
+-    public long estimateSize() {
++    public long estimateSize() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(46);
+         return fence - index;
+     }
+ 
+     @Override
+-    public int characteristics() {
++    public int characteristics() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(47);
+         return characteristics;
+     }
+ 
+     @Override
+-    public boolean tryAdvance(Consumer<? super T> action) {
++    public boolean tryAdvance(Consumer<? super T> action) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(48);
+         if (action == null) throw new NullPointerException();
+         if (index >= 0 && index < fence) {
+             long shuffledIndex = shuffler.getShuffledIndex(index);
+@@ -146,7 +146,7 @@ public class LongIndexedSpliterator<T, S extends LongIndexedSpliterator<T, S>> i
+     }
+ 
+     @Override
+-    public Spliterator<T> trySplit() {
++    public Spliterator<T> trySplit() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(49);
+         long mid = (index + fence) >>> 1;
+         if(index >= mid) return null;
+         S spliterator = (S)new LongIndexedSpliterator<T,S>(index, mid)
+@@ -158,7 +158,7 @@ public class LongIndexedSpliterator<T, S extends LongIndexedSpliterator<T, S>> i
+     }
+ 
+     @Override
+-    public void forEachRemaining(Consumer<? super T> action) {
++    public void forEachRemaining(Consumer<? super T> action) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(50);
+         if (action == null) throw new NullPointerException();
+         if(index >= 0 && index < fence) {
+             for(long i = index; i < fence; i++) {
+diff --git a/org/beryx/streamplify/combination/Combinations.java b/org/beryx/streamplify/combination/Combinations.java
+index 1d58948..e0abbab 100644
+--- a/org/beryx/streamplify/combination/Combinations.java
++++ b/org/beryx/streamplify/combination/Combinations.java
+@@ -43,7 +43,7 @@ public class Combinations extends StreamableProxy<int[], Combinations> {
+     }
+ 
+     @Override
+-    protected Streamable<int[], ?> getDelegate() {
++    protected Streamable<int[], ?> getDelegate() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(2);
+         return delegate;
+     }
+ }
+diff --git a/org/beryx/streamplify/derangement/BigIntegerDerangements.java b/org/beryx/streamplify/derangement/BigIntegerDerangements.java
+index e2e6661..4e2b829 100644
+--- a/org/beryx/streamplify/derangement/BigIntegerDerangements.java
++++ b/org/beryx/streamplify/derangement/BigIntegerDerangements.java
+@@ -39,7 +39,7 @@ public class BigIntegerDerangements extends BigIntegerIndexedSpliterator<int[],
+     /**
+      * @throws IllegalArgumentException if {@code n} is negative or too big (> {@value #MAX_LENGTH})
+      */
+-    public static BigInteger subfactorial(int n) {
++    public static BigInteger subfactorial(int n) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(3);
+         if (n < 0) throw new IllegalArgumentException("Invalid derangement length: " + n);
+         if (n > MAX_LENGTH) throw new IllegalArgumentException("Value too big: " + n);
+         if (n == 0) return BigInteger.ONE;
+diff --git a/org/beryx/streamplify/derangement/Derangements.java b/org/beryx/streamplify/derangement/Derangements.java
+index e362470..1294398 100644
+--- a/org/beryx/streamplify/derangement/Derangements.java
++++ b/org/beryx/streamplify/derangement/Derangements.java
+@@ -38,7 +38,7 @@ public class Derangements extends StreamableProxy<int[], Derangements> {
+     }
+ 
+     @Override
+-    public Streamable<int[], ?> getDelegate() {
++    public Streamable<int[], ?> getDelegate() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(11);
+         return delegate;
+     }
+ }
+diff --git a/org/beryx/streamplify/derangement/LongDerangements.java b/org/beryx/streamplify/derangement/LongDerangements.java
+index 7f2613c..be01d58 100644
+--- a/org/beryx/streamplify/derangement/LongDerangements.java
++++ b/org/beryx/streamplify/derangement/LongDerangements.java
+@@ -38,7 +38,7 @@ public class LongDerangements extends LongIndexedSpliterator<int[], LongDerangem
+     /**
+      * @throws IllegalArgumentException if {@code n} is negative or the result does not fit in a long (that is, {@code n} > {@value #MAX_LENGTH})
+      */
+-    public static long subfactorial(int n) {
++    public static long subfactorial(int n) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(17);
+         if (n < 0) throw new IllegalArgumentException("Invalid derangement length: " + n);
+         if (n > MAX_LENGTH) throw new IllegalArgumentException("Derangement length too big: " + n);
+         if (n == 0) return 1;
+diff --git a/org/beryx/streamplify/jmhbench/MutationSwitch.java b/org/beryx/streamplify/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..de5691a
+--- /dev/null
++++ b/org/beryx/streamplify/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.beryx.streamplify.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/beryx/streamplify/partperm/BigIntegerPartialPermutations.java b/org/beryx/streamplify/partperm/BigIntegerPartialPermutations.java
+index 183b00d..32104bd 100644
+--- a/org/beryx/streamplify/partperm/BigIntegerPartialPermutations.java
++++ b/org/beryx/streamplify/partperm/BigIntegerPartialPermutations.java
+@@ -38,7 +38,7 @@ public class BigIntegerPartialPermutations extends BigIntegerIndexedSpliterator<
+     /**
+      * @throws IllegalArgumentException if {@code n} is negative or too big (> {@value #MAX_LENGTH})
+      */
+-    public static BigInteger numberOfPermutations(int n) {
++    public static BigInteger numberOfPermutations(int n) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(4);
+         if (n < 0) throw new IllegalArgumentException("Invalid partial permutation length: " + n);
+         if (n > MAX_LENGTH) throw new IllegalArgumentException("Partial permutation length too big: " + n);
+ 
+@@ -50,7 +50,7 @@ public class BigIntegerPartialPermutations extends BigIntegerIndexedSpliterator<
+         return numberOfPermutations;
+     }
+ 
+-    public static BigInteger[] computeFactorials(int length) {
++    public static BigInteger[] computeFactorials(int length) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(12);
+         BigInteger[] factorials = new BigInteger[length + 1];
+         factorials[0] = BigInteger.ONE;
+         for (int i = 1; i <= length; i++) {
+diff --git a/org/beryx/streamplify/partperm/LongPartialPermutations.java b/org/beryx/streamplify/partperm/LongPartialPermutations.java
+index aef6aa1..bed3f16 100644
+--- a/org/beryx/streamplify/partperm/LongPartialPermutations.java
++++ b/org/beryx/streamplify/partperm/LongPartialPermutations.java
+@@ -37,7 +37,7 @@ public class LongPartialPermutations extends LongIndexedSpliterator<int[], LongP
+     /**
+      * @throws IllegalArgumentException if {@code n} is negative or the result does not fit in a long (that is, {@code n} > {@value #MAX_LENGTH})
+      */
+-    public static long numberOfPermutations(int n) {
++    public static long numberOfPermutations(int n) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(18);
+         if (n < 0) throw new IllegalArgumentException("Invalid partial permutation length: " + n);
+         if (n > MAX_LENGTH) throw new IllegalArgumentException("Partial permutation length too big: " + n);
+         if (n == 0) return 1;
+diff --git a/org/beryx/streamplify/partperm/PartialPermutations.java b/org/beryx/streamplify/partperm/PartialPermutations.java
+index 9107d78..33bb172 100644
+--- a/org/beryx/streamplify/partperm/PartialPermutations.java
++++ b/org/beryx/streamplify/partperm/PartialPermutations.java
+@@ -37,7 +37,7 @@ public class PartialPermutations extends StreamableProxy<int[], PartialPermutati
+     }
+ 
+     @Override
+-    public Streamable<int[], ?> getDelegate() {
++    public Streamable<int[], ?> getDelegate() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(22);
+         return delegate;
+     }
+ }
+diff --git a/org/beryx/streamplify/permutation/BigIntegerPermutations.java b/org/beryx/streamplify/permutation/BigIntegerPermutations.java
+index b0baf18..7cb9bb3 100644
+--- a/org/beryx/streamplify/permutation/BigIntegerPermutations.java
++++ b/org/beryx/streamplify/permutation/BigIntegerPermutations.java
+@@ -39,7 +39,7 @@ public class BigIntegerPermutations extends BigIntegerIndexedSpliterator<int[],
+     /**
+      * @throws IllegalArgumentException if {@code n} is negative or too big (> {@value #MAX_LENGTH})
+      */
+-    public static BigInteger factorial(int n) {
++    public static BigInteger factorial(int n) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(5);
+         if(n < 0) throw new IllegalArgumentException("Invalid permutation length: " + n);
+         if(n > MAX_LENGTH) throw new IllegalArgumentException("Value too big: " + n);
+         BigInteger fact = BigInteger.ONE;
+diff --git a/org/beryx/streamplify/permutation/LongPermutations.java b/org/beryx/streamplify/permutation/LongPermutations.java
+index 80b39c0..5ce2759 100644
+--- a/org/beryx/streamplify/permutation/LongPermutations.java
++++ b/org/beryx/streamplify/permutation/LongPermutations.java
+@@ -38,7 +38,7 @@ public class LongPermutations extends LongIndexedSpliterator<int[], LongPermutat
+     /**
+      * @throws IllegalArgumentException if {@code n} is negative or the result does not fit in a long (that is, {@code n} > {@value #MAX_LENGTH})
+      */
+-    public static long factorial(int n) {
++    public static long factorial(int n) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(13);
+         if(n < 0) throw new IllegalArgumentException("Invalid permutation length: " + n);
+         if(n > MAX_LENGTH) throw new IllegalArgumentException("Permutation length too big: " + n);
+         long fact = 1;
+diff --git a/org/beryx/streamplify/permutation/Permutations.java b/org/beryx/streamplify/permutation/Permutations.java
+index 7690e4c..f9a7f57 100644
+--- a/org/beryx/streamplify/permutation/Permutations.java
++++ b/org/beryx/streamplify/permutation/Permutations.java
+@@ -38,7 +38,7 @@ public class Permutations extends StreamableProxy<int[], Permutations> {
+     }
+ 
+     @Override
+-    public Streamable<int[], ?> getDelegate() {
++    public Streamable<int[], ?> getDelegate() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(19);
+         return delegate;
+     }
+ }
+diff --git a/org/beryx/streamplify/powerset/PowerSet.java b/org/beryx/streamplify/powerset/PowerSet.java
+index da127fb..3b39887 100644
+--- a/org/beryx/streamplify/powerset/PowerSet.java
++++ b/org/beryx/streamplify/powerset/PowerSet.java
+@@ -35,7 +35,7 @@ public class PowerSet extends StreamableProxy<int[], PowerSet> {
+     }
+ 
+     @Override
+-    protected Streamable<int[], ?> getDelegate() {
++    protected Streamable<int[], ?> getDelegate() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(6);
+         return delegate;
+     }
+ }
+diff --git a/org/beryx/streamplify/product/CartesianProduct.java b/org/beryx/streamplify/product/CartesianProduct.java
+index 5f00fee..73ea9a8 100644
+--- a/org/beryx/streamplify/product/CartesianProduct.java
++++ b/org/beryx/streamplify/product/CartesianProduct.java
+@@ -40,7 +40,7 @@ public class CartesianProduct extends StreamableProxy<int[], CartesianProduct> {
+     }
+ 
+     @Override
+-    protected Streamable<int[], ?> getDelegate() {
++    protected Streamable<int[], ?> getDelegate() { org.beryx.streamplify.jmhbench.MutationSwitch.tick(7);
+         return delegate;
+     }
+ }
+diff --git a/org/beryx/streamplify/shared/Unranking.java b/org/beryx/streamplify/shared/Unranking.java
+index bbd4a15..8443d32 100644
+--- a/org/beryx/streamplify/shared/Unranking.java
++++ b/org/beryx/streamplify/shared/Unranking.java
+@@ -29,7 +29,7 @@ public class Unranking {
+      * @param index the index of the combination to be unranked
+      * @return the combination corresponding to the given index
+      */
+-    public static int[] unrankCombination(int n, int k, long count, long index) {
++    public static int[] unrankCombination(int n, int k, long count, long index) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(8);
+         if (k == 0) return new int[0];
+         int[] combi = new int[k];
+         long rank = count - 1 - index;
+@@ -67,7 +67,7 @@ public class Unranking {
+      * @param index the index of the combination to be unranked
+      * @return the combination corresponding to the given index
+      */
+-    public static int[] unrankCombination(int n, int k, BigInteger count, BigInteger index) {
++    public static int[] unrankCombination(int n, int k, BigInteger count, BigInteger index) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(14);
+         if (k == 0) return new int[0];
+         int[] combi = new int[k];
+         BigInteger rank = count.subtract(BigInteger.ONE).subtract(index);
+diff --git a/org/beryx/streamplify/shuffler/DefaultBigIntegerShuffler.java b/org/beryx/streamplify/shuffler/DefaultBigIntegerShuffler.java
+index 9447e04..a2e6968 100644
+--- a/org/beryx/streamplify/shuffler/DefaultBigIntegerShuffler.java
++++ b/org/beryx/streamplify/shuffler/DefaultBigIntegerShuffler.java
+@@ -47,13 +47,13 @@ public class DefaultBigIntegerShuffler implements BigIntegerShuffler {
+      * @param seed the seed of the random generator used by this instance
+      * @return this instance
+      */
+-    public DefaultBigIntegerShuffler withSeed(long seed) {
++    public DefaultBigIntegerShuffler withSeed(long seed) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(9);
+         shufflerImpl.withSeed(seed);
+         return this;
+     }
+ 
+     @Override
+-    public BigInteger getShuffledIndex(BigInteger index) {
++    public BigInteger getShuffledIndex(BigInteger index) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(15);
+         return shufflerImpl.getShuffledIndex(index, count);
+     }
+ }
+diff --git a/org/beryx/streamplify/shuffler/DefaultLongShuffler.java b/org/beryx/streamplify/shuffler/DefaultLongShuffler.java
+index 9bc4b28..b485679 100644
+--- a/org/beryx/streamplify/shuffler/DefaultLongShuffler.java
++++ b/org/beryx/streamplify/shuffler/DefaultLongShuffler.java
+@@ -46,13 +46,13 @@ public class DefaultLongShuffler implements LongShuffler {
+      * @param seed the seed of the random generator used by this instance
+      * @return this instance
+      */
+-    public DefaultLongShuffler withSeed(long seed) {
++    public DefaultLongShuffler withSeed(long seed) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(20);
+         shufflerImpl.withSeed(seed);
+         return this;
+     }
+ 
+     @Override
+-    public long getShuffledIndex(long index) {
++    public long getShuffledIndex(long index) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(23);
+         return shufflerImpl.getShuffledIndex(index, count);
+     }
+ }
+diff --git a/org/beryx/streamplify/shuffler/ShufflerImpl.java b/org/beryx/streamplify/shuffler/ShufflerImpl.java
+index 6d64302..527b421 100644
+--- a/org/beryx/streamplify/shuffler/ShufflerImpl.java
++++ b/org/beryx/streamplify/shuffler/ShufflerImpl.java
+@@ -51,7 +51,7 @@ public class ShufflerImpl {
+      * @param seed the seed of the random generator used by this instance
+      * @return this instance
+      */
+-    public ShufflerImpl withSeed(long seed) {
++    public ShufflerImpl withSeed(long seed) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(25);
+         rnd.setSeed(seed);
+         return this;
+     }
+@@ -59,7 +59,7 @@ public class ShufflerImpl {
+     /**
+      * Retrieves the long value corresponding to {@code index} in a permutation with {@code count} elements.
+      */
+-    public long getShuffledIndex(long index, long count) {
++    public long getShuffledIndex(long index, long count) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(27);
+         BigInteger bigIndex = BigInteger.valueOf(index);
+         BigInteger bigCount = BigInteger.valueOf(count);
+         BigInteger bigShuffled = getShuffledIndex(bigIndex, bigCount);
+@@ -69,7 +69,7 @@ public class ShufflerImpl {
+     /**
+      * Retrieves the BigInteger value corresponding to {@code index} in a permutation with {@code count} elements.
+      */
+-    public BigInteger getShuffledIndex(BigInteger index, BigInteger count) {
++    public BigInteger getShuffledIndex(BigInteger index, BigInteger count) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(29);
+         int bitCount = count.subtract(BigInteger.ONE).bitLength();
+         int wholeBytes = bitCount / 8;
+         int restBits = bitCount % 8;
+@@ -117,7 +117,7 @@ public class ShufflerImpl {
+     /**
+      * @return a random permutation with the given {@code length}.
+      */
+-    public int[] getRandomPermutation(int length) {
++    public int[] getRandomPermutation(int length) { org.beryx.streamplify.jmhbench.MutationSwitch.tick(31);
+         int[] perm = new int[length];
+         for(int i = 0; i < length; i++) {
+             int j = rnd.nextInt(i + 1);

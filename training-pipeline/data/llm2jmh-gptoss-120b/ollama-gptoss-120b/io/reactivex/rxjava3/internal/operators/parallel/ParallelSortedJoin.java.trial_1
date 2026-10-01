@@ -1,0 +1,119 @@
+```
+package io.reactivex.rxjava3.internal.operators.parallel;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.parallel.ParallelFlowable;
+
+/**
+ * Benchmark for {@link ParallelSortedJoin}.
+ *
+ * The benchmark creates a {@link ParallelFlowable} that emits a fixed number of
+ * pre‑sorted integer lists (one list per parallel rail). The {@code ParallelSortedJoin}
+ * operator merges these lists into a single sorted stream. Throughput is measured
+ * as the number of items emitted per second.
+ *
+ * Best‑practice notes:
+ * • State is scoped to a thread to avoid contention between benchmark threads.
+ * • All mutable data structures are created in {@link #setup()} to keep the
+ *   measured method focused on the operator's execution.
+ * • {@link Blackhole} is used to consume the emitted items, preventing dead‑code
+ *   elimination.
+ * • A {@link CountDownLatch} synchronises the benchmark thread with the
+ *   asynchronous completion of the flow.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class ParallelSortedJoinBenchmark {
+
+    /** Number of parallel rails (typically equal to CPU count). */
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    /** Size of each sorted list emitted by a rail. */
+    @Param({ "1000", "10000" })
+    public int listSize;
+
+    /** Comparator used for sorting integers. */
+    private Comparator<Integer> comparator;
+
+    /** Parallel source that emits one pre‑sorted list per rail. */
+    private ParallelFlowable<List<Integer>> source;
+
+    /** Pre‑generated sorted lists – one per rail. */
+    @SuppressWarnings("unchecked")
+    private List<Integer>[] preSortedLists;
+
+    @Setup(Level.Trial)
+    @SuppressWarnings("unchecked")
+    public void setup() {
+        comparator = Integer::compareTo;
+
+        // Generate a distinct sorted list for each rail.
+        preSortedLists = new List[parallelism];
+        for (int i = 0; i < parallelism; i++) {
+            List<Integer> list = new ArrayList<>(listSize);
+            int base = i * listSize;
+            for (int j = 0; j < listSize; j++) {
+                list.add(base + j);
+            }
+            preSortedLists[i] = list;
+        }
+
+        // Create a ParallelFlowable that emits each pre‑generated list on its own rail.
+        source = Flowable.fromArray(preSortedLists)
+                         .parallel(parallelism);
+    }
+
+    @Benchmark
+    public void sortedJoin(Blackhole bh) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+
+        ParallelSortedJoin<Integer> operator = new ParallelSortedJoin<>(source, comparator);
+
+        operator.subscribe(new Subscriber<Integer>() {
+            Subscription upstream;
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                // Request an unbounded number of items to keep the benchmark focused on
+                // the operator's internal merging logic.
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        // Wait for the flow to finish before ending the measurement iteration.
+        latch.await();
+    }
+}
+```

@@ -1,0 +1,110 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Publisher;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link FlowableSwitchMap}.
+ *
+ * The benchmark measures the throughput of a {@code Flowable.switchMap} chain
+ * under a hot source emitting a large number of items. The mapper creates a
+ * simple {@code Flowable.just} for each upstream value, which mimics the
+ * typical use‑case where the inner source is cheap and the operator's
+ * coordination logic dominates the cost.
+ *
+ * The benchmark is written in {@code Mode.Throughput} (operations per second)
+ * and uses a {@code Blackhole} to consume the downstream values without
+ * affecting JIT optimizations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableSwitchMapBenchmark {
+
+    /**
+     * Number of items emitted by the upstream source.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int upstreamItemCount;
+
+    /**
+     * Buffer size used by the switchMap operator.
+     */
+    @Param({ "16", "128", "1024" })
+    public int bufferSize;
+
+    /**
+     * Whether the operator delays errors.
+     */
+    @Param({ "true", "false" })
+    public boolean delayErrors;
+
+    /**
+     * The source Flowable used in the benchmark.
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * Mapper function used by switchMap.
+     */
+    private Function<Integer, Publisher<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Upstream emits a range of integers synchronously.
+        source = // Run on a dedicated scheduler to avoid blocking the benchmark thread.
+        Flowable.range(1, upstreamItemCount).subscribeOn(Schedulers.single());
+        // Simple mapper that returns a Flowable.just for each upstream value.
+        mapper = v -> Flowable.just(v);
+    }
+
+    /**
+     * Benchmark the switchMap operator in a hot chain.
+     *
+     * @param bh Blackhole to consume the downstream values.
+     */
+    @Benchmark
+    public void switchMapThroughput(Blackhole bh) {
+        source.compose(upstream -> new FlowableSwitchMap<>((Flowable<Integer>) upstream, mapper, bufferSize, delayErrors)).subscribe(new Consumer<Integer>() {
+
+            @Override
+            public void accept(Integer value) {
+                // Consume the value via Blackhole to prevent dead‑code elimination.
+                bh.consume(value);
+            }
+        });
+    }
+}

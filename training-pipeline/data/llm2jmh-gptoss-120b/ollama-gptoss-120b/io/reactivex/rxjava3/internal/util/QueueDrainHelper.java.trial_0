@@ -1,0 +1,113 @@
+```
+package io.reactivex.rxjava3.internal.util.benchmark;
+
+import io.reactivex.rxjava3.internal.util.QueueDrainHelper;
+import org.openjdk.jmh.annotations.*;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+import java.util.ArrayDeque;
+import java.util.Queue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BooleanSupplier;
+
+/**
+ * JMH benchmarks for the performance‑critical methods in {@link QueueDrainHelper}.
+ *
+ * The benchmarks focus on:
+ * <ul>
+ *   <li>{@code postCompleteRequest}</li>
+ *   <li>{@code postCompleteDrain}</li>
+ * </ul>
+ *
+ * A lightweight {@link Subscriber} implementation is used to avoid side‑effects.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class QueueDrainHelperBenchmark {
+
+    /** Number of elements pre‑filled in the queue for each iteration. */
+    @Param({"128", "1024", "8192"})
+    public int size;
+
+    /** Queue used by the benchmark. */
+    private Queue<Integer> queue;
+
+    /** State holder required by {@code postComplete*} methods. */
+    private AtomicLong state;
+
+    /** Simple {@link Subscriber} that discards all signals. */
+    private Subscriber<Integer> subscriber;
+
+    /** {@link BooleanSupplier} that always reports “not cancelled”. */
+    private BooleanSupplier notCancelled;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+        // Fill a fresh queue with the requested number of elements.
+        queue = new ArrayDeque<>(size);
+        for (int i = 0; i < size; i++) {
+            queue.offer(i);
+        }
+
+        // Reset the state to 0 (no request, not completed).
+        state = new AtomicLong(0L);
+
+        // No‑op subscriber – we only need the callbacks to be present.
+        subscriber = new Subscriber<Integer>() {
+            @Override public void onSubscribe(Subscription s) { s.request(Long.MAX_VALUE); }
+            @Override public void onNext(Integer integer) { /* no‑op */ }
+            @Override public void onError(Throwable t) { /* no‑op */ }
+            @Override public void onComplete() { /* no‑op */ }
+        };
+
+        // BooleanSupplier that never signals cancellation.
+        notCancelled = () -> false;
+    }
+
+    /**
+     * Benchmark the {@code postCompleteRequest} path.
+     *
+     * The method is invoked with a request of {@code 1} element.
+     * The return value is consumed by JMH's Blackhole to prevent dead‑code elimination.
+     */
+    @Benchmark
+    public boolean benchmarkPostCompleteRequest() {
+        // Request 1 item; this may trigger a drain if the COMPLETED flag is already set.
+        return QueueDrainHelper.postCompleteRequest(
+                1L,
+                subscriber,
+                queue,
+                state,
+                notCancelled
+        );
+    }
+
+    /**
+     * Benchmark the {@code postCompleteDrain} path.
+     *
+     * The state is pre‑populated with a request count equal to the queue size,
+     * then the drain loop is executed.
+     */
+    @Benchmark
+    public boolean benchmarkPostCompleteDrain() {
+        // Simulate a prior request for the whole queue.
+        long requested = ((long) size) & QueueDrainHelper.REQUESTED_MASK;
+        state.set(requested);
+
+        // Drain the queue; the method returns true when the drain completes.
+        return QueueDrainHelper.postCompleteDrain(
+                state.get(),
+                subscriber,
+                queue,
+                state,
+                notCancelled
+        );
+    }
+}
+```

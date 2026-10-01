@@ -1,0 +1,642 @@
+diff --git a/org/tukaani/xz/ArrayCache.java b/org/tukaani/xz/ArrayCache.java
+index 9178c63..b277c33 100644
+--- a/org/tukaani/xz/ArrayCache.java
++++ b/org/tukaani/xz/ArrayCache.java
+@@ -100,7 +100,7 @@ public class ArrayCache {
+      * Returns a statically-allocated {@code ArrayCache} instance.
+      * It can be shared by all code that needs a dummy cache.
+      */
+-    public static ArrayCache getDummyCache() {
++    public static ArrayCache getDummyCache() { org.tukaani.xz.jmhbench.MutationSwitch.tick(1);
+         return dummyCache;
+     }
+ 
+@@ -110,7 +110,7 @@ public class ArrayCache {
+      * specifies nothing else. The default is a dummy cache
+      * (see {@link #getDummyCache()}).
+      */
+-    public static ArrayCache getDefaultCache() {
++    public static ArrayCache getDefaultCache() { org.tukaani.xz.jmhbench.MutationSwitch.tick(9);
+         // It's volatile so no need for synchronization.
+         return defaultCache;
+     }
+diff --git a/org/tukaani/xz/BCJDecoder.java b/org/tukaani/xz/BCJDecoder.java
+index b05f3a8..28d907e 100644
+--- a/org/tukaani/xz/BCJDecoder.java
++++ b/org/tukaani/xz/BCJDecoder.java
+@@ -31,12 +31,12 @@ class BCJDecoder extends BCJCoder implements FilterDecoder {
+     }
+ 
+     @Override
+-    public int getMemoryUsage() {
++    public int getMemoryUsage() { org.tukaani.xz.jmhbench.MutationSwitch.tick(17);
+         return SimpleInputStream.getMemoryUsage();
+     }
+ 
+     @Override
+-    public InputStream getInputStream(InputStream in, ArrayCache arrayCache) {
++    public InputStream getInputStream(InputStream in, ArrayCache arrayCache) { org.tukaani.xz.jmhbench.MutationSwitch.tick(25);
+         SimpleFilter simpleFilter = null;
+ 
+         if (filterID == X86_FILTER_ID)
+diff --git a/org/tukaani/xz/BCJEncoder.java b/org/tukaani/xz/BCJEncoder.java
+index ca8d6bb..138dc20 100644
+--- a/org/tukaani/xz/BCJEncoder.java
++++ b/org/tukaani/xz/BCJEncoder.java
+@@ -26,12 +26,12 @@ class BCJEncoder extends BCJCoder implements FilterEncoder {
+     }
+ 
+     @Override
+-    public long getFilterID() {
++    public long getFilterID() { org.tukaani.xz.jmhbench.MutationSwitch.tick(32);
+         return filterID;
+     }
+ 
+     @Override
+-    public byte[] getFilterProps() {
++    public byte[] getFilterProps() { org.tukaani.xz.jmhbench.MutationSwitch.tick(38);
+         return props;
+     }
+ 
+diff --git a/org/tukaani/xz/BasicArrayCache.java b/org/tukaani/xz/BasicArrayCache.java
+index 19e4c33..fb0b51a 100644
+--- a/org/tukaani/xz/BasicArrayCache.java
++++ b/org/tukaani/xz/BasicArrayCache.java
+@@ -78,7 +78,7 @@ public class BasicArrayCache extends ArrayCache {
+          * Gets the most recently added element from the stack.
+          * If the stack is empty, {@code null} is returned.
+          */
+-        public synchronized T pop() {
++        public synchronized T pop() { org.tukaani.xz.jmhbench.MutationSwitch.tick(42);
+             T e = elements[pos];
+             elements[pos] = null;
+             pos = (pos - 1) & (ELEMENTS_PER_STACK - 1);
+@@ -89,7 +89,7 @@ public class BasicArrayCache extends ArrayCache {
+          * Adds a new element to the stack. If the stack is full, the oldest
+          * element is overwritten.
+          */
+-        public synchronized void push(T e) {
++        public synchronized void push(T e) { org.tukaani.xz.jmhbench.MutationSwitch.tick(44);
+             pos = (pos + 1) & (ELEMENTS_PER_STACK - 1);
+             elements[pos] = e;
+         }
+diff --git a/org/tukaani/xz/BlockInputStream.java b/org/tukaani/xz/BlockInputStream.java
+index ad35eee..b74e0e1 100644
+--- a/org/tukaani/xz/BlockInputStream.java
++++ b/org/tukaani/xz/BlockInputStream.java
+@@ -275,7 +275,7 @@ class BlockInputStream extends InputStream {
+     }
+ 
+     @Override
+-    public void close() {
++    public void close() { org.tukaani.xz.jmhbench.MutationSwitch.tick(46);
+         // This puts all arrays, that were allocated from ArrayCache,
+         // back to the ArrayCache. The last filter in the chain will
+         // call inCounted.close() which, being an instance of
+@@ -295,7 +295,7 @@ class BlockInputStream extends InputStream {
+         filterChain = null;
+     }
+ 
+-    public long getUnpaddedSize() {
++    public long getUnpaddedSize() { org.tukaani.xz.jmhbench.MutationSwitch.tick(48);
+         return headerSize + inCounted.getSize() + check.getSize();
+     }
+ 
+diff --git a/org/tukaani/xz/BlockOutputStream.java b/org/tukaani/xz/BlockOutputStream.java
+index fde6fef..793384e 100644
+--- a/org/tukaani/xz/BlockOutputStream.java
++++ b/org/tukaani/xz/BlockOutputStream.java
+@@ -101,7 +101,7 @@ class BlockOutputStream extends FinishableOutputStream {
+     }
+ 
+     @Override
+-    public void finish() throws IOException {
++    public void finish() throws IOException { org.tukaani.xz.jmhbench.MutationSwitch.tick(49);
+         // Finish the Compressed Data field.
+         filterChain.finish();
+         validate();
+@@ -124,7 +124,7 @@ class BlockOutputStream extends FinishableOutputStream {
+             throw new XZIOException("XZ Stream has grown too big");
+     }
+ 
+-    public long getUnpaddedSize() {
++    public long getUnpaddedSize() { org.tukaani.xz.jmhbench.MutationSwitch.tick(50);
+         return headerSize + outCounted.getSize() + check.getSize();
+     }
+ 
+diff --git a/org/tukaani/xz/check/CRC32.java b/org/tukaani/xz/check/CRC32.java
+index e615172..62be1b0 100644
+--- a/org/tukaani/xz/check/CRC32.java
++++ b/org/tukaani/xz/check/CRC32.java
+@@ -20,7 +20,7 @@ public class CRC32 extends Check {
+     }
+ 
+     @Override
+-    public byte[] finish() {
++    public byte[] finish() { org.tukaani.xz.jmhbench.MutationSwitch.tick(2);
+         byte[] buf = new byte[4];
+         ByteArrayView.setIntLE(buf, 0, (int)state.getValue());
+         state.reset();
+diff --git a/org/tukaani/xz/check/CRC64.java b/org/tukaani/xz/check/CRC64.java
+index fdb8ddb..20734dc 100644
+--- a/org/tukaani/xz/check/CRC64.java
++++ b/org/tukaani/xz/check/CRC64.java
+@@ -55,7 +55,7 @@ public class CRC64 extends Check {
+     }
+ 
+     @Override
+-    public byte[] finish() {
++    public byte[] finish() { org.tukaani.xz.jmhbench.MutationSwitch.tick(10);
+         byte[] buf = new byte[8];
+         ByteArrayView.setLongLE(buf, 0, ~crc);
+         crc = -1;
+diff --git a/org/tukaani/xz/check/None.java b/org/tukaani/xz/check/None.java
+index 051c2e3..d89ea4f 100644
+--- a/org/tukaani/xz/check/None.java
++++ b/org/tukaani/xz/check/None.java
+@@ -14,7 +14,7 @@ public class None extends Check {
+     public void update(byte[] buf, int off, int len) {}
+ 
+     @Override
+-    public byte[] finish() {
++    public byte[] finish() { org.tukaani.xz.jmhbench.MutationSwitch.tick(18);
+         byte[] empty = new byte[0];
+         return empty;
+     }
+diff --git a/org/tukaani/xz/check/SHA256.java b/org/tukaani/xz/check/SHA256.java
+index 9d0ef9f..898e0ea 100644
+--- a/org/tukaani/xz/check/SHA256.java
++++ b/org/tukaani/xz/check/SHA256.java
+@@ -19,7 +19,7 @@ public class SHA256 extends Check {
+     }
+ 
+     @Override
+-    public byte[] finish() {
++    public byte[] finish() { org.tukaani.xz.jmhbench.MutationSwitch.tick(26);
+         byte[] buf = sha256.digest();
+         sha256.reset();
+         return buf;
+diff --git a/org/tukaani/xz/common/ByteArrayView.java b/org/tukaani/xz/common/ByteArrayView.java
+index 4757840..6f1b636 100644
+--- a/org/tukaani/xz/common/ByteArrayView.java
++++ b/org/tukaani/xz/common/ByteArrayView.java
+@@ -10,12 +10,12 @@ public final class ByteArrayView {
+     public static final int ALIGN_INT = 0;
+     public static final int ALIGN_LONG = 0;
+ 
+-    public static short getShortBE(byte[] buf, int index) {
++    public static short getShortBE(byte[] buf, int index) { org.tukaani.xz.jmhbench.MutationSwitch.tick(3);
+         return (short)((buf[index] << 8)
+                        | (buf[index + 1] & 0xFF));
+     }
+ 
+-    public static short getShortLE(byte[] buf, int index) {
++    public static short getShortLE(byte[] buf, int index) { org.tukaani.xz.jmhbench.MutationSwitch.tick(11);
+         return (short)((buf[index] & 0xFF)
+                        | (buf[index + 1] << 8));
+     }
+diff --git a/org/tukaani/xz/common/DecoderUtil.java b/org/tukaani/xz/common/DecoderUtil.java
+index 478cdbf..4d65ade 100644
+--- a/org/tukaani/xz/common/DecoderUtil.java
++++ b/org/tukaani/xz/common/DecoderUtil.java
+@@ -84,12 +84,12 @@ public class DecoderUtil extends Util {
+         return streamFlags;
+     }
+ 
+-    public static boolean areStreamFlagsEqual(StreamFlags a, StreamFlags b) {
++    public static boolean areStreamFlagsEqual(StreamFlags a, StreamFlags b) { org.tukaani.xz.jmhbench.MutationSwitch.tick(19);
+         // backwardSize is intentionally not compared.
+         return a.checkType == b.checkType;
+     }
+ 
+-    public static long decodeVLI(InputStream in) throws IOException {
++    public static long decodeVLI(InputStream in) throws IOException { org.tukaani.xz.jmhbench.MutationSwitch.tick(27);
+         int b = in.read();
+         if (b == -1)
+             throw new EOFException();
+diff --git a/org/tukaani/xz/common/Util.java b/org/tukaani/xz/common/Util.java
+index b49a67a..8618e26 100644
+--- a/org/tukaani/xz/common/Util.java
++++ b/org/tukaani/xz/common/Util.java
+@@ -11,7 +11,7 @@ public class Util {
+     public static final long VLI_MAX = Long.MAX_VALUE;
+     public static final int VLI_SIZE_MAX = 9;
+ 
+-    public static int getVLISize(long num) {
++    public static int getVLISize(long num) { org.tukaani.xz.jmhbench.MutationSwitch.tick(33);
+         int size = 0;
+         do {
+             ++size;
+diff --git a/org/tukaani/xz/index/BlockInfo.java b/org/tukaani/xz/index/BlockInfo.java
+index b1ac520..4597e93 100644
+--- a/org/tukaani/xz/index/BlockInfo.java
++++ b/org/tukaani/xz/index/BlockInfo.java
+@@ -17,7 +17,7 @@ public class BlockInfo {
+         index = indexOfFirstStream;
+     }
+ 
+-    public int getCheckType() {
++    public int getCheckType() { org.tukaani.xz.jmhbench.MutationSwitch.tick(20);
+         return index.getStreamFlags().checkType;
+     }
+ 
+@@ -25,7 +25,7 @@ public class BlockInfo {
+         return index.hasRecord(blockNumber + 1);
+     }
+ 
+-    public void setNext() {
++    public void setNext() { org.tukaani.xz.jmhbench.MutationSwitch.tick(28);
+         index.setBlockInfo(this, blockNumber + 1);
+     }
+ }
+diff --git a/org/tukaani/xz/index/IndexDecoder.java b/org/tukaani/xz/index/IndexDecoder.java
+index 49e7408..06414fd 100644
+--- a/org/tukaani/xz/index/IndexDecoder.java
++++ b/org/tukaani/xz/index/IndexDecoder.java
+@@ -127,7 +127,7 @@ public final class IndexDecoder extends IndexBase {
+                 throw new CorruptedInputException("XZ Index is corrupt");
+     }
+ 
+-    public void setOffsets(IndexDecoder prev) {
++    public void setOffsets(IndexDecoder prev) { org.tukaani.xz.jmhbench.MutationSwitch.tick(4);
+         // NOTE: SeekableXZInputStream checks that the total number of Blocks
+         // in concatenated Streams fits into an int.
+         recordOffset = prev.recordOffset + (int)prev.recordCount;
+@@ -137,7 +137,7 @@ public final class IndexDecoder extends IndexBase {
+         uncompressedOffset = prev.uncompressedOffset + prev.uncompressedSum;
+     }
+ 
+-    public int getMemoryUsage() {
++    public int getMemoryUsage() { org.tukaani.xz.jmhbench.MutationSwitch.tick(12);
+         return memoryUsage;
+     }
+ 
+diff --git a/org/tukaani/xz/index/IndexHash.java b/org/tukaani/xz/index/IndexHash.java
+index f8a8608..c40f5c3 100644
+--- a/org/tukaani/xz/index/IndexHash.java
++++ b/org/tukaani/xz/index/IndexHash.java
+@@ -38,7 +38,7 @@ public class IndexHash extends IndexBase {
+         hash.update(buf.array());
+     }
+ 
+-    public void validate(InputStream in) throws IOException {
++    public void validate(InputStream in) throws IOException { org.tukaani.xz.jmhbench.MutationSwitch.tick(34);
+         // Index Indicator (0x00) has already been read by BlockInputStream
+         // so add 0x00 to the CRC32 here.
+         java.util.zip.CRC32 crc32 = new java.util.zip.CRC32();
+diff --git a/org/tukaani/xz/jmhbench/MutationSwitch.java b/org/tukaani/xz/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..5305c00
+--- /dev/null
++++ b/org/tukaani/xz/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.tukaani.xz.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/tukaani/xz/lz/BT4.java b/org/tukaani/xz/lz/BT4.java
+index a019e5b..1f6f07d 100644
+--- a/org/tukaani/xz/lz/BT4.java
++++ b/org/tukaani/xz/lz/BT4.java
+@@ -43,7 +43,7 @@ final class BT4 extends LZEncoder {
+     }
+ 
+     @Override
+-    public void putArraysToCache(ArrayCache arrayCache) {
++    public void putArraysToCache(ArrayCache arrayCache) { org.tukaani.xz.jmhbench.MutationSwitch.tick(21);
+         arrayCache.putArray(tree);
+         hash.putArraysToCache(arrayCache);
+         super.putArraysToCache(arrayCache);
+@@ -68,7 +68,7 @@ final class BT4 extends LZEncoder {
+     }
+ 
+     @Override
+-    public Matches getMatches() {
++    public Matches getMatches() { org.tukaani.xz.jmhbench.MutationSwitch.tick(29);
+         matches.count = 0;
+ 
+         int matchLenLimit = matchLenMax;
+diff --git a/org/tukaani/xz/lz/HC4.java b/org/tukaani/xz/lz/HC4.java
+index 16edabf..90eb820 100644
+--- a/org/tukaani/xz/lz/HC4.java
++++ b/org/tukaani/xz/lz/HC4.java
+@@ -54,7 +54,7 @@ final class HC4 extends LZEncoder {
+     }
+ 
+     @Override
+-    public void putArraysToCache(ArrayCache arrayCache) {
++    public void putArraysToCache(ArrayCache arrayCache) { org.tukaani.xz.jmhbench.MutationSwitch.tick(35);
+         arrayCache.putArray(chain);
+         hash.putArraysToCache(arrayCache);
+         super.putArraysToCache(arrayCache);
+@@ -85,7 +85,7 @@ final class HC4 extends LZEncoder {
+     }
+ 
+     @Override
+-    public Matches getMatches() {
++    public Matches getMatches() { org.tukaani.xz.jmhbench.MutationSwitch.tick(39);
+         matches.count = 0;
+         int matchLenLimit = matchLenMax;
+         int niceLenLimit = niceLen;
+diff --git a/org/tukaani/xz/lz/LZDecoder.java b/org/tukaani/xz/lz/LZDecoder.java
+index e34b610..7702e62 100644
+--- a/org/tukaani/xz/lz/LZDecoder.java
++++ b/org/tukaani/xz/lz/LZDecoder.java
+@@ -41,11 +41,11 @@ public final class LZDecoder {
+         }
+     }
+ 
+-    public void putArraysToCache(ArrayCache arrayCache) {
++    public void putArraysToCache(ArrayCache arrayCache) { org.tukaani.xz.jmhbench.MutationSwitch.tick(5);
+         arrayCache.putArray(buf);
+     }
+ 
+-    public void reset() {
++    public void reset() { org.tukaani.xz.jmhbench.MutationSwitch.tick(13);
+         start = 0;
+         pos = 0;
+         full = 0;
+diff --git a/org/tukaani/xz/lzma/LZMADecoder.java b/org/tukaani/xz/lzma/LZMADecoder.java
+index ac6abc9..230d7c8 100644
+--- a/org/tukaani/xz/lzma/LZMADecoder.java
++++ b/org/tukaani/xz/lzma/LZMADecoder.java
+@@ -25,7 +25,7 @@ public final class LZMADecoder extends LZMACoder {
+     }
+ 
+     @Override
+-    public void reset() {
++    public void reset() { org.tukaani.xz.jmhbench.MutationSwitch.tick(6);
+         super.reset();
+         literalDecoder.reset();
+         matchLenDecoder.reset();
+@@ -38,7 +38,7 @@ public final class LZMADecoder extends LZMACoder {
+      * function is needed only for LZMA1. LZMA2 doesn't use the end marker
+      * in the LZMA layer.
+      */
+-    public boolean endMarkerDetected() {
++    public boolean endMarkerDetected() { org.tukaani.xz.jmhbench.MutationSwitch.tick(14);
+         return reps[0] == -1;
+     }
+ 
+diff --git a/org/tukaani/xz/lzma/LZMAEncoderNormal.java b/org/tukaani/xz/lzma/LZMAEncoderNormal.java
+index 4e7c942..e641909 100644
+--- a/org/tukaani/xz/lzma/LZMAEncoderNormal.java
++++ b/org/tukaani/xz/lzma/LZMAEncoderNormal.java
+@@ -51,7 +51,7 @@ final class LZMAEncoderNormal extends LZMAEncoder {
+     }
+ 
+     @Override
+-    public void reset() {
++    public void reset() { org.tukaani.xz.jmhbench.MutationSwitch.tick(22);
+         optCur = 0;
+         optEnd = 0;
+         super.reset();
+diff --git a/org/tukaani/xz/rangecoder/RangeDecoderFromBuffer.java b/org/tukaani/xz/rangecoder/RangeDecoderFromBuffer.java
+index 24de370..13ac442 100644
+--- a/org/tukaani/xz/rangecoder/RangeDecoderFromBuffer.java
++++ b/org/tukaani/xz/rangecoder/RangeDecoderFromBuffer.java
+@@ -23,7 +23,7 @@ public final class RangeDecoderFromBuffer extends RangeDecoder {
+         pos = buf.length;
+     }
+ 
+-    public void putArraysToCache(ArrayCache arrayCache) {
++    public void putArraysToCache(ArrayCache arrayCache) { org.tukaani.xz.jmhbench.MutationSwitch.tick(7);
+         arrayCache.putArray(buf);
+     }
+ 
+@@ -47,7 +47,7 @@ public final class RangeDecoderFromBuffer extends RangeDecoder {
+         in.readFully(buf, pos, len);
+     }
+ 
+-    public boolean isFinished() {
++    public boolean isFinished() { org.tukaani.xz.jmhbench.MutationSwitch.tick(15);
+         return pos == buf.length && code == 0;
+     }
+ 
+diff --git a/org/tukaani/xz/rangecoder/RangeDecoderFromStream.java b/org/tukaani/xz/rangecoder/RangeDecoderFromStream.java
+index a7e429f..e12d9d8 100644
+--- a/org/tukaani/xz/rangecoder/RangeDecoderFromStream.java
++++ b/org/tukaani/xz/rangecoder/RangeDecoderFromStream.java
+@@ -23,12 +23,12 @@ public final class RangeDecoderFromStream extends RangeDecoder {
+         range = 0xFFFFFFFF;
+     }
+ 
+-    public boolean isFinished() {
++    public boolean isFinished() { org.tukaani.xz.jmhbench.MutationSwitch.tick(23);
+         return code == 0;
+     }
+ 
+     @Override
+-    public void normalize() throws IOException {
++    public void normalize() throws IOException { org.tukaani.xz.jmhbench.MutationSwitch.tick(30);
+         if ((range & TOP_MASK) == 0) {
+             code = (code << SHIFT_BITS) | inData.readUnsignedByte();
+             range <<= SHIFT_BITS;
+diff --git a/org/tukaani/xz/rangecoder/RangeEncoderToBuffer.java b/org/tukaani/xz/rangecoder/RangeEncoderToBuffer.java
+index 061bb1b..c61aa50 100644
+--- a/org/tukaani/xz/rangecoder/RangeEncoderToBuffer.java
++++ b/org/tukaani/xz/rangecoder/RangeEncoderToBuffer.java
+@@ -18,11 +18,11 @@ public final class RangeEncoderToBuffer extends RangeEncoder {
+         reset();
+     }
+ 
+-    public void putArraysToCache(ArrayCache arrayCache) {
++    public void putArraysToCache(ArrayCache arrayCache) { org.tukaani.xz.jmhbench.MutationSwitch.tick(36);
+         arrayCache.putArray(buf);
+     }
+ 
+-    public void reset() {
++    public void reset() { org.tukaani.xz.jmhbench.MutationSwitch.tick(40);
+         super.reset();
+         bufPos = 0;
+     }
+diff --git a/org/tukaani/xz/simple/ARM.java b/org/tukaani/xz/simple/ARM.java
+index 4bd4f5f..5e816c6 100644
+--- a/org/tukaani/xz/simple/ARM.java
++++ b/org/tukaani/xz/simple/ARM.java
+@@ -16,7 +16,7 @@ public final class ARM implements SimpleFilter {
+     }
+ 
+     @Override
+-    public int code(byte[] buf, int off, int len) {
++    public int code(byte[] buf, int off, int len) { org.tukaani.xz.jmhbench.MutationSwitch.tick(24);
+         int end = off + len - 4;
+         int i;
+ 
+diff --git a/org/tukaani/xz/simple/ARM64.java b/org/tukaani/xz/simple/ARM64.java
+index 284acce..85f386f 100644
+--- a/org/tukaani/xz/simple/ARM64.java
++++ b/org/tukaani/xz/simple/ARM64.java
+@@ -18,7 +18,7 @@ public final class ARM64 implements SimpleFilter {
+     }
+ 
+     @Override
+-    public int code(byte[] buf, int off, int len) {
++    public int code(byte[] buf, int off, int len) { org.tukaani.xz.jmhbench.MutationSwitch.tick(31);
+         int end = off + len - 4;
+         int i;
+ 
+diff --git a/org/tukaani/xz/simple/ARMThumb.java b/org/tukaani/xz/simple/ARMThumb.java
+index c34b714..49a243a 100644
+--- a/org/tukaani/xz/simple/ARMThumb.java
++++ b/org/tukaani/xz/simple/ARMThumb.java
+@@ -16,7 +16,7 @@ public final class ARMThumb implements SimpleFilter {
+     }
+ 
+     @Override
+-    public int code(byte[] buf, int off, int len) {
++    public int code(byte[] buf, int off, int len) { org.tukaani.xz.jmhbench.MutationSwitch.tick(37);
+         int end = off + len - 4;
+         int i;
+ 
+diff --git a/org/tukaani/xz/simple/IA64.java b/org/tukaani/xz/simple/IA64.java
+index 4626ab3..d8d870a 100644
+--- a/org/tukaani/xz/simple/IA64.java
++++ b/org/tukaani/xz/simple/IA64.java
+@@ -22,7 +22,7 @@ public final class IA64 implements SimpleFilter {
+     }
+ 
+     @Override
+-    public int code(byte[] buf, int off, int len) {
++    public int code(byte[] buf, int off, int len) { org.tukaani.xz.jmhbench.MutationSwitch.tick(41);
+         int end = off + len - 16;
+         int i;
+ 
+diff --git a/org/tukaani/xz/simple/PowerPC.java b/org/tukaani/xz/simple/PowerPC.java
+index d2b6c05..c1ba862 100644
+--- a/org/tukaani/xz/simple/PowerPC.java
++++ b/org/tukaani/xz/simple/PowerPC.java
+@@ -18,7 +18,7 @@ public final class PowerPC implements SimpleFilter {
+     }
+ 
+     @Override
+-    public int code(byte[] buf, int off, int len) {
++    public int code(byte[] buf, int off, int len) { org.tukaani.xz.jmhbench.MutationSwitch.tick(43);
+         int end = off + len - 4;
+         int i;
+ 
+diff --git a/org/tukaani/xz/simple/RISCVDecoder.java b/org/tukaani/xz/simple/RISCVDecoder.java
+index 6b9cf62..aeb730f 100644
+--- a/org/tukaani/xz/simple/RISCVDecoder.java
++++ b/org/tukaani/xz/simple/RISCVDecoder.java
+@@ -17,7 +17,7 @@ public final class RISCVDecoder implements SimpleFilter {
+     }
+ 
+     @Override
+-    public int code(byte[] buf, int off, int len) {
++    public int code(byte[] buf, int off, int len) { org.tukaani.xz.jmhbench.MutationSwitch.tick(8);
+         int end = off + len - 8;
+         int i;
+ 
+diff --git a/org/tukaani/xz/simple/RISCVEncoder.java b/org/tukaani/xz/simple/RISCVEncoder.java
+index 9ce4b97..97203f7 100644
+--- a/org/tukaani/xz/simple/RISCVEncoder.java
++++ b/org/tukaani/xz/simple/RISCVEncoder.java
+@@ -15,7 +15,7 @@ public final class RISCVEncoder implements SimpleFilter {
+     }
+ 
+     @Override
+-    public int code(byte[] buf, int off, int len) {
++    public int code(byte[] buf, int off, int len) { org.tukaani.xz.jmhbench.MutationSwitch.tick(16);
+         int end = off + len - 8;
+         int i;
+ 
+diff --git a/org/tukaani/xz/simple/SPARC.java b/org/tukaani/xz/simple/SPARC.java
+index 0fb236f..0b040d4 100644
+--- a/org/tukaani/xz/simple/SPARC.java
++++ b/org/tukaani/xz/simple/SPARC.java
+@@ -18,7 +18,7 @@ public final class SPARC implements SimpleFilter {
+     }
+ 
+     @Override
+-    public int code(byte[] buf, int off, int len) {
++    public int code(byte[] buf, int off, int len) { org.tukaani.xz.jmhbench.MutationSwitch.tick(45);
+         int end = off + len - 4;
+         int i;
+ 
+diff --git a/org/tukaani/xz/simple/X86.java b/org/tukaani/xz/simple/X86.java
+index dea41cc..4431267 100644
+--- a/org/tukaani/xz/simple/X86.java
++++ b/org/tukaani/xz/simple/X86.java
+@@ -29,7 +29,7 @@ public final class X86 implements SimpleFilter {
+     }
+ 
+     @Override
+-    public int code(byte[] buf, int off, int len) {
++    public int code(byte[] buf, int off, int len) { org.tukaani.xz.jmhbench.MutationSwitch.tick(47);
+         int prevPos = off - 1;
+         int end = off + len - 5;
+         int i;

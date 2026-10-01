@@ -1,0 +1,632 @@
+diff --git a/com/dynatrace/hash4j/consistent/ConsistentHashing.java b/com/dynatrace/hash4j/consistent/ConsistentHashing.java
+index 04f407d..be41349 100644
+--- a/com/dynatrace/hash4j/consistent/ConsistentHashing.java
++++ b/com/dynatrace/hash4j/consistent/ConsistentHashing.java
+@@ -95,7 +95,7 @@ public final class ConsistentHashing {
+    *
+    * @return a {@link ConsistentBucketHasher}
+    */
+-  public static ConsistentBucketHasher jumpBackHashSplitMix64() {
++  public static ConsistentBucketHasher jumpBackHashSplitMix64() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(15);
+     return ConsistentJumpBackBucketHasherSplitMix64.get();
+   }
+ 
+@@ -114,7 +114,7 @@ public final class ConsistentHashing {
+    *
+    * @return a {@link ConsistentBucketHasher}
+    */
+-  public static ConsistentBucketHasher jumpBackHashXorshiftL7R9() {
++  public static ConsistentBucketHasher jumpBackHashXorshiftL7R9() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(21);
+     return ConsistentJumpBackBucketHasherXorshiftL7R9.get();
+   }
+ 
+diff --git a/com/dynatrace/hash4j/consistent/ConsistentJumpBackAnchorBucketSetHasher.java b/com/dynatrace/hash4j/consistent/ConsistentJumpBackAnchorBucketSetHasher.java
+index c789c8c..39e3814 100644
+--- a/com/dynatrace/hash4j/consistent/ConsistentJumpBackAnchorBucketSetHasher.java
++++ b/com/dynatrace/hash4j/consistent/ConsistentJumpBackAnchorBucketSetHasher.java
+@@ -87,7 +87,7 @@ class ConsistentJumpBackAnchorBucketSetHasher implements ConsistentBucketSetHash
+   }
+ 
+   @Override
+-  public int addBucket() {
++  public int addBucket() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(1);
+     final int b;
+     if (numRemovedBuckets <= 0) {
+       b = historicMaxNumBuckets;
+@@ -102,7 +102,7 @@ class ConsistentJumpBackAnchorBucketSetHasher implements ConsistentBucketSetHash
+   }
+ 
+   @Override
+-  public boolean removeBucket(int b) {
++  public boolean removeBucket(int b) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(8);
+     if (b < 0 || b >= historicMaxNumBuckets || isRemoved(b)) return false;
+     if (historicMaxNumBuckets - 1 == numRemovedBuckets) {
+       historicMaxNumBuckets = 0;
+diff --git a/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasher.java b/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasher.java
+index 69bc77c..213fbb8 100644
+--- a/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasher.java
++++ b/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasher.java
+@@ -31,7 +31,7 @@ class ConsistentJumpBackBucketHasher implements ConsistentBucketHasher {
+   }
+ 
+   @Override
+-  public int getBucket(long hash, int numBuckets) {
++  public int getBucket(long hash, int numBuckets) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(27);
+     if (numBuckets <= 1) {
+       checkNumberOfBuckets(numBuckets);
+       return 0;
+diff --git a/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasherSplitMix64.java b/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasherSplitMix64.java
+index 247f7b5..7255508 100644
+--- a/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasherSplitMix64.java
++++ b/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasherSplitMix64.java
+@@ -27,12 +27,12 @@ class ConsistentJumpBackBucketHasherSplitMix64 extends AbstractConsistentJumpBac
+   }
+ 
+   @Override
+-  protected long initState(long seed) {
++  protected long initState(long seed) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(32);
+     return ALGORITHM.initState(seed);
+   }
+ 
+   @Override
+-  protected long nextLong(long state) {
++  protected long nextLong(long state) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(37);
+     return ALGORITHM.nextLong(state);
+   }
+ 
+diff --git a/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasherXorshiftL7R9.java b/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasherXorshiftL7R9.java
+index f28c386..442dac9 100644
+--- a/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasherXorshiftL7R9.java
++++ b/com/dynatrace/hash4j/consistent/ConsistentJumpBackBucketHasherXorshiftL7R9.java
+@@ -28,12 +28,12 @@ class ConsistentJumpBackBucketHasherXorshiftL7R9 extends AbstractConsistentJumpB
+   }
+ 
+   @Override
+-  protected long initState(long seed) {
++  protected long initState(long seed) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(41);
+     return ALGORITHM.initState(seed);
+   }
+ 
+   @Override
+-  protected long nextLong(long state) {
++  protected long nextLong(long state) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(44);
+     return ALGORITHM.nextLong(state);
+   }
+ 
+diff --git a/com/dynatrace/hash4j/consistent/ConsistentJumpBucketHasher.java b/com/dynatrace/hash4j/consistent/ConsistentJumpBucketHasher.java
+index fae9b43..3fc989c 100644
+--- a/com/dynatrace/hash4j/consistent/ConsistentJumpBucketHasher.java
++++ b/com/dynatrace/hash4j/consistent/ConsistentJumpBucketHasher.java
+@@ -54,7 +54,7 @@ class ConsistentJumpBucketHasher implements ConsistentBucketHasher {
+   // see
+   // https://github.com/google/guava/blob/0a17f4a429323589396c38d8ce75ca058faa6c64/guava/src/com/google/common/hash/Hashing.java#L559
+   @Override
+-  public strictfp int getBucket(long hash, int numBuckets) {
++  public strictfp int getBucket(long hash, int numBuckets) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(47);
+     if (numBuckets <= 1) {
+       checkNumberOfBuckets(numBuckets);
+       return 0;
+diff --git a/com/dynatrace/hash4j/consistent/ImprovedConsistentWeightedSampling.java b/com/dynatrace/hash4j/consistent/ImprovedConsistentWeightedSampling.java
+index b83be8a..c4ce9c4 100644
+--- a/com/dynatrace/hash4j/consistent/ImprovedConsistentWeightedSampling.java
++++ b/com/dynatrace/hash4j/consistent/ImprovedConsistentWeightedSampling.java
+@@ -296,7 +296,7 @@ class ImprovedConsistentWeightedSampling implements ConsistentBucketHasher {
+   };
+ 
+   @Override
+-  public strictfp int getBucket(long hash, int numBuckets) {
++  public strictfp int getBucket(long hash, int numBuckets) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(50);
+     if (numBuckets <= 1) {
+       checkNumberOfBuckets(numBuckets);
+       return 0;
+diff --git a/com/dynatrace/hash4j/distinctcount/DistinctCountUtil.java b/com/dynatrace/hash4j/distinctcount/DistinctCountUtil.java
+index 65ae402..e7d822c 100644
+--- a/com/dynatrace/hash4j/distinctcount/DistinctCountUtil.java
++++ b/com/dynatrace/hash4j/distinctcount/DistinctCountUtil.java
+@@ -333,7 +333,7 @@ public final class DistinctCountUtil {
+    * @param toIndexExcl the index of the last element, exclusive, to be deduplicated
+    * @return the exclusive upper bound index of deduplicated hash values
+    */
+-  public static int deduplicateTokens(int[] tokens, int fromIndexIncl, int toIndexExcl) {
++  public static int deduplicateTokens(int[] tokens, int fromIndexIncl, int toIndexExcl) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(2);
+     Arrays.sort(tokens, fromIndexIncl, toIndexExcl);
+     int writeIndex = fromIndexIncl;
+     if (toIndexExcl > fromIndexIncl) {
+diff --git a/com/dynatrace/hash4j/distinctcount/HyperLogLog.java b/com/dynatrace/hash4j/distinctcount/HyperLogLog.java
+index 5ff7ed0..02e0b65 100644
+--- a/com/dynatrace/hash4j/distinctcount/HyperLogLog.java
++++ b/com/dynatrace/hash4j/distinctcount/HyperLogLog.java
+@@ -131,7 +131,7 @@ public final class HyperLogLog implements DistinctCounter<HyperLogLog, HyperLogL
+    * @return the new sketch
+    * @throws IllegalArgumentException if the precision parameter is invalid
+    */
+-  public static HyperLogLog create(int p) {
++  public static HyperLogLog create(int p) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(9);
+     checkPrecisionParameter(p, MIN_P, MAX_P);
+     return new HyperLogLog(p);
+   }
+@@ -145,7 +145,7 @@ public final class HyperLogLog implements DistinctCounter<HyperLogLog, HyperLogL
+    * @param ullSketch an UltraLogLog sketch
+    * @return a HyperLogLog sketch
+    */
+-  public static HyperLogLog create(UltraLogLog ullSketch) {
++  public static HyperLogLog create(UltraLogLog ullSketch) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(16);
+     int p = ullSketch.getP();
+     checkPrecisionParameter(p, MIN_P, MAX_P);
+     byte[] ullState = ullSketch.getState();
+diff --git a/com/dynatrace/hash4j/distinctcount/MartingaleEstimator.java b/com/dynatrace/hash4j/distinctcount/MartingaleEstimator.java
+index 6ebe719..d47836b 100644
+--- a/com/dynatrace/hash4j/distinctcount/MartingaleEstimator.java
++++ b/com/dynatrace/hash4j/distinctcount/MartingaleEstimator.java
+@@ -63,7 +63,7 @@ public final class MartingaleEstimator implements StateChangeObserver {
+   }
+ 
+   /** Resets the martingale estimator to its initial state. */
+-  public void reset() {
++  public void reset() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(22);
+     this.distinctCountEstimate = 0;
+     this.stateChangeProbability = 1;
+   }
+@@ -110,7 +110,7 @@ public final class MartingaleEstimator implements StateChangeObserver {
+    *
+    * @return the distinct count estimate
+    */
+-  public double getDistinctCountEstimate() {
++  public double getDistinctCountEstimate() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(28);
+     return distinctCountEstimate;
+   }
+ 
+diff --git a/com/dynatrace/hash4j/distinctcount/UltraLogLog.java b/com/dynatrace/hash4j/distinctcount/UltraLogLog.java
+index 37f3b62..a93ce8a 100644
+--- a/com/dynatrace/hash4j/distinctcount/UltraLogLog.java
++++ b/com/dynatrace/hash4j/distinctcount/UltraLogLog.java
+@@ -86,7 +86,7 @@ public final class UltraLogLog implements DistinctCounter<UltraLogLog, UltraLogL
+    * @return the new sketch
+    * @throws IllegalArgumentException if the precision parameter is invalid
+    */
+-  public static UltraLogLog create(int p) {
++  public static UltraLogLog create(int p) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(33);
+     checkPrecisionParameter(p, MIN_P, MAX_P);
+     return new UltraLogLog(p);
+   }
+@@ -103,7 +103,7 @@ public final class UltraLogLog implements DistinctCounter<UltraLogLog, UltraLogL
+    * @throws NullPointerException if the passed array is null
+    * @throws IllegalArgumentException if the passed array has invalid length
+    */
+-  public static UltraLogLog wrap(byte[] state) {
++  public static UltraLogLog wrap(byte[] state) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(38);
+     requireNonNull(state, "null argument");
+     if (state.length > MAX_STATE_SIZE
+         || state.length < MIN_STATE_SIZE
+diff --git a/com/dynatrace/hash4j/hashing/ByteArrayByteAccess.java b/com/dynatrace/hash4j/hashing/ByteArrayByteAccess.java
+index ae83723..9ff55de 100644
+--- a/com/dynatrace/hash4j/hashing/ByteArrayByteAccess.java
++++ b/com/dynatrace/hash4j/hashing/ByteArrayByteAccess.java
+@@ -39,12 +39,12 @@ final class ByteArrayByteAccess implements ByteAccess<byte[]> {
+   }
+ 
+   @Override
+-  public int getByteAsUnsignedInt(byte[] data, long idx) {
++  public int getByteAsUnsignedInt(byte[] data, long idx) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(3);
+     return data[(int) idx] & 0xFF;
+   }
+ 
+   @Override
+-  public long getByteAsUnsignedLong(byte[] data, long idx) {
++  public long getByteAsUnsignedLong(byte[] data, long idx) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(10);
+     return data[(int) idx] & 0xFFL;
+   }
+ 
+diff --git a/com/dynatrace/hash4j/hashing/ByteBufferByteAccess.java b/com/dynatrace/hash4j/hashing/ByteBufferByteAccess.java
+index 72ed552..d7cf189 100644
+--- a/com/dynatrace/hash4j/hashing/ByteBufferByteAccess.java
++++ b/com/dynatrace/hash4j/hashing/ByteBufferByteAccess.java
+@@ -55,12 +55,12 @@ final class ByteBufferByteAccess {
+     }
+ 
+     @Override
+-    public int getByteAsUnsignedInt(ByteBuffer data, long idx) {
++    public int getByteAsUnsignedInt(ByteBuffer data, long idx) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(17);
+       return data.get((int) idx) & 0xFF;
+     }
+ 
+     @Override
+-    public long getByteAsUnsignedLong(ByteBuffer data, long idx) {
++    public long getByteAsUnsignedLong(ByteBuffer data, long idx) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(23);
+       return data.get((int) idx) & 0xFFL;
+     }
+ 
+diff --git a/com/dynatrace/hash4j/hashing/ChibiHash2.java b/com/dynatrace/hash4j/hashing/ChibiHash2.java
+index f05b2dc..34681cd 100644
+--- a/com/dynatrace/hash4j/hashing/ChibiHash2.java
++++ b/com/dynatrace/hash4j/hashing/ChibiHash2.java
+@@ -48,12 +48,12 @@ class ChibiHash2 implements AbstractHasher64 {
+     this.h3Init = seed2 + ((K * K) ^ K);
+   }
+ 
+-  public static Hasher64 create(long seed) {
++  public static Hasher64 create(long seed) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(29);
+     return new ChibiHash2(seed);
+   }
+ 
+   @Override
+-  public HashStream64 hashStream() {
++  public HashStream64 hashStream() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(34);
+     return new HashStreamImpl();
+   }
+ 
+diff --git a/com/dynatrace/hash4j/hashing/FarmHashNa.java b/com/dynatrace/hash4j/hashing/FarmHashNa.java
+index c977fba..44fdf93 100644
+--- a/com/dynatrace/hash4j/hashing/FarmHashNa.java
++++ b/com/dynatrace/hash4j/hashing/FarmHashNa.java
+@@ -118,7 +118,7 @@ class FarmHashNa extends AbstractFarmHash {
+     }
+ 
+     @Override
+-    protected long finalizeHash(long hash) {
++    protected long finalizeHash(long hash) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(39);
+       return hashLen16(hash - seed0, seed1, K_MUL);
+     }
+   }
+@@ -128,7 +128,7 @@ class FarmHashNa extends AbstractFarmHash {
+   }
+ 
+   @Override
+-  public HashStream64 hashStream() {
++  public HashStream64 hashStream() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(42);
+     return new HashStreamImpl();
+   }
+ 
+diff --git a/com/dynatrace/hash4j/hashing/FarmHashUo.java b/com/dynatrace/hash4j/hashing/FarmHashUo.java
+index 339551e..a403d15 100644
+--- a/com/dynatrace/hash4j/hashing/FarmHashUo.java
++++ b/com/dynatrace/hash4j/hashing/FarmHashUo.java
+@@ -126,7 +126,7 @@ class FarmHashUo extends AbstractFarmHash {
+     }
+ 
+     @Override
+-    protected long finalizeHash(long hash) {
++    protected long finalizeHash(long hash) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(45);
+       return hashLen16(hash - K2, seed1, K_MUL);
+     }
+   }
+@@ -154,7 +154,7 @@ class FarmHashUo extends AbstractFarmHash {
+     }
+ 
+     @Override
+-    protected long finalizeHash(long hash) {
++    protected long finalizeHash(long hash) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(48);
+       return hashLen16(hash - seed0, seed1, K_MUL);
+     }
+   }
+diff --git a/com/dynatrace/hash4j/internal/ArraySizeUtil.java b/com/dynatrace/hash4j/internal/ArraySizeUtil.java
+index 3910d6e..eb7f87c 100644
+--- a/com/dynatrace/hash4j/internal/ArraySizeUtil.java
++++ b/com/dynatrace/hash4j/internal/ArraySizeUtil.java
+@@ -45,7 +45,7 @@ public final class ArraySizeUtil {
+    * @return the new array size
+    * @throws OutOfMemoryError if the current size is equal to {@link Integer#MAX_VALUE}
+    */
+-  public static int increaseArraySize(int currentSize, int requiredIndex) {
++  public static int increaseArraySize(int currentSize, int requiredIndex) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(4);
+     int newSize;
+     if (currentSize <= 4) {
+       newSize = MIN_ARRAY_LENGTH;
+diff --git a/com/dynatrace/hash4j/internal/ByteArrayUtil.java b/com/dynatrace/hash4j/internal/ByteArrayUtil.java
+index 1dd71e3..95ca4ed 100644
+--- a/com/dynatrace/hash4j/internal/ByteArrayUtil.java
++++ b/com/dynatrace/hash4j/internal/ByteArrayUtil.java
+@@ -44,7 +44,7 @@ public final class ByteArrayUtil {
+    * @param off an offset
+    * @return the read character
+    */
+-  public static char getChar(byte[] b, int off) {
++  public static char getChar(byte[] b, int off) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(11);
+     return (char) CHAR_HANDLE.get(b, off);
+   }
+ 
+@@ -55,7 +55,7 @@ public final class ByteArrayUtil {
+    * @param off an offset
+    * @return the read value
+    */
+-  public static short getShort(byte[] b, int off) {
++  public static short getShort(byte[] b, int off) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(18);
+     return (short) SHORT_HANDLE.get(b, off);
+   }
+ 
+diff --git a/com/dynatrace/hash4j/internal/Preconditions.java b/com/dynatrace/hash4j/internal/Preconditions.java
+index 9d8c26e..1aa36ff 100644
+--- a/com/dynatrace/hash4j/internal/Preconditions.java
++++ b/com/dynatrace/hash4j/internal/Preconditions.java
+@@ -32,7 +32,7 @@ public final class Preconditions {
+    * @param expression an expression
+    * @throws IllegalArgumentException if the given expression evaluates to {@code false}
+    */
+-  public static void checkArgument(boolean expression) {
++  public static void checkArgument(boolean expression) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(30);
+     if (!expression) {
+       throw new IllegalArgumentException();
+     }
+@@ -44,7 +44,7 @@ public final class Preconditions {
+    * @param expression an expression
+    * @throws IllegalStateException if the given expression evaluates to {@code false}
+    */
+-  public static void checkState(boolean expression) {
++  public static void checkState(boolean expression) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(35);
+     if (!expression) {
+       throw new IllegalStateException();
+     }
+diff --git a/com/dynatrace/hash4j/internal/UnsignedMultiplyUtil.java b/com/dynatrace/hash4j/internal/UnsignedMultiplyUtil.java
+index d280377..4a0d0bb 100644
+--- a/com/dynatrace/hash4j/internal/UnsignedMultiplyUtil.java
++++ b/com/dynatrace/hash4j/internal/UnsignedMultiplyUtil.java
+@@ -32,7 +32,7 @@ public final class UnsignedMultiplyUtil {
+    * @param y the second value
+    * @return the result
+    */
+-  public static long unsignedMultiplyHigh(long x, long y) {
++  public static long unsignedMultiplyHigh(long x, long y) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(24);
+     return Math.multiplyHigh(x, y) + ((x >> 63) & y) + ((y >> 63) & x);
+   }
+ }
+diff --git a/com/dynatrace/hash4j/jmhbench/MutationSwitch.java b/com/dynatrace/hash4j/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..86bda2a
+--- /dev/null
++++ b/com/dynatrace/hash4j/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.dynatrace.hash4j.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/dynatrace/hash4j/random/PermutationGenerator.java b/com/dynatrace/hash4j/random/PermutationGenerator.java
+index f9c1af3..8a03d38 100644
+--- a/com/dynatrace/hash4j/random/PermutationGenerator.java
++++ b/com/dynatrace/hash4j/random/PermutationGenerator.java
+@@ -81,7 +81,7 @@ public final class PermutationGenerator {
+    * <p>Must be called before starting a new iteration over the permuted elements using {@link
+    * #next(PseudoRandomGenerator)}.
+    */
+-  public void reset() {
++  public void reset() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(12);
+     versionCounter += 1;
+     idx = 0;
+     if (versionCounter == 0) {
+diff --git a/com/dynatrace/hash4j/random/RandomExponentialUtil.java b/com/dynatrace/hash4j/random/RandomExponentialUtil.java
+index d514c8d..4b246b9 100644
+--- a/com/dynatrace/hash4j/random/RandomExponentialUtil.java
++++ b/com/dynatrace/hash4j/random/RandomExponentialUtil.java
+@@ -585,7 +585,7 @@ final class RandomExponentialUtil {
+   };
+ 
+   // use of strictfp to make random values platform-independent
+-  public static strictfp double exponential(PseudoRandomGenerator prg) {
++  public static strictfp double exponential(PseudoRandomGenerator prg) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(5);
+     double shift = 0;
+     for (; ; ) {
+       long randomLong = prg.nextLong();
+diff --git a/com/dynatrace/hash4j/random/SplitMix64V1.java b/com/dynatrace/hash4j/random/SplitMix64V1.java
+index 0545ab7..228ceda 100644
+--- a/com/dynatrace/hash4j/random/SplitMix64V1.java
++++ b/com/dynatrace/hash4j/random/SplitMix64V1.java
+@@ -35,7 +35,7 @@ final class SplitMix64V1 extends AbstractPseudoRandomGenerator {
+   SplitMix64V1() {}
+ 
+   @Override
+-  public long nextLong() {
++  public long nextLong() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(19);
+     state += 0x9e3779b97f4a7c15L;
+     long z = state;
+     z = (z ^ (z >>> 30)) * 0xbf58476d1ce4e5b9L;
+@@ -44,7 +44,7 @@ final class SplitMix64V1 extends AbstractPseudoRandomGenerator {
+   }
+ 
+   @Override
+-  public SplitMix64V1 reset(long seed) {
++  public SplitMix64V1 reset(long seed) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(25);
+     this.state = seed;
+     return this;
+   }
+diff --git a/com/dynatrace/hash4j/similarity/DistinctElementHashProvider.java b/com/dynatrace/hash4j/similarity/DistinctElementHashProvider.java
+index 060f99c..71f1072 100644
+--- a/com/dynatrace/hash4j/similarity/DistinctElementHashProvider.java
++++ b/com/dynatrace/hash4j/similarity/DistinctElementHashProvider.java
+@@ -67,7 +67,7 @@ final class DistinctElementHashProvider implements ElementHashProvider {
+     nullConstant = newNullConstant;
+   }
+ 
+-  public void reset(ElementHashProvider elementHashProvider) {
++  public void reset(ElementHashProvider elementHashProvider) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(6);
+     int numElements = elementHashProvider.getNumberOfElements();
+     checkArgument(numElements <= 0x40000000L);
+ 
+@@ -101,7 +101,7 @@ final class DistinctElementHashProvider implements ElementHashProvider {
+   }
+ 
+   @Override
+-  public int getNumberOfElements() {
++  public int getNumberOfElements() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(13);
+     return distinctCount;
+   }
+ 
+diff --git a/com/dynatrace/hash4j/similarity/FastSimHashPolicy_v1.java b/com/dynatrace/hash4j/similarity/FastSimHashPolicy_v1.java
+index 5e2e8d1..126f7a9 100644
+--- a/com/dynatrace/hash4j/similarity/FastSimHashPolicy_v1.java
++++ b/com/dynatrace/hash4j/similarity/FastSimHashPolicy_v1.java
+@@ -30,7 +30,7 @@ final class FastSimHashPolicy_v1 extends AbstractSimilarityHashPolicy {
+   }
+ 
+   @Override
+-  public SimilarityHasher createHasher() {
++  public SimilarityHasher createHasher() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(20);
+     return new Hasher();
+   }
+ 
+@@ -63,7 +63,7 @@ final class FastSimHashPolicy_v1 extends AbstractSimilarityHashPolicy {
+         pseudoRandomGeneratorProvider.create();
+ 
+     @Override
+-    public byte[] compute(ElementHashProvider elementHashProvider) {
++    public byte[] compute(ElementHashProvider elementHashProvider) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(26);
+ 
+       requireNonNull(elementHashProvider);
+       int numberOfElements = elementHashProvider.getNumberOfElements();
+diff --git a/com/dynatrace/hash4j/similarity/MinHashPolicy_v1.java b/com/dynatrace/hash4j/similarity/MinHashPolicy_v1.java
+index 404a535..1a7dd5a 100644
+--- a/com/dynatrace/hash4j/similarity/MinHashPolicy_v1.java
++++ b/com/dynatrace/hash4j/similarity/MinHashPolicy_v1.java
+@@ -32,7 +32,7 @@ final class MinHashPolicy_v1 extends AbstractSimilarityHashPolicy {
+   }
+ 
+   @Override
+-  public SimilarityHasher createHasher() {
++  public SimilarityHasher createHasher() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(31);
+     return new Hasher();
+   }
+ 
+@@ -43,7 +43,7 @@ final class MinHashPolicy_v1 extends AbstractSimilarityHashPolicy {
+         pseudoRandomGeneratorProvider.create();
+ 
+     @Override
+-    public byte[] compute(ElementHashProvider elementHashProvider) {
++    public byte[] compute(ElementHashProvider elementHashProvider) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(36);
+ 
+       requireNonNull(elementHashProvider);
+       int numberOfElements = elementHashProvider.getNumberOfElements();
+diff --git a/com/dynatrace/hash4j/similarity/SimHashPolicy_v1.java b/com/dynatrace/hash4j/similarity/SimHashPolicy_v1.java
+index 7936cf6..5c4547d 100644
+--- a/com/dynatrace/hash4j/similarity/SimHashPolicy_v1.java
++++ b/com/dynatrace/hash4j/similarity/SimHashPolicy_v1.java
+@@ -30,7 +30,7 @@ final class SimHashPolicy_v1 extends AbstractSimilarityHashPolicy {
+   }
+ 
+   @Override
+-  public SimilarityHasher createHasher() {
++  public SimilarityHasher createHasher() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(40);
+     return new Hasher();
+   }
+ 
+@@ -42,7 +42,7 @@ final class SimHashPolicy_v1 extends AbstractSimilarityHashPolicy {
+         pseudoRandomGeneratorProvider.create();
+ 
+     @Override
+-    public byte[] compute(ElementHashProvider elementHashProvider) {
++    public byte[] compute(ElementHashProvider elementHashProvider) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(43);
+ 
+       requireNonNull(elementHashProvider);
+       int numberOfElements = elementHashProvider.getNumberOfElements();
+diff --git a/com/dynatrace/hash4j/similarity/SuperMinHashPolicy_v1.java b/com/dynatrace/hash4j/similarity/SuperMinHashPolicy_v1.java
+index ac4f626..a83ce20 100644
+--- a/com/dynatrace/hash4j/similarity/SuperMinHashPolicy_v1.java
++++ b/com/dynatrace/hash4j/similarity/SuperMinHashPolicy_v1.java
+@@ -90,7 +90,7 @@ final class SuperMinHashPolicy_v1 extends AbstractSimilarityHashPolicy {
+     private final int[] hashValuesIntegralPart = new int[numberOfComponents];
+ 
+     @Override
+-    public byte[] compute(ElementHashProvider elementHashProvider) {
++    public byte[] compute(ElementHashProvider elementHashProvider) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(46);
+ 
+       requireNonNull(elementHashProvider);
+       int numberOfElements = elementHashProvider.getNumberOfElements();
+@@ -154,7 +154,7 @@ final class SuperMinHashPolicy_v1 extends AbstractSimilarityHashPolicy {
+   }
+ 
+   @Override
+-  public SimilarityHasher createHasher() {
++  public SimilarityHasher createHasher() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(49);
+     return new SuperMinHashPolicy_v1.Hasher();
+   }
+ }
+diff --git a/com/dynatrace/hash4j/util/PackedArray.java b/com/dynatrace/hash4j/util/PackedArray.java
+index 773b59b..50c4e5d 100644
+--- a/com/dynatrace/hash4j/util/PackedArray.java
++++ b/com/dynatrace/hash4j/util/PackedArray.java
+@@ -204,13 +204,13 @@ public final class PackedArray {
+     }
+ 
+     @Override
+-    public byte[] create(int length) {
++    public byte[] create(int length) { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(7);
+       checkArrayLength(length);
+       return new byte[numBytes(length)];
+     }
+ 
+     @Override
+-    public final int getBitSize() {
++    public final int getBitSize() { com.dynatrace.hash4j.jmhbench.MutationSwitch.tick(14);
+       return bitSize;
+     }
+ 

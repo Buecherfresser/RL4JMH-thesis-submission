@@ -1,0 +1,88 @@
+```java
+package io.reactivex.rxjava3.benchmarks.maybe;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeIsEmptySingle;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link MaybeIsEmptySingle}.
+ *
+ * <p>This benchmark measures the throughput of the {@code MaybeIsEmptySingle}
+ * operator in two scenarios:
+ *
+ * <ul>
+ *   <li>source emits a value (non‑empty)</li>
+ *   <li>source completes without a value (empty)</li>
+ * </ul>
+ *
+ * <p>Best practices applied:
+ *
+ * <ul>
+ *   <li>Separate {@link State} for each thread to avoid contention.</li>
+ *   <li>Warm‑up and measurement iterations to let the JIT stabilize.</li>
+ *   <li>Multiple forks to reduce JVM warm‑up bias.</li>
+ *   <li>Use of {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Explicit {@code @Setup(Level.Trial)} to create immutable benchmark objects.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@Threads(Threads.MAX)
+public class MaybeIsEmptySingleBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Maybe source that emits a single item. */
+        Maybe<Integer> nonEmptySource;
+
+        /** Maybe source that completes empty. */
+        Maybe<Integer> emptySource;
+
+        /** Operator instances created once per trial. */
+        MaybeIsEmptySingle<Integer> nonEmptyOperator;
+        MaybeIsEmptySingle<Integer> emptyOperator;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Non‑empty source: emits the integer 1.
+            nonEmptySource = Maybe.just(1);
+
+            // Empty source: completes without emitting.
+            emptySource = Maybe.empty();
+
+            // Wrap the sources with the operator under test.
+            nonEmptyOperator = new MaybeIsEmptySingle<>(nonEmptySource);
+            emptyOperator = new MaybeIsEmptySingle<>(emptySource);
+        }
+    }
+
+    /**
+     * Benchmark the throughput of {@code MaybeIsEmptySingle} when the upstream
+     * Maybe emits a value (i.e., the result should be {@code false}).
+     */
+    @Benchmark
+    public void nonEmptyMaybeIsEmpty(BenchmarkState state, Blackhole bh) {
+        // blockingGet() forces subscription and waits for the terminal event.
+        Boolean result = state.nonEmptyOperator.blockingGet();
+        bh.consume(result);
+    }
+
+    /**
+     * Benchmark the throughput of {@code MaybeIsEmptySingle} when the upstream
+     * Maybe completes empty (i.e., the result should be {@code true}).
+     */
+    @Benchmark
+    public void emptyMaybeIsEmpty(BenchmarkState state, Blackhole bh) {
+        Boolean result = state.emptyOperator.blockingGet();
+        bh.consume(result);
+    }
+}
+```

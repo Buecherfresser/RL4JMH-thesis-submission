@@ -1,0 +1,83 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableSubscriber;
+import org.reactivestreams.Subscription;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@code Flowable.concatWith(Completable)} which internally uses
+ * {@code FlowableConcatWithCompletable}. The benchmark measures the throughput
+ * of processing a stream of {@code size} items followed by a Completable.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 1, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableConcatWithCompletableBenchmark {
+
+    /**
+     * Number of items emitted by the upstream Flowable before the Completable is concatenated.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    private Flowable<Integer> flowableWithCompletable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Upstream Flowable emitting a range of integers.
+        Flowable<Integer> source = Flowable.range(1, size);
+        // Completable that completes immediately.
+        Completable completable = Completable.complete();
+        // The operator under test: concat the Flowable with the Completable.
+        flowableWithCompletable = source.concatWith(completable);
+    }
+
+    @Benchmark
+    public void concatWithCompletable(Blackhole bh) throws InterruptedException {
+        // Latch to wait for onComplete before returning from the benchmark method.
+        CountDownLatch latch = new CountDownLatch(1);
+
+        flowableWithCompletable.subscribe(new FlowableSubscriber<Integer>() {
+
+            private Subscription upstream;
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                // Request all items at once for maximum throughput.
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                // Consume the item to avoid dead‑code elimination.
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        // Wait for the stream to finish.
+        latch.await();
+    }
+}
+```

@@ -1,0 +1,69 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import org.reactivestreams.Publisher;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.util.ErrorMode;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
+/**
+ * Benchmark for {@link FlowableConcatMapEager} (the eager concatMap operator).
+ *
+ * The benchmark measures the throughput (operations per second) of processing a
+ * fixed-size upstream {@link Flowable} with a mapper that returns a small inner
+ * {@link Flowable}. The parameters (maxConcurrency, prefetch, errorMode) are
+ * chosen to reflect typical usage patterns while still exercising the core
+ * logic of the operator.
+ *
+ * Best‑practice notes:
+ * • Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * • Initialise the source Flowable in @Setup(Level.Trial) so that the cost of
+ *   building the pipeline is not counted in the benchmark.
+ * • Use Blackhole to consume the emitted items and prevent dead‑code elimination.
+ * • Run with several warm‑up iterations and measurement iterations to let the
+ *   JIT stabilize.
+ * • Fork the JVM to isolate benchmark runs.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class FlowableConcatMapEagerBenchmark {
+
+    @Param({ "1000", "10000", "100000" })
+    public int upstreamSize;
+
+    @Param({ "4", "8", "16" })
+    public int maxConcurrency;
+
+    @Param({ "32", "64", "128" })
+    public int prefetch;
+
+    @Param({ "IMMEDIATE", "BOUNDARY", "END" })
+    public ErrorMode errorMode;
+
+    private Flowable<Integer> flowable;
+
+    private final Function<Integer, Publisher<Integer>> mapper = v ->
+            Flowable.just(v).subscribeOn(Schedulers.computation());
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        Flowable<Integer> source = Flowable.range(1, upstreamSize);
+        flowable = source.concatMapEager(mapper, maxConcurrency, prefetch, errorMode);
+    }
+
+    @Benchmark
+    public void eagerConcatMapThroughput(Blackhole bh) {
+        flowable.blockingSubscribe(bh::consume);
+    }
+}
+```

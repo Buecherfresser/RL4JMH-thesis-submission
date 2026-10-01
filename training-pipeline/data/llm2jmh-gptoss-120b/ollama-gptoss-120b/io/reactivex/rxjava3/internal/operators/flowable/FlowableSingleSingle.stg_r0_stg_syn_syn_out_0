@@ -1,0 +1,134 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link FlowableSingleSingle}.
+ *
+ * The benchmarks measure the throughput of converting a {@link Flowable}
+ * into a {@link Single} that expects exactly one element (or a default value).
+ *
+ * Three typical scenarios are covered:
+ * <ul>
+ *   <li>single element source – the happy path</li>
+ *   <li>empty source with a non‑null default value – fallback handling</li>
+ *   <li>multiple elements – error path (the operator terminates early)</li>
+ * </ul>
+ *
+ * Best‑practice JMH settings are used:
+ * <ul>
+ *   <li>5 warm‑up iterations to let the JIT stabilize</li>
+ *   <li>10 measurement iterations</li>
+ *   <li>2 forks to avoid JVM start‑up bias</li>
+ *   <li>Throughput mode (operations per second)</li>
+ *   <li>Time unit: milliseconds</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableSingleSingleBenchmark {
+
+    /**
+     * Source that emits exactly one integer.
+     */
+    private Flowable<Integer> singleElementSource;
+
+    /**
+     * Source that emits no items.
+     */
+    private Flowable<Integer> emptySource;
+
+    /**
+     * Source that emits more than one item (used to trigger the error path).
+     */
+    private Flowable<Integer> multiElementSource;
+
+    /**
+     * Default value used when the source is empty.
+     */
+    private static final Integer DEFAULT_VALUE = 42;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A Flowable that emits a single element and then completes.
+        singleElementSource = Flowable.just(1);
+        // An empty Flowable.
+        emptySource = Flowable.empty();
+        // A Flowable that emits three elements; the operator should fail fast.
+        multiElementSource = Flowable.just(1, 2, 3);
+    }
+
+    /**
+     * Benchmark the happy‑path where the source contains exactly one element.
+     * The operator should forward the element as {@code Single.onSuccess}.
+     */
+    @Benchmark
+    public Integer singleElement() {
+        Single<Integer> single = new FlowableSingleSingle<>(singleElementSource, null);
+        // blockingGet is used to materialise the result synchronously for the benchmark.
+        return single.blockingGet();
+    }
+
+    /**
+     * Benchmark the fallback path where the source is empty and a default value is supplied.
+     * The operator should emit the default value.
+     */
+    @Benchmark
+    public Integer emptyWithDefault() {
+        Single<Integer> single = new FlowableSingleSingle<>(emptySource, DEFAULT_VALUE);
+        return single.blockingGet();
+    }
+
+    /**
+     * Benchmark the error path where the source emits more than one element.
+     * The operator should terminate with an {@link IllegalArgumentException}.
+     * The exception is caught to keep the benchmark running.
+     */
+    @Benchmark
+    public void multipleElementsError() {
+        Single<Integer> single = new FlowableSingleSingle<>(multiElementSource, null);
+        try {
+            single.blockingGet();
+        } catch (IllegalArgumentException ignored) {
+            // Expected – the operator signals an error when more than one element is observed.
+        }
+    }
+}

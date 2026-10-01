@@ -1,0 +1,626 @@
+diff --git a/stormpot/internal/AsyncAllocationCompletion.java b/stormpot/internal/AsyncAllocationCompletion.java
+index c263ded..760f853 100644
+--- a/stormpot/internal/AsyncAllocationCompletion.java
++++ b/stormpot/internal/AsyncAllocationCompletion.java
+@@ -28,7 +28,7 @@ public final class AsyncAllocationCompletion implements Task {
+    * @param slot The slot that was allocated into.
+    * @param <T> The type of object that was allocated.
+    */
+-  public <T extends Poolable> AsyncAllocationCompletion(BSlot<T> slot) {
++  public <T extends Poolable> AsyncAllocationCompletion(BSlot<T> slot) { stormpot.internal.jmhbench.MutationSwitch.tick(6);
+     this.slot = slot;
+   }
+ }
+diff --git a/stormpot/internal/AsyncDeallocationCompletion.java b/stormpot/internal/AsyncDeallocationCompletion.java
+index 5feae0a..03859fd 100644
+--- a/stormpot/internal/AsyncDeallocationCompletion.java
++++ b/stormpot/internal/AsyncDeallocationCompletion.java
+@@ -34,7 +34,7 @@ public final class AsyncDeallocationCompletion implements Task {
+    * @param andThen And optional {@link Consumer} of {@linkplain BSlot} to run after this task has completed.
+    */
+   @SuppressWarnings("unchecked")
+-  public <T extends Poolable> AsyncDeallocationCompletion(BSlot<T> slot, Consumer<BSlot<T>> andThen) {
++  public <T extends Poolable> AsyncDeallocationCompletion(BSlot<T> slot, Consumer<BSlot<T>> andThen) { stormpot.internal.jmhbench.MutationSwitch.tick(7);
+     this.slot = slot;
+     this.andThen = (Consumer<BSlot<?>>) (Consumer<?>) andThen;
+   }
+diff --git a/stormpot/internal/BAllocThread.java b/stormpot/internal/BAllocThread.java
+index 7804b86..4669729 100644
+--- a/stormpot/internal/BAllocThread.java
++++ b/stormpot/internal/BAllocThread.java
+@@ -112,7 +112,7 @@ public final class BAllocThread<T extends Poolable> implements Runnable {
+   }
+ 
+   @Override
+-  public void run() {
++  public void run() { stormpot.internal.jmhbench.MutationSwitch.tick(8);
+     continuouslyReplenishPool();
+     shutPoolDown();
+     shutdownCompletion.complete();
+@@ -192,7 +192,7 @@ public final class BAllocThread<T extends Poolable> implements Runnable {
+       List<StackCompletion> skipped = skippedCompletions;
+       previous.completion().subscribe(new BaseSubscriber() {
+         @Override
+-        public void onComplete() {
++        public void onComplete() { stormpot.internal.jmhbench.MutationSwitch.tick(9);
+           for (StackCompletion completion : skipped) {
+             completion.complete();
+           }
+diff --git a/stormpot/internal/BSlot.java b/stormpot/internal/BSlot.java
+index caffddb..498be3f 100644
+--- a/stormpot/internal/BSlot.java
++++ b/stormpot/internal/BSlot.java
+@@ -104,14 +104,14 @@ public sealed class BSlot<T extends Poolable> implements Slot, SlotInfo<T>, Task
+   }
+ 
+   @Override
+-  public void expire(Poolable obj) {
++  public void expire(Poolable obj) { stormpot.internal.jmhbench.MutationSwitch.tick(10);
+     if (poison != BlazePool.EXPLICIT_EXPIRE_POISON) {
+       poison = BlazePool.EXPLICIT_EXPIRE_POISON;
+     }
+   }
+ 
+   @Override
+-  public void release(Poolable obj) {
++  public void release(Poolable obj) { stormpot.internal.jmhbench.MutationSwitch.tick(11);
+     if (poison == BlazePool.EXPLICIT_EXPIRE_POISON) {
+       poisonedSlots.getAndIncrement();
+     }
+@@ -147,7 +147,7 @@ public sealed class BSlot<T extends Poolable> implements Slot, SlotInfo<T>, Task
+   /**
+    * Transition this slot from thread-locally claimed, to live.
+    */
+-  public void claimTlr2live() {
++  public void claimTlr2live() { stormpot.internal.jmhbench.MutationSwitch.tick(12);
+     lazySet(LIVING);
+   }
+ 
+diff --git a/stormpot/internal/BaseSubscriber.java b/stormpot/internal/BaseSubscriber.java
+index 4dd1aef..a4c856c 100644
+--- a/stormpot/internal/BaseSubscriber.java
++++ b/stormpot/internal/BaseSubscriber.java
+@@ -22,16 +22,16 @@ class BaseSubscriber implements Flow.Subscriber<Void> {
+   protected Flow.Subscription subscription;
+ 
+   @Override
+-  public void onSubscribe(Flow.Subscription subscription) {
++  public void onSubscribe(Flow.Subscription subscription) { stormpot.internal.jmhbench.MutationSwitch.tick(13);
+     this.subscription = Objects.requireNonNull(subscription, "subscription");
+   }
+ 
+   @Override
+-  public void onNext(Void item) {
++  public void onNext(Void item) { stormpot.internal.jmhbench.MutationSwitch.tick(14);
+   }
+ 
+   @Override
+-  public void onError(Throwable throwable) {
++  public void onError(Throwable throwable) { stormpot.internal.jmhbench.MutationSwitch.tick(15);
+   }
+ 
+   @Override
+diff --git a/stormpot/internal/BlazePool.java b/stormpot/internal/BlazePool.java
+index 5c692bf..e281f4b 100644
+--- a/stormpot/internal/BlazePool.java
++++ b/stormpot/internal/BlazePool.java
+@@ -111,12 +111,12 @@ public final class BlazePool<T extends Poolable> implements Pool<T>, ManagedPool
+ 
+   @Override
+   public T claim(Timeout timeout)
+-      throws PoolException, InterruptedException {
++      throws PoolException, InterruptedException { stormpot.internal.jmhbench.MutationSwitch.tick(16);
+     return claim(timeout, tlr.get());
+   }
+ 
+   @Override
+-  public T tryClaim() throws PoolException {
++  public T tryClaim() throws PoolException { stormpot.internal.jmhbench.MutationSwitch.tick(17);
+     return tryClaim(tlr.get());
+   }
+ 
+@@ -299,7 +299,7 @@ public final class BlazePool<T extends Poolable> implements Pool<T>, ManagedPool
+   }
+ 
+   @Override
+-  public Completion shutdown() {
++  public Completion shutdown() { stormpot.internal.jmhbench.MutationSwitch.tick(18);
+     SHUTDOWN.setOpaque(this, true);
+     return allocator.shutdown();
+   }
+diff --git a/stormpot/internal/BlazePoolSingleThreadedTap.java b/stormpot/internal/BlazePoolSingleThreadedTap.java
+index c76a8cd..7da1dcc 100644
+--- a/stormpot/internal/BlazePoolSingleThreadedTap.java
++++ b/stormpot/internal/BlazePoolSingleThreadedTap.java
+@@ -48,12 +48,12 @@ public final class BlazePoolSingleThreadedTap<T extends Poolable> implements Poo
+   }
+ 
+   @Override
+-  public T claim(Timeout timeout) throws PoolException, InterruptedException {
++  public T claim(Timeout timeout) throws PoolException, InterruptedException { stormpot.internal.jmhbench.MutationSwitch.tick(19);
+     return pool.claim(timeout, cache);
+   }
+ 
+   @Override
+-  public T tryClaim() {
++  public T tryClaim() { stormpot.internal.jmhbench.MutationSwitch.tick(20);
+     return pool.tryClaim(cache);
+   }
+ }
+diff --git a/stormpot/internal/BlazePoolThreadSafeTap.java b/stormpot/internal/BlazePoolThreadSafeTap.java
+index 520033c..78a79d9 100644
+--- a/stormpot/internal/BlazePoolThreadSafeTap.java
++++ b/stormpot/internal/BlazePoolThreadSafeTap.java
+@@ -38,12 +38,12 @@ public final class BlazePoolThreadSafeTap<T extends Poolable> implements PoolTap
+   }
+ 
+   @Override
+-  public T claim(Timeout timeout) throws PoolException, InterruptedException {
++  public T claim(Timeout timeout) throws PoolException, InterruptedException { stormpot.internal.jmhbench.MutationSwitch.tick(21);
+     return pool.claim(timeout);
+   }
+ 
+   @Override
+-  public T tryClaim() throws PoolException {
++  public T tryClaim() throws PoolException { stormpot.internal.jmhbench.MutationSwitch.tick(22);
+     return pool.tryClaim();
+   }
+ }
+diff --git a/stormpot/internal/BlazePoolVirtualThreadSafeTap.java b/stormpot/internal/BlazePoolVirtualThreadSafeTap.java
+index 092c276..80405ab 100644
+--- a/stormpot/internal/BlazePoolVirtualThreadSafeTap.java
++++ b/stormpot/internal/BlazePoolVirtualThreadSafeTap.java
+@@ -54,7 +54,7 @@ public final class BlazePoolVirtualThreadSafeTap<T extends Poolable> implements
+   }
+ 
+   @Override
+-  public T claim(Timeout timeout) throws PoolException, InterruptedException {
++  public T claim(Timeout timeout) throws PoolException, InterruptedException { stormpot.internal.jmhbench.MutationSwitch.tick(23);
+     int threadId = getThreadId();
+     T obj = tryTlrClaim(threadId, stripes);
+     if (obj != null) {
+@@ -85,7 +85,7 @@ public final class BlazePoolVirtualThreadSafeTap<T extends Poolable> implements
+   }
+ 
+   @Override
+-  public T tryClaim() throws PoolException {
++  public T tryClaim() throws PoolException { stormpot.internal.jmhbench.MutationSwitch.tick(24);
+     int threadId = getThreadId();
+     T obj = tryTlrClaim(threadId, stripes);
+     if (obj != null) {
+diff --git a/stormpot/internal/DirectAllocationController.java b/stormpot/internal/DirectAllocationController.java
+index 7067b01..1f67196 100644
+--- a/stormpot/internal/DirectAllocationController.java
++++ b/stormpot/internal/DirectAllocationController.java
+@@ -135,7 +135,7 @@ public final class DirectAllocationController<T extends Poolable> extends Alloca
+   }
+ 
+   @Override
+-  public long allocatedSize() {
++  public long allocatedSize() { stormpot.internal.jmhbench.MutationSwitch.tick(25);
+     return size;
+   }
+ 
+diff --git a/stormpot/internal/EveryExpiration.java b/stormpot/internal/EveryExpiration.java
+index f0af11c..a14eef4 100644
+--- a/stormpot/internal/EveryExpiration.java
++++ b/stormpot/internal/EveryExpiration.java
+@@ -45,7 +45,7 @@ public final class EveryExpiration<T extends Poolable> implements Expiration<T>
+   }
+ 
+   @Override
+-  public boolean hasExpired(SlotInfo<? extends T> info) throws Exception {
++  public boolean hasExpired(SlotInfo<? extends T> info) throws Exception { stormpot.internal.jmhbench.MutationSwitch.tick(26);
+     if (timeExpiration.hasExpired(info)) {
+       // Time-bsaed expiration triggered. Push deadline out.
+       info.setStamp(info.getStamp() + timeExpiration.computeExpirationDeadline());
+diff --git a/stormpot/internal/IdentityHashSet.java b/stormpot/internal/IdentityHashSet.java
+index 0bc8d7c..9e0185e 100644
+--- a/stormpot/internal/IdentityHashSet.java
++++ b/stormpot/internal/IdentityHashSet.java
+@@ -161,7 +161,7 @@ public final class IdentityHashSet implements Iterable<Object> {
+   }
+ 
+   @Override
+-  public Iterator<Object> iterator() {
++  public Iterator<Object> iterator() { stormpot.internal.jmhbench.MutationSwitch.tick(1);
+     // This is only used by the tests.
+     if (treeMode) {
+       return Stream.of(table)
+diff --git a/stormpot/internal/InlineAllocationController.java b/stormpot/internal/InlineAllocationController.java
+index 91adf5a..6ff3033 100644
+--- a/stormpot/internal/InlineAllocationController.java
++++ b/stormpot/internal/InlineAllocationController.java
+@@ -247,7 +247,7 @@ public final class InlineAllocationController<T extends Poolable> extends Alloca
+       List<StackCompletion> skipped = skippedCompletions;
+       previous.completion().subscribe(new BaseSubscriber() {
+         @Override
+-        public void onComplete() {
++        public void onComplete() { stormpot.internal.jmhbench.MutationSwitch.tick(27);
+           for (StackCompletion completion : skipped) {
+             completion.complete();
+           }
+@@ -471,7 +471,7 @@ public final class InlineAllocationController<T extends Poolable> extends Alloca
+   }
+   
+   @Override
+-  public long allocatedSize() {
++  public long allocatedSize() { stormpot.internal.jmhbench.MutationSwitch.tick(28);
+     return live.size() - poisonedSlots.get();
+   }
+ 
+diff --git a/stormpot/internal/NanoClock.java b/stormpot/internal/NanoClock.java
+index 42f50fd..f79730f 100644
+--- a/stormpot/internal/NanoClock.java
++++ b/stormpot/internal/NanoClock.java
+@@ -27,7 +27,7 @@ public final class NanoClock {
+    * @return The current timestamp in nanoseconds.
+    * @see System#nanoTime()
+    */
+-  public static long nanoTime() {
++  public static long nanoTime() { stormpot.internal.jmhbench.MutationSwitch.tick(29);
+     return System.nanoTime();
+   }
+ 
+@@ -37,7 +37,7 @@ public final class NanoClock {
+    * @param startNanos The starting timestamp, obtained from {@link #nanoTime()}.
+    * @return The elapsed time since the start time, in nanoseconds.
+    */
+-  public static long elapsed(long startNanos) {
++  public static long elapsed(long startNanos) { stormpot.internal.jmhbench.MutationSwitch.tick(30);
+     return nanoTime() - startNanos;
+   }
+ 
+diff --git a/stormpot/internal/OrExpiration.java b/stormpot/internal/OrExpiration.java
+index 258a5ca..526b3f5 100644
+--- a/stormpot/internal/OrExpiration.java
++++ b/stormpot/internal/OrExpiration.java
+@@ -50,7 +50,7 @@ public final class OrExpiration<T extends Poolable> implements Expiration<T> {
+    * Returns {@code true} if any of the given {@link Expiration} has expired.
+    */
+   @Override
+-  public boolean hasExpired(SlotInfo<? extends T> info) throws Exception {
++  public boolean hasExpired(SlotInfo<? extends T> info) throws Exception { stormpot.internal.jmhbench.MutationSwitch.tick(31);
+     return firstExpiration.hasExpired(info)
+             || secondExpiration.hasExpired(info);
+   }
+diff --git a/stormpot/internal/PoolBuilderImpl.java b/stormpot/internal/PoolBuilderImpl.java
+index 816b6b1..8fd3fbd 100644
+--- a/stormpot/internal/PoolBuilderImpl.java
++++ b/stormpot/internal/PoolBuilderImpl.java
+@@ -110,7 +110,7 @@ public final class PoolBuilderImpl<T extends Poolable> implements PoolBuilder<T>
+   }
+ 
+   @Override
+-  public synchronized PoolBuilder<T> setSize(long size) {
++  public synchronized PoolBuilder<T> setSize(long size) { stormpot.internal.jmhbench.MutationSwitch.tick(2);
+     checkPermission(permissions.setSize(), "size");
+     if (size < 0) {
+       throw new IllegalArgumentException("Size must be at least 0, but was " + size + ".");
+@@ -120,14 +120,14 @@ public final class PoolBuilderImpl<T extends Poolable> implements PoolBuilder<T>
+   }
+ 
+   @Override
+-  public synchronized long getSize() {
++  public synchronized long getSize() { stormpot.internal.jmhbench.MutationSwitch.tick(3);
+     return size;
+   }
+ 
+   @SuppressWarnings("unchecked")
+   @Override
+   public synchronized <X extends Poolable> PoolBuilder<X> setAllocator(
+-      Allocator<X> allocator) {
++      Allocator<X> allocator) { stormpot.internal.jmhbench.MutationSwitch.tick(4);
+     checkPermission(permissions.setAllocator(), "allocator");
+     requireNonNull(allocator, "The Allocator cannot be null.");
+     this.allocator = (Allocator<T>) allocator;
+diff --git a/stormpot/internal/PoolBuilderPermissions.java b/stormpot/internal/PoolBuilderPermissions.java
+index 6d67790..0bc0b96 100644
+--- a/stormpot/internal/PoolBuilderPermissions.java
++++ b/stormpot/internal/PoolBuilderPermissions.java
+@@ -32,5 +32,5 @@ public record PoolBuilderPermissions(
+         boolean setExpiration,
+         boolean setThreadFactory,
+         boolean setBackgroundExpiration,
+-        boolean setMaxConcurrentAllocations) {
++        boolean setMaxConcurrentAllocations) { stormpot.internal.jmhbench.MutationSwitch.tick(5);
+ }
+diff --git a/stormpot/internal/PreciseLeakDetector.java b/stormpot/internal/PreciseLeakDetector.java
+index 08ce1bb..8a4f405 100644
+--- a/stormpot/internal/PreciseLeakDetector.java
++++ b/stormpot/internal/PreciseLeakDetector.java
+@@ -53,7 +53,7 @@ public final class PreciseLeakDetector {
+    *
+    * @param slot The slot to register.
+    */
+-  public void register(BSlot<?> slot) {
++  public void register(BSlot<?> slot) { stormpot.internal.jmhbench.MutationSwitch.tick(32);
+     Poolable obj = slot.obj;
+     assert obj != null;
+     CountedPhantomRef<Object> ref = new CountedPhantomRef<>(obj, referenceQueue);
+@@ -90,7 +90,7 @@ public final class PreciseLeakDetector {
+    *
+    * @param slot The slot to deregister.
+    */
+-  public void unregister(BSlot<?> slot) {
++  public void unregister(BSlot<?> slot) { stormpot.internal.jmhbench.MutationSwitch.tick(33);
+     slot.leakCheck.clear();
+     synchronized (refs) {
+       refs.remove(slot.leakCheck);
+@@ -103,7 +103,7 @@ public final class PreciseLeakDetector {
+    * Compute a count of the leaked objects that this detector has detected.
+    * @return The number of object leaks observed.
+    */
+-  public long countLeakedObjects() {
++  public long countLeakedObjects() { stormpot.internal.jmhbench.MutationSwitch.tick(34);
+     accumulateLeaks();
+     return leakedObjectCount.sum();
+   }
+diff --git a/stormpot/internal/ReallocatingAdaptor.java b/stormpot/internal/ReallocatingAdaptor.java
+index cf774a3..73552c7 100644
+--- a/stormpot/internal/ReallocatingAdaptor.java
++++ b/stormpot/internal/ReallocatingAdaptor.java
+@@ -56,7 +56,7 @@ public class ReallocatingAdaptor<T extends Poolable> implements Reallocator<T> {
+   }
+ 
+   @Override
+-  public T reallocate(Slot slot, T poolable) throws Exception {
++  public T reallocate(Slot slot, T poolable) throws Exception { stormpot.internal.jmhbench.MutationSwitch.tick(35);
+     try {
+       allocator.deallocate(poolable);
+     } catch (Throwable ignore) { // NOPMD
+@@ -66,12 +66,12 @@ public class ReallocatingAdaptor<T extends Poolable> implements Reallocator<T> {
+   }
+ 
+   @Override
+-  public T allocate(Slot slot) throws Exception {
++  public T allocate(Slot slot) throws Exception { stormpot.internal.jmhbench.MutationSwitch.tick(36);
+     return allocator.allocate(slot);
+   }
+ 
+   @Override
+-  public void deallocate(T poolable) throws Exception {
++  public void deallocate(T poolable) throws Exception { stormpot.internal.jmhbench.MutationSwitch.tick(37);
+     allocator.deallocate(poolable);
+   }
+ 
+diff --git a/stormpot/internal/RefillPile.java b/stormpot/internal/RefillPile.java
+index b155b44..ead1c79 100644
+--- a/stormpot/internal/RefillPile.java
++++ b/stormpot/internal/RefillPile.java
+@@ -55,7 +55,7 @@ public final class RefillPile<T extends Poolable>
+    * Push the given slot onto the stack. This method is wait-free.
+    * @param slot The slot instance to be pushed onto the stack.
+    */
+-  public void push(BSlot<T> slot) {
++  public void push(BSlot<T> slot) { stormpot.internal.jmhbench.MutationSwitch.tick(38);
+     RefillSlot<T> element = new RefillSlot<>(slot);
+     element.next = getAndSet(element);
+   }
+@@ -64,7 +64,7 @@ public final class RefillPile<T extends Poolable>
+    * Remove a slot from the pile, if there is any.
+    * @return A slot that was removed from the pile, or {@code null} if there were no slots to remove.
+    */
+-  public BSlot<T> pop() {
++  public BSlot<T> pop() { stormpot.internal.jmhbench.MutationSwitch.tick(39);
+     RefillSlot<T> element;
+     RefillSlot<T> next;
+     do {
+@@ -89,7 +89,7 @@ public final class RefillPile<T extends Poolable>
+    * @return {@code true} if any slots has been offered to the queue, or {@code false} if there were no
+    * slots in the pile.
+    */
+-  public boolean refill() {
++  public boolean refill() { stormpot.internal.jmhbench.MutationSwitch.tick(40);
+     RefillSlot<T> stack = getAndSet((RefillSlot<T>) STACK_END);
+     int count = 0;
+     while (stack != STACK_END) {
+diff --git a/stormpot/internal/StackCompletion.java b/stormpot/internal/StackCompletion.java
+index f17f76b..b93e85a 100644
+--- a/stormpot/internal/StackCompletion.java
++++ b/stormpot/internal/StackCompletion.java
+@@ -93,7 +93,7 @@ public final class StackCompletion implements Completion {
+   /**
+    * Complete this completion and notify all waiters and subscribers.
+    */
+-  public void complete() {
++  public void complete() { stormpot.internal.jmhbench.MutationSwitch.tick(41);
+     if (nodes == DONE) {
+       return;
+     }
+@@ -113,7 +113,7 @@ public final class StackCompletion implements Completion {
+   }
+ 
+   @Override
+-  public void subscribe(Flow.Subscriber<? super Void> subscriber) {
++  public void subscribe(Flow.Subscriber<? super Void> subscriber) { stormpot.internal.jmhbench.MutationSwitch.tick(42);
+     Objects.requireNonNull(subscriber, "Subscriber cannot be null.");
+     if (isCompleted()) {
+       oneOffCompleteSubscriber(subscriber);
+@@ -164,7 +164,7 @@ public final class StackCompletion implements Completion {
+    * then their subscription to this completion is cancelled.
+    * @param other The completion to propagate to.
+    */
+-  public void propagateTo(StackCompletion other) {
++  public void propagateTo(StackCompletion other) { stormpot.internal.jmhbench.MutationSwitch.tick(43);
+     if (other.isCompleted()) {
+       return;
+     }
+diff --git a/stormpot/internal/ThreadLocalBSlotCache.java b/stormpot/internal/ThreadLocalBSlotCache.java
+index a95f49f..0eb4f17 100644
+--- a/stormpot/internal/ThreadLocalBSlotCache.java
++++ b/stormpot/internal/ThreadLocalBSlotCache.java
+@@ -25,7 +25,7 @@ final class ThreadLocalBSlotCache<T extends Poolable> extends ThreadLocal<BSlotC
+   }
+ 
+   @Override
+-  protected BSlotCache<T> initialValue() {
++  protected BSlotCache<T> initialValue() { stormpot.internal.jmhbench.MutationSwitch.tick(44);
+     return optimizeForMemory ? new BSlotCache<>() : new BSlotCachePadded<>();
+   }
+ }
+diff --git a/stormpot/internal/ThreadedAllocationController.java b/stormpot/internal/ThreadedAllocationController.java
+index 405bc92..7a6d2cd 100644
+--- a/stormpot/internal/ThreadedAllocationController.java
++++ b/stormpot/internal/ThreadedAllocationController.java
+@@ -43,7 +43,7 @@ public final class ThreadedAllocationController<T extends Poolable> extends Allo
+   }
+ 
+   @Override
+-  public Completion shutdown() {
++  public Completion shutdown() { stormpot.internal.jmhbench.MutationSwitch.tick(45);
+     return allocator.shutdown(allocatorThread);
+   }
+ 
+@@ -53,12 +53,12 @@ public final class ThreadedAllocationController<T extends Poolable> extends Allo
+   }
+ 
+   @Override
+-  public void offerDeadSlot(BSlot<T> slot) {
++  public void offerDeadSlot(BSlot<T> slot) { stormpot.internal.jmhbench.MutationSwitch.tick(46);
+     allocator.offerDeadSlot(slot);
+   }
+ 
+   @Override
+-  public void setTargetSize(long size) {
++  public void setTargetSize(long size) { stormpot.internal.jmhbench.MutationSwitch.tick(47);
+     allocator.setTargetSize(size);
+   }
+ 
+diff --git a/stormpot/internal/TimeExpiration.java b/stormpot/internal/TimeExpiration.java
+index e999c62..5522999 100644
+--- a/stormpot/internal/TimeExpiration.java
++++ b/stormpot/internal/TimeExpiration.java
+@@ -62,7 +62,7 @@ public final class TimeExpiration<T extends Poolable> implements Expiration<T> {
+    * TimeExpiration.
+    */
+   @Override
+-  public boolean hasExpired(SlotInfo<? extends T> info) {
++  public boolean hasExpired(SlotInfo<? extends T> info) { stormpot.internal.jmhbench.MutationSwitch.tick(48);
+     return info.getAgeMillis() > maxPermittedAgeMillis;
+   }
+ 
+diff --git a/stormpot/internal/TimeSpreadExpiration.java b/stormpot/internal/TimeSpreadExpiration.java
+index db9a395..dfbe03e 100644
+--- a/stormpot/internal/TimeSpreadExpiration.java
++++ b/stormpot/internal/TimeSpreadExpiration.java
+@@ -84,7 +84,7 @@ public final class TimeSpreadExpiration<T extends Poolable> implements Expiratio
+    * declared expired.
+    */
+   @Override
+-  public boolean hasExpired(SlotInfo<? extends T> info) {
++  public boolean hasExpired(SlotInfo<? extends T> info) { stormpot.internal.jmhbench.MutationSwitch.tick(49);
+     long expirationAge = info.getStamp();
+     if (expirationAge == 0) {
+       expirationAge = computeExpirationDeadline();
+diff --git a/stormpot/internal/TimingReallocatingAdaptor.java b/stormpot/internal/TimingReallocatingAdaptor.java
+index 870bb22..91a69d9 100644
+--- a/stormpot/internal/TimingReallocatingAdaptor.java
++++ b/stormpot/internal/TimingReallocatingAdaptor.java
+@@ -40,7 +40,7 @@ class TimingReallocatingAdaptor<T extends Poolable>
+   }
+ 
+   @Override
+-  public T allocate(Slot slot) throws Exception {
++  public T allocate(Slot slot) throws Exception { stormpot.internal.jmhbench.MutationSwitch.tick(50);
+     long start = start();
+     try {
+       T obj = super.allocate(slot);
+diff --git a/stormpot/internal/jmhbench/MutationSwitch.java b/stormpot/internal/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..78f0431
+--- /dev/null
++++ b/stormpot/internal/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package stormpot.internal.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

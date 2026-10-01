@@ -1,0 +1,114 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Supplier;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableUsing;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * JMH benchmark for {@link ObservableUsing}.
+ *
+ * Measures the throughput of subscribing to an ObservableUsing that emits a fixed number of items.
+ * Two variants are benchmarked:
+ * <ul>
+ *   <li>Eager disposal (resource disposed before downstream terminal signal)</li>
+ *   <li>Lazy disposal (resource disposed after downstream terminal signal)</li>
+ * </ul>
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * <ul>
+ *   <li>State is scoped to a single thread to avoid contention.</li>
+ *   <li>All allocations are performed in {@link Setup} to keep the measured code focused on the operator.</li>
+ *   <li>Blackhole is used to consume emitted items, preventing dead‑code elimination.</li>
+ *   <li>Warm‑up and measurement iterations are configured via annotations.</li>
+ *   <li>Throughput mode reports operations per second.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class ObservableUsingBenchmark {
+
+    /** Number of items emitted by the inner source Observable. */
+    @Param({"10", "100", "1000"})
+    public int itemCount;
+
+    /** ObservableUsing with eager disposal. */
+    private Observable<Integer> eagerObservable;
+
+    /** ObservableUsing with lazy (non‑eager) disposal. */
+    private Observable<Integer> lazyObservable;
+
+    /** Simple resource used by the operator – an AtomicInteger that we ignore in the benchmark. */
+    private static final Supplier<AtomicInteger> RESOURCE_SUPPLIER = AtomicInteger::new;
+
+    /** Disposer that does nothing (the cost of disposal is part of the operator itself). */
+    private static final Consumer<AtomicInteger> DISPOSER = r -> { /* no‑op */ };
+
+    /** Source supplier that creates a range Observable based on the provided resource (resource is unused). */
+    private Function<AtomicInteger, ObservableSource<Integer>> sourceSupplier() {
+        return resource -> Observable.range(1, itemCount);
+    }
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Eager disposal variant
+        eagerObservable = new ObservableUsing<>(
+                RESOURCE_SUPPLIER,
+                sourceSupplier(),
+                DISPOSER,
+                true // eager
+        );
+
+        // Lazy disposal variant
+        lazyObservable = new ObservableUsing<>(
+                RESOURCE_SUPPLIER,
+                sourceSupplier(),
+                DISPOSER,
+                false // non‑eager
+        );
+    }
+
+    /**
+     * Benchmark the eager disposal path.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void eager(Blackhole bh) {
+        // Subscribe and block until completion, feeding each item to the Blackhole.
+        eagerObservable.blockingSubscribe(
+                bh::consume,
+                bh::consume,
+                () -> {}
+        );
+    }
+
+    /**
+     * Benchmark the lazy (non‑eager) disposal path.
+     *
+     * @param bh Blackhole to consume emitted items.
+     */
+    @Benchmark
+    public void lazy(Blackhole bh) {
+        lazyObservable.blockingSubscribe(
+                bh::consume,
+                bh::consume,
+                () -> {}
+        );
+    }
+}
+```

@@ -1,0 +1,97 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableRepeat}
+ * measuring the throughput of repeating a finite {@link Flowable}.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@code @State} for parameters and immutable source.</li>
+ *   <li>Use {@code @Param} to explore different repeat counts and source sizes.</li>
+ *   <li>Consume all emitted items via {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Run in {@link Mode#Throughput} with a fixed time unit (operations per second).</li>
+ *   <li>Provide reasonable warm‑up and measurement iterations (configured via JMH CLI).</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableRepeatBenchmark {
+
+    /**
+     * Number of times the source Flowable is repeated.
+     */
+    @Param({ "1", "10", "100", "1000" })
+    public int repeatCount;
+
+    /**
+     * Number of items emitted by the source Flowable per repetition.
+     */
+    @Param({ "10", "100", "1000" })
+    public int itemCount;
+
+    /**
+     * Immutable source Flowable used in every benchmark iteration.
+     */
+    private Flowable<Integer> source;
+
+    /**
+     * Prepare the source Flowable once per trial.
+     */
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A simple range source; could be replaced with more complex generators if needed.
+        source = Flowable.range(1, itemCount);
+    }
+
+    /**
+     * Measures the throughput of {@code source.repeat(repeatCount)} by consuming all items.
+     *
+     * <p>The {@link Blackhole} ensures that the emitted values are observed by the JVM,
+     * preventing the JIT compiler from optimizing the whole pipeline away.
+     *
+     * @param bh Blackhole used to consume each emitted item.
+     */
+    @Benchmark
+    public void repeatAndConsume(Blackhole bh) {
+        // The blockingSubscribe call guarantees that the benchmark method returns only
+        // after the entire sequence (including all repetitions) has been processed.
+        source.repeat(repeatCount).blockingSubscribe(bh::consume);
+    }
+}

@@ -1,0 +1,100 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Micro‑benchmark for {@link MaybeCount} measuring the throughput of the
+ * {@code blockingGet()} path. The benchmark compares the raw {@code Maybe.just}
+ * emission with the same source wrapped by {@code MaybeCount}.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Allocate objects in {@code @Setup} to exclude allocation cost from the measured section.</li>
+ *   <li>Use {@code Blackhole} to consume results and prevent dead‑code elimination.</li>
+ *   <li>Configure warm‑up, measurement, and fork parameters to obtain stable results.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class MaybeCountBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Source that emits a single value.
+         */
+        Maybe<Integer> source;
+
+        /**
+         * MaybeCount operator wrapping the source.
+         */
+        Single<Long> countSingle;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Maybe.just(1);
+            // MaybeCount is a Single<Long>, so we can reuse the same instance.
+            countSingle = new MaybeCount<>(source);
+        }
+    }
+
+    /**
+     * Baseline: directly block on the source {@code Maybe.just(1)}.
+     * This measures the cost of a simple Maybe emission without any operator.
+     */
+    @Benchmark
+    public void baseline(BenchmarkState state, Blackhole bh) {
+        // blockingGet returns the emitted Integer; we consume it via Blackhole.
+        bh.consume(state.source.blockingGet());
+    }
+
+    /**
+     * Measures the throughput of {@link MaybeCount} when applied to a source that
+     * emits exactly one item. The operator should emit {@code 1L}.
+     */
+    @Benchmark
+    public void maybeCount(BenchmarkState state, Blackhole bh) {
+        // blockingGet returns the counted Long; we consume it via Blackhole.
+        bh.consume(state.countSingle.blockingGet());
+    }
+}

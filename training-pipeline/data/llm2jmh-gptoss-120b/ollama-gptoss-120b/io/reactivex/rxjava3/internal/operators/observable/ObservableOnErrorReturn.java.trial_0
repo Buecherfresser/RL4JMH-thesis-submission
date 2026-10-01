@@ -1,0 +1,62 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableOnErrorReturn}
+ * measuring throughput of the operator when an upstream error is transformed into a fallback value.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create immutable objects once per benchmark thread.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations with reasonable defaults.
+ * - Throughput mode (operations per second) with seconds as the output time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 1, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class ObservableOnErrorReturnBenchmark {
+
+    /** Function that supplies the fallback value when an error occurs. */
+    private Function<Throwable, Integer> fallbackSupplier;
+
+    /** A source Observable that emits a single value and then terminates with an error. */
+    private Observable<Integer> errorSource;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        fallbackSupplier = throwable -> 42; // constant fallback value
+        // Emit one item then an error; this pattern triggers the onErrorReturn logic.
+        errorSource = Observable.concat(
+                Observable.just(1),
+                Observable.error(new RuntimeException("forced error"))
+        );
+    }
+
+    /**
+     * Executes the onErrorReturn operator and consumes the resulting sequence.
+     *
+     * @param bh Blackhole to consume emitted items and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void onErrorReturnThroughput(Blackhole bh) {
+        errorSource
+                .onErrorReturn(fallbackSupplier)
+                .subscribe(
+                        bh::consume,   // onNext
+                        bh::consume,   // onError (should not be called)
+                        bh::consume    // onComplete
+                );
+    }
+}
+```

@@ -1,0 +1,639 @@
+diff --git a/org/javimmutable/collections/IArrays.java b/org/javimmutable/collections/IArrays.java
+index 55a724e..e9e57cc 100644
+--- a/org/javimmutable/collections/IArrays.java
++++ b/org/javimmutable/collections/IArrays.java
+@@ -53,7 +53,7 @@ public final class IArrays
+      */
+     @Nonnull
+     public static <T> IArray<T> of()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(1);
+         return TrieArray.of();
+     }
+ 
+@@ -65,7 +65,7 @@ public final class IArrays
+     @Nonnull
+     @SafeVarargs
+     public static <T> IArray<T> of(T... source)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(15);
+         return TrieArray.<T>builder().add(source).build();
+     }
+ 
+diff --git a/org/javimmutable/collections/IListMaps.java b/org/javimmutable/collections/IListMaps.java
+index 3820f5c..0507eee 100644
+--- a/org/javimmutable/collections/IListMaps.java
++++ b/org/javimmutable/collections/IListMaps.java
+@@ -53,7 +53,7 @@ public final class IListMaps
+      */
+     @Nonnull
+     public static <K, V> IListMap<K, V> hashed()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(29);
+         return HashListMap.of();
+     }
+ 
+@@ -62,7 +62,7 @@ public final class IListMaps
+      */
+     @Nonnull
+     public static <K, V> IListMap<K, V> ordered()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(43);
+         return OrderedListMap.of();
+     }
+ 
+diff --git a/org/javimmutable/collections/array/TrieArray.java b/org/javimmutable/collections/array/TrieArray.java
+index ed997b0..31a64b1 100644
+--- a/org/javimmutable/collections/array/TrieArray.java
++++ b/org/javimmutable/collections/array/TrieArray.java
+@@ -80,13 +80,13 @@ public class TrieArray<T>
+     @SuppressWarnings("unchecked")
+     @Nonnull
+     public static <T> IArray<T> of()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(2);
+         return (IArray<T>)EMPTY;
+     }
+ 
+     @Nonnull
+     public static <T> IArrayBuilder<T> builder()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(16);
+         return new Builder<>();
+     }
+ 
+diff --git a/org/javimmutable/collections/array/TrieArrayBuilder.java b/org/javimmutable/collections/array/TrieArrayBuilder.java
+index 188ad00..05a2cd0 100644
+--- a/org/javimmutable/collections/array/TrieArrayBuilder.java
++++ b/org/javimmutable/collections/array/TrieArrayBuilder.java
+@@ -54,12 +54,12 @@ public class TrieArrayBuilder<T>
+ 
+     @Nonnull
+     public TrieArrayNode<T> buildRoot()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(30);
+         return root.toNode();
+     }
+ 
+     public int getNextIndex()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(44);
+         return nextIndex;
+     }
+ 
+diff --git a/org/javimmutable/collections/common/ArrayHelper.java b/org/javimmutable/collections/common/ArrayHelper.java
+index 1f130fb..4850159 100644
+--- a/org/javimmutable/collections/common/ArrayHelper.java
++++ b/org/javimmutable/collections/common/ArrayHelper.java
+@@ -60,7 +60,7 @@ public final class ArrayHelper
+                                    @Nonnull T[] orig,
+                                    int offset,
+                                    int limit)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(3);
+         final int length = limit - offset;
+         T[] answer = allocator.allocate(length);
+         System.arraycopy(orig, offset, answer, 0, length);
+@@ -83,7 +83,7 @@ public final class ArrayHelper
+                                    @Nonnull T[] b,
+                                    int offset,
+                                    int limit)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(17);
+         final int length = limit - offset;
+         final T[] answer = allocator.allocate(length);
+         if (offset > a.length) {
+diff --git a/org/javimmutable/collections/common/ArrayToMapAdaptor.java b/org/javimmutable/collections/common/ArrayToMapAdaptor.java
+index 51a6d0f..7e9ae23 100644
+--- a/org/javimmutable/collections/common/ArrayToMapAdaptor.java
++++ b/org/javimmutable/collections/common/ArrayToMapAdaptor.java
+@@ -66,13 +66,13 @@ public class ArrayToMapAdaptor<T>
+     }
+ 
+     public static <V> ArrayToMapAdaptor<V> of(IArray<V> map)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(31);
+         return new ArrayToMapAdaptor<V>(map);
+     }
+ 
+     @Override
+     public int size()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(45);
+         return map.size();
+     }
+ 
+diff --git a/org/javimmutable/collections/deque/ArrayDeque.java b/org/javimmutable/collections/deque/ArrayDeque.java
+index a7134d7..6933dab 100644
+--- a/org/javimmutable/collections/deque/ArrayDeque.java
++++ b/org/javimmutable/collections/deque/ArrayDeque.java
+@@ -75,13 +75,13 @@ public class ArrayDeque<T>
+     @SuppressWarnings("unchecked")
+     @Nonnull
+     public static <T> ArrayDeque<T> of()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(4);
+         return (ArrayDeque<T>)EMPTY;
+     }
+ 
+     @Nonnull
+     public static <T> IDeque<T> of(Indexed<? extends T> source)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(18);
+         return new Builder<T>().addAll(source).build();
+     }
+ 
+diff --git a/org/javimmutable/collections/deque/ForwardBuilder.java b/org/javimmutable/collections/deque/ForwardBuilder.java
+index 18f842a..bbe67ae 100644
+--- a/org/javimmutable/collections/deque/ForwardBuilder.java
++++ b/org/javimmutable/collections/deque/ForwardBuilder.java
+@@ -100,7 +100,7 @@ class ForwardBuilder<T>
+ 
+     @Override
+     public void checkInvariants()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(32);
+         leaf.checkInvariants();
+     }
+ 
+diff --git a/org/javimmutable/collections/deque/ReverseBuilder.java b/org/javimmutable/collections/deque/ReverseBuilder.java
+index 33eb086..5691f72 100644
+--- a/org/javimmutable/collections/deque/ReverseBuilder.java
++++ b/org/javimmutable/collections/deque/ReverseBuilder.java
+@@ -90,7 +90,7 @@ class ReverseBuilder<T>
+ 
+     @Override
+     public void checkInvariants()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(46);
+         leaf.checkInvariants();
+     }
+ 
+diff --git a/org/javimmutable/collections/hash/EmptyHashMap.java b/org/javimmutable/collections/hash/EmptyHashMap.java
+index 97359e1..e8f690f 100644
+--- a/org/javimmutable/collections/hash/EmptyHashMap.java
++++ b/org/javimmutable/collections/hash/EmptyHashMap.java
+@@ -71,14 +71,14 @@ public class EmptyHashMap<K, V>
+     @Nonnull
+     @Override
+     public IMapBuilder<K, V> mapBuilder()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(5);
+         return HashMap.builder();
+     }
+ 
+     @Nonnull
+     @Override
+     public Maybe<V> find(@Nonnull K key)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(19);
+         return Maybe.empty();
+     }
+ 
+diff --git a/org/javimmutable/collections/hash/EmptyHashSet.java b/org/javimmutable/collections/hash/EmptyHashSet.java
+index c4ea2e8..138b9bf 100644
+--- a/org/javimmutable/collections/hash/EmptyHashSet.java
++++ b/org/javimmutable/collections/hash/EmptyHashSet.java
+@@ -56,13 +56,13 @@ public class EmptyHashSet<T>
+ 
+     @SuppressWarnings("unchecked")
+     public static <T> EmptyHashSet<T> instance()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(33);
+         return (EmptyHashSet<T>)INSTANCE;
+     }
+ 
+     @Override
+     protected Set<T> emptyMutableSet()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(47);
+         return new java.util.HashSet<>();
+     }
+ 
+diff --git a/org/javimmutable/collections/indexed/IndexedArray.java b/org/javimmutable/collections/indexed/IndexedArray.java
+index 3f6b34c..cdae62b 100644
+--- a/org/javimmutable/collections/indexed/IndexedArray.java
++++ b/org/javimmutable/collections/indexed/IndexedArray.java
+@@ -58,7 +58,7 @@ public class IndexedArray<T>
+      * to the unsafe() constructor.
+      */
+     public static <T> IndexedArray<T> copied(T[] values)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(6);
+         return new IndexedArray<T>(values.clone());
+     }
+ 
+@@ -69,7 +69,7 @@ public class IndexedArray<T>
+      * method scope.
+      */
+     public static <T> IndexedArray<T> retained(T[] values)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(20);
+         return new IndexedArray<T>(values);
+     }
+ 
+diff --git a/org/javimmutable/collections/indexed/IndexedList.java b/org/javimmutable/collections/indexed/IndexedList.java
+index 35eebc1..433975b 100644
+--- a/org/javimmutable/collections/indexed/IndexedList.java
++++ b/org/javimmutable/collections/indexed/IndexedList.java
+@@ -64,7 +64,7 @@ public class IndexedList<T>
+      * to the unsafe() constructor.
+      */
+     public static <T> IndexedList<T> copied(List<? extends T> values)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(34);
+         return new IndexedList<T>(new ArrayList<T>(values));
+     }
+ 
+@@ -75,7 +75,7 @@ public class IndexedList<T>
+      * method scope.
+      */
+     public static <T> IndexedList<T> retained(List<? extends T> values)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(48);
+         return new IndexedList<T>(values);
+     }
+ 
+diff --git a/org/javimmutable/collections/inorder/OrderedMap.java b/org/javimmutable/collections/inorder/OrderedMap.java
+index 7d151c8..b3953c8 100644
+--- a/org/javimmutable/collections/inorder/OrderedMap.java
++++ b/org/javimmutable/collections/inorder/OrderedMap.java
+@@ -87,13 +87,13 @@ public class OrderedMap<K, V>
+ 
+     @SuppressWarnings("unchecked")
+     public static <K, V> OrderedMap<K, V> of()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(7);
+         return EMPTY;
+     }
+ 
+     @Nonnull
+     public static <K, V> IMapBuilder<K, V> builder()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(21);
+         return new IMapBuilder<K, V>()
+         {
+             private OrderedMap<K, V> map = of();
+diff --git a/org/javimmutable/collections/inorder/OrderedSet.java b/org/javimmutable/collections/inorder/OrderedSet.java
+index 942427d..3d359f8 100644
+--- a/org/javimmutable/collections/inorder/OrderedSet.java
++++ b/org/javimmutable/collections/inorder/OrderedSet.java
+@@ -72,13 +72,13 @@ public class OrderedSet<T>
+ 
+     @SuppressWarnings("unchecked")
+     public static <T> OrderedSet<T> of()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(35);
+         return EMPTY;
+     }
+ 
+     @Nonnull
+     public static <T> ISetBuilder<T> builder()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(49);
+         return new GenericSetBuilder<>(OrderedMap.builder(), map -> map.isEmpty() ? of() : new OrderedSet<>(map));
+     }
+ 
+diff --git a/org/javimmutable/collections/iterators/EntryStreamable.java b/org/javimmutable/collections/iterators/EntryStreamable.java
+index 6912e7f..facae82 100644
+--- a/org/javimmutable/collections/iterators/EntryStreamable.java
++++ b/org/javimmutable/collections/iterators/EntryStreamable.java
+@@ -54,13 +54,13 @@ public class EntryStreamable<K, V, C extends IStreamable<V>, D extends IStreamab
+     @Nonnull
+     @Override
+     public SplitableIterator<IMapEntry<K, V>> iterator()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(8);
+         return LazyMultiIterator.transformed(source.iterator(), e -> () -> TransformIterator.of(e.getValue().iterator(), v -> IMapEntry.of(e.getKey(), v)));
+     }
+ 
+     @Override
+     public int getSpliteratorCharacteristics()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(22);
+         return source.getSpliteratorCharacteristics();
+     }
+ }
+diff --git a/org/javimmutable/collections/iterators/TransformStreamable.java b/org/javimmutable/collections/iterators/TransformStreamable.java
+index 096578f..eaee91f 100644
+--- a/org/javimmutable/collections/iterators/TransformStreamable.java
++++ b/org/javimmutable/collections/iterators/TransformStreamable.java
+@@ -57,12 +57,12 @@ public class TransformStreamable<S, T>
+ 
+     public static <S, T> IStreamable<T> of(@Nonnull IStreamable<S> source,
+                                            @Nonnull Function<S, T> transforminator)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(36);
+         return new TransformStreamable<>(source, transforminator);
+     }
+ 
+     public static <K, V> IStreamable<K> ofKeys(@Nonnull IStreamable<IMapEntry<K, V>> source)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(50);
+         return of(source, IMapEntry::getKey);
+     }
+ 
+diff --git a/org/javimmutable/collections/jmhbench/MutationSwitch.java b/org/javimmutable/collections/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..7530c90
+--- /dev/null
++++ b/org/javimmutable/collections/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.javimmutable.collections.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/javimmutable/collections/list/ListAppendTimingComparison.java b/org/javimmutable/collections/list/ListAppendTimingComparison.java
+index 57e91fb..260ced7 100644
+--- a/org/javimmutable/collections/list/ListAppendTimingComparison.java
++++ b/org/javimmutable/collections/list/ListAppendTimingComparison.java
+@@ -43,7 +43,7 @@ import java.util.List;
+ public class ListAppendTimingComparison
+ {
+     public static void main(String[] argv)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(9);
+         final Mode mode = (argv.length == 0) ? Mode.LAST : Mode.valueOf(argv[0].replace("-", "_").toUpperCase());
+         final long startMillis = System.currentTimeMillis();
+         runTest(mode);
+diff --git a/org/javimmutable/collections/list/ListCollisionMap.java b/org/javimmutable/collections/list/ListCollisionMap.java
+index b970210..a018ebb 100644
+--- a/org/javimmutable/collections/list/ListCollisionMap.java
++++ b/org/javimmutable/collections/list/ListCollisionMap.java
+@@ -60,7 +60,7 @@ public class ListCollisionMap<K, V>
+     @SuppressWarnings("unchecked")
+     @Nonnull
+     public static <K, V> ListCollisionMap<K, V> instance()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(23);
+         return INSTANCE;
+     }
+ 
+@@ -74,7 +74,7 @@ public class ListCollisionMap<K, V>
+     @Nonnull
+     @Override
+     public Node empty()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(37);
+         return EmptyNode.instance();
+     }
+ 
+diff --git a/org/javimmutable/collections/listmap/HashListMap.java b/org/javimmutable/collections/listmap/HashListMap.java
+index c703dd8..09171d4 100644
+--- a/org/javimmutable/collections/listmap/HashListMap.java
++++ b/org/javimmutable/collections/listmap/HashListMap.java
+@@ -65,13 +65,13 @@ public class HashListMap<K, V>
+ 
+     @SuppressWarnings("unchecked")
+     public static <K, V> HashListMap<K, V> of()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(10);
+         return EMPTY;
+     }
+ 
+     @Override
+     public void checkInvariants()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(24);
+         checkListMapInvariants();
+     }
+ 
+diff --git a/org/javimmutable/collections/listmap/ListMapTimingLoop.java b/org/javimmutable/collections/listmap/ListMapTimingLoop.java
+index e372dff..5a3ab27 100644
+--- a/org/javimmutable/collections/listmap/ListMapTimingLoop.java
++++ b/org/javimmutable/collections/listmap/ListMapTimingLoop.java
+@@ -46,7 +46,7 @@ public final class ListMapTimingLoop
+     }
+ 
+     public static void main(String[] args)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(38);
+         final int maxLoops = 25000000;
+         final int maxKey = 75000;
+         final int maxValue = 999999999;
+diff --git a/org/javimmutable/collections/serialization/ArrayDequeProxy.java b/org/javimmutable/collections/serialization/ArrayDequeProxy.java
+index eb47031..ab2c038 100644
+--- a/org/javimmutable/collections/serialization/ArrayDequeProxy.java
++++ b/org/javimmutable/collections/serialization/ArrayDequeProxy.java
+@@ -69,7 +69,7 @@ public class ArrayDequeProxy
+     @Override
+     public void writeExternal(ObjectOutput out)
+         throws IOException
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(11);
+         out.writeInt(DEQUE_VERSION);
+         out.writeInt(deque.size());
+         for (Object obj : deque) {
+@@ -80,7 +80,7 @@ public class ArrayDequeProxy
+     @Override
+     public void readExternal(ObjectInput in)
+         throws IOException, ClassNotFoundException
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(25);
+         final int version = in.readInt();
+         if (version != DEQUE_VERSION) {
+             throw new IOException("unexpected version number: expected " + DEQUE_VERSION + " found " + version);
+diff --git a/org/javimmutable/collections/serialization/ArrayProxy.java b/org/javimmutable/collections/serialization/ArrayProxy.java
+index e09207a..b8b5ada 100644
+--- a/org/javimmutable/collections/serialization/ArrayProxy.java
++++ b/org/javimmutable/collections/serialization/ArrayProxy.java
+@@ -69,7 +69,7 @@ public class ArrayProxy
+     @Override
+     public void writeExternal(ObjectOutput out)
+         throws IOException
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(39);
+         out.writeInt(LIST_VERSION);
+         out.writeInt(list.size());
+         list.forEachThrows(entry -> {
+diff --git a/org/javimmutable/collections/setmap/HashSetMap.java b/org/javimmutable/collections/setmap/HashSetMap.java
+index dac6e4a..fa12ba2 100644
+--- a/org/javimmutable/collections/setmap/HashSetMap.java
++++ b/org/javimmutable/collections/setmap/HashSetMap.java
+@@ -66,13 +66,13 @@ public class HashSetMap<K, V>
+ 
+     @SuppressWarnings("unchecked")
+     public static <K, V> HashSetMap<K, V> of()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(12);
+         return EMPTY;
+     }
+ 
+     @Override
+     public void checkInvariants()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(26);
+         checkSetMapInvariants();
+     }
+ 
+diff --git a/org/javimmutable/collections/setmap/OrderedSetMap.java b/org/javimmutable/collections/setmap/OrderedSetMap.java
+index a68db96..81f8929 100644
+--- a/org/javimmutable/collections/setmap/OrderedSetMap.java
++++ b/org/javimmutable/collections/setmap/OrderedSetMap.java
+@@ -66,7 +66,7 @@ public class OrderedSetMap<K, V>
+ 
+     @SuppressWarnings("unchecked")
+     public static <K, V> OrderedSetMap<K, V> of()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(40);
+         return EMPTY;
+     }
+ 
+diff --git a/org/javimmutable/collections/tree/ComparableComparator.java b/org/javimmutable/collections/tree/ComparableComparator.java
+index 167c24c..005ea2a 100644
+--- a/org/javimmutable/collections/tree/ComparableComparator.java
++++ b/org/javimmutable/collections/tree/ComparableComparator.java
+@@ -56,7 +56,7 @@ public final class ComparableComparator<V extends Comparable<V>>
+      */
+     @SuppressWarnings("unchecked")
+     public static <T extends Comparable<T>> ComparableComparator<T> of()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(13);
+         return INSTANCE;
+     }
+ 
+diff --git a/org/javimmutable/collections/tree/TreeCollisionMap.java b/org/javimmutable/collections/tree/TreeCollisionMap.java
+index f53404d..6e00886 100644
+--- a/org/javimmutable/collections/tree/TreeCollisionMap.java
++++ b/org/javimmutable/collections/tree/TreeCollisionMap.java
+@@ -73,7 +73,7 @@ public class TreeCollisionMap<K, V>
+ 
+     @SuppressWarnings("unchecked")
+     public static <K, V> TreeCollisionMap<K, V> instance()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(27);
+         return EMPTY;
+     }
+ 
+@@ -86,7 +86,7 @@ public class TreeCollisionMap<K, V>
+     @Nonnull
+     @Override
+     public Node empty()
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(41);
+         return FringeNode.instance();
+     }
+ 
+diff --git a/org/javimmutable/collections/util/Functions.java b/org/javimmutable/collections/util/Functions.java
+index c10e1a9..d6f75b0 100644
+--- a/org/javimmutable/collections/util/Functions.java
++++ b/org/javimmutable/collections/util/Functions.java
+@@ -62,7 +62,7 @@ public final class Functions
+     public static <T, R> R foldLeft(R accumulator,
+                                     Iterator<? extends T> iterator,
+                                     Func2<R, ? super T, R> func)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(14);
+         while (iterator.hasNext()) {
+             accumulator = func.apply(accumulator, iterator.next());
+         }
+@@ -77,7 +77,7 @@ public final class Functions
+     public static <T, R> R foldRight(R accumulator,
+                                      Iterator<? extends T> iterator,
+                                      Func2<R, ? super T, R> func)
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(28);
+         return foldLeft(accumulator, reverse(iterator), func);
+     }
+ 
+diff --git a/org/javimmutable/collections/util/MapAccessTimingComparison.java b/org/javimmutable/collections/util/MapAccessTimingComparison.java
+index abac6c9..625120c 100644
+--- a/org/javimmutable/collections/util/MapAccessTimingComparison.java
++++ b/org/javimmutable/collections/util/MapAccessTimingComparison.java
+@@ -59,7 +59,7 @@ public class MapAccessTimingComparison
+ 
+     public static void main(String[] argv)
+         throws Exception
+-    {
++    { org.javimmutable.collections.jmhbench.MutationSwitch.tick(42);
+         if (argv.length != 2) {
+             System.err.printf("usage: %s seed loops", MapAccessTimingComparison.class.getSimpleName());
+             System.exit(1);

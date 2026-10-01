@@ -1,0 +1,79 @@
+```
+package io.reactivex.rxjava3.internal.jdk8.benchmark;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableSubscriber;
+import io.reactivex.rxjava3.internal.jdk8.FlowableFlatMapStream;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+/**
+ * JMH benchmark for {@link FlowableFlatMapStream}.
+ *
+ * Measures the throughput (items per second) of the operator when flattening a
+ * {@link Flowable} of integers into inner {@link Stream}s.
+ *
+ * The benchmark is deliberately simple: a source {@code Flowable<Integer>} emits
+ * a fixed number of items, each of which is mapped to a {@code Stream<Integer>}
+ * of configurable size. The downstream consumes the items via a {@link Blackhole}
+ * to avoid dead‑code elimination.
+ *
+ * Best‑practice JMH settings are used:
+ *   • Warm‑up iterations to let the JIT stabilize
+ *   • Measurement iterations for reliable results
+ *   • Multiple forks to isolate JVM state
+ *   • Throughput mode (operations per second)
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class FlowableFlatMapStreamBenchmark {
+
+    /** Number of items emitted by the upstream source Flowable. */
+    @Param({"1000", "10000"})
+    public int upstreamItemCount;
+
+    /** Number of elements produced by each inner Stream. */
+    @Param({"10", "100"})
+    public int innerStreamSize;
+
+    /** Prefetch size used by the operator. */
+    @Param({"32", "128"})
+    public int prefetch;
+
+    private Flowable<Integer> source;
+    private Function<Integer, Stream<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Upstream emits a range of integers [0, upstreamItemCount)
+        source = Flowable.range(0, upstreamItemCount);
+
+        // Mapper creates a Stream of integers [0, innerStreamSize) for each upstream item
+        mapper = i -> IntStream.range(0, innerStreamSize).boxed();
+    }
+
+    /**
+     * Benchmark method that subscribes to the FlowableFlatMapStream operator,
+     * consumes all emitted items, and blocks until completion.
+     *
+     * @param bh Blackhole to consume items and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void flatMapStreamThroughput(Blackhole bh) {
+        // Create the operator instance
+        Flowable<Integer> flatMapped = new FlowableFlatMapStream<>(source, mapper, prefetch);
+
+        // Subscribe and block, consuming each item with the Blackhole
+        flatMapped.blockingSubscribe(bh::consume);
+    }
+}
+```

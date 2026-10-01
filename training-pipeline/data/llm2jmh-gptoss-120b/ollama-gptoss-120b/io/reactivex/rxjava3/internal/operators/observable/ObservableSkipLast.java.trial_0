@@ -1,0 +1,59 @@
+```
+package io.reactivex.rxjava3.benchmark;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Observable;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableSkipLast}.
+ *
+ * Measures the throughput (operations per second) of the skipLast operator
+ * under different skip sizes and source lengths.
+ *
+ * Best practices applied:
+ * - Use @State to share immutable test data across benchmark iterations.
+ * - Parameterize skip size and source count with @Param for easy exploration.
+ * - Consume emitted items via Blackhole to prevent dead‑code elimination.
+ * - Warm‑up and measurement phases are defined to let the JVM reach a steady state.
+ * - Forking isolates the benchmark from JVM startup effects.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableSkipLastBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items to skip at the end of the stream. */
+        @Param({"0", "1", "10", "100"})
+        public int skip;
+
+        /** Total number of items emitted by the source Observable. */
+        @Param({"1000", "100000"})
+        public int count;
+
+        /** Source Observable emitting a range of integers. */
+        public Observable<Integer> source;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Observable.range creates a cold source that emits 'count' sequential integers.
+            source = Observable.range(1, count);
+        }
+    }
+
+    @Benchmark
+    public void skipLastThroughput(BenchmarkState state, Blackhole bh) {
+        state.source
+                .skipLast(state.skip)
+                .subscribe(bh::consume);
+    }
+}
+```

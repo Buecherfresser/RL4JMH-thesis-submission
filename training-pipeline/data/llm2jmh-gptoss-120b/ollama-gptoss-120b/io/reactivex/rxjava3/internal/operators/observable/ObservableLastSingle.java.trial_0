@@ -1,0 +1,65 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableLastSingle;
+
+/**
+ * Benchmark for {@link ObservableLastSingle}.
+ *
+ * Measures the throughput of retrieving the last element from an {@link Observable}
+ * using the internal {@code ObservableLastSingle} operator.
+ *
+ * The benchmark emits a configurable number of integer items and subscribes to the
+ * resulting {@code Single}. The result is consumed by a {@link Blackhole} to prevent
+ * dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class ObservableLastSingleBenchmark {
+
+    /** Number of items emitted by the source Observable. */
+    @Param({"1", "10", "1000", "100000"})
+    public int itemCount;
+
+    /** Source Observable that emits a range of integers. */
+    private Observable<Integer> source;
+
+    /** The {@code Single} that will emit the last item of {@code source}. */
+    private Single<Integer> lastSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits a deterministic range of integers.
+        source = Observable.range(1, itemCount);
+        // Wrap the source with the internal ObservableLastSingle operator.
+        // No default value is supplied, so it will emit NoSuchElementException for empty sources.
+        lastSingle = new ObservableLastSingle<>(source, null);
+    }
+
+    /**
+     * Executes the benchmark: subscribes to the {@code Single} and blocks until the
+     * result is available. The result is consumed by the {@link Blackhole}.
+     *
+     * @param bh Blackhole to consume the result and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void lastSingleThroughput(Blackhole bh) {
+        // blockingGet() is used to synchronously obtain the value for the benchmark.
+        // In a real application you would use asynchronous subscription,
+        // but blockingGet provides a simple, deterministic measurement.
+        Integer result = lastSingle.blockingGet();
+        bh.consume(result);
+    }
+}
+```

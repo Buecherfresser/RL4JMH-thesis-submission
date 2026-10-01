@@ -1,0 +1,86 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.core.CompletableSource;
+import io.reactivex.rxjava3.internal.operators.completable.CompletableMergeDelayErrorIterable;
+import io.reactivex.rxjava3.observers.TestObserver;
+
+/**
+ * Benchmark for {@link CompletableMergeDelayErrorIterable}.
+ *
+ * The benchmark creates an {@code Iterable} of {@link CompletableSource}s,
+ * each of which completes immediately. The merge operator is then subscribed
+ * to and the terminal event is awaited. Throughput (operations per second)
+ * is measured.
+ *
+ * Best practices applied:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Parameterize the number of inner sources to explore scaling behavior.</li>
+ *   <li>Perform all allocations in {@code @Setup} to keep the benchmark measurement focused on the merge logic.</li>
+ *   <li>Consume the result with a {@link TestObserver} to prevent dead‑code elimination.</li>
+ *   <li>Configure warm‑up and measurement iterations via JMH defaults (can be overridden on the command line).</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class CompletableMergeDelayErrorIterableBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * Number of inner {@link CompletableSource}s to merge.
+         * Typical values: 1, 10, 100, 1000.
+         */
+        @Param({"1", "10", "100", "1000"})
+        public int sourceCount;
+
+        /** The iterable supplied to the operator. */
+        public Iterable<? extends CompletableSource> sources;
+
+        /** The operator instance under test. */
+        public CompletableMergeDelayErrorIterable operator;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            List<CompletableSource> list = new ArrayList<>(sourceCount);
+            for (int i = 0; i < sourceCount; i++) {
+                // Each source completes immediately; using Completable.complete()
+                list.add(Completable.complete());
+            }
+            this.sources = list;
+            this.operator = new CompletableMergeDelayErrorIterable(sources);
+        }
+    }
+
+    /**
+     * Executes the merge operation and blocks until termination.
+     *
+     * @param state the benchmark state containing the prepared operator
+     * @return a {@link TestObserver} that has received the terminal event
+     */
+    @Benchmark
+    public TestObserver<Void> mergeAndAwait(BenchmarkState state) {
+        TestObserver<Void> testObserver = new TestObserver<>();
+        // Subscribe the test observer to the operator
+        state.operator.subscribe(testObserver);
+        // Block until the merge completes (or errors). This is safe because all inner
+        // completables are synchronous and complete immediately.
+        testObserver.awaitDone(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        // Return the observer to prevent dead‑code elimination.
+        return testObserver;
+    }
+}
+```

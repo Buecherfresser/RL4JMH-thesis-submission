@@ -1,0 +1,111 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.*;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+/**
+ * JMH benchmarks for the scalar‑optimisation paths in {@link ObservableScalarXMap}.
+ *
+ * <p>All benchmarks run in {@link Mode#Throughput} to measure how many
+ * operations can be performed per second. The {@link Blackhole} is used to
+ * consume emitted values and prevent dead‑code elimination.</p>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class ObservableScalarXMapBenchmark {
+
+    /** A scalar source that implements both {@link ObservableSource} and {@link Supplier}. */
+    private ObservableSource<Integer> scalarSource;
+
+    /** Mapper that returns a scalar {@link ObservableSource} (also a {@link Supplier}). */
+    private Function<Integer, ObservableSource<String>> scalarMapper;
+
+    /** Mapper that returns a regular (non‑scalar) {@link Observable}. */
+    private Function<Integer, ObservableSource<String>> regularMapper;
+
+    /** A minimal observer that discards all signals – used for the tryScalarXMapSubscribe benchmarks. */
+    private Observer<String> noopObserver;
+
+    @Setup
+    public void setUp() {
+        // source that directly supplies a value (fast‑path)
+        scalarSource = new ScalarObservableSource<>(42);
+
+        // mapper that also supplies a value directly (fast‑path for inner Observable)
+        scalarMapper = i -> new ScalarObservableSource<>("value-" + i);
+
+        // mapper that creates a regular Observable (no fast‑path for inner)
+        regularMapper = i -> Observable.just("value-" + i);
+
+        // observer that does nothing – we only care about the subscription mechanics
+        noopObserver = new Observer<String>() {
+            @Override public void onSubscribe(Disposable d) {}
+            @Override public void onNext(String s) {}
+            @Override public void onError(Throwable e) {}
+            @Override public void onComplete() {}
+        };
+    }
+
+    /**
+     * Fast‑path: both source and inner Observable are scalar (Supplier) instances.
+     */
+    @Benchmark
+    public boolean scalarSourceWithScalarMapper() {
+        return ObservableScalarXMap.tryScalarXMapSubscribe(
+                scalarSource, noopObserver, scalarMapper);
+    }
+
+    /**
+     * Fast‑path for the source only; the inner Observable is a regular Observable.
+     */
+    @Benchmark
+    public boolean scalarSourceWithRegularMapper() {
+        return ObservableScalarXMap.tryScalarXMapSubscribe(
+                scalarSource, noopObserver, regularMapper);
+    }
+
+    /**
+     * Benchmark the creation of the optimized {@code ScalarXMapObservable}.
+     */
+    @Benchmark
+    public Observable<String> createScalarXMapObservable() {
+        return ObservableScalarXMap.scalarXMap(42, scalarMapper);
+    }
+
+    /**
+     * Subscribe to the optimized Observable and consume the emitted value.
+     * The {@link Blackhole} guarantees the value is observed by the JVM.
+     */
+    @Benchmark
+    public void subscribeScalarXMapObservable(Blackhole bh) {
+        ObservableScalarXMap.scalarXMap(42, scalarMapper)
+                .subscribe(bh::consume);
+    }
+
+    /** Helper class that implements both {@link ObservableSource} and {@link Supplier}. */
+    private static final class ScalarObservableSource<T> implements ObservableSource<T>, Supplier<T> {
+        private final T value;
+
+        ScalarObservableSource(T value) {
+            this.value = value;
+        }
+
+        @Override
+        public T get() {
+            return value;
+        }
+
+        @Override
+        public void subscribe(Observer<? super T> observer) {
+            // Not used in the fast‑path benchmarks; left empty intentionally.
+        }
+    }
+}
+```

@@ -1,0 +1,94 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.internal.schedulers.ComputationScheduler;
+import io.reactivex.rxjava3.internal.schedulers.TrampolineScheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableInterval}.
+ * Measures the throughput (items per second) emitted by the operator under different
+ * schedulers and request patterns.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class FlowableIntervalBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items to request from the Flowable. */
+        @Param({"1000", "10000"})
+        public int requestSize;
+
+        /** Period between emissions in nanoseconds. Zero means as fast as possible. */
+        @Param({"0", "1000"})
+        public long periodNanos;
+
+        /** Scheduler to run the interval on. */
+        @Param({"trampoline", "computation"})
+        public String schedulerType;
+
+        /** The Flowable under test. */
+        Flowable<Long> flowable;
+
+        /** Scheduler instance used for the benchmark. */
+        Scheduler scheduler;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            switch (schedulerType) {
+                case "trampoline":
+                    scheduler = TrampolineScheduler.instance();
+                    break;
+                case "computation":
+                    scheduler = ComputationScheduler.instance();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported scheduler: " + schedulerType);
+            }
+
+            // Create the FlowableInterval with the configured period and scheduler.
+            flowable = Flowable.interval(
+                    periodNanos,
+                    periodNanos,
+                    TimeUnit.NANOSECONDS,
+                    scheduler
+            )
+            // Request a fixed number of items to avoid unbounded backpressure.
+            .take(requestSize);
+        }
+
+        @TearDown(Level.Trial)
+        public void tearDown() {
+            // Dispose the scheduler if it holds resources (computation scheduler does not need explicit shutdown).
+            if (scheduler instanceof ComputationScheduler) {
+                ((ComputationScheduler) scheduler).shutdown();
+            }
+        }
+    }
+
+    /**
+     * Consumes the configured number of items from the Flowable.
+     * The {@code blockingSubscribe} call forces the upstream to run synchronously
+     * for the duration of the benchmark iteration, allowing JMH to measure
+     * the effective throughput.
+     */
+    @Benchmark
+    public void intervalThroughput(BenchmarkState state) {
+        // The consumer does nothing; we only care about the emission cost.
+        state.flowable.blockingSubscribe(v -> {
+            // no-op
+        });
+    }
+}
+```

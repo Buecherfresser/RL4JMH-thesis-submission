@@ -1,0 +1,123 @@
+package io.reactivex.rxjava3.operators;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReferenceArray;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SpscLinkedArrayQueue}.
+ *
+ * The benchmark measures throughput of single‑producer single‑consumer (SPSC)
+ * operations. Two threads are used: one produces elements, the other consumes
+ * them. The queue is pre‑allocated with a power‑of‑two capacity to avoid
+ * resizing during the measurement phase.
+ *
+ * Best‑practice JMH settings:
+ * - Warm‑up iterations to let the JVM reach a steady state.
+ * - Multiple measurement iterations for statistical confidence.
+ * - Several forks to isolate JVM optimisations.
+ * - Use of @Group to keep producer and consumer threads coordinated.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Group)
+public class SpscLinkedArrayQueueBenchmark {
+
+    /**
+     * Queue capacity – must be a power of two and at least 8.
+     */
+    // 4096
+    private static final int CAPACITY = 1 << 12;
+
+    /**
+     * The queue under test.
+     */
+    private SpscLinkedArrayQueue<Integer> queue;
+
+    /**
+     * A dummy value used for production.
+     */
+    private static final Integer ELEMENT = 1;
+
+    /**
+     * Initialise the queue before each group execution.
+     * The queue is freshly allocated to avoid interference from previous runs.
+     */
+    @Setup(Level.Iteration)
+    public void setUp() {
+        queue = new SpscLinkedArrayQueue<>(CAPACITY);
+    }
+
+    /**
+     * Producer thread – offers a single element to the queue.
+     * The method returns {@code true} to keep the benchmark signature simple.
+     */
+    @Benchmark
+    @Group("spsc")
+    @GroupThreads(1)
+    public boolean produce() {
+        // In a real workload the element would vary; here we reuse a constant.
+        return queue.offer(ELEMENT);
+    }
+
+    /**
+     * Consumer thread – polls an element from the queue.
+     * The returned value is ignored; the benchmark measures the call rate.
+     */
+    @Benchmark
+    @Group("spsc")
+    @GroupThreads(1)
+    public Integer consume() {
+        // poll() may return null if the producer is slower; this is acceptable
+        // for throughput measurement as it reflects realistic back‑pressure.
+        return queue.poll();
+    }
+
+    /**
+     * Benchmark that measures the combined latency of a single offer‑followed‑by‑poll
+     * pair executed by the same thread. Useful for single‑threaded baseline.
+     */
+    @Benchmark
+    @GroupThreads(1)
+    @Group("singleThread")
+    public Integer offerAndPoll() {
+        queue.offer(ELEMENT);
+        return queue.poll();
+    }
+}

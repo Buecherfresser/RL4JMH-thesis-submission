@@ -1,0 +1,130 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SingleDoOnLifecycle}.
+ *
+ * The benchmark measures the throughput of subscribing to a {@code SingleDoOnLifecycle}
+ * that immediately emits a value and the cost of disposing the subscription.
+ *
+ * Best‑practice JMH settings are used:
+ * - Warm‑up iterations to let the JIT stabilize
+ * - Measurement iterations for reliable results
+ * - Multiple forks to avoid JVM warm‑up effects
+ * - Throughput mode (operations per second)
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class SingleDoOnLifecycleBenchmark {
+
+    /**
+     * Source Single that emits a constant integer synchronously.
+     */
+    private Single<Integer> source;
+
+    /**
+     * The operator under test.
+     */
+    private Single<Integer> operator;
+
+    /**
+     * No‑op onSubscribe consumer.
+     */
+    private static final Consumer<Disposable> NOOP_ON_SUBSCRIBE = d -> {
+        // intentionally empty
+    };
+
+    /**
+     * No‑op onDispose action.
+     */
+    private static final Action NOOP_ON_DISPOSE = () -> {
+        // intentionally empty
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Single.just emits the value immediately on subscription.
+        source = Single.just(42);
+        // Wrap the source with the lifecycle operator.
+        operator = new SingleDoOnLifecycle<>(source, NOOP_ON_SUBSCRIBE, NOOP_ON_DISPOSE);
+    }
+
+    /**
+     * Benchmark the cost of a full subscription cycle that ends with onSuccess.
+     * The {@code blockingGet()} call forces the subscription to run synchronously,
+     * ensuring the measurement captures the complete operator path.
+     */
+    @Benchmark
+    public void subscribeSuccess(Blackhole bh) {
+        int value = operator.blockingGet();
+        bh.consume(value);
+    }
+
+    /**
+     * Benchmark the cost of subscribing and immediately disposing the subscription.
+     * This measures the overhead of the {@code dispose()} path, including the
+     * execution of the {@code onDispose} action.
+     */
+    @Benchmark
+    public void subscribeAndDispose(Blackhole bh) {
+        Disposable d = operator.subscribe(new SingleObserver<Integer>() {
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                // no‑op
+            }
+
+            @Override
+            public void onSuccess(Integer value) {
+                // no‑op
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // no‑op
+            }
+        });
+        // Dispose immediately to exercise the dispose logic.
+        d.dispose();
+        bh.consume(d);
+    }
+}

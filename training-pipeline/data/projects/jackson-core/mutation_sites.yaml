@@ -1,0 +1,64 @@
+# Curated performance-mutation sites for jackson-core (GRPO RL corpus).
+#
+# Hand-picked from good_classes.yaml: concrete classes and hot ~once-per-call public
+# methods (encode/decode/hash/aggregate/set-algebra kernels) that a JMH benchmark drives
+# once per invocation. Several methods per class => ``killed / in-class mutants`` rewards
+# benchmark coverage of the subject's core operations.
+#
+# Regenerate with:
+#   jmh-make-mutants jackson-core --source data/external-src/jackson-core \
+#       --sites data/projects/jackson-core/mutation_sites.yaml
+
+package_root: com.fasterxml.jackson.core
+
+sites:
+  - {class: com.fasterxml.jackson.core.io.JsonStringEncoder, method: encodeAsUTF8, match: "(String text)", note: "JsonStringEncoder.encodeAsUTF8"}
+  - {class: com.fasterxml.jackson.core.io.JsonStringEncoder, method: quoteAsString, match: "(String input)", note: "JsonStringEncoder.quoteAsString"}
+  - {class: com.fasterxml.jackson.core.io.JsonStringEncoder, method: quoteAsUTF8, match: "(String text)", note: "JsonStringEncoder.quoteAsUTF8"}
+  - {class: com.fasterxml.jackson.core.io.NumberInput, method: inLongRange, match: "(char[] ch, int off, int len, boolean negative)", note: "NumberInput.inLongRange"}
+  - {class: com.fasterxml.jackson.core.io.NumberInput, method: looksLikeValidNumber, match: "(final String s)", note: "NumberInput.looksLikeValidNumber"}
+  - {class: com.fasterxml.jackson.core.io.NumberInput, method: parseAsDouble, match: "(final String s, final double def)", note: "NumberInput.parseAsDouble"}
+  - {class: com.fasterxml.jackson.core.io.NumberOutput, method: outputInt, match: "(int v, char[] b, int off)", note: "NumberOutput.outputInt"}
+  - {class: com.fasterxml.jackson.core.io.NumberOutput, method: outputLong, match: "(long v, char[] b, int off)", note: "NumberOutput.outputLong"}
+  - {class: com.fasterxml.jackson.core.io.CharTypes, method: appendQuoted, match: "(StringBuilder sb, String content)", note: "CharTypes.appendQuoted"}
+  - {class: com.fasterxml.jackson.core.io.CharTypes, method: copyHexBytes, match: "()", note: "CharTypes.copyHexBytes"}
+  - {class: com.fasterxml.jackson.core.io.CharTypes, method: copyHexChars, match: "()", note: "CharTypes.copyHexChars"}
+  - {class: com.fasterxml.jackson.core.io.BigDecimalParser, method: parse, match: "(String valueStr)", note: "BigDecimalParser.parse"}
+  - {class: com.fasterxml.jackson.core.io.BigDecimalParser, method: parseWithFastParser, match: "(final String valueStr)", note: "BigDecimalParser.parseWithFastParser"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: encodeBase64Chunk, match: "(int b24, char[] buffer, int outPtr)", note: "Base64Variant.encodeBase64Chunk"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: acceptsPaddingOnRead, match: "()", note: "Base64Variant.acceptsPaddingOnRead"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: decodeBase64Byte, match: "(byte b)", note: "Base64Variant.decodeBase64Byte"}
+  - {class: com.fasterxml.jackson.core.util.TextBuffer, method: contentsAsDecimal, match: "() throws NumberFormatException", note: "TextBuffer.contentsAsDecimal"}
+  - {class: com.fasterxml.jackson.core.util.TextBuffer, method: contentsAsDouble, match: "(final boolean useFastParser) throws NumberFormatException", note: "TextBuffer.contentsAsDouble"}
+  - {class: com.fasterxml.jackson.core.util.TextBuffer, method: contentsAsFloat, match: "() throws NumberFormatException", note: "TextBuffer.contentsAsFloat"}
+  - {class: com.fasterxml.jackson.core.util.ByteArrayBuilder, method: appendFourBytes, match: "(int b32)", note: "ByteArrayBuilder.appendFourBytes"}
+  - {class: com.fasterxml.jackson.core.util.ByteArrayBuilder, method: appendThreeBytes, match: "(int b24)", note: "ByteArrayBuilder.appendThreeBytes"}
+  - {class: com.fasterxml.jackson.core.util.ByteArrayBuilder, method: appendTwoBytes, match: "(int b16)", note: "ByteArrayBuilder.appendTwoBytes"}
+  - {class: com.fasterxml.jackson.core.util.BufferRecycler, method: balloc, match: "(int size)", note: "BufferRecycler.balloc"}
+  - {class: com.fasterxml.jackson.core.util.BufferRecycler, method: byteBufferLength, match: "(int ix)", note: "BufferRecycler.byteBufferLength"}
+  - {class: com.fasterxml.jackson.core.util.BufferRecycler, method: calloc, match: "(int size)", note: "BufferRecycler.calloc"}
+  - {class: com.fasterxml.jackson.core.JsonFactory, method: configure, match: "(JsonFactory.Feature f, boolean state)", note: "JsonFactory.configure"}
+  - {class: com.fasterxml.jackson.core.JsonFactory, method: disable, match: "(JsonFactory.Feature f)", note: "JsonFactory.disable"}
+  - {class: com.fasterxml.jackson.core.JsonFactory, method: enable, match: "(JsonFactory.Feature f)", note: "JsonFactory.enable"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: decodeBase64Char, match: "(char c)", note: "Base64Variant.decodeBase64Char"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: encodeBase64BitsAsByte, match: "(int value)", note: "Base64Variant.encodeBase64BitsAsByte"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: encodeBase64BitsAsChar, match: "(int value)", note: "Base64Variant.encodeBase64BitsAsChar"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: encodeBase64Partial, match: "(int bits, int outputBytes, char[] buffer, int outPtr)", note: "Base64Variant.encodeBase64Partial"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: missingPaddingMessage, match: "()", note: "Base64Variant.missingPaddingMessage"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: paddingReadBehaviour, match: "()", note: "Base64Variant.paddingReadBehaviour"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: requiresPaddingOnRead, match: "()", note: "Base64Variant.requiresPaddingOnRead"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: unexpectedPaddingMessage, match: "()", note: "Base64Variant.unexpectedPaddingMessage"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: usesPadding, match: "()", note: "Base64Variant.usesPadding"}
+  - {class: com.fasterxml.jackson.core.Base64Variant, method: usesPaddingChar, match: "(char c)", note: "Base64Variant.usesPaddingChar"}
+  - {class: com.fasterxml.jackson.core.JsonFactory, method: requiresCustomCodec, match: "()", note: "JsonFactory.requiresCustomCodec"}
+  - {class: com.fasterxml.jackson.core.JsonFactory, method: requiresPropertyOrdering, match: "()", note: "JsonFactory.requiresPropertyOrdering"}
+  - {class: com.fasterxml.jackson.core.JsonFactory, method: streamReadConstraints, match: "()", note: "JsonFactory.streamReadConstraints"}
+  - {class: com.fasterxml.jackson.core.JsonFactory, method: streamWriteConstraints, match: "()", note: "JsonFactory.streamWriteConstraints"}
+  - {class: com.fasterxml.jackson.core.JsonFactory, method: version, match: "()", note: "JsonFactory.version"}
+  - {class: com.fasterxml.jackson.core.io.CharTypes, method: charToHex, match: "(int ch)", note: "CharTypes.charToHex"}
+  - {class: com.fasterxml.jackson.core.io.CharTypes, method: escapesFor, match: "(int quoteChar)", note: "CharTypes.escapesFor"}
+  - {class: com.fasterxml.jackson.core.io.CharTypes, method: hexToChar, match: "(int ch)", note: "CharTypes.hexToChar"}
+  - {class: com.fasterxml.jackson.core.io.NumberInput, method: parseAsInt, match: "(String s, int def)", note: "NumberInput.parseAsInt"}
+  - {class: com.fasterxml.jackson.core.io.NumberInput, method: parseAsLong, match: "(String s, long def)", note: "NumberInput.parseAsLong"}
+  - {class: com.fasterxml.jackson.core.io.NumberInput, method: parseBigDecimal, match: "(final String s) throws NumberFormatException", note: "NumberInput.parseBigDecimal"}
+  - {class: com.fasterxml.jackson.core.io.NumberInput, method: parseBigInteger, match: "(final String s) throws NumberFormatException", note: "NumberInput.parseBigInteger"}

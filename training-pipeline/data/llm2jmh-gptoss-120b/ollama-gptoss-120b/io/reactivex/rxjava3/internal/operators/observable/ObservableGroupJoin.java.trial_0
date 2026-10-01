@@ -1,0 +1,63 @@
+```
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableGroupJoin;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class ObservableGroupJoinBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        Observable<Integer> left;
+        Observable<Integer> right;
+        Function<Integer, ObservableSource<Integer>> leftEnd;
+        Function<Integer, ObservableSource<Integer>> rightEnd;
+        BiFunction<Integer, Observable<Integer>, Integer> resultSelector;
+        int size = 1_000; // number of items per source
+
+        @Setup(Level.Trial)
+        public void setup() {
+            left = Observable.range(1, size);
+            right = Observable.range(1, size);
+
+            // Each element's window closes immediately after the element is emitted.
+            leftEnd = v -> Observable.just(v);
+            rightEnd = v -> Observable.just(v);
+
+            // Simple selector that returns the left value; the right Observable is ignored.
+            resultSelector = (l, o) -> l;
+        }
+
+        void execute(Blackhole bh) {
+            ObservableGroupJoin<Integer, Integer, Integer, Integer, Integer> op =
+                new ObservableGroupJoin<>(left, right, leftEnd, rightEnd, resultSelector);
+
+            op.subscribe(new Observer<Integer>() {
+                @Override public void onSubscribe(Disposable d) { /* no-op */ }
+
+                @Override public void onNext(Integer v) {
+                    bh.consume(v);
+                }
+
+                @Override public void onError(Throwable e) {
+                    e.printStackTrace();
+                }
+
+                @Override public void onComplete() { /* no-op */ }
+            });
+        }
+    }
+
+    @Benchmark
+    public void groupJoinThroughput(BenchmarkState state, Blackhole bh) {
+        state.execute(bh);
+    }
+}
+```

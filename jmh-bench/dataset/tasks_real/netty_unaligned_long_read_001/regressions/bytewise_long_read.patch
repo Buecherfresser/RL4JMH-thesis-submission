@@ -1,0 +1,29 @@
+--- a/bench/LongReader.java
++++ b/bench/LongReader.java
+@@ -1,17 +1,18 @@
+ package bench;
+-
+-import java.lang.invoke.MethodHandles;
+-import java.lang.invoke.VarHandle;
+-import java.nio.ByteOrder;
+ 
+ public final class LongReader {
+ 
+-    private static final VarHandle LONG_VH =
+-        MethodHandles.byteArrayViewVarHandle(long[].class, ByteOrder.BIG_ENDIAN);
+-
+     private LongReader() {}
+ 
++    // Regressed: piece the long together with eight individual byte reads.
+     public static long readLong(byte[] buf, int off) {
+-        return (long) LONG_VH.get(buf, off);
++        return ((long)(buf[off]     & 0xff) << 56)
++             | ((long)(buf[off + 1] & 0xff) << 48)
++             | ((long)(buf[off + 2] & 0xff) << 40)
++             | ((long)(buf[off + 3] & 0xff) << 32)
++             | ((long)(buf[off + 4] & 0xff) << 24)
++             | ((long)(buf[off + 5] & 0xff) << 16)
++             | ((long)(buf[off + 6] & 0xff) <<  8)
++             |  (long)(buf[off + 7] & 0xff);
+     }
+ }

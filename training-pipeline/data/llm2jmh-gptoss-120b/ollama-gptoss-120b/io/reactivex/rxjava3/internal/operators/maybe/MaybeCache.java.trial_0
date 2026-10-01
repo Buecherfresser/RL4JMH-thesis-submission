@@ -1,0 +1,106 @@
+```
+package io.reactivex.rxjava3.internal.operators.maybe.benchmark;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeCache;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link MaybeCache}.
+ *
+ * The benchmark measures the throughput of subscribing to a {@code MaybeCache}
+ * and receiving the terminal event. It uses a simple {@code Maybe.just} source
+ * and a lightweight {@link MaybeObserver} that forwards the received value to
+ * a {@link Blackhole} to avoid dead‑code elimination.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} isolates benchmark state per thread.
+ * - {@code @Setup(Level.Trial)} prepares immutable objects once per trial.
+ * - The observer does minimal work and uses {@link Blackhole} to consume
+ *   values, preventing the JIT from optimizing away the subscription.
+ * - Throughput mode reports operations per second, which is appropriate for
+ *   measuring how many subscriptions can be processed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+public class MaybeCacheBenchmark {
+
+    /**
+     * Benchmark state shared by all threads in a single iteration.
+     * The {@code MaybeCache} instance is created once per trial because its
+     * internal state (cached value) does not change after the first subscription.
+     */
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+
+        /** The cached Maybe that always emits the integer 1. */
+        MaybeCache<Integer> cachedMaybe;
+
+        /** A reusable observer that forwards the terminal signal to a Blackhole. */
+        TestObserver observer;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // Create a Maybe that immediately succeeds with value 1 and wrap it with MaybeCache.
+            Maybe<Integer> source = Maybe.just(1);
+            cachedMaybe = new MaybeCache<>(source);
+            observer = new TestObserver();
+        }
+
+        /**
+         * Simple {@link MaybeObserver} implementation that forwards the received
+         * value or error to a {@link Blackhole}. The {@code onComplete} path is also
+         * handled for completeness.
+         */
+        static final class TestObserver implements MaybeObserver<Integer> {
+            Blackhole bh;
+
+            void setBlackhole(Blackhole bh) {
+                this.bh = bh;
+            }
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                // No disposal logic needed for the benchmark.
+            }
+
+            @Override
+            public void onSuccess(Integer value) {
+                bh.consume(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                bh.consume(e);
+            }
+
+            @Override
+            public void onComplete() {
+                // No value to consume on completion.
+            }
+        }
+    }
+
+    /**
+     * Benchmark method that subscribes a fresh observer to the cached Maybe.
+     * The observer forwards the terminal event to the Blackhole, ensuring the
+     * subscription work is not optimized away.
+     *
+     * @param state shared benchmark state
+     * @param bh    JMH blackhole for consuming results
+     */
+    @Benchmark
+    public void subscribeAndConsume(BenchmarkState state, Blackhole bh) {
+        // Attach the Blackhole to the observer for this invocation.
+        state.observer.setBlackhole(bh);
+        // Subscribe the observer; the cached value will be emitted immediately.
+        state.cachedMaybe.subscribe(state.observer);
+    }
+}
+```

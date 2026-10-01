@@ -1,0 +1,57 @@
+```
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.parallel.ParallelFlowable;
+
+/**
+ * JMH benchmark for {@link ParallelMapOptional}.
+ *
+ * Measures the throughput (operations per second) of the parallel mapping
+ * operator when the mapper returns {@link Optional#empty()} for half of the
+ * items and {@link Optional#of(Object)} for the other half.
+ *
+ * The benchmark follows best practices:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Setup creates immutable data structures used in the benchmark.
+ * - Blackhole consumes the downstream values to prevent dead‑code elimination.
+ * - Warm‑up, measurement, and fork parameters are chosen to give reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Thread)
+public class ParallelMapOptionalBenchmark {
+
+    @Param({ "1000", "100000", "1000000" })
+    public int itemCount;
+
+    @Param({ "1", "2", "4", "8" })
+    public int parallelism;
+
+    private Function<Integer, Optional<Integer>> mapper;
+
+    private ParallelFlowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        mapper = i -> (i & 1) == 0 ? Optional.of(i) : Optional.empty();
+        source = Flowable.range(1, itemCount).parallel(parallelism);
+    }
+
+    @Benchmark
+    public void mapOptionalThroughput(Blackhole bh) {
+        // Explicitly specify generic types to help the compiler.
+        ParallelMapOptional<Integer, Integer> operator =
+                new ParallelMapOptional<Integer, Integer>(source, mapper);
+        operator.sequential().subscribe(bh::consume);
+    }
+}
+```

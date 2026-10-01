@@ -1,0 +1,595 @@
+diff --git a/com/github/luben/zstd/NoPool.java b/com/github/luben/zstd/NoPool.java
+index 3565411..5edb96e 100644
+--- a/com/github/luben/zstd/NoPool.java
++++ b/com/github/luben/zstd/NoPool.java
+@@ -17,6 +17,6 @@ public class NoPool implements BufferPool {
+     }
+ 
+     @Override
+-    public void release(ByteBuffer buffer) {
++    public void release(ByteBuffer buffer) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(31);
+     }
+ }
+diff --git a/com/github/luben/zstd/RecyclingBufferPool.java b/com/github/luben/zstd/RecyclingBufferPool.java
+index 907f9de..2bcaaf2 100644
+--- a/com/github/luben/zstd/RecyclingBufferPool.java
++++ b/com/github/luben/zstd/RecyclingBufferPool.java
+@@ -49,7 +49,7 @@ public class RecyclingBufferPool implements BufferPool {
+     }
+ 
+     @Override
+-    public void release(ByteBuffer buffer) {
++    public void release(ByteBuffer buffer) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(1);
+         if (buffer.capacity() >= buffSize) {
+             buffer.clear();
+             pool.add(new SoftReference<>(buffer));
+diff --git a/com/github/luben/zstd/Zstd.java b/com/github/luben/zstd/Zstd.java
+index 3b19cee..42b51da 100644
+--- a/com/github/luben/zstd/Zstd.java
++++ b/com/github/luben/zstd/Zstd.java
+@@ -52,7 +52,7 @@ public class Zstd {
+             this.val = val;
+         }
+ 
+-        public int getValue() {
++        public int getValue() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(32);
+             return val;
+         }
+     }
+@@ -71,7 +71,7 @@ public class Zstd {
+      * @return  the number of bytes written into buffer 'dst' or an error code if
+      *          it fails (which can be tested using ZSTD_isError())
+      */
+-    public static long compress(byte[] dst, byte[] src, int level, boolean checksumFlag) {
++    public static long compress(byte[] dst, byte[] src, int level, boolean checksumFlag) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(33);
+         ZstdCompressCtx ctx = new ZstdCompressCtx();
+         try {
+             ctx.setLevel(level);
+@@ -95,7 +95,7 @@ public class Zstd {
+      * @return  the number of bytes written into buffer 'dst' or an error code if
+      *          it fails (which can be tested using ZSTD_isError())
+      */
+-    public static long compress(byte[] dst, byte[] src, int level) {
++    public static long compress(byte[] dst, byte[] src, int level) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(34);
+         return compress(dst, src, level, false);
+     }
+ 
+diff --git a/com/github/luben/zstd/ZstdBufferDecompressingStream.java b/com/github/luben/zstd/ZstdBufferDecompressingStream.java
+index fea6d94..8f5f257 100644
+--- a/com/github/luben/zstd/ZstdBufferDecompressingStream.java
++++ b/com/github/luben/zstd/ZstdBufferDecompressingStream.java
+@@ -18,7 +18,7 @@ public class ZstdBufferDecompressingStream implements Closeable {
+      * @param toRefill current buffer
+      * @return either the current buffer (but refilled and flipped if there was new content) or a new buffer.
+      */
+-    protected ByteBuffer refill(ByteBuffer toRefill) {
++    protected ByteBuffer refill(ByteBuffer toRefill) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(3);
+         return toRefill;
+     }
+ 
+@@ -28,7 +28,7 @@ public class ZstdBufferDecompressingStream implements Closeable {
+     public ZstdBufferDecompressingStream(ByteBuffer source) {
+         inner = new ZstdBufferDecompressingStreamNoFinalizer(source) {
+             @Override
+-            protected ByteBuffer refill(ByteBuffer toRefill) {
++            protected ByteBuffer refill(ByteBuffer toRefill) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(5);
+                 return ZstdBufferDecompressingStream.this.refill(toRefill);
+             }
+         };
+@@ -41,7 +41,7 @@ public class ZstdBufferDecompressingStream implements Closeable {
+      *
+      * @param finalize default `true` - finalizers are enabled
+      */
+-    public void setFinalize(boolean finalize) {
++    public void setFinalize(boolean finalize) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(7);
+         this.finalize = finalize;
+     }
+ 
+diff --git a/com/github/luben/zstd/ZstdBufferDecompressingStreamNoFinalizer.java b/com/github/luben/zstd/ZstdBufferDecompressingStreamNoFinalizer.java
+index 3e3ba2d..20a6fca 100644
+--- a/com/github/luben/zstd/ZstdBufferDecompressingStreamNoFinalizer.java
++++ b/com/github/luben/zstd/ZstdBufferDecompressingStreamNoFinalizer.java
+@@ -59,7 +59,7 @@ public class ZstdBufferDecompressingStreamNoFinalizer extends BaseZstdBufferDeco
+         return decompressStreamNative(stream, targetArr, dstBufPos + dst.arrayOffset(), dstSize, sourceArr, srcBufPos + src.arrayOffset(), srcSize);
+     }
+ 
+-    public static int recommendedTargetBufferSize() {
++    public static int recommendedTargetBufferSize() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(8);
+         return (int) recommendedDOutSizeNative();
+     }
+ 
+diff --git a/com/github/luben/zstd/ZstdCompressCtx.java b/com/github/luben/zstd/ZstdCompressCtx.java
+index 8ec9665..a3d2c7a 100644
+--- a/com/github/luben/zstd/ZstdCompressCtx.java
++++ b/com/github/luben/zstd/ZstdCompressCtx.java
+@@ -57,7 +57,7 @@ public class ZstdCompressCtx extends AutoCloseBase {
+      * Set compression level
+      * @param level compression level, default: {@link Zstd#defaultCompressionLevel()}
+      */
+-    public ZstdCompressCtx setLevel(int level) {
++    public ZstdCompressCtx setLevel(int level) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(35);
+         ensureOpen();
+         acquireSharedLock();
+         setLevel0(nativePtr, level);
+@@ -71,7 +71,7 @@ public class ZstdCompressCtx extends AutoCloseBase {
+      * Enable or disable magicless frames
+      * @param magiclessFlag A 32-bits magic number is written at start of frame, default: false
+      */
+-    public ZstdCompressCtx setMagicless(boolean magiclessFlag) {
++    public ZstdCompressCtx setMagicless(boolean magiclessFlag) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(36);
+         ensureOpen();
+         acquireSharedLock();
+         Zstd.setCompressionMagicless(nativePtr, magiclessFlag);
+@@ -83,7 +83,7 @@ public class ZstdCompressCtx extends AutoCloseBase {
+      * Enable or disable compression checksums
+      * @param checksumFlag A 32-bits checksum of content is written at end of frame, default: false
+      */
+-    public ZstdCompressCtx setChecksum(boolean checksumFlag) {
++    public ZstdCompressCtx setChecksum(boolean checksumFlag) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(37);
+         ensureOpen();
+         acquireSharedLock();
+         setChecksum0(nativePtr, checksumFlag);
+diff --git a/com/github/luben/zstd/ZstdDecompressCtx.java b/com/github/luben/zstd/ZstdDecompressCtx.java
+index 216ae88..8a8bc96 100644
+--- a/com/github/luben/zstd/ZstdDecompressCtx.java
++++ b/com/github/luben/zstd/ZstdDecompressCtx.java
+@@ -42,7 +42,7 @@ public class ZstdDecompressCtx extends AutoCloseBase {
+      * Enable or disable magicless frames
+      * @param magiclessFlag A 32-bits checksum of content is written at end of frame, default: false
+      */
+-    public ZstdDecompressCtx setMagicless(boolean magiclessFlag) {
++    public ZstdDecompressCtx setMagicless(boolean magiclessFlag) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(38);
+         ensureOpen();
+         acquireSharedLock();
+         Zstd.setDecompressionMagicless(nativePtr, magiclessFlag);
+@@ -55,7 +55,7 @@ public class ZstdDecompressCtx extends AutoCloseBase {
+      *
+      * @param dict the dictionary or `null` to remove loaded dictionary
+      */
+-    public ZstdDecompressCtx loadDict(ZstdDictDecompress dict) {
++    public ZstdDecompressCtx loadDict(ZstdDictDecompress dict) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(39);
+         ensureOpen();
+         acquireSharedLock();
+         dict.acquireSharedLock();
+@@ -80,7 +80,7 @@ public class ZstdDecompressCtx extends AutoCloseBase {
+      *
+      * @param dict the dictionary or `null` to remove loaded dictionary
+      */
+-    public ZstdDecompressCtx loadDict(byte[] dict) {
++    public ZstdDecompressCtx loadDict(byte[] dict) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(40);
+         ensureOpen();
+         acquireSharedLock();
+         try {
+diff --git a/com/github/luben/zstd/ZstdDictCompress.java b/com/github/luben/zstd/ZstdDictCompress.java
+index 43ae4c1..00a96db 100644
+--- a/com/github/luben/zstd/ZstdDictCompress.java
++++ b/com/github/luben/zstd/ZstdDictCompress.java
+@@ -24,7 +24,7 @@ public class ZstdDictCompress extends SharedDictBase {
+     /**
+      * Get the byte buffer that backs this dict, if any, or null if not backed by a byte buffer.
+      */
+-    public ByteBuffer getByReferenceBuffer() {
++    public ByteBuffer getByReferenceBuffer() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(41);
+ 	return sharedDict;
+     }
+ 
+diff --git a/com/github/luben/zstd/ZstdDictDecompress.java b/com/github/luben/zstd/ZstdDictDecompress.java
+index 1c732de..7a3292a 100644
+--- a/com/github/luben/zstd/ZstdDictDecompress.java
++++ b/com/github/luben/zstd/ZstdDictDecompress.java
+@@ -22,7 +22,7 @@ public class ZstdDictDecompress extends SharedDictBase {
+     /**
+      * Get the byte buffer that backs this dict, if any, or null if not backed by a byte buffer.
+      */
+-    public ByteBuffer getByReferenceBuffer() {
++    public ByteBuffer getByReferenceBuffer() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(42);
+ 	return sharedDict;
+     }
+ 
+diff --git a/com/github/luben/zstd/ZstdDictTrainer.java b/com/github/luben/zstd/ZstdDictTrainer.java
+index 07557cb..c6b8d03 100644
+--- a/com/github/luben/zstd/ZstdDictTrainer.java
++++ b/com/github/luben/zstd/ZstdDictTrainer.java
+@@ -24,7 +24,7 @@ public class ZstdDictTrainer {
+         this.level = level;
+     }
+ 
+-    public synchronized boolean addSample(byte[] sample) {
++    public synchronized boolean addSample(byte[] sample) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(43);
+         if (filledSize + sample.length > allocatedSize) {
+             return false;
+         }
+@@ -34,11 +34,11 @@ public class ZstdDictTrainer {
+         return true;
+     }
+ 
+-    public ByteBuffer trainSamplesDirect() throws ZstdException {
++    public ByteBuffer trainSamplesDirect() throws ZstdException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(44);
+         return trainSamplesDirect(false);
+     }
+ 
+-    public synchronized ByteBuffer trainSamplesDirect(boolean legacy) throws ZstdException {
++    public synchronized ByteBuffer trainSamplesDirect(boolean legacy) throws ZstdException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(45);
+         ByteBuffer dictBuffer = ByteBuffer.allocateDirect(dictSize);
+         long l = Zstd.trainFromBufferDirect(trainingSamples, copyToIntArray(sampleSizes), dictBuffer, legacy, level);
+         if (Zstd.isError(l)) {
+diff --git a/com/github/luben/zstd/ZstdDirectBufferCompressingStream.java b/com/github/luben/zstd/ZstdDirectBufferCompressingStream.java
+index 61c8222..651b5d8 100644
+--- a/com/github/luben/zstd/ZstdDirectBufferCompressingStream.java
++++ b/com/github/luben/zstd/ZstdDirectBufferCompressingStream.java
+@@ -22,20 +22,20 @@ public class ZstdDirectBufferCompressingStream implements Closeable, Flushable {
+      * @param toFlush buffer that has to be flushed (or most cases, you want to call {@link ByteBuffer#flip()} first)
+      * @return the new buffer to use, for most cases the same as the one passed in, after a call to {@link ByteBuffer#clear()}.
+      */
+-    protected ByteBuffer flushBuffer(ByteBuffer toFlush) throws IOException {
++    protected ByteBuffer flushBuffer(ByteBuffer toFlush) throws IOException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(9);
+         return toFlush;
+     }
+ 
+     public ZstdDirectBufferCompressingStream(ByteBuffer target, int level) throws IOException {
+         inner = new ZstdDirectBufferCompressingStreamNoFinalizer(target, level) {
+                 @Override
+-                protected ByteBuffer flushBuffer(ByteBuffer toFlush) throws IOException {
++                protected ByteBuffer flushBuffer(ByteBuffer toFlush) throws IOException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(10);
+                     return ZstdDirectBufferCompressingStream.this.flushBuffer(toFlush);
+                 }
+             };
+     }
+ 
+-    public static int recommendedOutputBufferSize() { return ZstdDirectBufferCompressingStreamNoFinalizer.recommendedOutputBufferSize(); }
++    public static int recommendedOutputBufferSize() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(11); return ZstdDirectBufferCompressingStreamNoFinalizer.recommendedOutputBufferSize(); }
+ 
+     public synchronized ZstdDirectBufferCompressingStream setDict(byte[] dict) throws IOException {
+         inner.setDict(dict);
+diff --git a/com/github/luben/zstd/ZstdDirectBufferCompressingStreamNoFinalizer.java b/com/github/luben/zstd/ZstdDirectBufferCompressingStreamNoFinalizer.java
+index d61f8a2..41ca75f 100644
+--- a/com/github/luben/zstd/ZstdDirectBufferCompressingStreamNoFinalizer.java
++++ b/com/github/luben/zstd/ZstdDirectBufferCompressingStreamNoFinalizer.java
+@@ -22,7 +22,7 @@ public class ZstdDirectBufferCompressingStreamNoFinalizer implements Closeable,
+      * @param toFlush buffer that has to be flushed (or most cases, you want to call {@link ByteBuffer#flip()} first)
+      * @return the new buffer to use, for most cases the same as the one passed in, after a call to {@link ByteBuffer#clear()}.
+      */
+-    protected ByteBuffer flushBuffer(ByteBuffer toFlush) throws IOException {
++    protected ByteBuffer flushBuffer(ByteBuffer toFlush) throws IOException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(12);
+         return toFlush;
+     }
+ 
+@@ -35,7 +35,7 @@ public class ZstdDirectBufferCompressingStreamNoFinalizer implements Closeable,
+         stream = createCStream();
+     }
+ 
+-    public static int recommendedOutputBufferSize() { return (int)recommendedCOutSize(); }
++    public static int recommendedOutputBufferSize() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(13); return (int)recommendedCOutSize(); }
+ 
+     private int consumed = 0;
+     private int produced = 0;
+@@ -56,7 +56,7 @@ public class ZstdDirectBufferCompressingStreamNoFinalizer implements Closeable,
+     private native long flushStream(long ctx, ByteBuffer dst, int dstOffset, int dstSize);
+     private native long endStream(long ctx, ByteBuffer dst, int dstOffset, int dstSize);
+ 
+-    public ZstdDirectBufferCompressingStreamNoFinalizer setDict(byte[] dict) {
++    public ZstdDirectBufferCompressingStreamNoFinalizer setDict(byte[] dict) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(14);
+         if (initialized) {
+             throw new IllegalStateException("Change of parameter on initialized stream");
+         }
+diff --git a/com/github/luben/zstd/ZstdDirectBufferDecompressingStream.java b/com/github/luben/zstd/ZstdDirectBufferDecompressingStream.java
+index e0bec3e..ad43f78 100644
+--- a/com/github/luben/zstd/ZstdDirectBufferDecompressingStream.java
++++ b/com/github/luben/zstd/ZstdDirectBufferDecompressingStream.java
+@@ -17,7 +17,7 @@ public class ZstdDirectBufferDecompressingStream implements Closeable {
+      * @param toRefill current buffer
+      * @return either the current buffer (but refilled and flipped if there was new content) or a new buffer.
+      */
+-    protected ByteBuffer refill(ByteBuffer toRefill) {
++    protected ByteBuffer refill(ByteBuffer toRefill) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(15);
+         return toRefill;
+     }
+ 
+@@ -27,7 +27,7 @@ public class ZstdDirectBufferDecompressingStream implements Closeable {
+     public ZstdDirectBufferDecompressingStream(ByteBuffer source) {
+         inner = new ZstdDirectBufferDecompressingStreamNoFinalizer(source) {
+                 @Override
+-                protected ByteBuffer refill(ByteBuffer toRefill) {
++                protected ByteBuffer refill(ByteBuffer toRefill) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(16);
+                     return ZstdDirectBufferDecompressingStream.this.refill(toRefill);
+                 }
+             };
+@@ -40,7 +40,7 @@ public class ZstdDirectBufferDecompressingStream implements Closeable {
+      *
+      * @param finalize default `true` - finalizers are enabled
+      */
+-    public void setFinalize(boolean finalize) {
++    public void setFinalize(boolean finalize) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(17);
+         this.finalize = finalize;
+     }
+ 
+diff --git a/com/github/luben/zstd/ZstdDirectBufferDecompressingStreamNoFinalizer.java b/com/github/luben/zstd/ZstdDirectBufferDecompressingStreamNoFinalizer.java
+index 92b93ad..fe10169 100644
+--- a/com/github/luben/zstd/ZstdDirectBufferDecompressingStreamNoFinalizer.java
++++ b/com/github/luben/zstd/ZstdDirectBufferDecompressingStreamNoFinalizer.java
+@@ -48,7 +48,7 @@ public class ZstdDirectBufferDecompressingStreamNoFinalizer extends BaseZstdBuff
+         return decompressStreamNative(stream, dst, dstOffset, dstSize, src, srcOffset, srcSize);
+     }
+ 
+-    public static int recommendedTargetBufferSize() {
++    public static int recommendedTargetBufferSize() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(18);
+         return (int) recommendedDOutSizeNative();
+     }
+ 
+diff --git a/com/github/luben/zstd/ZstdException.java b/com/github/luben/zstd/ZstdException.java
+index 130e2d6..95f7772 100644
+--- a/com/github/luben/zstd/ZstdException.java
++++ b/com/github/luben/zstd/ZstdException.java
+@@ -39,7 +39,7 @@ public class ZstdException extends RuntimeException {
+      *
+      * @return a Zstd error code
+      */
+-    public long getErrorCode() {
++    public long getErrorCode() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(46);
+         return code;
+     }
+ }
+diff --git a/com/github/luben/zstd/ZstdFrameProgression.java b/com/github/luben/zstd/ZstdFrameProgression.java
+index 1d46ae8..ec9af90 100644
+--- a/com/github/luben/zstd/ZstdFrameProgression.java
++++ b/com/github/luben/zstd/ZstdFrameProgression.java
+@@ -22,7 +22,7 @@ public class ZstdFrameProgression {
+     /**
+      * The number of input bytes read and buffered.
+      */
+-    public long getIngested() {
++    public long getIngested() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(47);
+         return ingested;
+     }
+ 
+@@ -30,14 +30,14 @@ public class ZstdFrameProgression {
+      * The number of input bytes actually compressed.
+      * Note: ingested - consumed = amount of input data buffered internally, not yet compressed.
+      */
+-    public long getConsumed() {
++    public long getConsumed() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(48);
+         return consumed;
+     }
+ 
+     /**
+      * The number of compressed bytes generated and buffered.
+      */
+-    public long getProduced() {
++    public long getProduced() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(49);
+         return produced;
+     }
+ 
+diff --git a/com/github/luben/zstd/ZstdIOException.java b/com/github/luben/zstd/ZstdIOException.java
+index f006e86..417b439 100644
+--- a/com/github/luben/zstd/ZstdIOException.java
++++ b/com/github/luben/zstd/ZstdIOException.java
+@@ -41,7 +41,7 @@ public class ZstdIOException extends IOException {
+      *
+      * @return a Zstd error code
+      */
+-    public long getErrorCode() {
++    public long getErrorCode() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(50);
+         return code;
+     }
+ }
+diff --git a/com/github/luben/zstd/ZstdInputStream.java b/com/github/luben/zstd/ZstdInputStream.java
+index eaaada4..66cf638 100644
+--- a/com/github/luben/zstd/ZstdInputStream.java
++++ b/com/github/luben/zstd/ZstdInputStream.java
+@@ -44,7 +44,7 @@ public class ZstdInputStream extends FilterInputStream {
+      * `ZstdInputStream` will always try to close/release in the finalizer.
+      */
+     @Deprecated
+-    public void setFinalize(boolean finalize) {
++    public void setFinalize(boolean finalize) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(19);
+     }
+ 
+     @Override
+@@ -52,11 +52,11 @@ public class ZstdInputStream extends FilterInputStream {
+         close();
+     }
+ 
+-    public static long recommendedDInSize() {
++    public static long recommendedDInSize() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(20);
+         return ZstdInputStreamNoFinalizer.recommendedDInSize();
+     }
+ 
+-    public static long recommendedDOutSize() {
++    public static long recommendedDOutSize() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(21);
+         return ZstdInputStreamNoFinalizer.recommendedDOutSize();
+     }
+ 
+diff --git a/com/github/luben/zstd/ZstdInputStreamNoFinalizer.java b/com/github/luben/zstd/ZstdInputStreamNoFinalizer.java
+index 98c27e4..b9a3bf0 100644
+--- a/com/github/luben/zstd/ZstdInputStreamNoFinalizer.java
++++ b/com/github/luben/zstd/ZstdInputStreamNoFinalizer.java
+@@ -78,16 +78,16 @@ public class ZstdInputStreamNoFinalizer extends FilterInputStream {
+      *
+      * Use case: decompressing files that are not yet finished writing and compressing
+      */
+-    public synchronized ZstdInputStreamNoFinalizer setContinuous(boolean b) {
++    public synchronized ZstdInputStreamNoFinalizer setContinuous(boolean b) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(22);
+         isContinuous = b;
+         return this;
+     }
+ 
+-    public synchronized boolean getContinuous() {
++    public synchronized boolean getContinuous() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(23);
+         return this.isContinuous;
+     }
+ 
+-    public synchronized ZstdInputStreamNoFinalizer setDict(byte[] dict) throws IOException {
++    public synchronized ZstdInputStreamNoFinalizer setDict(byte[] dict) throws IOException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(24);
+         int size = Zstd.loadDictDecompress(stream, dict, dict.length);
+         if (Zstd.isError(size)) {
+             throw new ZstdIOException(size);
+diff --git a/com/github/luben/zstd/ZstdOutputStream.java b/com/github/luben/zstd/ZstdOutputStream.java
+index 47e6dfa..24afcc4 100644
+--- a/com/github/luben/zstd/ZstdOutputStream.java
++++ b/com/github/luben/zstd/ZstdOutputStream.java
+@@ -86,7 +86,7 @@ public class ZstdOutputStream extends FilterOutputStream{
+      * If you don't rely on finalizers, use `ZstdOutputStreamNoFinalizer` instead.
+      */
+     @Deprecated
+-    public void setFinalize(boolean finalize) {
++    public void setFinalize(boolean finalize) { com.github.luben.zstd.jmhbench.MutationSwitch.tick(25);
+     }
+ 
+     @Override
+@@ -94,7 +94,7 @@ public class ZstdOutputStream extends FilterOutputStream{
+         close();
+     }
+ 
+-    public static long recommendedCOutSize() {
++    public static long recommendedCOutSize() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(26);
+         return ZstdOutputStreamNoFinalizer.recommendedCOutSize();
+     }
+ 
+@@ -103,7 +103,7 @@ public class ZstdOutputStream extends FilterOutputStream{
+      *
+      * Default: false
+      */
+-    public ZstdOutputStream setChecksum(boolean useChecksums) throws IOException {
++    public ZstdOutputStream setChecksum(boolean useChecksums) throws IOException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(27);
+         inner.setChecksum(useChecksums);
+         return this;
+     }
+diff --git a/com/github/luben/zstd/ZstdOutputStreamNoFinalizer.java b/com/github/luben/zstd/ZstdOutputStreamNoFinalizer.java
+index a3d166a..6e7a151 100644
+--- a/com/github/luben/zstd/ZstdOutputStreamNoFinalizer.java
++++ b/com/github/luben/zstd/ZstdOutputStreamNoFinalizer.java
+@@ -92,7 +92,7 @@ public class ZstdOutputStreamNoFinalizer extends FilterOutputStream {
+      *
+      * Default: false
+      */
+-    public synchronized ZstdOutputStreamNoFinalizer setChecksum(boolean useChecksums) throws IOException {
++    public synchronized ZstdOutputStreamNoFinalizer setChecksum(boolean useChecksums) throws IOException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(28);
+         if (!frameClosed) {
+             throw new IllegalStateException("Change of parameter on initialized stream");
+         }
+@@ -108,7 +108,7 @@ public class ZstdOutputStreamNoFinalizer extends FilterOutputStream {
+      *
+      * Default: {@link Zstd#defaultCompressionLevel()}
+      */
+-    public synchronized ZstdOutputStreamNoFinalizer setLevel(int level) throws IOException {
++    public synchronized ZstdOutputStreamNoFinalizer setLevel(int level) throws IOException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(29);
+         if (!frameClosed) {
+             throw new IllegalStateException("Change of parameter on initialized stream");
+         }
+@@ -124,7 +124,7 @@ public class ZstdOutputStreamNoFinalizer extends FilterOutputStream {
+      *
+      * Values for windowLog outside the range 10-27 will disable and reset LDM
+      */
+-    public synchronized ZstdOutputStreamNoFinalizer setLong(int windowLog) throws IOException {
++    public synchronized ZstdOutputStreamNoFinalizer setLong(int windowLog) throws IOException { com.github.luben.zstd.jmhbench.MutationSwitch.tick(30);
+         if (!frameClosed) {
+             throw new IllegalStateException("Change of parameter on initialized stream");
+         }
+diff --git a/com/github/luben/zstd/jmhbench/MutationSwitch.java b/com/github/luben/zstd/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..8bd92f2
+--- /dev/null
++++ b/com/github/luben/zstd/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.github.luben.zstd.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/github/luben/zstd/util/Native.java b/com/github/luben/zstd/util/Native.java
+index 252a042..670c9d9 100644
+--- a/com/github/luben/zstd/util/Native.java
++++ b/com/github/luben/zstd/util/Native.java
+@@ -58,17 +58,17 @@ public enum Native {
+      * the native part is loaded. This allows them to load the so/dll manually and tell
+      * zstd-jni to not attempt loading it again.
+      */
+-    public static synchronized void assumeLoaded() {
++    public static synchronized void assumeLoaded() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(2);
+         loaded.set(true);
+     }
+ 
+-    public static synchronized boolean isLoaded() {
++    public static synchronized boolean isLoaded() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(4);
+         return loaded.get();
+     }
+ 
+     private static void loadLibrary(final String libName) {
+         AccessController.doPrivileged(new PrivilegedAction<Void>() {
+-          public Void run() {
++          public Void run() { com.github.luben.zstd.jmhbench.MutationSwitch.tick(6);
+             System.loadLibrary(libName);
+             return null;
+           }

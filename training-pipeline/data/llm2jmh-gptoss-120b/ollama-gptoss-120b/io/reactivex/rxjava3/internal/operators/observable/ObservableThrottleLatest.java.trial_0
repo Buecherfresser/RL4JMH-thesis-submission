@@ -1,0 +1,83 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.disposables.Disposable;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableThrottleLatest}
+ * measuring the throughput of the operator when it is fed with a hot source.
+ *
+ * The benchmark emits a single integer per invocation and counts how many items
+ * reach the downstream observer. The {@code onDropped} consumer is a no‑op to
+ * avoid extra work that would mask the operator's own cost.
+ *
+ * JMH best‑practice annotations are used:
+ * - warm‑up and measurement iterations,
+ * - multiple forks,
+ * - per‑thread state to avoid contention,
+ * - Blackhole consumption to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class ObservableThrottleLatestBenchmark {
+
+    /** Timeout for the throttleLatest operator in milliseconds. */
+    @Param({"1", "10", "100"})
+    public long timeoutMs;
+
+    private PublishSubject<Integer> source;
+    private Observable<Integer> throttled;
+    private Disposable subscription;
+    private AtomicLong downstreamCount;
+    private int nextValue;
+
+    /** No‑op consumer for dropped items. */
+    private static final Consumer<Object> NO_OP_DROPPED = v -> { /* intentionally empty */ };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = PublishSubject.create();
+        downstreamCount = new AtomicLong();
+
+        // Build the operator under test.
+        throttled = source.throttleLatest(
+                timeoutMs,
+                TimeUnit.MILLISECONDS,
+                Schedulers.computation(),
+                true,               // emitLast
+                NO_OP_DROPPED);
+
+        // Subscribe with a lightweight consumer that only increments a counter.
+        subscription = throttled.subscribe(v -> downstreamCount.incrementAndGet());
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        subscription.dispose();
+    }
+
+    /**
+     * Emits a single integer into the hot source. The Blackhole consumes the
+     * downstream counter to keep the JIT from optimizing the whole pipeline away.
+     */
+    @Benchmark
+    public void emit(Blackhole bh) {
+        source.onNext(nextValue++);
+        bh.consume(downstreamCount.get());
+    }
+}
+```

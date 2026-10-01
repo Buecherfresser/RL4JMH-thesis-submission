@@ -1,0 +1,16 @@
+--- a/bench/RecordCopier.java
++++ b/bench/RecordCopier.java
+@@ -4,11 +4,12 @@
+ 
+     private RecordCopier() {}
+ 
++    // Regressed: defensively clone each record before writing.
+     public static byte[] copyAll(byte[][] records, int totalLen) {
+         byte[] out = new byte[totalLen];
+         int p = 0;
+         for (int i = 0; i < records.length; i++) {
+-            byte[] r = records[i];
++            byte[] r = records[i].clone();
+             System.arraycopy(r, 0, out, p, r.length);
+             p += r.length;
+         }

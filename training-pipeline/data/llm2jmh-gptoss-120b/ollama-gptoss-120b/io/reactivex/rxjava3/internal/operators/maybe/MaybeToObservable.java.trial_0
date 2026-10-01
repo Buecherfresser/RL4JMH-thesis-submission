@@ -1,0 +1,76 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeToObservable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Microbenchmark for {@link MaybeToObservable} conversion operator.
+ *
+ * The benchmark measures the throughput (operations per second) of converting a {@link Maybe}
+ * into an {@link io.reactivex.rxjava3.core.Observable} and consuming the emitted item.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create immutable sources once per thread.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations with reasonable defaults.
+ * - Mode.Throughput with TimeUnit.SECONDS for clear per‑second rates.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class MaybeToObservableBenchmark {
+
+    /** A Maybe that emits a single integer value. */
+    private Maybe<Integer> justSource;
+
+    /** A Maybe that completes without emitting. */
+    private Maybe<Integer> emptySource;
+
+    /** The operator under test for the "just" case. */
+    private MaybeToObservable<Integer> justOperator;
+
+    /** The operator under test for the "empty" case. */
+    private MaybeToObservable<Integer> emptyOperator;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        justSource = Maybe.just(1);
+        emptySource = Maybe.empty();
+
+        justOperator = new MaybeToObservable<>(justSource);
+        emptyOperator = new MaybeToObservable<>(emptySource);
+    }
+
+    /**
+     * Benchmark the throughput of converting a {@code Maybe.just} into an {@code Observable}
+     * and consuming the emitted value.
+     *
+     * @param bh Blackhole to consume the emitted item and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void justThroughput(Blackhole bh) {
+        // blockingSubscribe ensures the subscription completes before the method returns.
+        justOperator.blockingSubscribe(bh::consume);
+    }
+
+    /**
+     * Benchmark the throughput of converting a {@code Maybe.empty} into an {@code Observable}
+     * and completing without emission.
+     *
+     * @param bh Blackhole (unused but kept for signature consistency).
+     */
+    @Benchmark
+    public void emptyThroughput(Blackhole bh) {
+        emptyOperator.blockingSubscribe();
+    }
+}
+```

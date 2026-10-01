@@ -1,0 +1,107 @@
+```java
+package io.reactivex.rxjava3.internal.util.benchmark;
+
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.internal.util.AppendOnlyLinkedArrayList;
+import io.reactivex.rxjava3.internal.util.NotificationLite;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Subscriber;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * JMH benchmarks for {@link AppendOnlyLinkedArrayList}.
+ *
+ * <p>Benchmarks focus on the most frequently used operations:
+ * <ul>
+ *   <li>{@code add}</li>
+ *   <li>{@code forEachWhile} with a non‑short‑circuiting predicate</li>
+ *   <li>{@code accept} for both {@link Subscriber} and {@link Observer}</li>
+ * </ul>
+ *
+ * <p>All benchmarks run in {@link Mode#Throughput} to measure how many
+ * operations can be performed per time unit. The state is scoped to a
+ * single thread to avoid contention and to keep the benchmark deterministic.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+public class AppendOnlyLinkedArrayListBenchmark {
+
+    /** Capacity of each internal array segment. */
+    @Param({"16", "64", "256"})
+    public int capacity;
+
+    /** Number of elements pre‑filled before each benchmark iteration. */
+    @Param({"1000", "10000", "100000"})
+    public int size;
+
+    private AppendOnlyLinkedArrayList<Integer> list;
+    private DummySubscriber<Integer> subscriber;
+    private DummyObserver<Integer> observer;
+
+    /** Simple predicate that never stops the iteration. */
+    private static final AppendOnlyLinkedArrayList.NonThrowingPredicate<Integer> ALWAYS_FALSE =
+            value -> false;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        list = new AppendOnlyLinkedArrayList<>(capacity);
+        for (int i = 0; i < size; i++) {
+            list.add(i);
+        }
+        subscriber = new DummySubscriber<>();
+        observer = new DummyObserver<>();
+    }
+
+    @Benchmark
+    public void benchmarkAdd() {
+        // Adding a single element; the list grows beyond the pre‑filled size.
+        list.add(-1);
+    }
+
+    @Benchmark
+    public void benchmarkForEachWhile(Blackhole bh) {
+        // Consume each element to prevent dead‑code elimination.
+        list.forEachWhile(value -> {
+            bh.consume(value);
+            return false; // never short‑circuit
+        });
+    }
+
+    @Benchmark
+    public void benchmarkAcceptSubscriber(Blackhole bh) {
+        // The accept method returns true when a terminal NotificationLite is found.
+        // Our dummy subscriber never signals termination, so the method always returns false.
+        boolean result = list.accept(subscriber);
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void benchmarkAcceptObserver(Blackhole bh) {
+        boolean result = list.accept(observer);
+        bh.consume(result);
+    }
+
+    /** Minimal {@link Subscriber} implementation that does nothing. */
+    private static final class DummySubscriber<T> implements Subscriber<T> {
+        @Override public void onSubscribe(org.reactivestreams.Subscription s) {}
+        @Override public void onNext(T t) {}
+        @Override public void onError(Throwable t) {}
+        @Override public void onComplete() {}
+    }
+
+    /** Minimal {@link Observer} implementation that does nothing. */
+    private static final class DummyObserver<T> implements Observer<T> {
+        @Override public void onSubscribe(io.reactivex.rxjava3.disposables.Disposable d) {}
+        @Override public void onNext(T t) {}
+        @Override public void onError(Throwable e) {}
+        @Override public void onComplete() {}
+    }
+}
+```

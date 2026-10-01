@@ -1,0 +1,85 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Predicate;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableTakeWhile}.
+ *
+ * The benchmark measures the throughput (operations per second) of the {@code takeWhile}
+ * operator under different stream sizes and predicate behaviours.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.
+ * - {@code @Param} to vary the number of emitted items.
+ * - Reuse the source {@link Observable} across iterations to eliminate allocation overhead.
+ * - Use {@link Blackhole} to consume the emitted items and prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are defined to let the JIT stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+public class ObservableTakeWhileBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /** Number of items emitted by the source Observable. */
+        @Param({"10", "1000", "100000"})
+        public int size;
+
+        /** Predicate that always returns true (no early termination). */
+        public Predicate<Integer> alwaysTrue = v -> true;
+
+        /** Predicate that returns false after a fixed number of items (early termination). */
+        public Predicate<Integer> earlyStop;
+
+        /** Source Observable that emits a range of integers. */
+        public Observable<Integer> source;
+
+        /** Observable with takeWhile applied using the always‑true predicate. */
+        public Observable<Integer> takeWhileAlwaysTrue;
+
+        /** Observable with takeWhile applied using the early‑stop predicate. */
+        public Observable<Integer> takeWhileEarlyStop;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Observable.range(1, size);
+
+            // Early stop after half of the elements have been emitted.
+            int stopAt = size / 2;
+            earlyStop = v -> v < stopAt;
+
+            takeWhileAlwaysTrue = source.takeWhile(alwaysTrue);
+            takeWhileEarlyStop = source.takeWhile(earlyStop);
+        }
+    }
+
+    /**
+     * Benchmark the {@code takeWhile} operator when the predicate never stops the stream.
+     * This measures the steady‑state overhead of the operator.
+     */
+    @Benchmark
+    public void takeWhileAlwaysTrue(BenchmarkState state, Blackhole bh) {
+        state.takeWhileAlwaysTrue.subscribe(bh::consume);
+    }
+
+    /**
+     * Benchmark the {@code takeWhile} operator when the predicate stops the stream early.
+     * This measures the cost of early termination logic.
+     */
+    @Benchmark
+    public void takeWhileEarlyStop(BenchmarkState state, Blackhole bh) {
+        state.takeWhileEarlyStop.subscribe(bh::consume);
+    }
+}
+```

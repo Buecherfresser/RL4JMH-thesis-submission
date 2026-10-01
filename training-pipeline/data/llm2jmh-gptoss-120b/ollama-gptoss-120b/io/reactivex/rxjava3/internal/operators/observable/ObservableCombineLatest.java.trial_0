@@ -1,0 +1,74 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Function;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableCombineLatest}.
+ * Measures the throughput of the combineLatest operator when combining a few synchronous
+ * Observable sources.
+ *
+ * Best practices applied:
+ * - Separate @State for immutable test data (sources, combiner).
+ * - @Setup(Level.Trial) to allocate sources only once per JVM fork.
+ * - Use blockingSubscribe to ensure the benchmark measures the full processing of all items.
+ * - Blackhole consumption to avoid dead‑code elimination.
+ * - Warm‑up, measurement, fork, and time‑unit configuration.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@Threads(1)
+public class ObservableCombineLatestBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        /** Number of sources combined. */
+        @Param({"3"})
+        int sourceCount;
+
+        /** Number of items each source emits. */
+        @Param({"1000"})
+        int itemsPerSource;
+
+        /** Array of Observable sources. */
+        Observable<Integer>[] sources;
+
+        /** Combiner that sums the latest values from all sources. */
+        Function<Object[], Integer> combiner;
+
+        @SuppressWarnings("unchecked")
+        @Setup(Level.Trial)
+        public void setUp() {
+            sources = new Observable[sourceCount];
+            for (int i = 0; i < sourceCount; i++) {
+                // Synchronous range source – no scheduler overhead.
+                sources[i] = Observable.range(1, itemsPerSource);
+            }
+
+            combiner = values -> {
+                int sum = 0;
+                for (Object v : values) {
+                    sum += (Integer) v;
+                }
+                return sum;
+            };
+        }
+    }
+
+    @Benchmark
+    public void combineLatestThroughput(BenchmarkState state, Blackhole bh) {
+        // combineLatestArray internally uses ObservableCombineLatest.
+        Observable.combineLatestArray(state.sources, state.combiner)
+                .blockingSubscribe(bh::consume);
+    }
+}
+```

@@ -1,0 +1,61 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeFromSingle;
+
+/**
+ * Benchmark for {@link MaybeFromSingle}.
+ *
+ * Measures the throughput of subscribing a {@link MaybeFromSingle}
+ * that wraps a {@link Single} emitting a single value.
+ *
+ * The benchmark follows JMH best‑practice guidelines:
+ * - @State with Scope.Thread to avoid sharing mutable state across threads.
+ * - @Setup to create immutable objects once per thread.
+ * - No allocation inside the benchmark method.
+ * - Warm‑up and measurement iterations with a reasonable fork count.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class MaybeFromSingleBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+        // A Single that immediately emits the integer 1.
+        SingleSource<Integer> source;
+
+        // The Maybe wrapper we want to benchmark.
+        Maybe<Integer> maybeFromSingle;
+
+        // A no‑op MaybeObserver; allocated once per thread.
+        MaybeObserver<Integer> observer;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            source = Single.just(1);
+            maybeFromSingle = new MaybeFromSingle<>(source);
+            observer = new MaybeObserver<Integer>() {
+                @Override public void onSubscribe(Disposable d) { /* no‑op */ }
+                @Override public void onSuccess(Integer value) { /* no‑op */ }
+                @Override public void onError(Throwable e) { /* no‑op */ }
+                @Override public void onComplete() { /* no‑op */ }
+            };
+        }
+    }
+
+    @Benchmark
+    public void subscribe(BenchmarkState state) {
+        // The operation under test: subscribe the Maybe to the observer.
+        state.maybeFromSingle.subscribe(state.observer);
+    }
+}
+```

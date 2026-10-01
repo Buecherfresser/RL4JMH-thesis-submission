@@ -1,0 +1,89 @@
+```
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.observers.TestObserver;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Publisher;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmarks for {@link MaybeTimeoutPublisher}.
+ *
+ * Two scenarios are measured:
+ * <ul>
+ *   <li>{@code timeoutWithFallback}: the timeout {@link Publisher} emits a signal before the source
+ *       {@link Maybe} completes, causing the fallback {@link Maybe} to be subscribed.</li>
+ *   <li>{@code noTimeout}: the source {@link Maybe} completes before the timeout {@link Publisher}
+ *       emits, so the timeout logic is bypassed.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 1, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class MaybeTimeoutPublisherBenchmark {
+
+    /** Source that completes immediately with a value. */
+    private Maybe<Integer> fastSource;
+
+    /** Source that never emits (used to force timeout). */
+    private Maybe<Integer> neverSource;
+
+    /** Timeout publisher that emits a single item immediately. */
+    private Publisher<Object> immediateTimeout;
+
+    /** Timeout publisher that never emits (no timeout). */
+    private Publisher<Object> neverTimeout;
+
+    /** Fallback Maybe used when timeout occurs. */
+    private Maybe<Integer> fallback;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        fastSource = Maybe.just(1);
+        neverSource = Maybe.never();
+
+        // Flowable.just emits a single item and completes immediately.
+        immediateTimeout = Flowable.just(new Object());
+
+        // Flowable.never never emits nor completes.
+        neverTimeout = Flowable.never();
+
+        fallback = Maybe.just(42);
+    }
+
+    /**
+     * Benchmark where the timeout fires and the fallback Maybe is subscribed.
+     * The source {@code neverSource} never completes, the timeout {@code immediateTimeout}
+     * emits right away, causing the fallback {@code fallback} to be subscribed.
+     */
+    @Benchmark
+    public void timeoutWithFallback(Blackhole bh) {
+        Maybe<Integer> timeoutOperator = new MaybeTimeoutPublisher<>(neverSource, immediateTimeout, fallback);
+        TestObserver<Integer> to = new TestObserver<>();
+        timeoutOperator.subscribe(to);
+        to.awaitDone(5, TimeUnit.SECONDS);
+        bh.consume(to.values());
+    }
+
+    /**
+     * Benchmark where the source completes before the timeout can fire.
+     * The source {@code fastSource} emits a value immediately, the timeout {@code neverTimeout}
+     * never emits, so the fallback is never used.
+     */
+    @Benchmark
+    public void noTimeout(Blackhole bh) {
+        Maybe<Integer> timeoutOperator = new MaybeTimeoutPublisher<>(fastSource, neverTimeout, fallback);
+        TestObserver<Integer> to = new TestObserver<>();
+        timeoutOperator.subscribe(to);
+        to.awaitDone(5, TimeUnit.SECONDS);
+        bh.consume(to.values());
+    }
+}
+```

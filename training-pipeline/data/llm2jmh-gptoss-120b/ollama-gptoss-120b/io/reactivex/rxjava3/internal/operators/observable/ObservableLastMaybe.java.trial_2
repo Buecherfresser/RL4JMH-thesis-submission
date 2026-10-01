@@ -1,0 +1,57 @@
+```
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Throughput benchmark for the {@code ObservableLastMaybe} operator (exposed via {@code Observable.lastElement()}).
+ *
+ * The benchmark measures how many terminal events (i.e., {@code Maybe} completions) can be processed per second
+ * for different source sizes. It uses {@code blockingGet()} to materialize the {@code Maybe} result, which is
+ * a common pattern in micro‑benchmarks when we want to isolate the operator's overhead.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} isolates mutable state per benchmark thread.
+ * - {@code @Param} allows testing multiple source sizes without code changes.
+ * - {@code Blackhole} consumes the result to prevent dead‑code elimination.
+ * - Warm‑up and measurement iterations are left to the JMH runner defaults (or can be configured externally).
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class ObservableLastMaybeBenchmark {
+
+    /**
+     * Number of items emitted by the source Observable before the {@code lastElement()} operator is applied.
+     * Typical values cover small, medium, and large streams.
+     */
+    @Param({ "1", "10", "100", "1000", "10000" })
+    public int size;
+
+    private ObservableSource<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a cold Observable that emits a range of integers.
+        // Using Observable.range ensures a deterministic, side‑effect‑free source.
+        source = Observable.range(0, size);
+    }
+
+    /**
+     * Executes the {@code lastElement()} operator on the prepared source and materializes the result.
+     *
+     * @param bh Blackhole to consume the emitted value and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void lastElementThroughput(Blackhole bh) {
+        // Wrap the ObservableSource into an Observable, then apply lastElement().
+        Integer result = Observable.wrap(source)
+                                   .lastElement()
+                                   .blockingGet();
+        bh.consume(result);
+    }
+}
+```

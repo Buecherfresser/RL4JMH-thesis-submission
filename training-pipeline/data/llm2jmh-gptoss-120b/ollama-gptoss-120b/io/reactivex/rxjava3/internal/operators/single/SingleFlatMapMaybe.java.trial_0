@@ -1,0 +1,57 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.single.SingleFlatMapMaybe;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Microbenchmark for {@link SingleFlatMapMaybe}.
+ *
+ * The benchmark measures the throughput of a simple flatMap operation
+ * where a {@link Single} is mapped to a {@link Maybe}. The upstream
+ * emits a constant value and the mapper returns a constant {@code Maybe}.
+ *
+ * Best practices applied:
+ * - Use @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - Pre‑create the source and mapper in @Setup to exclude allocation overhead.
+ * - Use blackhole to consume the result and prevent dead‑code elimination.
+ * - Run in Mode.Throughput with a reasonable time unit.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class SingleFlatMapMaybeBenchmark {
+
+    private Single<Integer> source;
+    private Function<Integer, MaybeSource<Integer>> mapper;
+    private Maybe<Integer> maybe;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple source that always emits the integer 1
+        source = Single.just(1);
+
+        // Mapper that adds 1 and wraps the result into a Maybe
+        mapper = v -> Maybe.just(v + 1);
+
+        // Create the operator under test once; the same instance can be reused safely
+        maybe = new SingleFlatMapMaybe<>(source, mapper);
+    }
+
+    @Benchmark
+    public void flatMapMaybeThroughput(Blackhole bh) {
+        // blockingGet forces the whole chain to execute synchronously,
+        // making the benchmark deterministic.
+        Integer result = maybe.blockingGet();
+        bh.consume(result);
+    }
+}
+```

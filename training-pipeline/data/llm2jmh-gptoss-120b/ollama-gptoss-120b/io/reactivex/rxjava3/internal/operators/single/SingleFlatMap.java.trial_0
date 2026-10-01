@@ -1,0 +1,60 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.single.SingleFlatMap}
+ * using the {@code flatMap} operator on {@link Single}.
+ *
+ * The benchmark measures the throughput (operations per second) of a simple
+ * flatMap chain: {@code Single.just(1).flatMap(mapper)} where the mapper returns
+ * another {@code Single} that emits a constant value.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) to avoid sharing mutable state between threads.
+ * - @Setup to create immutable objects once per benchmark iteration.
+ * - Blackhole consumption to prevent dead-code elimination.
+ * - Warmup, measurement, and fork parameters tuned for reliable results.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 3, jvmArgsAppend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation"})
+@State(Scope.Thread)
+public class SingleFlatMapThroughputBenchmark {
+
+    private Single<Integer> source;
+    private Function<Integer, Single<String>> mapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple source that emits a constant integer.
+        source = Single.just(1);
+
+        // Mapper that creates a new Single emitting a constant string.
+        mapper = i -> Single.just("value-" + i);
+    }
+
+    /**
+     * Executes the flatMap operation and blocks until the result is available.
+     * The result is consumed by Blackhole to avoid dead‑code elimination.
+     *
+     * @param bh Blackhole to consume the result.
+     */
+    @Benchmark
+    public void flatMapSingle(Blackhole bh) {
+        // The flatMap operator under test.
+        String result = source.flatMap(mapper).blockingGet();
+
+        // Consume the result so the JIT cannot eliminate the call chain.
+        bh.consume(result);
+    }
+}
+```

@@ -1,0 +1,579 @@
+diff --git a/co/nstant/in/cbor/CborBuilder.java b/co/nstant/in/cbor/CborBuilder.java
+index 68e8922..ded72c3 100644
+--- a/co/nstant/in/cbor/CborBuilder.java
++++ b/co/nstant/in/cbor/CborBuilder.java
+@@ -23,12 +23,12 @@ public class CborBuilder extends AbstractBuilder<CborBuilder> {
+         super(null);
+     }
+ 
+-    public CborBuilder reset() {
++    public CborBuilder reset() { co.nstant.in.jmhbench.MutationSwitch.tick(1);
+         dataItems.clear();
+         return this;
+     }
+ 
+-    public List<DataItem> build() {
++    public List<DataItem> build() { co.nstant.in.jmhbench.MutationSwitch.tick(2);
+         return dataItems;
+     }
+ 
+@@ -67,7 +67,7 @@ public class CborBuilder extends AbstractBuilder<CborBuilder> {
+         return this;
+     }
+ 
+-    public ByteStringBuilder<CborBuilder> startByteString() {
++    public ByteStringBuilder<CborBuilder> startByteString() { co.nstant.in.jmhbench.MutationSwitch.tick(3);
+         return startByteString(null);
+     }
+ 
+diff --git a/co/nstant/in/cbor/CborDecoder.java b/co/nstant/in/cbor/CborDecoder.java
+index 039fe03..9f03c61 100644
+--- a/co/nstant/in/cbor/CborDecoder.java
++++ b/co/nstant/in/cbor/CborDecoder.java
+@@ -115,7 +115,7 @@ public class CborDecoder {
+      * @return a {@link DataItem} or null if end of stream has reached.
+      * @throws CborException if decoding failed
+      */
+-    public DataItem decodeNext() throws CborException {
++    public DataItem decodeNext() throws CborException { co.nstant.in.jmhbench.MutationSwitch.tick(4);
+         int symbol;
+         try {
+             symbol = inputStream.read();
+@@ -221,11 +221,11 @@ public class CborDecoder {
+         return new RationalNumber(numerator, denominator);
+     }
+ 
+-    public boolean isAutoDecodeInfinitiveArrays() {
++    public boolean isAutoDecodeInfinitiveArrays() { co.nstant.in.jmhbench.MutationSwitch.tick(5);
+         return autoDecodeInfinitiveArrays;
+     }
+ 
+-    public void setAutoDecodeInfinitiveArrays(boolean autoDecodeInfinitiveArrays) {
++    public void setAutoDecodeInfinitiveArrays(boolean autoDecodeInfinitiveArrays) { co.nstant.in.jmhbench.MutationSwitch.tick(6);
+         this.autoDecodeInfinitiveArrays = autoDecodeInfinitiveArrays;
+     }
+ 
+diff --git a/co/nstant/in/cbor/CborEncoder.java b/co/nstant/in/cbor/CborEncoder.java
+index f8eb30f..12fcf16 100644
+--- a/co/nstant/in/cbor/CborEncoder.java
++++ b/co/nstant/in/cbor/CborEncoder.java
+@@ -64,11 +64,11 @@ public class CborEncoder {
+         }
+     }
+ 
+-    public boolean isCanonical() {
++    public boolean isCanonical() { co.nstant.in.jmhbench.MutationSwitch.tick(7);
+         return cborOutputStream.isCanonical();
+     }
+ 
+-    public CborEncoder nonCanonical() {
++    public CborEncoder nonCanonical() { co.nstant.in.jmhbench.MutationSwitch.tick(8);
+         cborOutputStream.setCanonical(false);
+         return this;
+     }
+@@ -78,7 +78,7 @@ public class CborEncoder {
+      *
+      * @param dataItems a list of {@link DataItem}s
+      */
+-    public static byte[] encodeToBytes(List<DataItem> dataItems) {
++    public static byte[] encodeToBytes(List<DataItem> dataItems) { co.nstant.in.jmhbench.MutationSwitch.tick(9);
+         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+         CborOutputStream cborOutputStream = new CborOutputStream(byteArrayOutputStream);
+         try {
+diff --git a/co/nstant/in/cbor/CborOutputStream.java b/co/nstant/in/cbor/CborOutputStream.java
+index deb5e3a..260011e 100644
+--- a/co/nstant/in/cbor/CborOutputStream.java
++++ b/co/nstant/in/cbor/CborOutputStream.java
+@@ -39,15 +39,15 @@ class CborOutputStream extends OutputStream {
+         this.outputStream = outputStream;
+     }
+ 
+-    public boolean isCanonical() {
++    public boolean isCanonical() { co.nstant.in.jmhbench.MutationSwitch.tick(10);
+         return canonical;
+     }
+ 
+-    public void setCanonical(boolean canonical) {
++    public void setCanonical(boolean canonical) { co.nstant.in.jmhbench.MutationSwitch.tick(11);
+         this.canonical = canonical;
+     }
+ 
+-    public void writeDataItem(DataItem dataItem) throws IOException {
++    public void writeDataItem(DataItem dataItem) throws IOException { co.nstant.in.jmhbench.MutationSwitch.tick(12);
+         if (dataItem == null) {
+             dataItem = SimpleValue.NULL;
+         }
+diff --git a/co/nstant/in/cbor/builder/ArrayBuilder.java b/co/nstant/in/cbor/builder/ArrayBuilder.java
+index 7b3fe2a..b86a0e0 100644
+--- a/co/nstant/in/cbor/builder/ArrayBuilder.java
++++ b/co/nstant/in/cbor/builder/ArrayBuilder.java
+@@ -49,7 +49,7 @@ public class ArrayBuilder<T extends AbstractBuilder<?>> extends AbstractBuilder<
+         return this;
+     }
+ 
+-    public ArrayBuilder<T> tagged(long tag) {
++    public ArrayBuilder<T> tagged(long tag) { co.nstant.in.jmhbench.MutationSwitch.tick(13);
+         DataItem item = array.peekLast();
+         if (item == null) {
+             throw new IllegalStateException("Can't add a tag before adding an item");
+@@ -58,13 +58,13 @@ public class ArrayBuilder<T extends AbstractBuilder<?>> extends AbstractBuilder<
+         return this;
+     }
+ 
+-    public ArrayBuilder<ArrayBuilder<T>> addArray() {
++    public ArrayBuilder<ArrayBuilder<T>> addArray() { co.nstant.in.jmhbench.MutationSwitch.tick(14);
+         Array nestedArray = new Array();
+         add(nestedArray);
+         return new ArrayBuilder<ArrayBuilder<T>>(this, nestedArray);
+     }
+ 
+-    public ArrayBuilder<ArrayBuilder<T>> startArray() {
++    public ArrayBuilder<ArrayBuilder<T>> startArray() { co.nstant.in.jmhbench.MutationSwitch.tick(15);
+         Array nestedArray = new Array();
+         nestedArray.setChunked(true);
+         add(nestedArray);
+diff --git a/co/nstant/in/cbor/builder/ByteStringBuilder.java b/co/nstant/in/cbor/builder/ByteStringBuilder.java
+index 1ceff27..525016b 100644
+--- a/co/nstant/in/cbor/builder/ByteStringBuilder.java
++++ b/co/nstant/in/cbor/builder/ByteStringBuilder.java
+@@ -13,7 +13,7 @@ public class ByteStringBuilder<T extends AbstractBuilder<?>> extends AbstractBui
+         return this;
+     }
+ 
+-    public T end() {
++    public T end() { co.nstant.in.jmhbench.MutationSwitch.tick(16);
+         getParent().addChunk(SimpleValue.BREAK);
+         return getParent();
+     }
+diff --git a/co/nstant/in/cbor/builder/MapBuilder.java b/co/nstant/in/cbor/builder/MapBuilder.java
+index d01e070..1536c17 100644
+--- a/co/nstant/in/cbor/builder/MapBuilder.java
++++ b/co/nstant/in/cbor/builder/MapBuilder.java
+@@ -80,19 +80,19 @@ public class MapBuilder<T extends AbstractBuilder<?>> extends AbstractBuilder<T>
+         return this;
+     }
+ 
+-    public ArrayBuilder<MapBuilder<T>> putArray(DataItem key) {
++    public ArrayBuilder<MapBuilder<T>> putArray(DataItem key) { co.nstant.in.jmhbench.MutationSwitch.tick(17);
+         Array array = new Array();
+         put(key, array);
+         return new ArrayBuilder<>(this, array);
+     }
+ 
+-    public ArrayBuilder<MapBuilder<T>> putArray(long key) {
++    public ArrayBuilder<MapBuilder<T>> putArray(long key) { co.nstant.in.jmhbench.MutationSwitch.tick(18);
+         Array array = new Array();
+         put(convert(key), array);
+         return new ArrayBuilder<>(this, array);
+     }
+ 
+-    public ArrayBuilder<MapBuilder<T>> putArray(String key) {
++    public ArrayBuilder<MapBuilder<T>> putArray(String key) { co.nstant.in.jmhbench.MutationSwitch.tick(19);
+         Array array = new Array();
+         put(convert(key), array);
+         return new ArrayBuilder<>(this, array);
+diff --git a/co/nstant/in/cbor/builder/MapEntryBuilder.java b/co/nstant/in/cbor/builder/MapEntryBuilder.java
+index 7b95ee1..e9c34b8 100644
+--- a/co/nstant/in/cbor/builder/MapEntryBuilder.java
++++ b/co/nstant/in/cbor/builder/MapEntryBuilder.java
+@@ -10,15 +10,15 @@ public class MapEntryBuilder<T extends MapBuilder<?>> extends AbstractBuilder<T>
+         this.key = key;
+     }
+ 
+-    public T value(boolean value) {
++    public T value(boolean value) { co.nstant.in.jmhbench.MutationSwitch.tick(20);
+         return put(key, convert(value));
+     }
+ 
+-    public T value(byte[] value) {
++    public T value(byte[] value) { co.nstant.in.jmhbench.MutationSwitch.tick(21);
+         return put(key, convert(value));
+     }
+ 
+-    public T value(double value) {
++    public T value(double value) { co.nstant.in.jmhbench.MutationSwitch.tick(22);
+         return put(key, convert(value));
+     }
+ 
+diff --git a/co/nstant/in/cbor/builder/UnicodeStringBuilder.java b/co/nstant/in/cbor/builder/UnicodeStringBuilder.java
+index 11502cb..e91d4f5 100644
+--- a/co/nstant/in/cbor/builder/UnicodeStringBuilder.java
++++ b/co/nstant/in/cbor/builder/UnicodeStringBuilder.java
+@@ -13,7 +13,7 @@ public class UnicodeStringBuilder<T extends AbstractBuilder<?>> extends Abstract
+         return this;
+     }
+ 
+-    public T end() {
++    public T end() { co.nstant.in.jmhbench.MutationSwitch.tick(23);
+         getParent().addChunk(SimpleValue.BREAK);
+         return getParent();
+     }
+diff --git a/co/nstant/in/cbor/model/AbstractFloat.java b/co/nstant/in/cbor/model/AbstractFloat.java
+index 5766e9a..8d51b22 100644
+--- a/co/nstant/in/cbor/model/AbstractFloat.java
++++ b/co/nstant/in/cbor/model/AbstractFloat.java
+@@ -11,7 +11,7 @@ public class AbstractFloat extends Special {
+         this.value = value;
+     }
+ 
+-    public float getValue() {
++    public float getValue() { co.nstant.in.jmhbench.MutationSwitch.tick(34);
+         return value;
+     }
+ 
+diff --git a/co/nstant/in/cbor/model/AdditionalInformation.java b/co/nstant/in/cbor/model/AdditionalInformation.java
+index 23a014d..c0b7074 100644
+--- a/co/nstant/in/cbor/model/AdditionalInformation.java
++++ b/co/nstant/in/cbor/model/AdditionalInformation.java
+@@ -27,11 +27,11 @@ public enum AdditionalInformation {
+         this.value = value;
+     }
+ 
+-    public int getValue() {
++    public int getValue() { co.nstant.in.jmhbench.MutationSwitch.tick(35);
+         return value;
+     }
+ 
+-    public static AdditionalInformation ofByte(int b) {
++    public static AdditionalInformation ofByte(int b) { co.nstant.in.jmhbench.MutationSwitch.tick(36);
+         switch (b & 31) {
+         case 24:
+             return ONE_BYTE;
+diff --git a/co/nstant/in/cbor/model/Array.java b/co/nstant/in/cbor/model/Array.java
+index 7533655..bc0e8b0 100644
+--- a/co/nstant/in/cbor/model/Array.java
++++ b/co/nstant/in/cbor/model/Array.java
+@@ -23,7 +23,7 @@ public class Array extends ChunkableDataItem {
+         return this;
+     }
+ 
+-    public List<DataItem> getDataItems() {
++    public List<DataItem> getDataItems() { co.nstant.in.jmhbench.MutationSwitch.tick(24);
+         return objects;
+     }
+ 
+@@ -51,7 +51,7 @@ public class Array extends ChunkableDataItem {
+         return stringBuilder.toString();
+     }
+ 
+-    public DataItem peekLast() {
++    public DataItem peekLast() { co.nstant.in.jmhbench.MutationSwitch.tick(25);
+         if (objects.isEmpty()) {
+             return null;
+         }
+diff --git a/co/nstant/in/cbor/model/ByteString.java b/co/nstant/in/cbor/model/ByteString.java
+index be7b598..bd4985c 100644
+--- a/co/nstant/in/cbor/model/ByteString.java
++++ b/co/nstant/in/cbor/model/ByteString.java
+@@ -15,7 +15,7 @@ public class ByteString extends ChunkableDataItem {
+         }
+     }
+ 
+-    public byte[] getBytes() {
++    public byte[] getBytes() { co.nstant.in.jmhbench.MutationSwitch.tick(26);
+         if (bytes == null) {
+             return null;
+         } else {
+diff --git a/co/nstant/in/cbor/model/ChunkableDataItem.java b/co/nstant/in/cbor/model/ChunkableDataItem.java
+index cd01de9..6aeb3fd 100644
+--- a/co/nstant/in/cbor/model/ChunkableDataItem.java
++++ b/co/nstant/in/cbor/model/ChunkableDataItem.java
+@@ -10,11 +10,11 @@ class ChunkableDataItem extends DataItem {
+         super(majorType);
+     }
+ 
+-    public boolean isChunked() {
++    public boolean isChunked() { co.nstant.in.jmhbench.MutationSwitch.tick(37);
+         return chunked;
+     }
+ 
+-    public ChunkableDataItem setChunked(boolean chunked) {
++    public ChunkableDataItem setChunked(boolean chunked) { co.nstant.in.jmhbench.MutationSwitch.tick(38);
+         this.chunked = chunked;
+         return this;
+     }
+diff --git a/co/nstant/in/cbor/model/DataItem.java b/co/nstant/in/cbor/model/DataItem.java
+index 511f3be..867ab2a 100644
+--- a/co/nstant/in/cbor/model/DataItem.java
++++ b/co/nstant/in/cbor/model/DataItem.java
+@@ -14,11 +14,11 @@ public class DataItem {
+         Objects.requireNonNull(majorType, "majorType is null");
+     }
+ 
+-    public MajorType getMajorType() {
++    public MajorType getMajorType() { co.nstant.in.jmhbench.MutationSwitch.tick(39);
+         return majorType;
+     }
+ 
+-    public void setTag(long tag) {
++    public void setTag(long tag) { co.nstant.in.jmhbench.MutationSwitch.tick(40);
+         if (tag < 0) {
+             throw new IllegalArgumentException("tag number must be 0 or greater");
+         }
+@@ -26,7 +26,7 @@ public class DataItem {
+         this.tag = new Tag(tag);
+     }
+ 
+-    public void setTag(Tag tag) {
++    public void setTag(Tag tag) { co.nstant.in.jmhbench.MutationSwitch.tick(41);
+         Objects.requireNonNull(tag, "tag is null");
+         this.tag = tag;
+     }
+diff --git a/co/nstant/in/cbor/model/DoublePrecisionFloat.java b/co/nstant/in/cbor/model/DoublePrecisionFloat.java
+index 3a6da94..61cf4f4 100644
+--- a/co/nstant/in/cbor/model/DoublePrecisionFloat.java
++++ b/co/nstant/in/cbor/model/DoublePrecisionFloat.java
+@@ -11,7 +11,7 @@ public class DoublePrecisionFloat extends Special {
+         this.value = value;
+     }
+ 
+-    public double getValue() {
++    public double getValue() { co.nstant.in.jmhbench.MutationSwitch.tick(42);
+         return value;
+     }
+ 
+diff --git a/co/nstant/in/cbor/model/LanguageTaggedString.java b/co/nstant/in/cbor/model/LanguageTaggedString.java
+index f54667d..a4030da 100644
+--- a/co/nstant/in/cbor/model/LanguageTaggedString.java
++++ b/co/nstant/in/cbor/model/LanguageTaggedString.java
+@@ -17,11 +17,11 @@ public class LanguageTaggedString extends Array {
+         add(Objects.requireNonNull(string));
+     }
+ 
+-    public UnicodeString getLanguage() {
++    public UnicodeString getLanguage() { co.nstant.in.jmhbench.MutationSwitch.tick(27);
+         return (UnicodeString) getDataItems().get(0);
+     }
+ 
+-    public UnicodeString getString() {
++    public UnicodeString getString() { co.nstant.in.jmhbench.MutationSwitch.tick(28);
+         return (UnicodeString) getDataItems().get(1);
+     }
+ 
+diff --git a/co/nstant/in/cbor/model/MajorType.java b/co/nstant/in/cbor/model/MajorType.java
+index b56b508..b9b2e1f 100644
+--- a/co/nstant/in/cbor/model/MajorType.java
++++ b/co/nstant/in/cbor/model/MajorType.java
+@@ -94,11 +94,11 @@ public enum MajorType {
+         this.value = value;
+     }
+ 
+-    public int getValue() {
++    public int getValue() { co.nstant.in.jmhbench.MutationSwitch.tick(43);
+         return value;
+     }
+ 
+-    public static MajorType ofByte(int b) throws CborException {
++    public static MajorType ofByte(int b) throws CborException { co.nstant.in.jmhbench.MutationSwitch.tick(44);
+         switch (b >> 5) {
+         case 0:
+             return UNSIGNED_INTEGER;
+diff --git a/co/nstant/in/cbor/model/Map.java b/co/nstant/in/cbor/model/Map.java
+index 9017058..341c69a 100644
+--- a/co/nstant/in/cbor/model/Map.java
++++ b/co/nstant/in/cbor/model/Map.java
+@@ -36,11 +36,11 @@ public class Map extends ChunkableDataItem {
+         return map.remove(key);
+     }
+ 
+-    public Collection<DataItem> getKeys() {
++    public Collection<DataItem> getKeys() { co.nstant.in.jmhbench.MutationSwitch.tick(29);
+         return keys;
+     }
+ 
+-    public Collection<DataItem> getValues() {
++    public Collection<DataItem> getValues() { co.nstant.in.jmhbench.MutationSwitch.tick(30);
+         return map.values();
+     }
+ 
+diff --git a/co/nstant/in/cbor/model/RationalNumber.java b/co/nstant/in/cbor/model/RationalNumber.java
+index 0ddd937..091a195 100644
+--- a/co/nstant/in/cbor/model/RationalNumber.java
++++ b/co/nstant/in/cbor/model/RationalNumber.java
+@@ -25,11 +25,11 @@ public class RationalNumber extends Array {
+         add(denominator);
+     }
+ 
+-    public Number getNumerator() {
++    public Number getNumerator() { co.nstant.in.jmhbench.MutationSwitch.tick(31);
+         return (Number) getDataItems().get(0);
+     }
+ 
+-    public Number getDenominator() {
++    public Number getDenominator() { co.nstant.in.jmhbench.MutationSwitch.tick(32);
+         return (Number) getDataItems().get(1);
+     }
+ 
+diff --git a/co/nstant/in/cbor/model/SimpleValue.java b/co/nstant/in/cbor/model/SimpleValue.java
+index 3ed2d9e..a718211 100644
+--- a/co/nstant/in/cbor/model/SimpleValue.java
++++ b/co/nstant/in/cbor/model/SimpleValue.java
+@@ -25,11 +25,11 @@ public class SimpleValue extends Special {
+         this.simpleValueType = SimpleValueType.ofByte(value);
+     }
+ 
+-    public SimpleValueType getSimpleValueType() {
++    public SimpleValueType getSimpleValueType() { co.nstant.in.jmhbench.MutationSwitch.tick(45);
+         return simpleValueType;
+     }
+ 
+-    public int getValue() {
++    public int getValue() { co.nstant.in.jmhbench.MutationSwitch.tick(46);
+         return value;
+     }
+ 
+diff --git a/co/nstant/in/cbor/model/SimpleValueType.java b/co/nstant/in/cbor/model/SimpleValueType.java
+index 1748246..16213a8 100644
+--- a/co/nstant/in/cbor/model/SimpleValueType.java
++++ b/co/nstant/in/cbor/model/SimpleValueType.java
+@@ -10,11 +10,11 @@ public enum SimpleValueType {
+         this.value = value;
+     }
+ 
+-    public int getValue() {
++    public int getValue() { co.nstant.in.jmhbench.MutationSwitch.tick(47);
+         return value;
+     }
+ 
+-    public static SimpleValueType ofByte(int b) {
++    public static SimpleValueType ofByte(int b) { co.nstant.in.jmhbench.MutationSwitch.tick(48);
+         switch (b & 31) {
+         case 20:
+             return FALSE;
+diff --git a/co/nstant/in/cbor/model/Special.java b/co/nstant/in/cbor/model/Special.java
+index 365950b..8f259af 100644
+--- a/co/nstant/in/cbor/model/Special.java
++++ b/co/nstant/in/cbor/model/Special.java
+@@ -13,7 +13,7 @@ public class Special extends DataItem {
+         this.specialType = Objects.requireNonNull(specialType);
+     }
+ 
+-    public SpecialType getSpecialType() {
++    public SpecialType getSpecialType() { co.nstant.in.jmhbench.MutationSwitch.tick(49);
+         return specialType;
+     }
+ 
+diff --git a/co/nstant/in/cbor/model/SpecialType.java b/co/nstant/in/cbor/model/SpecialType.java
+index 5f4c8c1..b15472c 100644
+--- a/co/nstant/in/cbor/model/SpecialType.java
++++ b/co/nstant/in/cbor/model/SpecialType.java
+@@ -7,7 +7,7 @@ public enum SpecialType {
+     SIMPLE_VALUE, SIMPLE_VALUE_NEXT_BYTE, IEEE_754_HALF_PRECISION_FLOAT, IEEE_754_SINGLE_PRECISION_FLOAT,
+     IEEE_754_DOUBLE_PRECISION_FLOAT, BREAK;
+ 
+-    public static SpecialType ofByte(int b) throws CborException {
++    public static SpecialType ofByte(int b) throws CborException { co.nstant.in.jmhbench.MutationSwitch.tick(50);
+         switch (b & 31) {
+         case 24:
+             return SIMPLE_VALUE_NEXT_BYTE;
+diff --git a/co/nstant/in/cbor/model/UnicodeString.java b/co/nstant/in/cbor/model/UnicodeString.java
+index b2bf0bf..739fbb6 100644
+--- a/co/nstant/in/cbor/model/UnicodeString.java
++++ b/co/nstant/in/cbor/model/UnicodeString.java
+@@ -18,7 +18,7 @@ public class UnicodeString extends ChunkableDataItem {
+         }
+     }
+ 
+-    public String getString() {
++    public String getString() { co.nstant.in.jmhbench.MutationSwitch.tick(33);
+         return string;
+     }
+ 
+diff --git a/co/nstant/in/jmhbench/MutationSwitch.java b/co/nstant/in/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c55e080
+--- /dev/null
++++ b/co/nstant/in/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package co.nstant.in.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}

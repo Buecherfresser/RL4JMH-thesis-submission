@@ -1,0 +1,113 @@
+```
+package io.reactivex.rxjava3.processors;
+
+import java.util.concurrent.TimeUnit;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
+
+/**
+ * JMH benchmark for {@link UnicastProcessor}.
+ *
+ * Measures the throughput of {@code onNext} calls when a single subscriber
+ * is attached and requests an unbounded amount of items.
+ *
+ * The benchmark follows best practices:
+ * - Use @State(Scope.Benchmark) to share the processor across iterations.
+ * - Re‑initialize the processor in @Setup(Level.Iteration) to avoid state leakage.
+ * - Consume emitted items with Blackhole to prevent dead‑code elimination.
+ * - Run in Mode.Throughput with a time unit of operations per second.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Benchmark)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+public class UnicastProcessorBenchmark {
+
+    /** Processor under test. */
+    private UnicastProcessor<Integer> processor;
+
+    /** Simple subscriber that requests Long.MAX_VALUE and discards items via Blackhole. */
+    private static final class BlackholeSubscriber extends DisposableSubscriber<Integer> {
+
+        private final Blackhole bh;
+
+        BlackholeSubscriber(Blackhole bh) {
+            this.bh = bh;
+        }
+
+        @Override
+        public void onNext(Integer t) {
+            bh.consume(t);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            // No‑op for benchmark
+        }
+
+        @Override
+        public void onComplete() {
+            // No‑op for benchmark
+        }
+
+        /** Expose request(Long.MAX_VALUE) publicly for the benchmark. */
+        public void requestAll() {
+            super.request(Long.MAX_VALUE);
+        }
+    }
+
+    /** Subscriber instance used during the benchmark. */
+    private BlackholeSubscriber subscriber;
+
+    /** Counter used to generate distinct values for onNext. */
+    private int counter;
+
+    @Setup(Level.Iteration)
+    public void setUp(Blackhole bh) {
+        // Fresh processor for each iteration.
+        processor = UnicastProcessor.create();
+
+        // Attach a subscriber that consumes items via Blackhole.
+        subscriber = new BlackholeSubscriber(bh);
+        processor.subscribe(subscriber);
+
+        // Request an unbounded number of items.
+        subscriber.requestAll();
+
+        counter = 0;
+    }
+
+    @TearDown(Level.Iteration)
+    public void tearDown() {
+        // Dispose subscriber to avoid resource leaks.
+        subscriber.dispose();
+        processor = null;
+    }
+
+    /** Benchmark method that repeatedly calls {@code onNext} on the processor. */
+    @Benchmark
+    public void onNext() {
+        processor.onNext(counter++);
+    }
+
+    /** Benchmark the completion path (terminal operation). */
+    @Benchmark
+    public void onComplete() {
+        processor.onComplete();
+    }
+
+    /** Benchmark the error path; recreates processor for subsequent measurements. */
+    @Benchmark
+    public void onError(Blackhole bh) {
+        processor.onError(new RuntimeException("benchmark"));
+        // Re‑create processor and subscriber for the next measurement within the same iteration.
+        processor = UnicastProcessor.create();
+        subscriber = new BlackholeSubscriber(bh);
+        processor.subscribe(subscriber);
+        subscriber.requestAll();
+    }
+}
+```

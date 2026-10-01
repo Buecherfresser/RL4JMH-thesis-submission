@@ -1,0 +1,81 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
+import io.reactivex.rxjava3.core.Flowable;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableOnBackpressureBufferStrategy}.
+ *
+ * The benchmark measures the throughput (items processed per second) of the
+ * {@code onBackpressureBuffer} operator under different buffer sizes and
+ * overflow strategies. It uses a simple synchronous {@link Flowable#range}
+ * source to isolate the cost of the operator itself.
+ *
+ * Best‑practice notes:
+ * • @State is scoped to Thread to avoid sharing mutable state between benchmark threads.
+ * • @Param allows quick experimentation with different source sizes.
+ * • Blackhole consumes the emitted items to prevent dead‑code elimination.
+ * • The benchmark runs in {@code Mode.Throughput} with warm‑up and measurement
+ *   iterations, and a single fork to keep JVM launch overhead low.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableOnBackpressureBufferStrategyBenchmark {
+
+    /**
+     * Number of items emitted by the source Flowable.
+     * Adjust to explore small vs. large streams.
+     */
+    @Param({"1_000", "100_000", "1_000_000"})
+    public int itemCount;
+
+    /**
+     * Buffer size passed to the operator.
+     * Using the same value as {@code itemCount} ensures the buffer never overflows
+     * for the default {@code ERROR} strategy, keeping the benchmark focused on
+     * the operator's normal path.
+     */
+    @Param({"1_000", "100_000", "1_000_000"})
+    public long bufferSize;
+
+    /**
+     * The Flowable under test, created once per trial.
+     */
+    private Flowable<Integer> testFlowable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple synchronous source; no scheduler is involved to isolate operator cost.
+        Flowable<Integer> source = Flowable.range(0, itemCount);
+
+        // Apply the operator with a no‑op overflow action and no‑op dropped consumer.
+        testFlowable = source.onBackpressureBuffer(
+                bufferSize,
+                () -> { /* no‑op overflow action */ },
+                BackpressureOverflowStrategy.ERROR,
+                v -> { /* no‑op dropped consumer */ }
+        );
+    }
+
+    /**
+     * Executes the Flowable and consumes all emitted items.
+     *
+     * @param bh Blackhole to consume items and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void backpressureBufferThroughput(Blackhole bh) {
+        // blockingSubscribe runs the whole stream synchronously and returns only after completion.
+        testFlowable.blockingSubscribe(bh::consume);
+    }
+}
+```

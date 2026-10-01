@@ -1,0 +1,121 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Microbenchmark for {@code MaybeOnErrorReturn}.
+ *
+ * <p>Measures the throughput of the {@code onErrorReturn} operator when the upstream
+ * terminates with an error. A baseline benchmark without the operator is also provided
+ * to help isolate the overhead introduced by the operator.</p>
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Use {@code @State(Scope.Thread)} to avoid sharing mutable state between threads.</li>
+ *   <li>Perform all allocations in {@code @Setup} to keep the benchmark measurement pure.</li>
+ *   <li>Consume results with {@link Blackhole} to prevent dead‑code elimination.</li>
+ *   <li>Configure warm‑up, measurement, and fork parameters to obtain stable results.</li>
+ *   <li>Run in {@link Mode#Throughput} with {@link TimeUnit#SECONDS} output for operations per second.</li>
+ * </ul>
+ * </p>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class MaybeOnErrorReturnBenchmark {
+
+    /**
+     * Source that immediately fails with a RuntimeException.
+     */
+    private Maybe<Integer> errorSource;
+
+    /**
+     * The same source wrapped with {@code onErrorReturn}.
+     */
+    private Maybe<Integer> errorWithFallback;
+
+    /**
+     * Baseline source that succeeds (used to compare against the error path).
+     */
+    private Maybe<Integer> successSource;
+
+    @Setup
+    public void setUp() {
+        // Fallback value supplied when the upstream errors.
+        Function<Throwable, Integer> fallback = throwable -> 42;
+        errorSource = Maybe.error(new RuntimeException("boom"));
+        errorWithFallback = errorSource.onErrorReturn(fallback);
+        successSource = Maybe.just(1);
+    }
+
+    /**
+     * Benchmark the throughput of the {@code onErrorReturn} operator when the upstream
+     * terminates with an error. The operator should invoke the fallback function and emit
+     * the resulting value.
+     */
+    @Benchmark
+    public void onErrorReturnThroughput(Blackhole bh) {
+        // blockingGet triggers subscription, error handling and fallback emission.
+        Integer result = errorWithFallback.blockingGet();
+        bh.consume(result);
+    }
+
+    /**
+     * Baseline benchmark that measures the cost of subscribing to a failing {@code Maybe}
+     * without any error‑handling operator. This helps to isolate the overhead introduced
+     * by {@code onErrorReturn}.
+     */
+    @Benchmark
+    public void errorBaselineThroughput(Blackhole bh) {
+        // The call will throw, but {@code blockingGet} returns null for error termination.
+        Integer result = errorSource.blockingGet();
+        bh.consume(result);
+    }
+
+    /**
+     * Benchmark the throughput of a successful {@code Maybe} to provide a reference
+     * point for the best‑case scenario (no error handling involved).
+     */
+    @Benchmark
+    public void successBaselineThroughput(Blackhole bh) {
+        Integer result = successSource.blockingGet();
+        bh.consume(result);
+    }
+}

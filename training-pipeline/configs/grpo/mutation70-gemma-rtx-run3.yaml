@@ -1,0 +1,306 @@
+# Gemma 4 E2B - run 3 on the 8x RTX PRO 6000 Blackwell box (rtx-jonas): 2-GPU COLOCATE.
+#
+# Derived from mutation70-gemma-rtx.yaml (run 2). Run 2 finished 834/834 steps and *looked*
+# like it had not learned: mean reward 0.087, compile_frac flat at 16 %, 60 % of steps with
+# zero advantage spread. Serving its final adapter says otherwise. Same 40 prompts, same
+# sampling, serial deterministic compile (2026-08-08):
+#
+#     base google/gemma-4-E2B-it .................. 14.4 % compile
+#     run-2 adapter, served standalone ............ 41.2 % compile
+#     run-2 adapter, as logged during training ..... 17.4 % compile
+#
+# So run 2 nearly tripled compile rate and the in-run telemetry could not see it. Every change
+# below targets one measured cause of that blindness or of a wasted rollout. What is NOT
+# changed: LR 3e-6, group_size 8, dr_grpo, thinking, the reward weights and the JMH options --
+# run 2 is now evidence those work, and changing them at the same time would confound run 3.
+#
+#   scripts/cluster/run-grpo-rtx-run3.sh
+
+base_model: google/gemma-4-E2B-it
+output_dir: outputs/grpo-mutation70-gemma-rtx-run3
+dataset_path: data/snippets/rl-mutation.good.jsonl
+corpus: full
+seed: 42
+
+finetune_mode: lora
+precision: bf16
+gradient_checkpointing: true
+attn_implementation: sdpa
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  exclude_modules: [vision_tower, audio_tower, multi_modal_projector]
+  bias: none
+
+# Unchanged from run 2. Run 2's own diagnostics show no entropy collapse (0.14 -> 0.17, if
+# anything rising) and grad_norm still tiny at 2e-3, so 3e-6 was not too hot. The reason the
+# updates were small was that most of the batch was being masked away -- see below.
+learning_rate: 3.0e-6
+# Global batch = per_device x num_processes x accum = 1 x 2 x 4 = 8 = group_size.
+per_device_batch_size: 1
+gradient_accumulation_steps: 4
+group_size: 8
+rollout_temperature: 1.0
+top_p: 0.95
+top_k: 64
+max_prompt_length: 20480
+max_completion_length: 16384
+# Kept at 106 so vLLM's stop behaviour is byte-identical to run 2, but it is NOT a safe basis
+# for the truncation mask -- see mask_truncated_completions.
+completion_eos_token_id: 106
+chat_template_kwargs:
+  enable_thinking: true
+max_source_chars: 48000
+limit_prompts: 0
+
+kl_coeff: 0.0
+epsilon: 0.2
+epsilon_high: 0.28
+grpo_loss_type: dr_grpo
+scale_rewards: false
+# ------------------------------------------------------------------------------------------
+# THE load-bearing change in run 3. Gemma 4's generation_config declares THREE terminators --
+# eos_token_id: [1, 106, 50] -- and the model uses two of them in practice. Over 192 measured
+# rollouts from run 2's adapter: 43.2 % ended on 106 <turn|>, 56.8 % on 1 <eos>.
+#
+# TRL tests for a single id (whatever processing_class.eos_token_id happens to be, which
+# completion_eos_token_id above pins to 106), marks every other completion "not terminated",
+# and mask_truncated_completions then zeroes it out of the loss. Run 2 therefore threw away
+# ~57 % of every batch -- complete, valid, compilable Java -- and the discarded half was
+# systematically the longer half (mean 2033 tokens vs 1380 kept), so it was also training away
+# from the more elaborate benchmarks.
+#
+# The tell is in run 2's own metrics and is worth re-checking on the first few steps here:
+# completions/clipped_ratio ~0.55 at completions/mean_length ~1640 against a 16384 cap.
+# Clipping that high at a length that low is never truncation. Expect clipped_ratio to stay
+# ~0.55 in run 3 (the metric is still computed off one id) but for it to no longer cost
+# anything. Real truncation is negligible here: only 6 of 1726 logged steps saw a completion
+# reach 16384 at all.
+mask_truncated_completions: false
+# ------------------------------------------------------------------------------------------
+mu: 1
+
+# Two passes, not one. Run 2 saw each prompt exactly once, and 381 of its 834 prompts never
+# compiled in 8 attempts -- a single look at a subject is not enough to climb its API. At the
+# ~43 s/step run 2 averaged this is ~19 h, but repaired rollouts compile more often and a
+# compiled rollout costs 13.5 s against 1.5 s for a failed one, so budget 30-40 h. There is no
+# queue wall on this box; resume_from_checkpoint below covers a crash.
+num_epochs: 2.0
+num_iterations: 0
+warmup_ratio: 0.03
+logging_steps: 1
+save_steps: 25
+resume_from_checkpoint: auto
+report_to: none
+
+use_vllm: true
+vllm_mode: colocate
+vllm_gpu_memory_utilization: 0.40
+vllm_tensor_parallel_size: 1
+vllm_max_model_length: 65536
+# MUST stay false while enable_thinking is on -- measured twice, see training-run-failures.md
+# section 9. Note this is a workaround, not a fix: the 6.5e-07 importance ratio it papers over
+# is direct evidence that the colocate rollout distribution is far from the trainer's weights,
+# and that is the most likely remaining explanation for the 41.2 % vs 17.4 % gap above. Worth
+# attacking properly before run 4.
+vllm_importance_sampling_correction: false
+vllm_enable_sleep_mode: true
+
+reward_weights:
+  compile: 0.10
+  runtime: 0.10
+  anti_pattern: 0.05
+  rsd: 0.05
+  mutation: 0.70
+anti_pattern_backend: spotjmh
+need_run: true
+# Repair the three mechanical defects that were the root cause of ~27 % of run 2's compile
+# failures, measured by finally capturing the javac diagnostics (152 failing rollouts, 985
+# messages):
+#
+#   11.5 %  missing `import java.util.concurrent.TimeUnit;` under @OutputTimeUnit(TimeUnit.…),
+#           which javac reports as "an enum annotation value must be an enum constant"
+#    ~9 %   `Blackhole.consume(x)` called on the type instead of the injected instance
+#    ~7 %   markdown fence remnants left in the extracted source ("illegal character: '`'")
+#
+# None of these is the skill the reward is meant to teach, and each is a guaranteed zero that
+# also flattens the group-relative advantage. Every repair is a no-op unless its exact
+# signature is present and none invents a call on the subject under test. GRPO-only: the
+# RFT/eval path is untouched, so JMH-Bench numbers stay comparable across runs.
+repair_completions: true
+# Two subjects whose groups are all-zero often enough to be pure wall-clock. Compile rate in
+# run 1 / run 2: jackson-dataformats-binary 0.0 % (n=160) / 1.7 % (n=176), spatial4j 6.2 % /
+# 2.8 % (n=216). A group with no reward spread has no advantage, so these cost a full rollout
+# batch each and contribute nothing. jackson-databind (4.9 %) and la4j (6.0 %) are deliberately
+# KEPT -- they are within reach once the repairs land, and dropping every hard project would
+# quietly turn the benchmark into an easy-subjects benchmark.
+exclude_projects:
+  - jackson-dataformats-binary
+  - spatial4j
+rsd_good: 0.05
+rsd_bad: 0.25
+
+mutation:
+  alpha: 0.05
+  min_slowdown: 1.10
+  arm_property: jmhbench.mutant
+  coverage_guidance: true
+  max_mutants_per_candidate: 0
+  max_benchmarks_per_mutant: 6
+  mode: coverage_aware
+  coverage_weight: 0.30
+  coverage_jmh:
+    warmup_iterations: 0
+    measurement_iterations: 1
+    forks: 1
+    warmup_time: "100ms"
+    measurement_time: "100ms"
+    timeout_s: 120.0
+    per_iteration_timeout_s: 60.0
+    fail_on_error: false
+
+runner:
+  jmh_version: "1.37"
+  java_release: 17
+  jmh:
+    warmup_iterations: 3
+    measurement_iterations: 5
+    forks: 1
+    warmup_time: "200ms"
+    measurement_time: "200ms"
+    timeout_s: 120.0
+    per_iteration_timeout_s: 60.0
+    fail_on_error: false
+
+project_classpaths:
+  commons-numbers: data/classpaths/commons-numbers-mutants.cp
+  commons-statistics: data/classpaths/commons-statistics-mutants.cp
+  commons-codec: data/classpaths/commons-codec-mutants.cp
+  commons-text: data/classpaths/commons-text-mutants.cp
+  jackson-core: data/classpaths/jackson-core-mutants.cp
+  roaringbitmap: data/classpaths/roaringbitmap-mutants.cp
+  parallelcolt: data/classpaths/parallelcolt-mutants.cp
+  chronicle-bytes: data/classpaths/chronicle-bytes-mutants.cp
+  chronicle-map: data/classpaths/chronicle-map-mutants.cp
+  chronicle-wire: data/classpaths/chronicle-wire-mutants.cp
+  objectlayout: data/classpaths/objectlayout-mutants.cp
+  jheaps: data/classpaths/jheaps-mutants.cp
+  streamex: data/classpaths/streamex-mutants.cp
+  vavr: data/classpaths/vavr-mutants.cp
+  cache2k: data/classpaths/cache2k-mutants.cp
+  stream-lib: data/classpaths/stream-lib-mutants.cp
+  sparsebitset: data/classpaths/sparsebitset-mutants.cp
+  hash4j: data/classpaths/hash4j-mutants.cp
+  zero-allocation-hashing: data/classpaths/zero-allocation-hashing-mutants.cp
+  guava: data/classpaths/guava-mutants.cp
+  xz-java: data/classpaths/xz-java-mutants.cp
+  commons-crypto: data/classpaths/commons-crypto-mutants.cp
+  big-math: data/classpaths/big-math-mutants.cp
+  hipparchus: data/classpaths/hipparchus-mutants.cp
+  ojalgo: data/classpaths/ojalgo-mutants.cp
+  la4j: data/classpaths/la4j-mutants.cp
+  jafama: data/classpaths/jafama-mutants.cp
+  commons-math: data/classpaths/commons-math-mutants.cp
+  commons-rng: data/classpaths/commons-rng-mutants.cp
+  commons-geometry: data/classpaths/commons-geometry-mutants.cp
+  jackson-databind: data/classpaths/jackson-databind-mutants.cp
+  gson: data/classpaths/gson-mutants.cp
+  dsl-json: data/classpaths/dsl-json-mutants.cp
+  moshi: data/classpaths/moshi-mutants.cp
+  json-java: data/classpaths/json-java-mutants.cp
+  json-simple: data/classpaths/json-simple-mutants.cp
+  flatbuffers: data/classpaths/flatbuffers-mutants.cp
+  avro: data/classpaths/avro-mutants.cp
+  jackson-dataformats-binary: data/classpaths/jackson-dataformats-binary-mutants.cp
+  commons-csv: data/classpaths/commons-csv-mutants.cp
+  fastcsv: data/classpaths/fastcsv-mutants.cp
+  jsoup: data/classpaths/jsoup-mutants.cp
+  commons-io: data/classpaths/commons-io-mutants.cp
+  brics-automaton: data/classpaths/brics-automaton-mutants.cp
+  joda-time: data/classpaths/joda-time-mutants.cp
+  threeten-extra: data/classpaths/threeten-extra-mutants.cp
+  conversant-disruptor: data/classpaths/conversant-disruptor-mutants.cp
+  hdrhistogram: data/classpaths/hdrhistogram-mutants.cp
+  commons-pool: data/classpaths/commons-pool-mutants.cp
+  reactor-core: data/classpaths/reactor-core-mutants.cp
+  vertx: data/classpaths/vertx-mutants.cp
+  jts: data/classpaths/jts-mutants.cp
+  spatial4j: data/classpaths/spatial4j-mutants.cp
+  h3-java: data/classpaths/h3-java-mutants.cp
+  jgraphx: data/classpaths/jgraphx-mutants.cp
+  zxing: data/classpaths/zxing-mutants.cp
+  commons-imaging: data/classpaths/commons-imaging-mutants.cp
+  jimfs: data/classpaths/jimfs-mutants.cp
+  tablesaw: data/classpaths/tablesaw-mutants.cp
+  bigqueue: data/classpaths/bigqueue-mutants.cp
+  commons-configuration: data/classpaths/commons-configuration-mutants.cp
+  commons-validator: data/classpaths/commons-validator-mutants.cp
+  commons-beanutils: data/classpaths/commons-beanutils-mutants.cp
+  javatuples: data/classpaths/javatuples-mutants.cp
+project_mutants:
+  commons-numbers: data/projects/commons-numbers/mutants.yaml
+  commons-statistics: data/projects/commons-statistics/mutants.yaml
+  commons-codec: data/projects/commons-codec/mutants.yaml
+  commons-text: data/projects/commons-text/mutants.yaml
+  jackson-core: data/projects/jackson-core/mutants.yaml
+  roaringbitmap: data/projects/roaringbitmap/mutants.yaml
+  parallelcolt: data/projects/parallelcolt/mutants.yaml
+  chronicle-bytes: data/projects/chronicle-bytes/mutants.yaml
+  chronicle-map: data/projects/chronicle-map/mutants.yaml
+  chronicle-wire: data/projects/chronicle-wire/mutants.yaml
+  objectlayout: data/projects/objectlayout/mutants.yaml
+  jheaps: data/projects/jheaps/mutants.yaml
+  streamex: data/projects/streamex/mutants.yaml
+  vavr: data/projects/vavr/mutants.yaml
+  cache2k: data/projects/cache2k/mutants.yaml
+  stream-lib: data/projects/stream-lib/mutants.yaml
+  sparsebitset: data/projects/sparsebitset/mutants.yaml
+  hash4j: data/projects/hash4j/mutants.yaml
+  zero-allocation-hashing: data/projects/zero-allocation-hashing/mutants.yaml
+  guava: data/projects/guava/mutants.yaml
+  xz-java: data/projects/xz-java/mutants.yaml
+  commons-crypto: data/projects/commons-crypto/mutants.yaml
+  big-math: data/projects/big-math/mutants.yaml
+  hipparchus: data/projects/hipparchus/mutants.yaml
+  ojalgo: data/projects/ojalgo/mutants.yaml
+  la4j: data/projects/la4j/mutants.yaml
+  jafama: data/projects/jafama/mutants.yaml
+  commons-math: data/projects/commons-math/mutants.yaml
+  commons-rng: data/projects/commons-rng/mutants.yaml
+  commons-geometry: data/projects/commons-geometry/mutants.yaml
+  jackson-databind: data/projects/jackson-databind/mutants.yaml
+  gson: data/projects/gson/mutants.yaml
+  dsl-json: data/projects/dsl-json/mutants.yaml
+  moshi: data/projects/moshi/mutants.yaml
+  json-java: data/projects/json-java/mutants.yaml
+  json-simple: data/projects/json-simple/mutants.yaml
+  flatbuffers: data/projects/flatbuffers/mutants.yaml
+  avro: data/projects/avro/mutants.yaml
+  jackson-dataformats-binary: data/projects/jackson-dataformats-binary/mutants.yaml
+  commons-csv: data/projects/commons-csv/mutants.yaml
+  fastcsv: data/projects/fastcsv/mutants.yaml
+  jsoup: data/projects/jsoup/mutants.yaml
+  commons-io: data/projects/commons-io/mutants.yaml
+  brics-automaton: data/projects/brics-automaton/mutants.yaml
+  joda-time: data/projects/joda-time/mutants.yaml
+  threeten-extra: data/projects/threeten-extra/mutants.yaml
+  conversant-disruptor: data/projects/conversant-disruptor/mutants.yaml
+  hdrhistogram: data/projects/hdrhistogram/mutants.yaml
+  commons-pool: data/projects/commons-pool/mutants.yaml
+  reactor-core: data/projects/reactor-core/mutants.yaml
+  vertx: data/projects/vertx/mutants.yaml
+  jts: data/projects/jts/mutants.yaml
+  spatial4j: data/projects/spatial4j/mutants.yaml
+  h3-java: data/projects/h3-java/mutants.yaml
+  jgraphx: data/projects/jgraphx/mutants.yaml
+  zxing: data/projects/zxing/mutants.yaml
+  commons-imaging: data/projects/commons-imaging/mutants.yaml
+  jimfs: data/projects/jimfs/mutants.yaml
+  tablesaw: data/projects/tablesaw/mutants.yaml
+  bigqueue: data/projects/bigqueue/mutants.yaml
+  commons-configuration: data/projects/commons-configuration/mutants.yaml
+  commons-validator: data/projects/commons-validator/mutants.yaml
+  commons-beanutils: data/projects/commons-beanutils/mutants.yaml
+  javatuples: data/projects/javatuples/mutants.yaml

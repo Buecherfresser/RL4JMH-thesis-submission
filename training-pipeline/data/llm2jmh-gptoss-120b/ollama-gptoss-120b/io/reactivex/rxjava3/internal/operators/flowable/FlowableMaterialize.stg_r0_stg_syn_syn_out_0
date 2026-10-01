@@ -1,0 +1,93 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for {@code Flowable.materialize()} operator.
+ *
+ * <p>This benchmark measures the throughput (operations per second) of the
+ * materialize operator when applied to a synchronous {@link Flowable} that
+ * emits a configurable number of integer items. The benchmark follows JMH
+ * best practices:
+ *
+ * <ul>
+ *   <li>Uses {@code @State(Scope.Thread)} to avoid sharing mutable state across threads.</li>
+ *   <li>Provides a {@code @Param} to vary the size of the source sequence.</li>
+ *   <li>Executes a warm‑up phase before measurement.</li>
+ *   <li>Consumes the resulting {@link io.reactivex.rxjava3.core.Notification} objects via {@link Blackhole}
+ *       to prevent dead‑code elimination.</li>
+ *   <li>Runs in {@code Mode.Throughput} with results reported per second.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableMaterializeBenchmark {
+
+    /**
+     * Number of items emitted by the source {@link Flowable}.
+     * Typical values: 1_000, 10_000, 100_000.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    /**
+     * Source Flowable that emits a range of integers.
+     */
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Synchronous, non‑backpressured source.
+        source = Flowable.range(1, size);
+    }
+
+    /**
+     * Executes the materialize operator and consumes all notifications.
+     *
+     * @param bh Blackhole to consume the notifications and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void materialize(Blackhole bh) {
+        // materialize() converts each onNext/onError/onComplete into a Notification.
+        // blockingForEach forces the Flowable to run to completion synchronously.
+        source.materialize().blockingForEach(bh::consume);
+    }
+}

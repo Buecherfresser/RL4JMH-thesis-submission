@@ -1,0 +1,655 @@
+diff --git a/net/bytebuddy/ByteBuddy.java b/net/bytebuddy/ByteBuddy.java
+index 3bbc848..0d2fb31 100644
+--- a/net/bytebuddy/ByteBuddy.java
++++ b/net/bytebuddy/ByteBuddy.java
+@@ -448,7 +448,7 @@ public class ByteBuddy {
+      * @return A type builder for creating a new class extending the provided class or interface.
+      */
+     @SuppressWarnings("unchecked")
+-    public <T> DynamicType.Builder<T> subclass(Class<T> superType) {
++    public <T> DynamicType.Builder<T> subclass(Class<T> superType) { net.bytebuddy.jmhbench.MutationSwitch.tick(1);
+         return (DynamicType.Builder<T>) subclass(TypeDescription.ForLoadedType.of(superType));
+     }
+ 
+@@ -471,7 +471,7 @@ public class ByteBuddy {
+      * @return A type builder for creating a new class extending the provided class or interface.
+      */
+     @SuppressWarnings("unchecked")
+-    public <T> DynamicType.Builder<T> subclass(Class<T> superType, ConstructorStrategy constructorStrategy) {
++    public <T> DynamicType.Builder<T> subclass(Class<T> superType, ConstructorStrategy constructorStrategy) { net.bytebuddy.jmhbench.MutationSwitch.tick(11);
+         return (DynamicType.Builder<T>) subclass(TypeDescription.ForLoadedType.of(superType), constructorStrategy);
+     }
+ 
+diff --git a/net/bytebuddy/ClassFileVersion.java b/net/bytebuddy/ClassFileVersion.java
+index 50aa30f..2a49c0b 100644
+--- a/net/bytebuddy/ClassFileVersion.java
++++ b/net/bytebuddy/ClassFileVersion.java
+@@ -247,7 +247,7 @@ public class ClassFileVersion implements Comparable<ClassFileVersion>, Serializa
+      * @param versionNumber The minor-major release number.
+      * @return A representation of the version number.
+      */
+-    public static ClassFileVersion ofMinorMajor(int versionNumber) {
++    public static ClassFileVersion ofMinorMajor(int versionNumber) { net.bytebuddy.jmhbench.MutationSwitch.tick(21);
+         ClassFileVersion classFileVersion = new ClassFileVersion(versionNumber);
+         if (classFileVersion.getMajorVersion() > 0 && classFileVersion.getMajorVersion() <= BASE_VERSION) {
+             throw new IllegalArgumentException("Class version " + versionNumber + " is not valid");
+@@ -261,7 +261,7 @@ public class ClassFileVersion implements Comparable<ClassFileVersion>, Serializa
+      * @param javaVersionString The Java version string.
+      * @return The appropriate class file version.
+      */
+-    public static ClassFileVersion ofJavaVersionString(String javaVersionString) {
++    public static ClassFileVersion ofJavaVersionString(String javaVersionString) { net.bytebuddy.jmhbench.MutationSwitch.tick(31);
+         int index = javaVersionString.indexOf('.');
+         try {
+             int javaVersion;
+diff --git a/net/bytebuddy/TypeCache.java b/net/bytebuddy/TypeCache.java
+index a1e14e9..196c118 100644
+--- a/net/bytebuddy/TypeCache.java
++++ b/net/bytebuddy/TypeCache.java
+@@ -199,7 +199,7 @@ public class TypeCache<T> extends ReferenceQueue<ClassLoader> {
+     /**
+      * Removes any stale class loader entries from the cache.
+      */
+-    public void expungeStaleEntries() {
++    public void expungeStaleEntries() { net.bytebuddy.jmhbench.MutationSwitch.tick(41);
+         Reference<?> reference;
+         while ((reference = poll()) != null) {
+             cache.remove(reference);
+@@ -209,7 +209,7 @@ public class TypeCache<T> extends ReferenceQueue<ClassLoader> {
+     /**
+      * Clears the entire cache.
+      */
+-    public void clear() {
++    public void clear() { net.bytebuddy.jmhbench.MutationSwitch.tick(50);
+         cache.clear();
+     }
+ 
+diff --git a/net/bytebuddy/agent/Attacher.java b/net/bytebuddy/agent/Attacher.java
+index 1951f75..7f7356e 100644
+--- a/net/bytebuddy/agent/Attacher.java
++++ b/net/bytebuddy/agent/Attacher.java
+@@ -50,7 +50,7 @@ public class Attacher {
+      *             which is stripped off.
+      */
+     @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Exception should not be rethrown but trigger a fallback.")
+-    public static void main(String[] args) {
++    public static void main(String[] args) { net.bytebuddy.jmhbench.MutationSwitch.tick(2);
+         try {
+             String argument;
+             if (args.length < 5 || args[4].length() == 0) {
+diff --git a/net/bytebuddy/agent/ByteBuddyAgent.java b/net/bytebuddy/agent/ByteBuddyAgent.java
+index e0dcd02..39e6c8f 100644
+--- a/net/bytebuddy/agent/ByteBuddyAgent.java
++++ b/net/bytebuddy/agent/ByteBuddyAgent.java
+@@ -203,7 +203,7 @@ public class ByteBuddyAgent {
+      * @return The {@link java.lang.instrument.Instrumentation} instance which is provided by an installed
+      * Byte Buddy agent.
+      */
+-    public static Instrumentation getInstrumentation() {
++    public static Instrumentation getInstrumentation() { net.bytebuddy.jmhbench.MutationSwitch.tick(12);
+         Instrumentation instrumentation = doGetInstrumentation();
+         if (instrumentation == null) {
+             throw new IllegalStateException("The Byte Buddy agent is not initialized or unavailable");
+@@ -225,7 +225,7 @@ public class ByteBuddyAgent {
+      * @param agentJar  The agent jar file.
+      * @param processId The target process id.
+      */
+-    public static void attach(File agentJar, String processId) {
++    public static void attach(File agentJar, String processId) { net.bytebuddy.jmhbench.MutationSwitch.tick(22);
+         attach(agentJar, processId, WITHOUT_ARGUMENT);
+     }
+ 
+diff --git a/net/bytebuddy/agent/Installer.java b/net/bytebuddy/agent/Installer.java
+index 1bc5319..d3b7c34 100644
+--- a/net/bytebuddy/agent/Installer.java
++++ b/net/bytebuddy/agent/Installer.java
+@@ -61,7 +61,7 @@ public class Installer {
+      *
+      * @return The instrumentation instance of the Byte Buddy agent.
+      */
+-    public static Instrumentation getInstrumentation() {
++    public static Instrumentation getInstrumentation() { net.bytebuddy.jmhbench.MutationSwitch.tick(32);
+         try {
+             Object securityManager = System.class.getMethod("getSecurityManager").invoke(null);
+             if (securityManager != null) {
+@@ -101,7 +101,7 @@ public class Installer {
+      * @param arguments       The unused agent arguments.
+      * @param instrumentation The instrumentation instance.
+      */
+-    public static void premain(String arguments, Instrumentation instrumentation) {
++    public static void premain(String arguments, Instrumentation instrumentation) { net.bytebuddy.jmhbench.MutationSwitch.tick(42);
+         doMain(instrumentation);
+     }
+ 
+diff --git a/net/bytebuddy/asm/Advice.java b/net/bytebuddy/asm/Advice.java
+index cb88f38..c3ac881 100644
+--- a/net/bytebuddy/asm/Advice.java
++++ b/net/bytebuddy/asm/Advice.java
+@@ -343,7 +343,7 @@ public class Advice implements AsmVisitorWrapper.ForDeclaredMethods.MethodVisito
+      * @param advice The type declaring the advice.
+      * @return A method visitor wrapper representing the supplied advice.
+      */
+-    public static Advice to(Class<?> advice) {
++    public static Advice to(Class<?> advice) { net.bytebuddy.jmhbench.MutationSwitch.tick(3);
+         return to(advice, ClassFileLocator.ForClassLoader.of(advice.getClassLoader()));
+     }
+ 
+@@ -354,7 +354,7 @@ public class Advice implements AsmVisitorWrapper.ForDeclaredMethods.MethodVisito
+      * @param classFileLocator The class file locator for locating the advisory class's class file.
+      * @return A method visitor wrapper representing the supplied advice.
+      */
+-    public static Advice to(Class<?> advice, ClassFileLocator classFileLocator) {
++    public static Advice to(Class<?> advice, ClassFileLocator classFileLocator) { net.bytebuddy.jmhbench.MutationSwitch.tick(13);
+         return to(TypeDescription.ForLoadedType.of(advice), classFileLocator);
+     }
+ 
+diff --git a/net/bytebuddy/asm/AnnotationRemoval.java b/net/bytebuddy/asm/AnnotationRemoval.java
+index 6b0a6d6..e623981 100644
+--- a/net/bytebuddy/asm/AnnotationRemoval.java
++++ b/net/bytebuddy/asm/AnnotationRemoval.java
+@@ -122,7 +122,7 @@ public class AnnotationRemoval extends AsmVisitorWrapper.AbstractBase {
+      * @param matcher The matcher to indicate what annotations to remove.
+      * @return A visitor that removes the specified annotations.
+      */
+-    public static AnnotationRemoval strip(ElementMatcher<? super AnnotationDescription> matcher) {
++    public static AnnotationRemoval strip(ElementMatcher<? super AnnotationDescription> matcher) { net.bytebuddy.jmhbench.MutationSwitch.tick(23);
+         return new AnnotationRemoval(true, any(), any(), matcher, METHOD_ALL);
+     }
+ 
+@@ -131,7 +131,7 @@ public class AnnotationRemoval extends AsmVisitorWrapper.AbstractBase {
+      *
+      * @return An appropriate visitor for annotation removal.
+      */
+-    public AsmVisitorWrapper onType() {
++    public AsmVisitorWrapper onType() { net.bytebuddy.jmhbench.MutationSwitch.tick(33);
+         return new AnnotationRemoval(true, none(), none(), annotationMatcher, METHOD_NONE);
+     }
+ 
+diff --git a/net/bytebuddy/asm/MemberRemoval.java b/net/bytebuddy/asm/MemberRemoval.java
+index a584a44..bd23e40 100644
+--- a/net/bytebuddy/asm/MemberRemoval.java
++++ b/net/bytebuddy/asm/MemberRemoval.java
+@@ -90,7 +90,7 @@ public class MemberRemoval extends AsmVisitorWrapper.AbstractBase {
+      * @param matcher The matcher that decides upon field removal.
+      * @return A new member removal instance that removes all previously specified members and any fields that match the specified matcher.
+      */
+-    public MemberRemoval stripFields(ElementMatcher<? super FieldDescription.InDefinedShape> matcher) {
++    public MemberRemoval stripFields(ElementMatcher<? super FieldDescription.InDefinedShape> matcher) { net.bytebuddy.jmhbench.MutationSwitch.tick(43);
+         return new MemberRemoval(fieldMatcher.or(matcher), methodMatcher);
+     }
+ 
+diff --git a/net/bytebuddy/build/AccessControllerPlugin.java b/net/bytebuddy/build/AccessControllerPlugin.java
+index 2b6c7fb..459fa31 100644
+--- a/net/bytebuddy/build/AccessControllerPlugin.java
++++ b/net/bytebuddy/build/AccessControllerPlugin.java
+@@ -200,7 +200,7 @@ public class AccessControllerPlugin extends Plugin.ForElementMatcher implements
+     /**
+      * {@inheritDoc}
+      */
+-    public Plugin make() {
++    public Plugin make() { net.bytebuddy.jmhbench.MutationSwitch.tick(24);
+         return this;
+     }
+ 
+@@ -208,7 +208,7 @@ public class AccessControllerPlugin extends Plugin.ForElementMatcher implements
+      * {@inheritDoc}
+      */
+     @SuppressFBWarnings(value = "SBSC_USE_STRINGBUFFER_CONCATENATION", justification = "Collision is unlikely and buffer overhead not justified.")
+-    public DynamicType.Builder<?> apply(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassFileLocator classFileLocator) {
++    public DynamicType.Builder<?> apply(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassFileLocator classFileLocator) { net.bytebuddy.jmhbench.MutationSwitch.tick(34);
+         String name = NAME;
+         while (!typeDescription.getDeclaredFields().filter(named(name)).isEmpty()) {
+             name += "$";
+diff --git a/net/bytebuddy/build/CachedReturnPlugin.java b/net/bytebuddy/build/CachedReturnPlugin.java
+index f1cef15..33bf34d 100644
+--- a/net/bytebuddy/build/CachedReturnPlugin.java
++++ b/net/bytebuddy/build/CachedReturnPlugin.java
+@@ -111,7 +111,7 @@ public class CachedReturnPlugin extends Plugin.ForElementMatcher implements Plug
+     /**
+      * {@inheritDoc}
+      */
+-    public Plugin make() {
++    public Plugin make() { net.bytebuddy.jmhbench.MutationSwitch.tick(44);
+         return this;
+     }
+ 
+diff --git a/net/bytebuddy/build/ToStringPlugin.java b/net/bytebuddy/build/ToStringPlugin.java
+index 63a393d..33e9c53 100644
+--- a/net/bytebuddy/build/ToStringPlugin.java
++++ b/net/bytebuddy/build/ToStringPlugin.java
+@@ -65,7 +65,7 @@ public class ToStringPlugin implements Plugin, Plugin.Factory {
+     /**
+      * {@inheritDoc}
+      */
+-    public Plugin make() {
++    public Plugin make() { net.bytebuddy.jmhbench.MutationSwitch.tick(4);
+         return this;
+     }
+ 
+@@ -79,7 +79,7 @@ public class ToStringPlugin implements Plugin, Plugin.Factory {
+     /**
+      * {@inheritDoc}
+      */
+-    public DynamicType.Builder<?> apply(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassFileLocator classFileLocator) {
++    public DynamicType.Builder<?> apply(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassFileLocator classFileLocator) { net.bytebuddy.jmhbench.MutationSwitch.tick(14);
+         AnnotationDescription.Loadable<Enhance> enhance = typeDescription.getDeclaredAnnotations().ofType(Enhance.class);
+         if (typeDescription.getDeclaredMethods().filter(isToString()).isEmpty()) {
+             builder = builder.method(isToString()).intercept(ToStringMethod.prefixedBy(enhance.getValue(ENHANCE_PREFIX)
+diff --git a/net/bytebuddy/description/modifier/EnumerationState.java b/net/bytebuddy/description/modifier/EnumerationState.java
+index a77d623..928a6b3 100644
+--- a/net/bytebuddy/description/modifier/EnumerationState.java
++++ b/net/bytebuddy/description/modifier/EnumerationState.java
+@@ -49,14 +49,14 @@ public enum EnumerationState implements ModifierContributor.ForType, ModifierCon
+     /**
+      * {@inheritDoc}
+      */
+-    public int getMask() {
++    public int getMask() { net.bytebuddy.jmhbench.MutationSwitch.tick(5);
+         return mask;
+     }
+ 
+     /**
+      * {@inheritDoc}
+      */
+-    public int getRange() {
++    public int getRange() { net.bytebuddy.jmhbench.MutationSwitch.tick(15);
+         return Opcodes.ACC_ENUM;
+     }
+ 
+diff --git a/net/bytebuddy/description/modifier/FieldManifestation.java b/net/bytebuddy/description/modifier/FieldManifestation.java
+index d835cb7..90149ee 100644
+--- a/net/bytebuddy/description/modifier/FieldManifestation.java
++++ b/net/bytebuddy/description/modifier/FieldManifestation.java
+@@ -54,14 +54,14 @@ public enum FieldManifestation implements ModifierContributor.ForField {
+     /**
+      * {@inheritDoc}
+      */
+-    public int getMask() {
++    public int getMask() { net.bytebuddy.jmhbench.MutationSwitch.tick(25);
+         return mask;
+     }
+ 
+     /**
+      * {@inheritDoc}
+      */
+-    public int getRange() {
++    public int getRange() { net.bytebuddy.jmhbench.MutationSwitch.tick(35);
+         return Opcodes.ACC_FINAL | Opcodes.ACC_VOLATILE;
+     }
+ 
+diff --git a/net/bytebuddy/description/modifier/FieldPersistence.java b/net/bytebuddy/description/modifier/FieldPersistence.java
+index c6e1465..880da63 100644
+--- a/net/bytebuddy/description/modifier/FieldPersistence.java
++++ b/net/bytebuddy/description/modifier/FieldPersistence.java
+@@ -49,7 +49,7 @@ public enum FieldPersistence implements ModifierContributor.ForField {
+     /**
+      * {@inheritDoc}
+      */
+-    public int getMask() {
++    public int getMask() { net.bytebuddy.jmhbench.MutationSwitch.tick(45);
+         return mask;
+     }
+ 
+diff --git a/net/bytebuddy/dynamic/loading/ByteArrayClassLoader.java b/net/bytebuddy/dynamic/loading/ByteArrayClassLoader.java
+index 4a29eee..b4e6e5d 100644
+--- a/net/bytebuddy/dynamic/loading/ByteArrayClassLoader.java
++++ b/net/bytebuddy/dynamic/loading/ByteArrayClassLoader.java
+@@ -416,7 +416,7 @@ public class ByteArrayClassLoader extends InjectionClassLoader {
+     }
+ 
+     @Override
+-    protected Map<String, Class<?>> doDefineClasses(Map<String, byte[]> typeDefinitions) throws ClassNotFoundException {
++    protected Map<String, Class<?>> doDefineClasses(Map<String, byte[]> typeDefinitions) throws ClassNotFoundException { net.bytebuddy.jmhbench.MutationSwitch.tick(6);
+         Map<String, byte[]> previous = new HashMap<String, byte[]>();
+         for (Map.Entry<String, byte[]> entry : typeDefinitions.entrySet()) {
+             previous.put(entry.getKey(), this.typeDefinitions.putIfAbsent(entry.getKey(), entry.getValue()));
+@@ -443,7 +443,7 @@ public class ByteArrayClassLoader extends InjectionClassLoader {
+     /**
+      * {@inheritDoc}
+      */
+-    protected Class<?> findClass(String name) throws ClassNotFoundException {
++    protected Class<?> findClass(String name) throws ClassNotFoundException { net.bytebuddy.jmhbench.MutationSwitch.tick(16);
+         byte[] binaryRepresentation = persistenceHandler.lookup(name, typeDefinitions);
+         if (binaryRepresentation == null) {
+             throw new ClassNotFoundException(name);
+diff --git a/net/bytebuddy/dynamic/scaffold/inline/DecoratingDynamicTypeBuilder.java b/net/bytebuddy/dynamic/scaffold/inline/DecoratingDynamicTypeBuilder.java
+index dbf0936..4154f09 100644
+--- a/net/bytebuddy/dynamic/scaffold/inline/DecoratingDynamicTypeBuilder.java
++++ b/net/bytebuddy/dynamic/scaffold/inline/DecoratingDynamicTypeBuilder.java
+@@ -238,7 +238,7 @@ public class DecoratingDynamicTypeBuilder<T> extends DynamicType.Builder.Abstrac
+     /**
+      * {@inheritDoc}
+      */
+-    public DynamicType.Builder<T> visit(AsmVisitorWrapper asmVisitorWrapper) {
++    public DynamicType.Builder<T> visit(AsmVisitorWrapper asmVisitorWrapper) { net.bytebuddy.jmhbench.MutationSwitch.tick(26);
+         return new DecoratingDynamicTypeBuilder<T>(instrumentedType,
+                 typeAttributeAppender,
+                 new AsmVisitorWrapper.Compound(this.asmVisitorWrapper, asmVisitorWrapper),
+@@ -259,7 +259,7 @@ public class DecoratingDynamicTypeBuilder<T> extends DynamicType.Builder.Abstrac
+     /**
+      * {@inheritDoc}
+      */
+-    public DynamicType.Builder<T> suffix(String suffix) {
++    public DynamicType.Builder<T> suffix(String suffix) { net.bytebuddy.jmhbench.MutationSwitch.tick(36);
+         throw new UnsupportedOperationException("Cannot change name of decorated type: " + instrumentedType);
+     }
+ 
+diff --git a/net/bytebuddy/dynamic/scaffold/inline/RebaseDynamicTypeBuilder.java b/net/bytebuddy/dynamic/scaffold/inline/RebaseDynamicTypeBuilder.java
+index 5c7f254..e106820 100644
+--- a/net/bytebuddy/dynamic/scaffold/inline/RebaseDynamicTypeBuilder.java
++++ b/net/bytebuddy/dynamic/scaffold/inline/RebaseDynamicTypeBuilder.java
+@@ -232,7 +232,7 @@ public class RebaseDynamicTypeBuilder<T> extends AbstractInliningDynamicTypeBuil
+     /**
+      * {@inheritDoc}
+      */
+-    protected TypeWriter<T> toTypeWriter(TypePool typePool) {
++    protected TypeWriter<T> toTypeWriter(TypePool typePool) { net.bytebuddy.jmhbench.MutationSwitch.tick(46);
+         MethodRegistry.Prepared methodRegistry = this.methodRegistry.prepare(instrumentedType,
+                 methodGraphCompiler,
+                 typeValidation,
+diff --git a/net/bytebuddy/fuzz/ClassFileParsingFuzzer.java b/net/bytebuddy/fuzz/ClassFileParsingFuzzer.java
+index 86754a2..432af8e 100644
+--- a/net/bytebuddy/fuzz/ClassFileParsingFuzzer.java
++++ b/net/bytebuddy/fuzz/ClassFileParsingFuzzer.java
+@@ -54,7 +54,7 @@ public final class ClassFileParsingFuzzer {
+      *
+      * @param data A provider for pseudo-random, coverage-guided input values.
+      */
+-    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
++    public static void fuzzerTestOneInput(FuzzedDataProvider data) { net.bytebuddy.jmhbench.MutationSwitch.tick(7);
+         process(data.consumeRemainingAsBytes());
+     }
+ 
+@@ -63,7 +63,7 @@ public final class ClassFileParsingFuzzer {
+      *
+      * @param classFile A byte array that represents a, possibly malformed, class file.
+      */
+-    public static void process(byte[] classFile) {
++    public static void process(byte[] classFile) { net.bytebuddy.jmhbench.MutationSwitch.tick(17);
+         TypePool typePool = TypePool.Default.of(ClassFileLocator.Simple.of(NAME, classFile));
+         try {
+             TypePool.Resolution resolution = typePool.describe(NAME);
+diff --git a/net/bytebuddy/fuzz/ClassGenerationFuzzer.java b/net/bytebuddy/fuzz/ClassGenerationFuzzer.java
+index 2523052..1a04dfc 100644
+--- a/net/bytebuddy/fuzz/ClassGenerationFuzzer.java
++++ b/net/bytebuddy/fuzz/ClassGenerationFuzzer.java
+@@ -59,7 +59,7 @@ public final class ClassGenerationFuzzer {
+      *
+      * @param data A provider for pseudo-random, coverage-guided input values.
+      */
+-    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
++    public static void fuzzerTestOneInput(FuzzedDataProvider data) { net.bytebuddy.jmhbench.MutationSwitch.tick(27);
+         ClassFileVersion classFileVersion;
+         try {
+             classFileVersion = ClassFileVersion.ofJavaVersion(data.consumeInt(5, ClassFileVersion.latest().getJavaVersion()));
+diff --git a/net/bytebuddy/fuzz/SeedCorpusGenerator.java b/net/bytebuddy/fuzz/SeedCorpusGenerator.java
+index eeef7cb..e5cabac 100644
+--- a/net/bytebuddy/fuzz/SeedCorpusGenerator.java
++++ b/net/bytebuddy/fuzz/SeedCorpusGenerator.java
+@@ -86,7 +86,7 @@ public final class SeedCorpusGenerator {
+      * @param arguments An optional single argument that specifies the target directory; the default is used otherwise.
+      * @throws IOException If a seed file cannot be written.
+      */
+-    public static void main(String[] arguments) throws IOException {
++    public static void main(String[] arguments) throws IOException { net.bytebuddy.jmhbench.MutationSwitch.tick(37);
+         File directory = new File(arguments.length == 0 ? DEFAULT_DIRECTORY : arguments[0]);
+         if (!directory.isDirectory() && !directory.mkdirs()) {
+             throw new IOException("Could not create directory: " + directory);
+diff --git a/net/bytebuddy/implementation/ToStringMethod.java b/net/bytebuddy/implementation/ToStringMethod.java
+index 28fc29f..17dfaa9 100644
+--- a/net/bytebuddy/implementation/ToStringMethod.java
++++ b/net/bytebuddy/implementation/ToStringMethod.java
+@@ -135,7 +135,7 @@ public class ToStringMethod implements Implementation {
+      *
+      * @return A {@link Object#toString()} implementation that is prefixed by the fully qualified class name of the instrumented type.
+      */
+-    public static ToStringMethod prefixedByFullyQualifiedClassName() {
++    public static ToStringMethod prefixedByFullyQualifiedClassName() { net.bytebuddy.jmhbench.MutationSwitch.tick(8);
+         return prefixedBy(PrefixResolver.Default.FULLY_QUALIFIED_CLASS_NAME);
+     }
+ 
+@@ -144,7 +144,7 @@ public class ToStringMethod implements Implementation {
+      *
+      * @return A {@link Object#toString()} implementation that is prefixed by the canonical class name of the instrumented type.
+      */
+-    public static ToStringMethod prefixedByCanonicalClassName() {
++    public static ToStringMethod prefixedByCanonicalClassName() { net.bytebuddy.jmhbench.MutationSwitch.tick(18);
+         return prefixedBy(PrefixResolver.Default.CANONICAL_CLASS_NAME);
+     }
+ 
+diff --git a/net/bytebuddy/implementation/bytecode/collection/ArrayAccess.java b/net/bytebuddy/implementation/bytecode/collection/ArrayAccess.java
+index f239091..db4178c 100644
+--- a/net/bytebuddy/implementation/bytecode/collection/ArrayAccess.java
++++ b/net/bytebuddy/implementation/bytecode/collection/ArrayAccess.java
+@@ -107,7 +107,7 @@ public enum ArrayAccess {
+      * @param componentType The array's component type.
+      * @return An array accessor for the given type.
+      */
+-    public static ArrayAccess of(TypeDefinition componentType) {
++    public static ArrayAccess of(TypeDefinition componentType) { net.bytebuddy.jmhbench.MutationSwitch.tick(28);
+         if (!componentType.isPrimitive()) {
+             return REFERENCE;
+         } else if (componentType.represents(boolean.class) || componentType.represents(byte.class)) {
+@@ -134,7 +134,7 @@ public enum ArrayAccess {
+      *
+      * @return A value-loading stack manipulation.
+      */
+-    public StackManipulation load() {
++    public StackManipulation load() { net.bytebuddy.jmhbench.MutationSwitch.tick(38);
+         return new Loader();
+     }
+ 
+diff --git a/net/bytebuddy/implementation/bytecode/collection/ArrayFactory.java b/net/bytebuddy/implementation/bytecode/collection/ArrayFactory.java
+index fad5e2a..852114a 100644
+--- a/net/bytebuddy/implementation/bytecode/collection/ArrayFactory.java
++++ b/net/bytebuddy/implementation/bytecode/collection/ArrayFactory.java
+@@ -74,7 +74,7 @@ public class ArrayFactory implements CollectionFactory {
+      * @param componentType The component type of the array that is to be build.
+      * @return A new array factory for the given type.
+      */
+-    public static ArrayFactory forType(TypeDescription.Generic componentType) {
++    public static ArrayFactory forType(TypeDescription.Generic componentType) { net.bytebuddy.jmhbench.MutationSwitch.tick(47);
+         return new ArrayFactory(componentType, makeArrayCreatorFor(componentType));
+     }
+ 
+diff --git a/net/bytebuddy/jmhbench/MutationSwitch.java b/net/bytebuddy/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..451953c
+--- /dev/null
++++ b/net/bytebuddy/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package net.bytebuddy.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/net/bytebuddy/matcher/AccessibilityMatcher.java b/net/bytebuddy/matcher/AccessibilityMatcher.java
+index 1010199..8a439f8 100644
+--- a/net/bytebuddy/matcher/AccessibilityMatcher.java
++++ b/net/bytebuddy/matcher/AccessibilityMatcher.java
+@@ -44,7 +44,7 @@ public class AccessibilityMatcher<T extends ByteCodeElement> extends ElementMatc
+     /**
+      * {@inheritDoc}
+      */
+-    protected boolean doMatch(T target) {
++    protected boolean doMatch(T target) { net.bytebuddy.jmhbench.MutationSwitch.tick(48);
+         return target.isAccessibleTo(typeDescription);
+     }
+ 
+diff --git a/net/bytebuddy/matcher/ArrayTypeMatcher.java b/net/bytebuddy/matcher/ArrayTypeMatcher.java
+index 9c6b41b..f02fb85 100644
+--- a/net/bytebuddy/matcher/ArrayTypeMatcher.java
++++ b/net/bytebuddy/matcher/ArrayTypeMatcher.java
+@@ -29,7 +29,7 @@ public class ArrayTypeMatcher<T extends TypeDefinition> extends ElementMatcher.J
+     /**
+      * {@inheritDoc}
+      */
+-    protected boolean doMatch(T target) {
++    protected boolean doMatch(T target) { net.bytebuddy.jmhbench.MutationSwitch.tick(9);
+         return target.isArray();
+     }
+ 
+diff --git a/net/bytebuddy/matcher/StringMatcher.java b/net/bytebuddy/matcher/StringMatcher.java
+index 127c791..61b1d41 100644
+--- a/net/bytebuddy/matcher/StringMatcher.java
++++ b/net/bytebuddy/matcher/StringMatcher.java
+@@ -49,7 +49,7 @@ public class StringMatcher extends ElementMatcher.Junction.ForNonNullValues<Stri
+     /**
+      * {@inheritDoc}
+      */
+-    protected boolean doMatch(String target) {
++    protected boolean doMatch(String target) { net.bytebuddy.jmhbench.MutationSwitch.tick(19);
+         return mode.matches(value, target);
+     }
+ 
+@@ -177,7 +177,7 @@ public class StringMatcher extends ElementMatcher.Junction.ForNonNullValues<Stri
+          *
+          * @return The description of this match mode.
+          */
+-        protected String getDescription() {
++        protected String getDescription() { net.bytebuddy.jmhbench.MutationSwitch.tick(29);
+             return description;
+         }
+ 
+diff --git a/net/bytebuddy/matcher/StringSetMatcher.java b/net/bytebuddy/matcher/StringSetMatcher.java
+index aa14962..7f78d86 100644
+--- a/net/bytebuddy/matcher/StringSetMatcher.java
++++ b/net/bytebuddy/matcher/StringSetMatcher.java
+@@ -42,7 +42,7 @@ public class StringSetMatcher extends ElementMatcher.Junction.ForNonNullValues<S
+     /**
+      * {@inheritDoc}
+      */
+-    protected boolean doMatch(String target) {
++    protected boolean doMatch(String target) { net.bytebuddy.jmhbench.MutationSwitch.tick(39);
+         return values.contains(target);
+     }
+ 
+diff --git a/net/bytebuddy/utility/CompoundList.java b/net/bytebuddy/utility/CompoundList.java
+index 9e501bd..bf8ad78 100644
+--- a/net/bytebuddy/utility/CompoundList.java
++++ b/net/bytebuddy/utility/CompoundList.java
+@@ -39,7 +39,7 @@ public class CompoundList {
+      * @param <S>   The type of the list's elements.
+      * @return A compound list representing the element and the list.
+      */
+-    public static <S> List<S> of(S left, List<? extends S> right) {
++    public static <S> List<S> of(S left, List<? extends S> right) { net.bytebuddy.jmhbench.MutationSwitch.tick(10);
+         if (right.isEmpty()) {
+             return Collections.singletonList(left);
+         } else {
+@@ -58,7 +58,7 @@ public class CompoundList {
+      * @param <S>   The type of the list's elements.
+      * @return A compound list representing the element and the list.
+      */
+-    public static <S> List<S> of(List<? extends S> left, S right) {
++    public static <S> List<S> of(List<? extends S> left, S right) { net.bytebuddy.jmhbench.MutationSwitch.tick(20);
+         if (left.isEmpty()) {
+             return Collections.singletonList(right);
+         } else {
+diff --git a/net/bytebuddy/utility/RandomString.java b/net/bytebuddy/utility/RandomString.java
+index 519d182..df96457 100644
+--- a/net/bytebuddy/utility/RandomString.java
++++ b/net/bytebuddy/utility/RandomString.java
+@@ -105,7 +105,7 @@ public class RandomString {
+      *
+      * @return A random {@link java.lang.String}.
+      */
+-    public static String make() {
++    public static String make() { net.bytebuddy.jmhbench.MutationSwitch.tick(30);
+         return make(DEFAULT_LENGTH);
+     }
+ 
+@@ -115,7 +115,7 @@ public class RandomString {
+      * @param length The length of the random {@link String}.
+      * @return A random {@link java.lang.String}.
+      */
+-    public static String make(int length) {
++    public static String make(int length) { net.bytebuddy.jmhbench.MutationSwitch.tick(40);
+         return new RandomString(length).nextString();
+     }
+ 
+diff --git a/net/bytebuddy/utility/StreamDrainer.java b/net/bytebuddy/utility/StreamDrainer.java
+index 2b0c62f..02b5c28 100644
+--- a/net/bytebuddy/utility/StreamDrainer.java
++++ b/net/bytebuddy/utility/StreamDrainer.java
+@@ -76,7 +76,7 @@ public class StreamDrainer {
+      * @return A byte array containing the content of the input stream.
+      * @throws IOException If the stream reading causes an error.
+      */
+-    public byte[] drain(InputStream inputStream) throws IOException {
++    public byte[] drain(InputStream inputStream) throws IOException { net.bytebuddy.jmhbench.MutationSwitch.tick(49);
+         List<byte[]> previousBytes = new ArrayList<byte[]>();
+         byte[] currentArray = new byte[bufferSize];
+         int currentIndex = 0;

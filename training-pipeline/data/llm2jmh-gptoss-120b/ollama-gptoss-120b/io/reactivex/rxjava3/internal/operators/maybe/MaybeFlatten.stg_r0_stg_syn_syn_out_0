@@ -1,0 +1,90 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * Benchmark for the {@code MaybeFlatten} operator (exposed via {@code Maybe.flatMap}).
+ * Measures throughput – how many flatten operations can be performed per second.
+ *
+ * The benchmark uses a simple source {@code Maybe.just(1)} and a mapper that returns
+ * {@code Maybe.just("value-" + v)}. The result is consumed by {@link Blackhole} to
+ * prevent dead‑code elimination.
+ *
+ * JMH best‑practice annotations are applied:
+ * - {@code @Warmup} to let the JVM reach a steady state,
+ * - {@code @Measurement} for the actual measurement,
+ * - {@code @Fork} to isolate JVMs,
+ * - {@code @BenchmarkMode(Mode.Throughput)} for operations per time unit,
+ * - {@code @OutputTimeUnit(TimeUnit.SECONDS)} for readable output.
+ */
+@State(Scope.Thread)
+public class MaybeFlattenBenchmark {
+
+    /**
+     * Source Maybe that emits a single integer.
+     */
+    private Maybe<Integer> source;
+
+    /**
+     * Mapper that transforms the integer into another Maybe emitting a String.
+     */
+    private Function<Integer, MaybeSource<String>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Simple, immutable sources that can be reused across iterations.
+        source = Maybe.just(1);
+        mapper = v -> Maybe.just("value-" + v);
+    }
+
+    /**
+     * Executes the flatten operation and blocks until the terminal event.
+     * The resulting value is consumed by {@link Blackhole} to avoid the JIT
+     * discarding the whole computation.
+     */
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+    @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+    @Fork(value = 2)
+    public void flattenThroughput(Blackhole bh) {
+        // The flatMap operator internally uses MaybeFlatten.
+        String result = source.flatMap(mapper).blockingGet();
+        bh.consume(result);
+    }
+}

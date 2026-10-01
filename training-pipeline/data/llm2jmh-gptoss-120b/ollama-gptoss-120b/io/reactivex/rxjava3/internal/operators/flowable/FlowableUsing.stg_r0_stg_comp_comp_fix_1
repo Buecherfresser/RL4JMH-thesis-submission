@@ -1,0 +1,81 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Supplier;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableUsing}.
+ *
+ * Measures throughput of subscribing to a FlowableUsing that emits a configurable number of integers.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class FlowableUsingBenchmark {
+
+    @Param({ "1", "10", "1000", "100000" })
+    public int itemCount;
+
+    private Flowable<Integer> flowableUsing;
+
+    private static final Supplier<String> RESOURCE_SUPPLIER = () -> "resource";
+
+    private static final Consumer<String> DISPOSER = r -> {
+        // No‑op; simulate resource cleanup.
+    };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        Flowable<Integer> source = Flowable.range(1, itemCount);
+        flowableUsing = Flowable.using(
+                RESOURCE_SUPPLIER,
+                (Function<String, Publisher<Integer>>) resource -> source,
+                DISPOSER,
+                false
+        );
+    }
+
+    @Benchmark
+    public void subscribeAndConsume(Blackhole bh) {
+        flowableUsing.subscribe(new Subscriber<Integer>() {
+
+            private Subscription upstream;
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                this.upstream = s;
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Integer t) {
+                bh.consume(t);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                throw new RuntimeException(t);
+            }
+
+            @Override
+            public void onComplete() {
+                // No action needed.
+            }
+        });
+    }
+}
+```

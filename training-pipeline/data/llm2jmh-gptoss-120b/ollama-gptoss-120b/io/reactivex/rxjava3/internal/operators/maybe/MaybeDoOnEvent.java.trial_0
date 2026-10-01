@@ -1,0 +1,36 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.functions.BiConsumer;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+@State(Scope.Thread)
+public class MaybeDoOnEventBenchmark {
+
+    private Maybe<Integer> source;
+    private BiConsumer<Integer, Throwable> noOp;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple source that emits a single value
+        source = Maybe.just(1);
+        // No‑op consumer to isolate the overhead of the operator itself
+        noOp = (value, error) -> {};
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+    @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+    public void doOnEventThroughput(Blackhole bh) {
+        // Execute the operator and block to ensure the whole chain runs
+        Integer result = source.doOnEvent(noOp).blockingGet();
+        bh.consume(result);
+    }
+}
+```

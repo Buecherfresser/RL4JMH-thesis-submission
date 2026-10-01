@@ -1,0 +1,65 @@
+```
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Flowable;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * Benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableSkipLast}
+ * measuring throughput (items processed per second) for different skip values
+ * and source sizes.
+ *
+ * The benchmark uses {@link Flowable#blockingSubscribe(java.util.function.Consumer)}
+ * to ensure the whole stream is consumed synchronously, which gives a stable
+ * measurement of the operator's cost.
+ *
+ * Best practices applied:
+ * - @State(Scope.Thread) isolates benchmark state per thread.
+ * - @Param provides a range of realistic skip and source sizes.
+ * - @Setup prepares immutable Flowable instances to avoid measuring setup overhead.
+ * - Blackhole consumes items to prevent dead‑code elimination.
+ * - Throughput mode reports items/second, the most relevant metric for stream operators.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class FlowableSkipLastBenchmark {
+
+    /**
+     * Number of items emitted by the upstream source.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int sourceSize;
+
+    /**
+     * Number of items to skip at the end of the stream.
+     */
+    @Param({ "0", "1", "10", "100" })
+    public int skip;
+
+    /**
+     * The Flowable pipeline under test (source → skipLast).
+     */
+    private Flowable<Integer> flowable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a simple range source; the pipeline is immutable after creation.
+        flowable = Flowable.range(1, sourceSize).skipLast(skip);
+    }
+
+    /**
+     * Consumes the entire Flowable, measuring how many items per second can be processed.
+     *
+     * @param bh Blackhole to consume each emitted item and avoid dead‑code elimination.
+     */
+    @Benchmark
+    public void skipLastThroughput(Blackhole bh) {
+        // blockingSubscribe ensures the benchmark measures the full processing time.
+        flowable.blockingSubscribe(bh::consume);
+    }
+}
+```

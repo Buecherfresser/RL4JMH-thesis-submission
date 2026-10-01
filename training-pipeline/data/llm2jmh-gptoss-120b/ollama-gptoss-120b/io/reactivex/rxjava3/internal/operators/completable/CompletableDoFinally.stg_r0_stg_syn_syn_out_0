@@ -1,0 +1,95 @@
+package io.reactivex.rxjava3.internal.operators.completable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.completable.CompletableDoFinally}.
+ *
+ * Measures the throughput of a plain {@code Completable.complete()} versus the same
+ * Completable with a {@code doFinally} operator attached.
+ *
+ * The benchmark follows best practices:
+ * - Separate @State for reusable objects.
+ * - Warm‑up and measurement iterations.
+ * - Multiple forks to reduce JVM warm‑up effects.
+ * - Blackhole consumption to prevent dead‑code elimination.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@Threads(1)
+public class CompletableDoFinallyBenchmark {
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        /**
+         * No‑op action used by {@code doFinally}.
+         */
+        Action noop;
+
+        @Setup(Level.Trial)
+        public void setUp() {
+            // The action does absolutely nothing; any exception would be fatal.
+            noop = () -> {
+            };
+        }
+    }
+
+    /**
+     * Baseline: a plain Completable that completes immediately.
+     */
+    @Benchmark
+    public void baseline(BenchmarkState state, Blackhole bh) {
+        // Completable.complete() is already a cold source; blockingSubscribe forces
+        // the subscription to run to completion synchronously.
+        Completable.complete().blockingSubscribe();
+        // Consume a dummy value to keep the JIT from optimizing away the call.
+        bh.consume(state);
+    }
+
+    /**
+     * Completable with {@code doFinally} attached.
+     */
+    @Benchmark
+    public void withDoFinally(BenchmarkState state, Blackhole bh) {
+        Completable.complete().doFinally(state.noop).blockingSubscribe();
+        bh.consume(state);
+    }
+}

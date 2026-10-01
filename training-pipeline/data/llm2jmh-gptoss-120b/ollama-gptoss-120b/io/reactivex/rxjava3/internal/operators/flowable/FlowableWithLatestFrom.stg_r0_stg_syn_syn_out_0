@@ -1,0 +1,99 @@
+package io.reactivex.rxjava3.internal.operators.flowable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.flowable.FlowableWithLatestFrom}
+ * measuring throughput (items processed per second).
+ *
+ * The benchmark creates two finite synchronous sources (range) and applies the
+ * {@code withLatestFrom} operator with a simple addition combiner. The resulting
+ * Flowable is consumed via {@code blockingForEach} to ensure the whole pipeline
+ * is executed and the result is fed to a {@link Blackhole} to avoid dead‑code
+ * elimination.
+ *
+ * Best‑practice notes:
+ * • State is scoped to a thread to avoid sharing mutable objects across threads.
+ * • All objects are created in {@link Setup(Level.Trial)} so the benchmark measures
+ *   only the operator's runtime, not allocation overhead.
+ * • {@code Blackhole} is used to consume the downstream values.
+ * • Warm‑up, measurement, and fork parameters follow typical JMH recommendations.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+public class FlowableWithLatestFromBenchmark {
+
+    /**
+     * Number of items emitted by each source Flowable.
+     */
+    @Param({ "1000", "10000", "100000" })
+    public int size;
+
+    @State(Scope.Thread)
+    public static class BenchmarkState {
+
+        Flowable<Integer> combined;
+
+        @Setup(Level.Trial)
+        public void setUp(BenchmarkStateHolder holder) {
+            // Create two finite sources emitting integers from 1 to size.
+            Flowable<Integer> source = Flowable.range(1, holder.size);
+            Flowable<Integer> other = Flowable.range(1, holder.size);
+            // Apply withLatestFrom using a simple addition combiner.
+            combined = source.withLatestFrom(other, (a, b) -> a + b);
+        }
+    }
+
+    /**
+     * Helper holder to expose the @Param field to the thread‑scoped state.
+     */
+    @State(Scope.Benchmark)
+    public static class BenchmarkStateHolder {
+
+        @Param({ "1000", "10000", "100000" })
+        public int size;
+    }
+
+    @Benchmark
+    public void throughput(BenchmarkState state, Blackhole bh) {
+        // Consume the entire stream; each emitted item is passed to Blackhole.
+        state.combined.blockingForEach(bh::consume);
+    }
+}

@@ -1,0 +1,643 @@
+diff --git a/io/micrometer/appoptics/AppOpticsMeterRegistry.java b/io/micrometer/appoptics/AppOpticsMeterRegistry.java
+index be0f70c..8889e9e 100644
+--- a/io/micrometer/appoptics/AppOpticsMeterRegistry.java
++++ b/io/micrometer/appoptics/AppOpticsMeterRegistry.java
+@@ -80,7 +80,7 @@ public class AppOpticsMeterRegistry extends StepMeterRegistry {
+ 
+         config().meterFilter(new MeterFilter() {
+             @Override
+-            public Meter.Id map(Meter.Id id) {
++            public Meter.Id map(Meter.Id id) { io.micrometer.jmhbench.MutationSwitch.tick(1);
+                 if (id.getName().startsWith("system.")) {
+                     return id.withName("micrometer." + id.getName());
+                 }
+@@ -91,7 +91,7 @@ public class AppOpticsMeterRegistry extends StepMeterRegistry {
+         start(threadFactory);
+     }
+ 
+-    public static Builder builder(AppOpticsConfig config) {
++    public static Builder builder(AppOpticsConfig config) { io.micrometer.jmhbench.MutationSwitch.tick(32);
+         return new Builder(config);
+     }
+ 
+diff --git a/io/micrometer/atlas/AtlasMeterRegistry.java b/io/micrometer/atlas/AtlasMeterRegistry.java
+index 1292824..4409c4e 100644
+--- a/io/micrometer/atlas/AtlasMeterRegistry.java
++++ b/io/micrometer/atlas/AtlasMeterRegistry.java
+@@ -59,12 +59,12 @@ public class AtlasMeterRegistry extends MeterRegistry {
+ 
+         this.registry = new AtlasRegistry(new com.netflix.spectator.api.Clock() {
+             @Override
+-            public long wallTime() {
++            public long wallTime() { io.micrometer.jmhbench.MutationSwitch.tick(2);
+                 return clock.wallTime();
+             }
+ 
+             @Override
+-            public long monotonicTime() {
++            public long monotonicTime() { io.micrometer.jmhbench.MutationSwitch.tick(33);
+                 return clock.monotonicTime();
+             }
+         }, config);
+diff --git a/io/micrometer/azuremonitor/AzureMonitorMeterRegistry.java b/io/micrometer/azuremonitor/AzureMonitorMeterRegistry.java
+index 76df4fc..075632d 100644
+--- a/io/micrometer/azuremonitor/AzureMonitorMeterRegistry.java
++++ b/io/micrometer/azuremonitor/AzureMonitorMeterRegistry.java
+@@ -75,12 +75,12 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
+         start(threadFactory);
+     }
+ 
+-    public static Builder builder(AzureMonitorConfig config) {
++    public static Builder builder(AzureMonitorConfig config) { io.micrometer.jmhbench.MutationSwitch.tick(3);
+         return new Builder(config);
+     }
+ 
+     @Override
+-    protected void publish() {
++    protected void publish() { io.micrometer.jmhbench.MutationSwitch.tick(34);
+         for (Meter meter : getMeters()) {
+             // @formatter:off
+             meter
+diff --git a/io/micrometer/cloudwatch2/CloudWatchMeterRegistry.java b/io/micrometer/cloudwatch2/CloudWatchMeterRegistry.java
+index ae078a8..61b0fb7 100644
+--- a/io/micrometer/cloudwatch2/CloudWatchMeterRegistry.java
++++ b/io/micrometer/cloudwatch2/CloudWatchMeterRegistry.java
+@@ -94,7 +94,7 @@ public class CloudWatchMeterRegistry extends StepMeterRegistry {
+     }
+ 
+     @Override
+-    protected void publish() {
++    protected void publish() { io.micrometer.jmhbench.MutationSwitch.tick(4);
+         boolean interrupted = false;
+         try {
+             for (List<MetricDatum> batch : MetricDatumPartition.partition(metricData(), config.batchSize())) {
+@@ -330,7 +330,7 @@ public class CloudWatchMeterRegistry extends StepMeterRegistry {
+     }
+ 
+     @Override
+-    protected TimeUnit getBaseTimeUnit() {
++    protected TimeUnit getBaseTimeUnit() { io.micrometer.jmhbench.MutationSwitch.tick(35);
+         return TimeUnit.MILLISECONDS;
+     }
+ 
+diff --git a/io/micrometer/common/util/StringUtils.java b/io/micrometer/common/util/StringUtils.java
+index 5ef52e0..a7ebfa7 100644
+--- a/io/micrometer/common/util/StringUtils.java
++++ b/io/micrometer/common/util/StringUtils.java
+@@ -82,7 +82,7 @@ public final class StringUtils {
+      * @param maxLength max length
+      * @return truncated String
+      */
+-    public static String truncate(String string, int maxLength) {
++    public static String truncate(String string, int maxLength) { io.micrometer.jmhbench.MutationSwitch.tick(5);
+         if (string.length() > maxLength) {
+             return string.substring(0, maxLength);
+         }
+@@ -98,7 +98,7 @@ public final class StringUtils {
+      * @param truncationIndicator A string that is appended if {@code string} is truncated
+      * @return truncated String
+      */
+-    public static String truncate(String string, int maxLength, String truncationIndicator) {
++    public static String truncate(String string, int maxLength, String truncationIndicator) { io.micrometer.jmhbench.MutationSwitch.tick(36);
+         if (truncationIndicator.length() >= maxLength) {
+             throw new IllegalArgumentException("maxLength must be greater than length of truncationIndicator");
+         }
+diff --git a/io/micrometer/core/instrument/StrongReferenceGaugeFunction.java b/io/micrometer/core/instrument/StrongReferenceGaugeFunction.java
+index b619e5e..372fd96 100644
+--- a/io/micrometer/core/instrument/StrongReferenceGaugeFunction.java
++++ b/io/micrometer/core/instrument/StrongReferenceGaugeFunction.java
+@@ -43,7 +43,7 @@ class StrongReferenceGaugeFunction<T> implements ToDoubleFunction<T> {
+     }
+ 
+     @Override
+-    public double applyAsDouble(T value) {
++    public double applyAsDouble(T value) { io.micrometer.jmhbench.MutationSwitch.tick(6);
+         return f.applyAsDouble(value);
+     }
+ 
+diff --git a/io/micrometer/core/instrument/binder/db/JooqExecuteListener.java b/io/micrometer/core/instrument/binder/db/JooqExecuteListener.java
+index 726a1b3..cf0dfff 100644
+--- a/io/micrometer/core/instrument/binder/db/JooqExecuteListener.java
++++ b/io/micrometer/core/instrument/binder/db/JooqExecuteListener.java
+@@ -48,7 +48,7 @@ class JooqExecuteListener extends DefaultExecuteListener {
+     }
+ 
+     @Override
+-    public void start(ExecuteContext ctx) {
++    public void start(ExecuteContext ctx) { io.micrometer.jmhbench.MutationSwitch.tick(37);
+         startTimer(ctx);
+     }
+ 
+diff --git a/io/micrometer/datadog/DatadogMeterRegistry.java b/io/micrometer/datadog/DatadogMeterRegistry.java
+index dc58afa..07f880d 100644
+--- a/io/micrometer/datadog/DatadogMeterRegistry.java
++++ b/io/micrometer/datadog/DatadogMeterRegistry.java
+@@ -94,7 +94,7 @@ public class DatadogMeterRegistry extends StepMeterRegistry {
+     }
+ 
+     @Override
+-    public void start(ThreadFactory threadFactory) {
++    public void start(ThreadFactory threadFactory) { io.micrometer.jmhbench.MutationSwitch.tick(7);
+         if (config.enabled()) {
+             if (config.applicationKey() == null) {
+                 logger
+@@ -105,7 +105,7 @@ public class DatadogMeterRegistry extends StepMeterRegistry {
+     }
+ 
+     @Override
+-    protected void publish() {
++    protected void publish() { io.micrometer.jmhbench.MutationSwitch.tick(38);
+         Map<String, DatadogMetricMetadata> metadataToSend = new HashMap<>();
+ 
+         String datadogEndpoint = config.uri() + "/api/v1/series?api_key=" + config.apiKey();
+diff --git a/io/micrometer/dynatrace/DynatraceMeterRegistry.java b/io/micrometer/dynatrace/DynatraceMeterRegistry.java
+index f80d69f..de62350 100644
+--- a/io/micrometer/dynatrace/DynatraceMeterRegistry.java
++++ b/io/micrometer/dynatrace/DynatraceMeterRegistry.java
+@@ -100,12 +100,12 @@ public class DynatraceMeterRegistry extends StepMeterRegistry {
+         start(threadFactory);
+     }
+ 
+-    public static Builder builder(DynatraceConfig config) {
++    public static Builder builder(DynatraceConfig config) { io.micrometer.jmhbench.MutationSwitch.tick(8);
+         return new Builder(config);
+     }
+ 
+     @Override
+-    protected void publish() {
++    protected void publish() { io.micrometer.jmhbench.MutationSwitch.tick(39);
+         exporter.export(getMeters());
+     }
+ 
+diff --git a/io/micrometer/elastic/DefaultIndexTemplateCreator.java b/io/micrometer/elastic/DefaultIndexTemplateCreator.java
+index 2b81857..095d6a2 100644
+--- a/io/micrometer/elastic/DefaultIndexTemplateCreator.java
++++ b/io/micrometer/elastic/DefaultIndexTemplateCreator.java
+@@ -40,7 +40,7 @@ class DefaultIndexTemplateCreator implements IndexTemplateCreator {
+     }
+ 
+     @Override
+-    public IndexTemplateStatus fetchIndexTemplateStatus(ElasticConfig configuration) {
++    public IndexTemplateStatus fetchIndexTemplateStatus(ElasticConfig configuration) { io.micrometer.jmhbench.MutationSwitch.tick(9);
+         HttpSender.Request.Builder request = this.httpClient.head(configuration.host() + INDEX_TEMPLATE_PATH);
+         configureAuthentication(configuration, request);
+         try {
+@@ -65,7 +65,7 @@ class DefaultIndexTemplateCreator implements IndexTemplateCreator {
+     }
+ 
+     @Override
+-    public void createIndexTemplate(ElasticConfig configuration) throws Throwable {
++    public void createIndexTemplate(ElasticConfig configuration) throws Throwable { io.micrometer.jmhbench.MutationSwitch.tick(40);
+         String indexPattern = configuration.index() + configuration.indexDateSeparator();
+         boolean enableSource = configuration.enableSource();
+         HttpSender.Request.Builder request = this.httpClient.put(configuration.host() + INDEX_TEMPLATE_PATH);
+diff --git a/io/micrometer/ganglia/GangliaMeterRegistry.java b/io/micrometer/ganglia/GangliaMeterRegistry.java
+index 6590fa6..7ec28e5 100644
+--- a/io/micrometer/ganglia/GangliaMeterRegistry.java
++++ b/io/micrometer/ganglia/GangliaMeterRegistry.java
+@@ -111,12 +111,12 @@ public class GangliaMeterRegistry extends StepMeterRegistry {
+         this(config, clock, nameMapper);
+     }
+ 
+-    public static Builder builder(GangliaConfig config) {
++    public static Builder builder(GangliaConfig config) { io.micrometer.jmhbench.MutationSwitch.tick(10);
+         return new Builder(config);
+     }
+ 
+     @Override
+-    protected void publish() {
++    protected void publish() { io.micrometer.jmhbench.MutationSwitch.tick(41);
+         for (Meter meter : getMeters()) {
+             // @formatter:off
+             meter.use(
+diff --git a/io/micrometer/graphite/GraphiteDimensionalNameMapper.java b/io/micrometer/graphite/GraphiteDimensionalNameMapper.java
+index 6755dd3..61510c3 100644
+--- a/io/micrometer/graphite/GraphiteDimensionalNameMapper.java
++++ b/io/micrometer/graphite/GraphiteDimensionalNameMapper.java
+@@ -35,7 +35,7 @@ import io.micrometer.core.instrument.util.HierarchicalNameMapper;
+ public class GraphiteDimensionalNameMapper implements HierarchicalNameMapper {
+ 
+     @Override
+-    public String toHierarchicalName(Meter.Id id, NamingConvention convention) {
++    public String toHierarchicalName(Meter.Id id, NamingConvention convention) { io.micrometer.jmhbench.MutationSwitch.tick(11);
+         StringBuilder hierarchicalName = new StringBuilder();
+         hierarchicalName.append(id.getConventionName(convention));
+         for (Tag tag : id.getTagsAsIterable()) {
+diff --git a/io/micrometer/graphite/GraphiteHierarchicalNameMapper.java b/io/micrometer/graphite/GraphiteHierarchicalNameMapper.java
+index 6e96d47..921f065 100644
+--- a/io/micrometer/graphite/GraphiteHierarchicalNameMapper.java
++++ b/io/micrometer/graphite/GraphiteHierarchicalNameMapper.java
+@@ -39,7 +39,7 @@ public class GraphiteHierarchicalNameMapper implements HierarchicalNameMapper {
+     }
+ 
+     @Override
+-    public String toHierarchicalName(Meter.Id id, NamingConvention convention) {
++    public String toHierarchicalName(Meter.Id id, NamingConvention convention) { io.micrometer.jmhbench.MutationSwitch.tick(42);
+         StringBuilder hierarchicalName = new StringBuilder();
+         for (String tagKey : tagsAsPrefix) {
+             String tagValue = id.getTag(tagKey);
+diff --git a/io/micrometer/health/HealthMeterRegistry.java b/io/micrometer/health/HealthMeterRegistry.java
+index aff54af..548e484 100644
+--- a/io/micrometer/health/HealthMeterRegistry.java
++++ b/io/micrometer/health/HealthMeterRegistry.java
+@@ -73,12 +73,12 @@ public class HealthMeterRegistry extends SimpleMeterRegistry {
+             }
+ 
+             @Override
+-            public Duration step() {
++            public Duration step() { io.micrometer.jmhbench.MutationSwitch.tick(12);
+                 return config.step();
+             }
+ 
+             @Override
+-            public final CountingMode mode() {
++            public final CountingMode mode() { io.micrometer.jmhbench.MutationSwitch.tick(43);
+                 return CountingMode.STEP;
+             }
+         }, clock);
+diff --git a/io/micrometer/humio/HumioMeterRegistry.java b/io/micrometer/humio/HumioMeterRegistry.java
+index ac84237..32bc4a3 100644
+--- a/io/micrometer/humio/HumioMeterRegistry.java
++++ b/io/micrometer/humio/HumioMeterRegistry.java
+@@ -77,12 +77,12 @@ public class HumioMeterRegistry extends StepMeterRegistry {
+         return new Attribute(name, value);
+     }
+ 
+-    public static Builder builder(HumioConfig config) {
++    public static Builder builder(HumioConfig config) { io.micrometer.jmhbench.MutationSwitch.tick(13);
+         return new Builder(config);
+     }
+ 
+     @Override
+-    protected void publish() {
++    protected void publish() { io.micrometer.jmhbench.MutationSwitch.tick(44);
+         for (List<Meter> meters : MeterPartition.partition(this, config.batchSize())) {
+             try {
+                 HttpSender.Request.Builder post = httpClient.post(config.uri() + "/api/v1/ingest/humio-structured");
+diff --git a/io/micrometer/influx/InfluxMeterRegistry.java b/io/micrometer/influx/InfluxMeterRegistry.java
+index 490c014..a17040c 100644
+--- a/io/micrometer/influx/InfluxMeterRegistry.java
++++ b/io/micrometer/influx/InfluxMeterRegistry.java
+@@ -83,14 +83,14 @@ public class InfluxMeterRegistry extends StepMeterRegistry {
+     }
+ 
+     @Override
+-    public void start(ThreadFactory threadFactory) {
++    public void start(ThreadFactory threadFactory) { io.micrometer.jmhbench.MutationSwitch.tick(14);
+         super.start(threadFactory);
+         if (config.enabled()) {
+             logger.info("Using InfluxDB API version {} to write metrics", config.apiVersion());
+         }
+     }
+ 
+-    public static Builder builder(InfluxConfig config) {
++    public static Builder builder(InfluxConfig config) { io.micrometer.jmhbench.MutationSwitch.tick(45);
+         return new Builder(config);
+     }
+ 
+diff --git a/io/micrometer/jakarta9/instrument/jms/DefaultJmsProcessObservationConvention.java b/io/micrometer/jakarta9/instrument/jms/DefaultJmsProcessObservationConvention.java
+index 7f650fc..2def735 100644
+--- a/io/micrometer/jakarta9/instrument/jms/DefaultJmsProcessObservationConvention.java
++++ b/io/micrometer/jakarta9/instrument/jms/DefaultJmsProcessObservationConvention.java
+@@ -34,12 +34,12 @@ public class DefaultJmsProcessObservationConvention implements JmsProcessObserva
+     private static final KeyValue OPERATION_PROCESS = KeyValue.of(LowCardinalityKeyNames.OPERATION, "process");
+ 
+     @Override
+-    public String getName() {
++    public String getName() { io.micrometer.jmhbench.MutationSwitch.tick(15);
+         return "jms.message.process";
+     }
+ 
+     @Override
+-    public String getContextualName(JmsProcessObservationContext context) {
++    public String getContextualName(JmsProcessObservationContext context) { io.micrometer.jmhbench.MutationSwitch.tick(46);
+         return destinationName(context).getValue() + " process";
+     }
+ 
+diff --git a/io/micrometer/java11/instrument/binder/jdk/DefaultHttpClientObservationConvention.java b/io/micrometer/java11/instrument/binder/jdk/DefaultHttpClientObservationConvention.java
+index ce3d0bd..09054dc 100644
+--- a/io/micrometer/java11/instrument/binder/jdk/DefaultHttpClientObservationConvention.java
++++ b/io/micrometer/java11/instrument/binder/jdk/DefaultHttpClientObservationConvention.java
+@@ -37,7 +37,7 @@ public class DefaultHttpClientObservationConvention implements HttpClientObserva
+     public static final DefaultHttpClientObservationConvention INSTANCE = new DefaultHttpClientObservationConvention();
+ 
+     @Override
+-    public KeyValues getLowCardinalityKeyValues(HttpClientContext context) {
++    public KeyValues getLowCardinalityKeyValues(HttpClientContext context) { io.micrometer.jmhbench.MutationSwitch.tick(16);
+         if (context.getCarrier() == null) {
+             return KeyValues.empty();
+         }
+@@ -71,7 +71,7 @@ public class DefaultHttpClientObservationConvention implements HttpClientObserva
+     }
+ 
+     @Override
+-    public String getName() {
++    public String getName() { io.micrometer.jmhbench.MutationSwitch.tick(47);
+         return "http.client.requests";
+     }
+ 
+diff --git a/io/micrometer/java21/instrument/binder/jdk/VirtualThreadMetrics.java b/io/micrometer/java21/instrument/binder/jdk/VirtualThreadMetrics.java
+index 39bbb4c..d6e0cc8 100644
+--- a/io/micrometer/java21/instrument/binder/jdk/VirtualThreadMetrics.java
++++ b/io/micrometer/java21/instrument/binder/jdk/VirtualThreadMetrics.java
+@@ -68,7 +68,7 @@ public class VirtualThreadMetrics implements MeterBinder, Closeable {
+     }
+ 
+     @Override
+-    public void bindTo(MeterRegistry registry) {
++    public void bindTo(MeterRegistry registry) { io.micrometer.jmhbench.MutationSwitch.tick(17);
+         Timer pinnedTimer = Timer.builder(METER_NAME_PREFIX + "pinned")
+             .description("The duration while the virtual thread was pinned without releasing its platform thread")
+             .tags(tags)
+@@ -149,7 +149,7 @@ public class VirtualThreadMetrics implements MeterBinder, Closeable {
+     }
+ 
+     @Override
+-    public void close() {
++    public void close() { io.micrometer.jmhbench.MutationSwitch.tick(48);
+         recordingStream.close();
+     }
+ 
+diff --git a/io/micrometer/jetty11/TimedHandler.java b/io/micrometer/jetty11/TimedHandler.java
+index ad00803..dcf817d 100644
+--- a/io/micrometer/jetty11/TimedHandler.java
++++ b/io/micrometer/jetty11/TimedHandler.java
+@@ -60,7 +60,7 @@ public class TimedHandler extends HandlerWrapper implements Graceful {
+ 
+     private final Shutdown shutdown = new Shutdown(this) {
+         @Override
+-        public boolean isShutdownDone() {
++        public boolean isShutdownDone() { io.micrometer.jmhbench.MutationSwitch.tick(18);
+             return openRequests.activeTasks() == 0;
+         }
+     };
+@@ -164,7 +164,7 @@ public class TimedHandler extends HandlerWrapper implements Graceful {
+ 
+     private final AsyncListener onCompletion = new AsyncListener() {
+         @Override
+-        public void onTimeout(AsyncEvent event) {
++        public void onTimeout(AsyncEvent event) { io.micrometer.jmhbench.MutationSwitch.tick(49);
+             asyncExpires.increment();
+ 
+             HttpChannelState state = ((AsyncContextEvent) event).getHttpChannelState();
+diff --git a/io/micrometer/jetty12/client/DefaultJettyClientObservationConvention.java b/io/micrometer/jetty12/client/DefaultJettyClientObservationConvention.java
+index ed17eff..e095646 100644
+--- a/io/micrometer/jetty12/client/DefaultJettyClientObservationConvention.java
++++ b/io/micrometer/jetty12/client/DefaultJettyClientObservationConvention.java
+@@ -29,7 +29,7 @@ public class DefaultJettyClientObservationConvention implements JettyClientObser
+     public static final DefaultJettyClientObservationConvention INSTANCE = new DefaultJettyClientObservationConvention();
+ 
+     @Override
+-    public KeyValues getLowCardinalityKeyValues(JettyClientContext context) {
++    public KeyValues getLowCardinalityKeyValues(JettyClientContext context) { io.micrometer.jmhbench.MutationSwitch.tick(19);
+         Request request = context.getCarrier();
+         Result result = context.getResponse();
+         return KeyValues.of(JettyClientKeyValues.method(request), JettyClientKeyValues.host(request),
+@@ -39,7 +39,7 @@ public class DefaultJettyClientObservationConvention implements JettyClientObser
+     }
+ 
+     @Override
+-    public String getName() {
++    public String getName() { io.micrometer.jmhbench.MutationSwitch.tick(50);
+         return JettyClientMetrics.DEFAULT_JETTY_CLIENT_REQUESTS_TIMER_NAME;
+     }
+ 
+diff --git a/io/micrometer/jmhbench/MutationSwitch.java b/io/micrometer/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..ce5c982
+--- /dev/null
++++ b/io/micrometer/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package io.micrometer.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/io/micrometer/jmx/JmxMeterRegistry.java b/io/micrometer/jmx/JmxMeterRegistry.java
+index 12edf56..e6e7711 100644
+--- a/io/micrometer/jmx/JmxMeterRegistry.java
++++ b/io/micrometer/jmx/JmxMeterRegistry.java
+@@ -52,7 +52,7 @@ public class JmxMeterRegistry extends DropwizardMeterRegistry {
+         return JmxReporter.forRegistry(metricRegistry).inDomain(config.domain()).build();
+     }
+ 
+-    public void stop() {
++    public void stop() { io.micrometer.jmhbench.MutationSwitch.tick(20);
+         this.reporter.stop();
+     }
+ 
+diff --git a/io/micrometer/kairos/KairosMeterRegistry.java b/io/micrometer/kairos/KairosMeterRegistry.java
+index f483576..6106b26 100644
+--- a/io/micrometer/kairos/KairosMeterRegistry.java
++++ b/io/micrometer/kairos/KairosMeterRegistry.java
+@@ -70,7 +70,7 @@ public class KairosMeterRegistry extends StepMeterRegistry {
+         start(threadFactory);
+     }
+ 
+-    public static Builder builder(KairosConfig config) {
++    public static Builder builder(KairosConfig config) { io.micrometer.jmhbench.MutationSwitch.tick(21);
+         return new Builder(config);
+     }
+ 
+diff --git a/io/micrometer/newrelic/NewRelicInsightsAgentClientProvider.java b/io/micrometer/newrelic/NewRelicInsightsAgentClientProvider.java
+index 5adac43..60c5695 100644
+--- a/io/micrometer/newrelic/NewRelicInsightsAgentClientProvider.java
++++ b/io/micrometer/newrelic/NewRelicInsightsAgentClientProvider.java
+@@ -69,7 +69,7 @@ public class NewRelicInsightsAgentClientProvider implements NewRelicClientProvid
+     }
+ 
+     @Override
+-    public void publish(NewRelicMeterRegistry meterRegistry) {
++    public void publish(NewRelicMeterRegistry meterRegistry) { io.micrometer.jmhbench.MutationSwitch.tick(22);
+         // New Relic's Java Agent Insights API is backed by a reservoir/buffer
+         // and handles the actual publishing of events to New Relic.
+         // 1:1 mapping between Micrometer meters and New Relic events
+diff --git a/io/micrometer/observation/NoopButScopeHandlingObservation.java b/io/micrometer/observation/NoopButScopeHandlingObservation.java
+index 47ecc21..ad4dd1c 100644
+--- a/io/micrometer/observation/NoopButScopeHandlingObservation.java
++++ b/io/micrometer/observation/NoopButScopeHandlingObservation.java
+@@ -41,7 +41,7 @@ final class NoopButScopeHandlingObservation implements Observation {
+     }
+ 
+     @Override
+-    public Observation lowCardinalityKeyValue(KeyValue keyValue) {
++    public Observation lowCardinalityKeyValue(KeyValue keyValue) { io.micrometer.jmhbench.MutationSwitch.tick(23);
+         return this;
+     }
+ 
+diff --git a/io/micrometer/opentsdb/OpenTSDBDistributionSummary.java b/io/micrometer/opentsdb/OpenTSDBDistributionSummary.java
+index bfd78ab..87d1d1c 100644
+--- a/io/micrometer/opentsdb/OpenTSDBDistributionSummary.java
++++ b/io/micrometer/opentsdb/OpenTSDBDistributionSummary.java
+@@ -81,7 +81,7 @@ public class OpenTSDBDistributionSummary extends AbstractDistributionSummary {
+     }
+ 
+     @Override
+-    protected void recordNonNegative(double amount) {
++    protected void recordNonNegative(double amount) { io.micrometer.jmhbench.MutationSwitch.tick(24);
+         count.increment();
+         this.amount.add(amount);
+         max.record(amount);
+diff --git a/io/micrometer/prometheus/MicrometerCollector.java b/io/micrometer/prometheus/MicrometerCollector.java
+index 92d76d9..167ba5f 100644
+--- a/io/micrometer/prometheus/MicrometerCollector.java
++++ b/io/micrometer/prometheus/MicrometerCollector.java
+@@ -61,7 +61,7 @@ class MicrometerCollector extends Collector implements Collector.Describable {
+         children.remove(tagValues);
+     }
+ 
+-    public boolean isEmpty() {
++    public boolean isEmpty() { io.micrometer.jmhbench.MutationSwitch.tick(25);
+         return children.isEmpty();
+     }
+ 
+diff --git a/io/micrometer/prometheusmetrics/DefaultExemplarSamplerFactory.java b/io/micrometer/prometheusmetrics/DefaultExemplarSamplerFactory.java
+index fd5786d..a577c84 100644
+--- a/io/micrometer/prometheusmetrics/DefaultExemplarSamplerFactory.java
++++ b/io/micrometer/prometheusmetrics/DefaultExemplarSamplerFactory.java
+@@ -46,7 +46,7 @@ class DefaultExemplarSamplerFactory implements ExemplarSamplerFactory {
+     }
+ 
+     @Override
+-    public ExemplarSampler createExemplarSampler(int numberOfExemplars) {
++    public ExemplarSampler createExemplarSampler(int numberOfExemplars) { io.micrometer.jmhbench.MutationSwitch.tick(26);
+         ExemplarSamplerConfig config = exemplarSamplerConfigsByNumberOfExemplars.computeIfAbsent(numberOfExemplars,
+                 key -> new ExemplarSamplerConfig(exemplarsProperties, numberOfExemplars));
+         return new ExemplarSampler(config, spanContext);
+diff --git a/io/micrometer/registry/otlp/OtlpCumulativeFunctionCounter.java b/io/micrometer/registry/otlp/OtlpCumulativeFunctionCounter.java
+index d683a72..e31b2a9 100644
+--- a/io/micrometer/registry/otlp/OtlpCumulativeFunctionCounter.java
++++ b/io/micrometer/registry/otlp/OtlpCumulativeFunctionCounter.java
+@@ -31,7 +31,7 @@ class OtlpCumulativeFunctionCounter<T> extends CumulativeFunctionCounter<T> impl
+     }
+ 
+     @Override
+-    public long getStartTimeNanos() {
++    public long getStartTimeNanos() { io.micrometer.jmhbench.MutationSwitch.tick(27);
+         return this.startTimeNanos;
+     }
+ 
+diff --git a/io/micrometer/signalfx/SignalFxMeterRegistry.java b/io/micrometer/signalfx/SignalFxMeterRegistry.java
+index 0d97a0b..b1f080a 100644
+--- a/io/micrometer/signalfx/SignalFxMeterRegistry.java
++++ b/io/micrometer/signalfx/SignalFxMeterRegistry.java
+@@ -106,7 +106,7 @@ public class SignalFxMeterRegistry extends StepMeterRegistry {
+     }
+ 
+     @Override
+-    protected void publish() {
++    protected void publish() { io.micrometer.jmhbench.MutationSwitch.tick(28);
+         final long timestamp = clock.wallTime();
+ 
+         AggregateMetricSender metricSender = new AggregateMetricSender(this.config.source(),
+diff --git a/io/micrometer/stackdriver/StackdriverMeterRegistry.java b/io/micrometer/stackdriver/StackdriverMeterRegistry.java
+index ad0dbc7..c1d0018 100644
+--- a/io/micrometer/stackdriver/StackdriverMeterRegistry.java
++++ b/io/micrometer/stackdriver/StackdriverMeterRegistry.java
+@@ -113,7 +113,7 @@ public class StackdriverMeterRegistry extends StepMeterRegistry {
+         start(threadFactory);
+     }
+ 
+-    public static Builder builder(StackdriverConfig config) {
++    public static Builder builder(StackdriverConfig config) { io.micrometer.jmhbench.MutationSwitch.tick(29);
+         return new Builder(config);
+     }
+ 
+diff --git a/io/micrometer/statsd/StatsdFunctionCounter.java b/io/micrometer/statsd/StatsdFunctionCounter.java
+index 7860ba5..bacb12e 100644
+--- a/io/micrometer/statsd/StatsdFunctionCounter.java
++++ b/io/micrometer/statsd/StatsdFunctionCounter.java
+@@ -42,7 +42,7 @@ public class StatsdFunctionCounter<T> extends CumulativeFunctionCounter<T> imple
+     }
+ 
+     @Override
+-    public void poll() {
++    public void poll() { io.micrometer.jmhbench.MutationSwitch.tick(30);
+         lastValue.updateAndGet(prev -> {
+             long count = (long) count();
+             sink.next(lineBuilder.count(count - prev));
+diff --git a/io/micrometer/wavefront/WavefrontDistributionSummary.java b/io/micrometer/wavefront/WavefrontDistributionSummary.java
+index 9b1827b..48bebaf 100644
+--- a/io/micrometer/wavefront/WavefrontDistributionSummary.java
++++ b/io/micrometer/wavefront/WavefrontDistributionSummary.java
+@@ -42,7 +42,7 @@ class WavefrontDistributionSummary extends CumulativeDistributionSummary {
+     }
+ 
+     @Override
+-    protected void recordNonNegative(double amount) {
++    protected void recordNonNegative(double amount) { io.micrometer.jmhbench.MutationSwitch.tick(31);
+         super.recordNonNegative(amount);
+         if (delegate != null) {
+             delegate.update(amount);

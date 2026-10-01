@@ -1,0 +1,656 @@
+diff --git a/org/flag4j/linalg/Condition.java b/org/flag4j/linalg/Condition.java
+index ac2b7cd..a2fe286 100644
+--- a/org/flag4j/linalg/Condition.java
++++ b/org/flag4j/linalg/Condition.java
+@@ -98,7 +98,7 @@ public final class Condition {
+      * {@link Double#NEGATIVE_INFINITY}.
+      * @return The condition number of {@code src} as computed using the matrix operator norm induced by vector p-norm.
+      */
+-    public static double cond(Matrix src, double p) {
++    public static double cond(Matrix src, double p) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(1);
+         if(p == 2.0 || p == -2.0) {
+             // Special case for spectral norm. No need to invert matrix explicitly.
+             Vector s = new RealSVD(false).decompose(src).getSingularValues();
+@@ -137,7 +137,7 @@ public final class Condition {
+      * {@link Double#NEGATIVE_INFINITY}.
+      * @return The condition number of {@code src} as computed using the matrix operator norm induced by vector p-norm.
+      */
+-    public static double cond(CMatrix src, double p) {
++    public static double cond(CMatrix src, double p) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(6);
+         if(p == 2.0 || p == -2.0) {
+             // Special case for spectral norm. No need to invert matrix explicitly.
+             Vector s = new ComplexSVD(false).decompose(src).getSingularValues();
+diff --git a/org/flag4j/linalg/DirectSum.java b/org/flag4j/linalg/DirectSum.java
+index 7ef10ea..ad08687 100644
+--- a/org/flag4j/linalg/DirectSum.java
++++ b/org/flag4j/linalg/DirectSum.java
+@@ -53,7 +53,7 @@ public final class DirectSum {
+      * @param B Second matrix in the direct sum.
+      * @return The result of direct summing {@code A} with {@code B}.
+      */
+-    public static Matrix directSum(Matrix A, Matrix B) {
++    public static Matrix directSum(Matrix A, Matrix B) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(11);
+         Matrix sum = new Matrix(A.numRows+B.numRows, A.numCols+B.numCols);
+ 
+         // Copy over first matrix.
+@@ -75,7 +75,7 @@ public final class DirectSum {
+      * @param B Second matrix in the direct sum.
+      * @return The result of direct summing {@code A} with {@code B}.
+      */
+-    public static Matrix directSum(Matrix A, CooMatrix B) {
++    public static Matrix directSum(Matrix A, CooMatrix B) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(16);
+         Matrix sum = new Matrix(A.numRows+B.numRows, A.numCols+B.numCols);
+ 
+         // Copy over first matrix.
+diff --git a/org/flag4j/linalg/Eigen.java b/org/flag4j/linalg/Eigen.java
+index 5d98890..fd26f6b 100644
+--- a/org/flag4j/linalg/Eigen.java
++++ b/org/flag4j/linalg/Eigen.java
+@@ -56,7 +56,7 @@ public final class Eigen {
+      * @param src The 2&times;2 matrix to compute the eigenvalues of.
+      * @return A complex vector containing the eigenvalues of the 2&times;2 {@code src} matrix.
+      */
+-    public static CVector get2x2EigenValues(Matrix src) {
++    public static CVector get2x2EigenValues(Matrix src) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(21);
+         ValidateParameters.ensureAllEqual(2, src.numRows, src.numCols);
+         return new CVector(get2x2EigenValues(src.data[0], src.data[1], src.data[2], src.data[3]));
+     }
+@@ -70,7 +70,7 @@ public final class Eigen {
+      * @param a22 Fourth entry in matrix (at index (1, 1)).
+      * @return A complex array containing the eigenvalues of the 2&times;2 {@code src} matrix.
+      */
+-    public static Complex128[] get2x2EigenValues(double a11, double a12, double a21, double a22) {
++    public static Complex128[] get2x2EigenValues(double a11, double a12, double a21, double a22) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(26);
+         // This method computes eigenvalues in a stable way which is more resilient to overflow errors than
+         // standard methods.
+         Complex128[] lambda = new Complex128[2];
+diff --git a/org/flag4j/linalg/Invert.java b/org/flag4j/linalg/Invert.java
+index 74ad0ed..8128707 100644
+--- a/org/flag4j/linalg/Invert.java
++++ b/org/flag4j/linalg/Invert.java
+@@ -68,7 +68,7 @@ public final class Invert {
+      * @throws IllegalArgumentException If the {@code src} matrix is not square.
+      * @throws SingularMatrixException If the {@code src} matrix is singular (i.e. not invertible).
+      */
+-    public static Matrix inv(Matrix src) {
++    public static Matrix inv(Matrix src) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(31);
+         return new RealExactSolver().solveIdentity(src);
+     }
+ 
+@@ -84,7 +84,7 @@ public final class Invert {
+      * @throws IllegalArgumentException If the {@code src} matrix is not square.
+      * @throws SingularMatrixException If the {@code src} matrix is singular (i.e. not invertible).
+      */
+-    public static CMatrix inv(CMatrix src) {
++    public static CMatrix inv(CMatrix src) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(36);
+         return new ComplexExactSolver().solveIdentity(src);
+     }
+ 
+diff --git a/org/flag4j/linalg/MatrixNorms.java b/org/flag4j/linalg/MatrixNorms.java
+index 7d57fba..634d554 100644
+--- a/org/flag4j/linalg/MatrixNorms.java
++++ b/org/flag4j/linalg/MatrixNorms.java
+@@ -109,7 +109,7 @@ public final class MatrixNorms {
+      * </ul>
+      * @return The Schatten p-norm of {@code src}.
+      */
+-    public static double schattenNorm(Matrix src,  double p) {
++    public static double schattenNorm(Matrix src,  double p) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(41);
+         if(p == 1.0) {
+             return nuclearNorm(src); // Nuclear norm.
+         } else if(p == 2.0) {
+@@ -139,7 +139,7 @@ public final class MatrixNorms {
+      * @return The Schatten p-norm of {@code src}.
+      * @throws IllegalArgumentException If {@code p < 1}.
+      */
+-    public static double schattenNorm(CMatrix src,  double p) {
++    public static double schattenNorm(CMatrix src,  double p) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(46);
+         ValidateParameters.ensureGreaterEq(1, p, "p");
+ 
+         if(p == 1.0) {
+diff --git a/org/flag4j/linalg/PositiveDefiniteness.java b/org/flag4j/linalg/PositiveDefiniteness.java
+index cb20d4e..c96ce35 100644
+--- a/org/flag4j/linalg/PositiveDefiniteness.java
++++ b/org/flag4j/linalg/PositiveDefiniteness.java
+@@ -61,7 +61,7 @@ public final class PositiveDefiniteness {
+      * @return {@code true} if the matrix is positive-definite; {@code false} otherwise.
+      * @see #isPosSemiDef(Matrix)
+      */
+-    public static boolean isPosDef(Matrix src) {
++    public static boolean isPosDef(Matrix src) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(50);
+         boolean result;
+         double tol = 1.0E-8; // Tolerance for considering eigenvalues positive.
+ 
+diff --git a/org/flag4j/linalg/decompositions/balance/ComplexBalancer.java b/org/flag4j/linalg/decompositions/balance/ComplexBalancer.java
+index 4b9119a..4c16a69 100644
+--- a/org/flag4j/linalg/decompositions/balance/ComplexBalancer.java
++++ b/org/flag4j/linalg/decompositions/balance/ComplexBalancer.java
+@@ -211,7 +211,7 @@ public class ComplexBalancer extends Balancer<CMatrix> {
+      * @param stop Index of the column specifying the end of the range for the row swap (exclusive).
+      */
+     @Override
+-    protected void swapRows(int rowIdx1, int rowIdx2, int start, int stop) {
++    protected void swapRows(int rowIdx1, int rowIdx2, int start, int stop) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(2);
+         DenseOps.swapRowsUnsafe(balancedMatrix.shape, balancedMatrix.data, rowIdx1, rowIdx2, start, stop);
+     }
+ 
+@@ -225,7 +225,7 @@ public class ComplexBalancer extends Balancer<CMatrix> {
+      * @param stop Index of the row specifying the end of the range for the column swap (exclusive).
+      */
+     @Override
+-    protected void swapCols(int colIdx1, int colIdx2, int start, int stop) {
++    protected void swapCols(int colIdx1, int colIdx2, int start, int stop) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(7);
+         DenseOps.swapColsUnsafe(balancedMatrix.shape, balancedMatrix.data, colIdx1, colIdx2, start, stop);
+     }
+ 
+diff --git a/org/flag4j/linalg/decompositions/balance/RealBalancer.java b/org/flag4j/linalg/decompositions/balance/RealBalancer.java
+index 6746c17..5571bb9 100644
+--- a/org/flag4j/linalg/decompositions/balance/RealBalancer.java
++++ b/org/flag4j/linalg/decompositions/balance/RealBalancer.java
+@@ -210,7 +210,7 @@ public class RealBalancer extends Balancer<Matrix> {
+      * @param stop Index of the column specifying the end of the range for the row swap (exclusive).
+      */
+     @Override
+-    protected void swapRows(int rowIdx1, int rowIdx2, int start, int stop) {
++    protected void swapRows(int rowIdx1, int rowIdx2, int start, int stop) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(12);
+         RealDenseOps.swapRowsUnsafe(balancedMatrix.shape, balancedMatrix.data, rowIdx1, rowIdx2, start, stop);
+     }
+ 
+@@ -224,7 +224,7 @@ public class RealBalancer extends Balancer<Matrix> {
+      * @param stop Index of the row specifying the end of the range for the column swap (exclusive).
+      */
+     @Override
+-    protected void swapCols(int colIdx1, int colIdx2, int start, int stop) {
++    protected void swapCols(int colIdx1, int colIdx2, int start, int stop) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(17);
+         RealDenseOps.swapColsUnsafe(balancedMatrix.shape, balancedMatrix.data, colIdx1, colIdx2, start, stop);
+     }
+ 
+diff --git a/org/flag4j/linalg/decompositions/chol/ComplexCholesky.java b/org/flag4j/linalg/decompositions/chol/ComplexCholesky.java
+index 650d06f..2f6e64e 100644
+--- a/org/flag4j/linalg/decompositions/chol/ComplexCholesky.java
++++ b/org/flag4j/linalg/decompositions/chol/ComplexCholesky.java
+@@ -104,7 +104,7 @@ public class ComplexCholesky extends Cholesky<CMatrix> {
+      * @throws LinearAlgebraException If {@code src} is not positive-definite.
+      */
+     @Override
+-    public ComplexCholesky decompose(CMatrix src) {
++    public ComplexCholesky decompose(CMatrix src) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(22);
+         if(enforceHermitian && !src.isHermitian())
+             throw new IllegalArgumentException(SYM_POS_DEF_ERR);
+         else
+diff --git a/org/flag4j/linalg/decompositions/chol/RealCholesky.java b/org/flag4j/linalg/decompositions/chol/RealCholesky.java
+index 7399591..23fca5f 100644
+--- a/org/flag4j/linalg/decompositions/chol/RealCholesky.java
++++ b/org/flag4j/linalg/decompositions/chol/RealCholesky.java
+@@ -105,7 +105,7 @@ public class RealCholesky extends Cholesky<Matrix> {
+      * @throws LinearAlgebraException If this matrix is not positive-definite.
+      */
+     @Override
+-    public RealCholesky decompose(Matrix src) {
++    public RealCholesky decompose(Matrix src) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(27);
+         if(enforceHermitian && !src.isSymmetric())
+             throw new LinearAlgebraException(SYM_POS_DEF_ERR);
+         else
+diff --git a/org/flag4j/linalg/decompositions/hess/ComplexHess.java b/org/flag4j/linalg/decompositions/hess/ComplexHess.java
+index 5f80b66..0dcc86a 100644
+--- a/org/flag4j/linalg/decompositions/hess/ComplexHess.java
++++ b/org/flag4j/linalg/decompositions/hess/ComplexHess.java
+@@ -144,7 +144,7 @@ public class ComplexHess extends ComplexUnitaryDecomposition {
+      * @throws LinearAlgebraException If {@code src} is not a square matrix.
+      */
+     @Override
+-    public ComplexHess decompose(CMatrix src) {
++    public ComplexHess decompose(CMatrix src) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(32);
+         ValidateParameters.ensureSquare(src.shape);
+         super.decompose(src);
+         return this;
+@@ -185,7 +185,7 @@ public class ComplexHess extends ComplexUnitaryDecomposition {
+      * @return A reference to this decomposer.
+      * @throws LinearAlgebraException If {@code src} is not a square matrix.
+      */
+-    public ComplexHess decompose(CMatrix src, int iLow, int iHigh) {
++    public ComplexHess decompose(CMatrix src, int iLow, int iHigh) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(37);
+         ValidateParameters.ensureSquare(src.shape);
+         super.decompose(src, iLow, iHigh); // Compute the decomposition.
+         return this;
+diff --git a/org/flag4j/linalg/decompositions/hess/HermHess.java b/org/flag4j/linalg/decompositions/hess/HermHess.java
+index 45b3ec1..28ff297 100644
+--- a/org/flag4j/linalg/decompositions/hess/HermHess.java
++++ b/org/flag4j/linalg/decompositions/hess/HermHess.java
+@@ -147,7 +147,7 @@ public class HermHess extends ComplexHess {
+      * @return A reference to this decomposer.
+      */
+     @Override
+-    public HermHess decompose(CMatrix src) {
++    public HermHess decompose(CMatrix src) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(42);
+         super.decompose(src);
+         return this;
+     }
+@@ -158,7 +158,7 @@ public class HermHess extends ComplexHess {
+      * @return The Hermitian tri-diagonal (Hessenberg) matrix, <span class="latex-inline">H</span>, from this decomposition.
+      */
+     @Override
+-    public CMatrix getH() {
++    public CMatrix getH() { org.flag4j.linalg.jmhbench.MutationSwitch.tick(47);
+         CMatrix H = new CMatrix(numRows);
+ 
+         H.data[0] = transformMatrix.data[0];
+diff --git a/org/flag4j/linalg/jmhbench/MutationSwitch.java b/org/flag4j/linalg/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..d89d9f1
+--- /dev/null
++++ b/org/flag4j/linalg/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.flag4j.linalg.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/flag4j/linalg/ops/MatrixMultiplyDispatcher.java b/org/flag4j/linalg/ops/MatrixMultiplyDispatcher.java
+index bf67be9..cc948c5 100644
+--- a/org/flag4j/linalg/ops/MatrixMultiplyDispatcher.java
++++ b/org/flag4j/linalg/ops/MatrixMultiplyDispatcher.java
+@@ -68,7 +68,7 @@ public final class MatrixMultiplyDispatcher {
+      * @param b Vector to multiply.
+      * @return The result of the matrix-vector multiplication.
+      */
+-    public static Complex128[] dispatch(Matrix A, CVector b) {
++    public static Complex128[] dispatch(Matrix A, CVector b) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(43);
+         Shape bMatShape = new Shape(b.totalEntries().intValue(), 1);
+         ValidateParameters.ensureMatMultShapes(A.shape, bMatShape);
+ 
+@@ -102,7 +102,7 @@ public final class MatrixMultiplyDispatcher {
+      * @param b Vector to multiply.
+      * @return The result of the matrix-vector multiplication.
+      */
+-    public static CVector dispatch(CMatrix A, Vector b) {
++    public static CVector dispatch(CMatrix A, Vector b) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(48);
+         ValidateParameters.ensureMatMultShapes(A.shape, b.shape);
+ 
+         AlgorithmName algorithm;
+diff --git a/org/flag4j/linalg/ops/dense/real/RealDenseSetOps.java b/org/flag4j/linalg/ops/dense/real/RealDenseSetOps.java
+index 5cc392d..fc37d24 100644
+--- a/org/flag4j/linalg/ops/dense/real/RealDenseSetOps.java
++++ b/org/flag4j/linalg/ops/dense/real/RealDenseSetOps.java
+@@ -41,7 +41,7 @@ public final class RealDenseSetOps {
+      * @param dest Destination array for values.
+      * @throws IllegalArgumentException If the source and destination arrays have different number of total data.
+      */
+-    public static void setValues(Double[] src, final double[] dest) {
++    public static void setValues(Double[] src, final double[] dest) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(3);
+         ValidateParameters.ensureArrayLengthsEq(src.length, dest.length);
+ 
+         for(int i=0; i<src.length; i++) {
+@@ -57,7 +57,7 @@ public final class RealDenseSetOps {
+      * @param dest Destination array for values.
+      * @throws IllegalArgumentException If the source and destination arrays have different number of total data.
+      */
+-    public static void setValues(Integer[] src, final double[] dest) {
++    public static void setValues(Integer[] src, final double[] dest) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(8);
+         ValidateParameters.ensureArrayLengthsEq(src.length, dest.length);
+ 
+         for(int i=0; i<src.length; i++) {
+diff --git a/org/flag4j/linalg/ops/sparse/SparseUtils.java b/org/flag4j/linalg/ops/sparse/SparseUtils.java
+index 9ca8a61..0b282f9 100644
+--- a/org/flag4j/linalg/ops/sparse/SparseUtils.java
++++ b/org/flag4j/linalg/ops/sparse/SparseUtils.java
+@@ -57,7 +57,7 @@ public final class SparseUtils {
+      * @return The flattened indices of the sparse COO tensor.
+      * @see #cooFlattenIndices(Shape, int[][], int)
+      */
+-    public static int[][] cooFlattenIndices(Shape shape, int[][] indices) {
++    public static int[][] cooFlattenIndices(Shape shape, int[][] indices) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(13);
+         int[][] destIndices = new int[indices.length][1];
+ 
+         for(int i=0, size=indices.length; i<size; i++)
+@@ -75,7 +75,7 @@ public final class SparseUtils {
+      * @param axis Axis along which to flatten the tensor.
+      * @return The non-zero indices flattened along the specified {@code axis}.
+      */
+-    public static int[][] cooFlattenIndices(Shape shape, int[][] indices, int axis) {
++    public static int[][] cooFlattenIndices(Shape shape, int[][] indices, int axis) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(18);
+         ValidateParameters.ensureValidAxes(shape, axis);
+         int[][] destIndices = new int[indices.length][indices[0].length];
+ 
+diff --git a/org/flag4j/linalg/ops/sparse/coo/CooGetSet.java b/org/flag4j/linalg/ops/sparse/coo/CooGetSet.java
+index 86db59a..53004d1 100644
+--- a/org/flag4j/linalg/ops/sparse/coo/CooGetSet.java
++++ b/org/flag4j/linalg/ops/sparse/coo/CooGetSet.java
+@@ -65,7 +65,7 @@ public final class CooGetSet {
+      */
+     public static <T> SparseMatrixData<T> setRow(Shape srcShape, T[] srcEntries, int[] rowIndices, int[] colIndices,
+                                                  int rowIdx,
+-                                                 int size, T[] row, int[] indices) {
++                                                 int size, T[] row, int[] indices) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(23);
+         if(srcShape.get(1) != size) {
+             throw new IllegalArgumentException("Cannot set row of matrix with shape " + srcShape
+                     + " with a vector of size " + size + ".");
+@@ -111,7 +111,7 @@ public final class CooGetSet {
+      */
+     public static <T> SparseMatrixData<T> setCol(Shape srcShape, T[] srcEntries, int[] rowIndices, int[] colIndices,
+                                                  int colIdx,
+-                                                 int size, T[] col, int[] indices) {
++                                                 int size, T[] col, int[] indices) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(28);
+         ValidateParameters.validateArrayIndices(srcShape.get(1), colIdx);
+         ValidateParameters.ensureAllEqual(srcShape.get(0), size);
+ 
+diff --git a/org/flag4j/linalg/ops/sparse/coo/real/RealCooMatrixGetSet.java b/org/flag4j/linalg/ops/sparse/coo/real/RealCooMatrixGetSet.java
+index 7099ffa..d3bf47f 100644
+--- a/org/flag4j/linalg/ops/sparse/coo/real/RealCooMatrixGetSet.java
++++ b/org/flag4j/linalg/ops/sparse/coo/real/RealCooMatrixGetSet.java
+@@ -56,7 +56,7 @@ public final class RealCooMatrixGetSet {
+      * @param col Column index of the value to get from the sparse matrix.
+      * @return The value in the sparse matrix at the specified indices.
+      */
+-    public static double matrixGet(CooMatrix src, int row, int col) {
++    public static double matrixGet(CooMatrix src, int row, int col) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(33);
+         int idx = SparseElementSearch.matrixBinarySearch(src.rowIndices, src.colIndices, row, col);
+         return idx<0 ? 0 : src.data[idx];
+     }
+@@ -70,7 +70,7 @@ public final class RealCooMatrixGetSet {
+      * @param value Value to set.
+      * @return The
+      */
+-    public static CooMatrix matrixSet(CooMatrix src, int row, int col, double value) {
++    public static CooMatrix matrixSet(CooMatrix src, int row, int col, double value) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(38);
+         // Find position of row index within the row indices if it exits.
+         int idx = SparseElementSearch.matrixBinarySearch(src.rowIndices, src.colIndices, row, col);
+         double[] destEntries;
+diff --git a/org/flag4j/linalg/solvers/exact/ComplexExactSolver.java b/org/flag4j/linalg/solvers/exact/ComplexExactSolver.java
+index 79080e5..b534353 100644
+--- a/org/flag4j/linalg/solvers/exact/ComplexExactSolver.java
++++ b/org/flag4j/linalg/solvers/exact/ComplexExactSolver.java
+@@ -96,7 +96,7 @@ public class ComplexExactSolver extends ExactSolver<CMatrix, CVector> {
+      * to the vector {@code b}.
+      */
+     @Override
+-    protected CVector permuteRows(CVector b) {
++    protected CVector permuteRows(CVector b) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(4);
+         return rowPermute.leftMult(b);
+     }
+ 
+@@ -109,7 +109,7 @@ public class ComplexExactSolver extends ExactSolver<CMatrix, CVector> {
+      * to the matrix {@code B}.
+      */
+     @Override
+-    protected CMatrix permuteRows(CMatrix B) {
++    protected CMatrix permuteRows(CMatrix B) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(9);
+         return rowPermute.leftMult(B);
+     }
+ }
+diff --git a/org/flag4j/linalg/solvers/exact/ComplexExactTensorSolver.java b/org/flag4j/linalg/solvers/exact/ComplexExactTensorSolver.java
+index 3994fb5..c362db3 100644
+--- a/org/flag4j/linalg/solvers/exact/ComplexExactTensorSolver.java
++++ b/org/flag4j/linalg/solvers/exact/ComplexExactTensorSolver.java
+@@ -64,7 +64,7 @@ public class ComplexExactTensorSolver extends ExactTensorSolver<CTensor, CMatrix
+      * @return A matrix with the same data as tensor {@code A} with shape (prod, prod).
+      */
+     @Override
+-    protected CMatrix initMatrix(CTensor A, int prod) {
++    protected CMatrix initMatrix(CTensor A, int prod) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(14);
+         return new CMatrix(prod, prod, A.data);
+     }
+ 
+@@ -76,7 +76,7 @@ public class ComplexExactTensorSolver extends ExactTensorSolver<CTensor, CMatrix
+      * @return Flattens tensor {@code B} and converts to a vector.
+      */
+     @Override
+-    protected CVector initVector(CTensor B) {
++    protected CVector initVector(CTensor B) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(19);
+         return new CVector(B.data);
+     }
+ 
+diff --git a/org/flag4j/linalg/solvers/exact/RealExactSolver.java b/org/flag4j/linalg/solvers/exact/RealExactSolver.java
+index 0102db4..fca1685 100644
+--- a/org/flag4j/linalg/solvers/exact/RealExactSolver.java
++++ b/org/flag4j/linalg/solvers/exact/RealExactSolver.java
+@@ -97,7 +97,7 @@ public class RealExactSolver extends ExactSolver<Matrix, Vector> {
+      * to the vector {@code b}.
+      */
+     @Override
+-    protected Vector permuteRows(Vector b) {
++    protected Vector permuteRows(Vector b) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(24);
+         return rowPermute.leftMult(b);
+     }
+ 
+@@ -110,7 +110,7 @@ public class RealExactSolver extends ExactSolver<Matrix, Vector> {
+      * to the matrix {@code B}.
+      */
+     @Override
+-    protected Matrix permuteRows(Matrix B) {
++    protected Matrix permuteRows(Matrix B) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(29);
+         return rowPermute.leftMult(B);
+     }
+ }
+diff --git a/org/flag4j/linalg/solvers/exact/RealExactTensorSolver.java b/org/flag4j/linalg/solvers/exact/RealExactTensorSolver.java
+index 4d62265..aea2cb8 100644
+--- a/org/flag4j/linalg/solvers/exact/RealExactTensorSolver.java
++++ b/org/flag4j/linalg/solvers/exact/RealExactTensorSolver.java
+@@ -63,7 +63,7 @@ public class RealExactTensorSolver extends ExactTensorSolver<Tensor, Matrix, Vec
+      * @return A matrix with the same data as tensor {@code A} with shape (prod, prod).
+      */
+     @Override
+-    protected Matrix initMatrix(Tensor A, int prod) {
++    protected Matrix initMatrix(Tensor A, int prod) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(34);
+         return new Matrix(prod, prod, A.data);
+     }
+ 
+@@ -75,7 +75,7 @@ public class RealExactTensorSolver extends ExactTensorSolver<Tensor, Matrix, Vec
+      * @return Flattens tensor {@code B} and converts to a vector.
+      */
+     @Override
+-    protected Vector initVector(Tensor B) {
++    protected Vector initVector(Tensor B) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(39);
+         return new Vector(B.data);
+     }
+ 
+diff --git a/org/flag4j/linalg/solvers/exact/triangular/ComplexBackSolver.java b/org/flag4j/linalg/solvers/exact/triangular/ComplexBackSolver.java
+index 6c3224f..038380c 100644
+--- a/org/flag4j/linalg/solvers/exact/triangular/ComplexBackSolver.java
++++ b/org/flag4j/linalg/solvers/exact/triangular/ComplexBackSolver.java
+@@ -78,7 +78,7 @@ public class ComplexBackSolver extends BackSolver<CMatrix, CVector, Complex128[]
+      * @return A reference to this back solver instance.
+      */
+     @Override
+-    public ComplexBackSolver setCheckSingular(boolean checkSingular) {
++    public ComplexBackSolver setCheckSingular(boolean checkSingular) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(44);
+         super.setCheckSingular(checkSingular);
+         return this;
+     }
+@@ -87,7 +87,7 @@ public class ComplexBackSolver extends BackSolver<CMatrix, CVector, Complex128[]
+     /**
+      * Gets the determinant computed during the last solve.
+      */
+-    public Complex128 getDet() {
++    public Complex128 getDet() { org.flag4j.linalg.jmhbench.MutationSwitch.tick(49);
+         return det;
+     }
+ 
+diff --git a/org/flag4j/linalg/transformations/Givens.java b/org/flag4j/linalg/transformations/Givens.java
+index b65a7d9..464f9bb 100644
+--- a/org/flag4j/linalg/transformations/Givens.java
++++ b/org/flag4j/linalg/transformations/Givens.java
+@@ -110,7 +110,7 @@ public final class Givens {
+      * <span class="latex-inline">(i, j)</span> plane.
+      * @throws IndexOutOfBoundsException If {@code i} or {@code j} is greater than or equal to {@code size}.
+      */
+-    public static Matrix getGeneralRotator(int size, int i, int j, double theta) {
++    public static Matrix getGeneralRotator(int size, int i, int j, double theta) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(5);
+         ValidateParameters.validateArrayIndices(size, i, j);
+         if(i==j) throw new IllegalArgumentException("The indices i and j cannot be equal.");
+ 
+@@ -150,7 +150,7 @@ public final class Givens {
+      * <span class="latex-inline">r<sub>i</sub> = 0</span>.
+      * @throws IndexOutOfBoundsException If {@code i} is not in the range [0, v.size).
+      */
+-    public static Matrix getRotator(Vector v, int i) {
++    public static Matrix getRotator(Vector v, int i) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(10);
+         return getRotator(v.data, i);
+     }
+ 
+diff --git a/org/flag4j/linalg/transformations/Householder.java b/org/flag4j/linalg/transformations/Householder.java
+index 76fd51e..ee5d0c1 100644
+--- a/org/flag4j/linalg/transformations/Householder.java
++++ b/org/flag4j/linalg/transformations/Householder.java
+@@ -52,7 +52,7 @@ public final class Householder {
+      * @return A transformation matrix which describes a reflection through a plane containing the origin with the
+      * specified {@code normal} vector, i.e. a Householder reflector.
+      */
+-    public static Matrix getReflector(Vector normal) {
++    public static Matrix getReflector(Vector normal) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(15);
+         Vector v;
+ 
+         double signedNorm = -Math.copySign(VectorNorms.norm(normal.data), normal.data[0]);
+@@ -85,7 +85,7 @@ public final class Householder {
+      * <span class="latex-inline">H = I-2vv<sup>T</sup></span> which reflects across a plane
+      * normal to {@code normal}.
+      */
+-    public static Vector getVector(Vector normal) {
++    public static Vector getVector(Vector normal) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(20);
+         double normX = VectorNorms.norm(normal.data);
+         double x1 = normal.data[0];
+         normX = (x1 >= 0) ? -normX : normX;
+diff --git a/org/flag4j/linalg/transformations/Projection.java b/org/flag4j/linalg/transformations/Projection.java
+index dce0f50..cfb4e31 100644
+--- a/org/flag4j/linalg/transformations/Projection.java
++++ b/org/flag4j/linalg/transformations/Projection.java
+@@ -75,7 +75,7 @@ public final class Projection {
+      * @throws IllegalArgumentException If {@code aspectRatio}  is not positive.
+      * @throws AssertionError If {@code nearClip!=farClip}.
+      */
+-    public static Matrix getPerspective(double fov, double aspectRatio, double nearClip, double farClip) {
++    public static Matrix getPerspective(double fov, double aspectRatio, double nearClip, double farClip) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(25);
+         ValidateParameters.ensureAllGreaterEq(0, aspectRatio);
+         if(nearClip >= farClip)
+             throw new IllegalArgumentException("nearClip cannot be equal to or greater than farClip.");
+@@ -107,7 +107,7 @@ public final class Projection {
+      * @throws IllegalArgumentException If {@code aspectRatio}  is not positive.
+      * @throws AssertionError If {@code nearClip!=farClip}.
+      */
+-    public static Matrix getPerspective(double fovX, double fovY, double aspectRatio, double nearClip, double farClip){
++    public static Matrix getPerspective(double fovX, double fovY, double aspectRatio, double nearClip, double farClip){ org.flag4j.linalg.jmhbench.MutationSwitch.tick(30);
+         ValidateParameters.ensureAllGreaterEq(0, aspectRatio);
+         if(nearClip >= farClip)
+             throw new IllegalArgumentException("nearClip cannot be equal to or greater than farClip.");
+diff --git a/org/flag4j/linalg/transformations/Rotation.java b/org/flag4j/linalg/transformations/Rotation.java
+index 8520069..0994404 100644
+--- a/org/flag4j/linalg/transformations/Rotation.java
++++ b/org/flag4j/linalg/transformations/Rotation.java
+@@ -131,7 +131,7 @@ public final class Rotation {
+      * @param theta The radians to rotate a 2D vector by.
+      * @return A rotation matrix which rotates (counterclockwise) 2D column vectors {@code theta} radians.
+      */
+-    public static Matrix rotate2D(double theta) {
++    public static Matrix rotate2D(double theta) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(35);
+         if(theta == 0) return Matrix.I(2);
+ 
+         double c = Math.cos(theta);
+@@ -166,7 +166,7 @@ public final class Rotation {
+      * @param theta The radians to rotate a 3D vector about the <span class="latex-inline">x</span>-axis by.
+      * @return matrix which rotates 3D column vectors about the <span class="latex-inline">x</span>-axis {@code theta} radians.
+      */
+-    public static Matrix rotateX3D(double theta) {
++    public static Matrix rotateX3D(double theta) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(40);
+         if(theta == 0) return Matrix.I(3);
+ 
+         double c = Math.cos(theta);
+diff --git a/org/flag4j/linalg/transformations/View.java b/org/flag4j/linalg/transformations/View.java
+index 5f8a3af..1277685 100644
+--- a/org/flag4j/linalg/transformations/View.java
++++ b/org/flag4j/linalg/transformations/View.java
+@@ -48,7 +48,7 @@ public final class View {
+      * is the direction of the upwards vector in world coordinates.
+      * @throws IllegalArgumentException If any of the argument vectors do not have length 3.
+      */
+-    public static Matrix lookAt(Vector cameraPos, Vector center, Vector up) {
++    public static Matrix lookAt(Vector cameraPos, Vector center, Vector up) { org.flag4j.linalg.jmhbench.MutationSwitch.tick(45);
+         ValidateParameters.ensureAllEqual(3, cameraPos.size, center.size, up.size);
+ 
+         Vector f = center.sub(cameraPos).normalize();

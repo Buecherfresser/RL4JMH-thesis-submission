@@ -1,0 +1,77 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableMapNotification;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+/**
+ * JMH benchmark for {@link ObservableMapNotification}.
+ *
+ * The benchmark measures the throughput (operations per second) of the operator
+ * when applied to a simple upstream source and lightweight mapping functions.
+ *
+ * Best‑practice notes:
+ * • {@link State.Scope#Thread} is used to avoid sharing mutable state between threads.
+ * • All objects are created in {@link Setup} to exclude allocation cost from the measurement.
+ * • {@link Blackhole} consumes the emitted {@link ObservableSource}s to prevent dead‑code elimination.
+ * • Warm‑up and measurement iterations are configured to let the JIT stabilize.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@State(Scope.Thread)
+public class ObservableMapNotificationBenchmark {
+
+    /** Upstream source emitting a fixed number of integers. */
+    private Observable<Integer> upstream;
+
+    /** Operator under test. */
+    private Observable<ObservableSource<Integer>> operator;
+
+    /** Mapping function for onNext – returns a simple Observable emitting the transformed value. */
+    private Function<Integer, ObservableSource<Integer>> onNextMapper;
+
+    /** Mapping function for onError – returns a fallback Observable. */
+    private Function<Throwable, ObservableSource<Integer>> onErrorMapper;
+
+    /** Supplier for onComplete – returns a terminal Observable. */
+    private Supplier<ObservableSource<Integer>> onCompleteSupplier;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A modest sized upstream; adjust size if you need a longer stream.
+        upstream = Observable.range(1, 1_000);
+
+        onNextMapper = v -> Observable.just(v * 2);
+        onErrorMapper = e -> Observable.just(-1);
+        onCompleteSupplier = () -> Observable.just(0);
+
+        // Create the operator instance. The generic types are inferred.
+        operator = new ObservableMapNotification<>(
+                upstream,
+                onNextMapper,
+                onErrorMapper,
+                onCompleteSupplier);
+    }
+
+    /**
+     * Executes the operator and consumes all emitted inner {@link ObservableSource}s.
+     *
+     * Using {@code blockingSubscribe} ensures the benchmark measures the full
+     * end‑to‑end processing of the stream without introducing additional
+     * asynchronous coordination overhead.
+     */
+    @Benchmark
+    public void mapNotificationThroughput(Blackhole bh) {
+        operator.blockingSubscribe(bh::consume);
+    }
+}
+```

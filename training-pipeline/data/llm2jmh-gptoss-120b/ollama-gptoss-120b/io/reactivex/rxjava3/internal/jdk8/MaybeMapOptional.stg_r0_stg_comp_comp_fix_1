@@ -1,0 +1,80 @@
+```
+package io.reactivex.rxjava3.internal.jdk8;
+
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmarks for {@link MaybeMapOptional}.
+ *
+ * <p>Two scenarios are measured:
+ * <ul>
+ *   <li>mapper returns a present {@link Optional} (the {@code onSuccess} path)</li>
+ *   <li>mapper returns an empty {@link Optional} (the {@code onComplete} path)</li>
+ * </ul>
+ *
+ * <p>The benchmarks use {@link Maybe#blockingGet()} to force a synchronous
+ * subscription, which eliminates the influence of asynchronous scheduling and
+ * focuses the measurement on the operator's overhead.
+ *
+ * <p>Best‑practice JMH settings are applied:
+ * <ul>
+ *   <li>5 warm‑up iterations to let the JIT stabilize</li>
+ *   <li>10 measurement iterations for reliable statistics</li>
+ *   <li>3 forks to reduce JVM start‑up noise</li>
+ *   <li>Throughput mode (operations per second)</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(3)
+@State(Scope.Thread)
+public class MaybeMapOptionalBenchmark {
+
+    /** Source that emits a single integer value. */
+    private Maybe<Integer> source;
+
+    /** Mapper that returns a present Optional (value * 2). */
+    private Function<Integer, Optional<? extends Integer>> mapperPresent;
+
+    /** Mapper that always returns an empty Optional. */
+    private Function<Integer, Optional<? extends Integer>> mapperEmpty;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        source = Maybe.just(1);
+        mapperPresent = v -> Optional.of(v * 2);
+        mapperEmpty = v -> Optional.empty();
+    }
+
+    /**
+     * Benchmark the {@code onSuccess} path where the mapper returns a present Optional.
+     *
+     * @param bh Blackhole to consume the result and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void mapPresent(Blackhole bh) {
+        Maybe<Integer> mapped = new MaybeMapOptional<Integer, Integer>(source, mapperPresent);
+        Integer result = mapped.blockingGet(); // always succeeds in this scenario
+        bh.consume(result);
+    }
+
+    /**
+     * Benchmark the {@code onComplete} path where the mapper returns an empty Optional.
+     *
+     * @param bh Blackhole to consume the result (null) and prevent dead‑code elimination.
+     */
+    @Benchmark
+    public void mapEmpty(Blackhole bh) {
+        Maybe<Integer> mapped = new MaybeMapOptional<Integer, Integer>(source, mapperEmpty);
+        Integer result = mapped.blockingGet(); // returns null when empty
+        bh.consume(result);
+    }
+}
+```

@@ -1,0 +1,85 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.operators.maybe;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.MaybeSource;
+import io.reactivex.rxjava3.internal.operators.maybe.MaybeConcatIterable;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
+
+/**
+ * Benchmark for {@link MaybeConcatIterable} measuring the throughput of concatenating
+ * a large number of {@link Maybe} sources.
+ *
+ * The benchmark creates a fixed list of {@code Maybe.just(i)} sources and repeatedly
+ * subscribes a {@link TestSubscriber} to the {@code MaybeConcatIterable}. The subscriber
+ * blocks until the stream terminates to ensure the whole pipeline is executed.
+ *
+ * Best practices applied:
+ * - {@code @State(Scope.Thread)} isolates benchmark state per thread.
+ * - {@code @Setup(Level.Trial)} prepares immutable test data once per trial.
+ * - {@code @BenchmarkMode(Mode.Throughput)} reports operations per second.
+ * - {@code @OutputTimeUnit(TimeUnit.SECONDS)} makes the result easy to interpret.
+ * - The benchmark uses {@code Blackhole.consumeCPU} only when needed (not required here).
+ * - All allocations are performed in the setup phase to avoid measuring allocation overhead.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Thread)
+public class MaybeConcatIterableBenchmark {
+
+    /** Number of Maybe sources concatenated in each benchmark iteration. */
+    @Param({"100", "1000", "10000"})
+    public int sourceCount;
+
+    /** The Flowable under test. */
+    private MaybeConcatIterable<Integer> concatFlowable;
+
+    /** Reusable TestSubscriber to avoid allocation per iteration. */
+    private TestSubscriber<Integer> testSubscriber;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        List<MaybeSource<Integer>> sources = new ArrayList<>(sourceCount);
+        for (int i = 0; i < sourceCount; i++) {
+            // Using Maybe.just to have a deterministic, non‑empty source.
+            sources.add(Maybe.just(i));
+        }
+        concatFlowable = new MaybeConcatIterable<>(sources);
+        testSubscriber = new TestSubscriber<>();
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        // No resources to release, but method kept for symmetry and future extensions.
+        concatFlowable = null;
+        testSubscriber = null;
+    }
+
+    /**
+     * Subscribes to the {@link MaybeConcatIterable} and blocks until completion.
+     *
+     * The method returns the {@link TestSubscriber} to prevent dead‑code elimination.
+     */
+    @Benchmark
+    public TestSubscriber<Integer> concatAndConsume() throws Exception {
+        // Reset the subscriber to a clean state for each iteration.
+        testSubscriber.cancel(); // ensure any previous subscription is disposed
+        testSubscriber = new TestSubscriber<>();
+
+        concatFlowable.subscribe(testSubscriber);
+
+        // Wait for the whole concatenated sequence to finish.
+        testSubscriber.awaitDone(1, TimeUnit.MINUTES);
+        // Verify that no error occurred (optional, can be omitted for pure throughput).
+        testSubscriber.assertNoErrors();
+
+        return testSubscriber;
+    }
+}
+```

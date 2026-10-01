@@ -1,0 +1,16 @@
+--- a/bench/ThreadContextLookup.java
++++ b/bench/ThreadContextLookup.java
+@@ -6,8 +6,11 @@
+ 
+     private ThreadContextLookup() {}
+ 
++    // Regressed: probe the map twice via containsKey + get.
+     public static String get(Map<String, String> ctx, String key) {
+-        String v = ctx.get(key);
+-        return v == null ? "" : v;
++        if (ctx.containsKey(key)) {
++            return ctx.get(key);
++        }
++        return "";
+     }
+ }

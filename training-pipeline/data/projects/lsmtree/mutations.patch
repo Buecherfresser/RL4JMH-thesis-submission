@@ -1,0 +1,606 @@
+diff --git a/com/indeed/lsmtree/core/BloomFilter.java b/com/indeed/lsmtree/core/BloomFilter.java
+index c1aace5..c4d7542 100644
+--- a/com/indeed/lsmtree/core/BloomFilter.java
++++ b/com/indeed/lsmtree/core/BloomFilter.java
+@@ -169,11 +169,11 @@ public final class BloomFilter {
+         }
+ 
+         @Override
+-        public void close() throws IOException {
++        public void close() throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(13);
+             addressSpace.close();
+         }
+ 
+-        public long sizeInBytes() {
++        public long sizeInBytes() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(16);
+             return size;
+         }
+     }
+diff --git a/com/indeed/lsmtree/core/FilteredGeneration.java b/com/indeed/lsmtree/core/FilteredGeneration.java
+index 9bff19e..2c97167 100644
+--- a/com/indeed/lsmtree/core/FilteredGeneration.java
++++ b/com/indeed/lsmtree/core/FilteredGeneration.java
+@@ -51,14 +51,14 @@ public final class FilteredGeneration<K, V> implements Generation<K, V> {
+         this.ordering = Ordering.from(generation.getComparator());
+         checkMax = new F<Entry<K, V>, Boolean>() {
+             @Override
+-            public Boolean f(Entry<K, V> kvEntry) {
++            public Boolean f(Entry<K, V> kvEntry) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(19);
+                 final int cmp = ordering.compare(kvEntry.getKey(), FilteredGeneration.this.maxKey);
+                 return (cmp <= 0) & ((cmp != 0) | FilteredGeneration.this.maxInclusive);
+             }
+         };
+         checkMin = new F<Entry<K, V>, Boolean>() {
+             @Override
+-            public Boolean f(Entry<K, V> kvEntry) {
++            public Boolean f(Entry<K, V> kvEntry) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(22);
+                 final int cmp = ordering.compare(kvEntry.getKey(), FilteredGeneration.this.minKey);
+                 return (cmp >= 0) & ((cmp != 0) | FilteredGeneration.this.minInclusive);
+             }
+diff --git a/com/indeed/lsmtree/core/ImmutableBTreeIndex.java b/com/indeed/lsmtree/core/ImmutableBTreeIndex.java
+index bd5c631..52da3bc 100644
+--- a/com/indeed/lsmtree/core/ImmutableBTreeIndex.java
++++ b/com/indeed/lsmtree/core/ImmutableBTreeIndex.java
+@@ -394,7 +394,7 @@ public final class ImmutableBTreeIndex {
+         }
+ 
+         @Override
+-        public @Nullable Boolean isDeleted(final K key) {
++        public @Nullable Boolean isDeleted(final K key) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(25);
+             final Entry<K,V> entry = get(key);
+             return entry == null ? null : (entry.isDeleted() ? Boolean.TRUE : Boolean.FALSE);
+         }
+@@ -425,7 +425,7 @@ public final class ImmutableBTreeIndex {
+             }
+         }
+ 
+-        public Entry<K, V> first() throws IOException {
++        public Entry<K, V> first() throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(28);
+             try {
+                 final Block valueBlock = rootBlock().getFirstValueBlock();
+                 return valueBlock.dataBlock.getEntry(0);
+diff --git a/com/indeed/lsmtree/core/ItUtil.java b/com/indeed/lsmtree/core/ItUtil.java
+index 57891f6..71c1741 100644
+--- a/com/indeed/lsmtree/core/ItUtil.java
++++ b/com/indeed/lsmtree/core/ItUtil.java
+@@ -35,11 +35,11 @@ import java.util.List;
+ 
+ public final class ItUtil {
+ 
+-    public static <A> Iterable<A> iterable(final Iterator<A> it) {
++    public static <A> Iterable<A> iterable(final Iterator<A> it) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(1);
+         return new Iterable<A>() {
+             boolean used = false;
+             @Override
+-            public Iterator<A> iterator() {
++            public Iterator<A> iterator() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(4);
+                 if (used) throw new IllegalStateException("iterator may not be called more than once");
+                 used = true;
+                 return it;
+diff --git a/com/indeed/lsmtree/core/MergingIterator.java b/com/indeed/lsmtree/core/MergingIterator.java
+index 04d4b69..9d839a8 100644
+--- a/com/indeed/lsmtree/core/MergingIterator.java
++++ b/com/indeed/lsmtree/core/MergingIterator.java
+@@ -81,7 +81,7 @@ public final class MergingIterator<K,V> extends AbstractIterator<Generation.Entr
+     }
+ 
+     @Override
+-    protected Generation.Entry<K, V> computeNext() {
++    protected Generation.Entry<K, V> computeNext() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(31);
+         if (heap.isEmpty()) {
+             return endOfData();
+         }
+diff --git a/com/indeed/lsmtree/core/ReverseGeneration.java b/com/indeed/lsmtree/core/ReverseGeneration.java
+index d788a61..c97d20a 100644
+--- a/com/indeed/lsmtree/core/ReverseGeneration.java
++++ b/com/indeed/lsmtree/core/ReverseGeneration.java
+@@ -42,12 +42,12 @@ public final class ReverseGeneration<K, V> implements Generation<K, V> {
+         return wrapped.get(key);
+     }
+ 
+-    public Boolean isDeleted(final K key) {
++    public Boolean isDeleted(final K key) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(34);
+         return wrapped.isDeleted(key);
+     }
+ 
+     @Override
+-    public Generation<K, V> head(K end, boolean inclusive) {
++    public Generation<K, V> head(K end, boolean inclusive) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(37);
+         return new FilteredGeneration<K, V>(this, closeable.copy(), null, false, end, inclusive);
+     }
+ 
+diff --git a/com/indeed/lsmtree/core/StableGeneration.java b/com/indeed/lsmtree/core/StableGeneration.java
+index 157903e..c373649 100644
+--- a/com/indeed/lsmtree/core/StableGeneration.java
++++ b/com/indeed/lsmtree/core/StableGeneration.java
+@@ -40,7 +40,7 @@ public final class StableGeneration {
+     private static final Logger log = Logger.getLogger(StableGeneration.class);
+ 
+     public static <K,V> Generation<K,V> open(BloomFilter.MemoryManager memoryManager, File file, Comparator<K> comparator, Serializer<K> keySerializer, Serializer<V> valueSerializer, StorageType storageType, CompressionCodec codec, final boolean mlockBTree)
+-            throws IOException {
++            throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(39);
+         if (storageType == StorageType.BLOCK_COMPRESSED && codec == null) throw new IllegalArgumentException("codec must be set if block compressed");
+         if (storageType == StorageType.INLINE) {
+             return new InlineStableGeneration<K, V>(memoryManager, file, comparator, keySerializer, valueSerializer, mlockBTree);
+@@ -79,7 +79,7 @@ public final class StableGeneration {
+         }
+ 
+         @Override
+-        public @Nullable Boolean isDeleted(final K key) {
++        public @Nullable Boolean isDeleted(final K key) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(41);
+             final Entry<K, V> entry = get(key);
+             return entry == null ? null : (entry.isDeleted() ? Boolean.TRUE : Boolean.FALSE);
+         }
+diff --git a/com/indeed/lsmtree/core/Store.java b/com/indeed/lsmtree/core/Store.java
+index 94e810b..6bc4040 100644
+--- a/com/indeed/lsmtree/core/Store.java
++++ b/com/indeed/lsmtree/core/Store.java
+@@ -238,13 +238,13 @@ public final class Store<K, V> implements Closeable {
+                 } else {
+                     Collections.addAll(toDelete, dataDir.listFiles(new FilenameFilter() {
+                         @Override
+-                        public boolean accept(File dir, String name) {
++                        public boolean accept(File dir, String name) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(43);
+                             return !oldStableGenerations.contains(name);
+                         }
+                     }));
+                     Collections.addAll(toDelete, root.listFiles(new FileFilter() {
+                         @Override
+-                        public boolean accept(File pathname) {
++                        public boolean accept(File pathname) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(45);
+                             return pathname.isDirectory() && pathname.getName().matches("\\d+");
+                         }
+                     }));
+diff --git a/com/indeed/lsmtree/core/StoreBuilder.java b/com/indeed/lsmtree/core/StoreBuilder.java
+index faa929a..e9e6101 100644
+--- a/com/indeed/lsmtree/core/StoreBuilder.java
++++ b/com/indeed/lsmtree/core/StoreBuilder.java
+@@ -49,11 +49,11 @@ public final class StoreBuilder<K,V> {
+         this.valueSerializer = valueSerializer;
+     }
+ 
+-    public Comparator<K> getComparator() {
++    public Comparator<K> getComparator() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(7);
+         return comparator;
+     }
+ 
+-    public StoreBuilder<K,V> setComparator(final Comparator<K> comparator) {
++    public StoreBuilder<K,V> setComparator(final Comparator<K> comparator) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(10);
+         this.comparator = comparator;
+         return this;
+     }
+diff --git a/com/indeed/lsmtree/core/TransactionLog.java b/com/indeed/lsmtree/core/TransactionLog.java
+index 6dfea06..dcf60a4 100644
+--- a/com/indeed/lsmtree/core/TransactionLog.java
++++ b/com/indeed/lsmtree/core/TransactionLog.java
+@@ -72,11 +72,11 @@ public final class TransactionLog {
+             return type;
+         }
+ 
+-        public K getKey() {
++        public K getKey() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(47);
+             return key;
+         }
+ 
+-        public V getValue() {
++        public V getValue() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(49);
+             return value;
+         }
+ 
+diff --git a/com/indeed/lsmtree/jmhbench/MutationSwitch.java b/com/indeed/lsmtree/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..c1d4816
+--- /dev/null
++++ b/com/indeed/lsmtree/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package com.indeed.lsmtree.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/com/indeed/lsmtree/recordcache/CacheStats.java b/com/indeed/lsmtree/recordcache/CacheStats.java
+index e265595..a2710bb 100644
+--- a/com/indeed/lsmtree/recordcache/CacheStats.java
++++ b/com/indeed/lsmtree/recordcache/CacheStats.java
+@@ -26,11 +26,11 @@ public class CacheStats {
+     int recordLogReadErrors = 0;
+     int indexReadErrors = 0;
+ 
+-    public int getMemcacheHits() {
++    public int getMemcacheHits() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(14);
+         return memcacheHits;
+     }
+ 
+-    public void setMemcacheHits(int memcacheHits) {
++    public void setMemcacheHits(int memcacheHits) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(17);
+         this.memcacheHits = memcacheHits;
+     }
+ 
+diff --git a/com/indeed/lsmtree/recordcache/Checkpoint.java b/com/indeed/lsmtree/recordcache/Checkpoint.java
+index 4991626..16b6585 100644
+--- a/com/indeed/lsmtree/recordcache/Checkpoint.java
++++ b/com/indeed/lsmtree/recordcache/Checkpoint.java
+@@ -24,7 +24,7 @@ public final class Checkpoint implements Operation {
+         this.timestamp = timestamp;
+     }
+ 
+-    public long getTimestamp() {
++    public long getTimestamp() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(20);
+         return timestamp;
+     }
+ }
+diff --git a/com/indeed/lsmtree/recordcache/Delete.java b/com/indeed/lsmtree/recordcache/Delete.java
+index f513480..787807a 100644
+--- a/com/indeed/lsmtree/recordcache/Delete.java
++++ b/com/indeed/lsmtree/recordcache/Delete.java
+@@ -30,7 +30,7 @@ public final class Delete<K> implements Operation {
+         this.keys = keys;
+     }
+ 
+-    public Collection<K> getKeys() {
++    public Collection<K> getKeys() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(23);
+         return keys;
+     }
+ }
+diff --git a/com/indeed/lsmtree/recordcache/MemcachedCache.java b/com/indeed/lsmtree/recordcache/MemcachedCache.java
+index b3ebd0d..a094d2f 100644
+--- a/com/indeed/lsmtree/recordcache/MemcachedCache.java
++++ b/com/indeed/lsmtree/recordcache/MemcachedCache.java
+@@ -70,7 +70,7 @@ public final class MemcachedCache<K,V> implements Closeable {
+ 
+     private static final Transcoder<byte[]> identityTranscoder = new Transcoder<byte[]>() {
+         @Override
+-        public boolean asyncDecode(final CachedData cachedData) {
++        public boolean asyncDecode(final CachedData cachedData) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(26);
+             return false;
+         }
+ 
+@@ -85,7 +85,7 @@ public final class MemcachedCache<K,V> implements Closeable {
+         }
+ 
+         @Override
+-        public int getMaxSize() {
++        public int getMaxSize() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(29);
+             return Integer.MAX_VALUE;
+         }
+     };
+diff --git a/com/indeed/lsmtree/recordcache/MemcachedMappingRecordCache.java b/com/indeed/lsmtree/recordcache/MemcachedMappingRecordCache.java
+index 9b14e7f..cc23704 100644
+--- a/com/indeed/lsmtree/recordcache/MemcachedMappingRecordCache.java
++++ b/com/indeed/lsmtree/recordcache/MemcachedMappingRecordCache.java
+@@ -78,7 +78,7 @@ public final class MemcachedMappingRecordCache<A, B, C, D> implements RecordCach
+             AtomicInteger count = new AtomicInteger(0);
+ 
+             @Override
+-            public void process(final long position, Operation op) throws IOException {
++            public void process(final long position, Operation op) throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(2);
+                 count.incrementAndGet();
+                 if (count.get() % 1000 == 0) {
+                     final int puts = memcachedPuts.get();
+@@ -112,7 +112,7 @@ public final class MemcachedMappingRecordCache<A, B, C, D> implements RecordCach
+             }
+ 
+             @Override
+-            public void sync() throws IOException {}
++            public void sync() throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(5);}
+         };
+     }
+ 
+diff --git a/com/indeed/lsmtree/recordcache/OperationSerializer.java b/com/indeed/lsmtree/recordcache/OperationSerializer.java
+index 468ef18..b9afdab 100644
+--- a/com/indeed/lsmtree/recordcache/OperationSerializer.java
++++ b/com/indeed/lsmtree/recordcache/OperationSerializer.java
+@@ -75,7 +75,7 @@ public final class OperationSerializer<K,V> implements Serializer<Operation> {
+                     V v = null;
+                     boolean initialized = false;
+                     @Override
+-                    public synchronized V _1() {
++                    public synchronized V _1() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(32);
+                         if (initialized) return v;
+                         initialized = true;
+                         try {
+diff --git a/com/indeed/lsmtree/recordcache/PersistentRecordCache.java b/com/indeed/lsmtree/recordcache/PersistentRecordCache.java
+index 8345ba4..ca95292 100644
+--- a/com/indeed/lsmtree/recordcache/PersistentRecordCache.java
++++ b/com/indeed/lsmtree/recordcache/PersistentRecordCache.java
+@@ -106,7 +106,7 @@ public final class PersistentRecordCache<K, V> implements RecordCache<K, V> {
+             AtomicInteger count = new AtomicInteger(0);
+ 
+             @Override
+-            public void process(final long position, Operation op) throws IOException {
++            public void process(final long position, Operation op) throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(35);
+ 
+                 count.incrementAndGet();
+                 if (count.get() % 1000 == 0) {
+@@ -146,7 +146,7 @@ public final class PersistentRecordCache<K, V> implements RecordCache<K, V> {
+             }
+ 
+             @Override
+-            public void sync() throws IOException {
++            public void sync() throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(38);
+                 final long start = System.nanoTime();
+                 index.sync();
+                 log.debug("sync time: " + (System.nanoTime() - start) / 1000d + " us");
+diff --git a/com/indeed/lsmtree/recordcache/Put.java b/com/indeed/lsmtree/recordcache/Put.java
+index 28c4c94..5d82eab 100644
+--- a/com/indeed/lsmtree/recordcache/Put.java
++++ b/com/indeed/lsmtree/recordcache/Put.java
+@@ -32,11 +32,11 @@ public final class Put<K,V> implements Operation {
+         this.value = value;
+     }
+ 
+-    public K getKey() {
++    public K getKey() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(40);
+         return key;
+     }
+ 
+-    public V getValue() {
++    public V getValue() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(42);
+         return value._1();
+     }
+ }
+diff --git a/com/indeed/lsmtree/recordcache/RecordLogAppender.java b/com/indeed/lsmtree/recordcache/RecordLogAppender.java
+index e7876bf..3e2bde9 100644
+--- a/com/indeed/lsmtree/recordcache/RecordLogAppender.java
++++ b/com/indeed/lsmtree/recordcache/RecordLogAppender.java
+@@ -96,7 +96,7 @@ public final class RecordLogAppender<K,V> extends GenericRecordLogAppender<Opera
+      * @throws IOException  if an I/O error occurs
+      */
+     @Override
+-    public void deleteDocs(final Collection<K> ids) throws IOException {
++    public void deleteDocs(final Collection<K> ids) throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(44);
+         ArrayList<K> sorted = new ArrayList<K>(ids);
+         Collections.sort(sorted, keyComparator);
+         writeOperation(new Delete(sorted));
+@@ -115,7 +115,7 @@ public final class RecordLogAppender<K,V> extends GenericRecordLogAppender<Opera
+         return writeOperation(new Put<K, V>(key, P.p(value)));
+     }
+ 
+-    public void putCheckpoint(long timestamp) throws IOException {
++    public void putCheckpoint(long timestamp) throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(46);
+         writeOperation(new Checkpoint(timestamp));
+     }
+ }
+diff --git a/com/indeed/lsmtree/recordcache/RecordLogStore.java b/com/indeed/lsmtree/recordcache/RecordLogStore.java
+index c698591..27bdf78 100644
+--- a/com/indeed/lsmtree/recordcache/RecordLogStore.java
++++ b/com/indeed/lsmtree/recordcache/RecordLogStore.java
+@@ -37,11 +37,11 @@ public class RecordLogStore<K, V> implements Closeable {
+         this.recordLogDirectoryPoller = closer.register(recordLogDirectoryPoller);
+     }
+ 
+-    public Store<K, V> getStore() {
++    public Store<K, V> getStore() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(48);
+         return store;
+     }
+ 
+-    public RecordLogDirectoryPoller getRecordLogDirectoryPoller() {
++    public RecordLogDirectoryPoller getRecordLogDirectoryPoller() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(50);
+         return recordLogDirectoryPoller;
+     }
+ 
+diff --git a/com/indeed/lsmtree/recordcache/ReplicatingStoreBuilder.java b/com/indeed/lsmtree/recordcache/ReplicatingStoreBuilder.java
+index 18f91d1..27082e6 100644
+--- a/com/indeed/lsmtree/recordcache/ReplicatingStoreBuilder.java
++++ b/com/indeed/lsmtree/recordcache/ReplicatingStoreBuilder.java
+@@ -58,12 +58,12 @@ public final class ReplicatingStoreBuilder<K,V> {
+         this.indexPath = indexPath;
+     }
+ 
+-    public ReplicatingStoreBuilder<K,V> setKeyCollectionSerializer(final Serializer<Collection<K>> keyCollectionSerializer) {
++    public ReplicatingStoreBuilder<K,V> setKeyCollectionSerializer(final Serializer<Collection<K>> keyCollectionSerializer) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(8);
+         this.keyCollectionSerializer = keyCollectionSerializer;
+         return this;
+     }
+ 
+-    public ReplicatingStoreBuilder<K,V> setCodec(final CompressionCodec codec) {
++    public ReplicatingStoreBuilder<K,V> setCodec(final CompressionCodec codec) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(11);
+         this.codec = codec;
+         return this;
+     }
+diff --git a/com/indeed/lsmtree/recordlog/BasicRecordFile.java b/com/indeed/lsmtree/recordlog/BasicRecordFile.java
+index 95b2117..222da13 100644
+--- a/com/indeed/lsmtree/recordlog/BasicRecordFile.java
++++ b/com/indeed/lsmtree/recordlog/BasicRecordFile.java
+@@ -58,7 +58,7 @@ public final class BasicRecordFile<E> implements RecordFile<E> {
+     }
+ 
+     @Override
+-    public void close() throws IOException {
++    public void close() throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(3);
+         buffer.close();
+     }
+ 
+@@ -70,7 +70,7 @@ public final class BasicRecordFile<E> implements RecordFile<E> {
+     }
+ 
+     @Override
+-    public RecordFile.Reader<E> reader() throws IOException {
++    public RecordFile.Reader<E> reader() throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(6);
+         return new Reader();
+     }
+ 
+diff --git a/com/indeed/lsmtree/recordlog/BlockCompressedRecordFile.java b/com/indeed/lsmtree/recordlog/BlockCompressedRecordFile.java
+index fe4f28d..621235c 100644
+--- a/com/indeed/lsmtree/recordlog/BlockCompressedRecordFile.java
++++ b/com/indeed/lsmtree/recordlog/BlockCompressedRecordFile.java
+@@ -90,11 +90,11 @@ public final class BlockCompressedRecordFile<E> implements RecordFile<E> {
+ 
+     private static final AtomicLong openFileCounter = new AtomicLong(0);
+ 
+-    public static long getOpenFileCount() {
++    public static long getOpenFileCount() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(9);
+         return openFileCounter.get();
+     }
+ 
+-    public static <E> BlockCompressedRecordFile<E> open(final File file, Serializer<E> serializer, CompressionCodec codec, BlockingQueue<Decompressor> decompressorPool, int blockSize, int recordIndexBits, int padBits, boolean mlockFiles, int maxChunkSize) throws IOException {
++    public static <E> BlockCompressedRecordFile<E> open(final File file, Serializer<E> serializer, CompressionCodec codec, BlockingQueue<Decompressor> decompressorPool, int blockSize, int recordIndexBits, int padBits, boolean mlockFiles, int maxChunkSize) throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(12);
+         final MMapBuffer buffer = new MMapBuffer(file, FileChannel.MapMode.READ_ONLY, ByteOrder.BIG_ENDIAN);
+         try {
+             if (mlockFiles) {
+diff --git a/com/indeed/lsmtree/recordlog/GenericRecordLogAppender.java b/com/indeed/lsmtree/recordlog/GenericRecordLogAppender.java
+index 0e3af47..1fc4e5c 100644
+--- a/com/indeed/lsmtree/recordlog/GenericRecordLogAppender.java
++++ b/com/indeed/lsmtree/recordlog/GenericRecordLogAppender.java
+@@ -107,12 +107,12 @@ public class GenericRecordLogAppender<T> {
+     }
+ 
+     @Export(name = "last-position", doc = "Last address that was written to")
+-    public long getLastPosition() {
++    public long getLastPosition() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(15);
+         return lastPosition;
+     }
+ 
+     @Export(name = "max-segment", doc = "Segment number that the last position is currently writing to")
+-    public int getMaxSegment() {
++    public int getMaxSegment() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(18);
+         return maxSegment;
+     }
+ 
+diff --git a/com/indeed/lsmtree/recordlog/GenericRecordLogDirectoryPoller.java b/com/indeed/lsmtree/recordlog/GenericRecordLogDirectoryPoller.java
+index 3eeaa20..f171a44 100644
+--- a/com/indeed/lsmtree/recordlog/GenericRecordLogDirectoryPoller.java
++++ b/com/indeed/lsmtree/recordlog/GenericRecordLogDirectoryPoller.java
+@@ -103,14 +103,14 @@ public class GenericRecordLogDirectoryPoller<T> implements Runnable, Closeable {
+      *
+      * @param functions
+      */
+-    public void registerFunctions(Functions<T> functions) {
++    public void registerFunctions(Functions<T> functions) { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(21);
+         functionsList.add(functions);
+     }
+ 
+     /**
+      * Creates a background thread and polls for new record logs.
+      */
+-    public void start() {
++    public void start() { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(24);
+         pollerThread = new Thread(this);
+         pollerThread.start();
+     }
+diff --git a/com/indeed/lsmtree/recordlog/MemoryRandomAccessDataInput.java b/com/indeed/lsmtree/recordlog/MemoryRandomAccessDataInput.java
+index 38cf658..13713e4 100644
+--- a/com/indeed/lsmtree/recordlog/MemoryRandomAccessDataInput.java
++++ b/com/indeed/lsmtree/recordlog/MemoryRandomAccessDataInput.java
+@@ -34,12 +34,12 @@ public final class MemoryRandomAccessDataInput implements RandomAccessDataInput
+     }
+ 
+     @Override
+-    public void readFully(final byte[] b) throws IOException {
++    public void readFully(final byte[] b) throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(27);
+         dataInput.readFully(b);
+     }
+ 
+     @Override
+-    public void readFully(final byte[] b, final int off, final int len) throws IOException {
++    public void readFully(final byte[] b, final int off, final int len) throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(30);
+         dataInput.readFully(b, off, len);
+     }
+ 
+diff --git a/com/indeed/lsmtree/recordlog/RecordLogDirectory.java b/com/indeed/lsmtree/recordlog/RecordLogDirectory.java
+index fd70bbe..f1e1421 100644
+--- a/com/indeed/lsmtree/recordlog/RecordLogDirectory.java
++++ b/com/indeed/lsmtree/recordlog/RecordLogDirectory.java
+@@ -76,13 +76,13 @@ public final class RecordLogDirectory<E> implements RecordFile<E> {
+ 
+         private int currentSegmentNum;
+ 
+-        public static <E> Writer<E> create(File file, Serializer<E> serializer, CompressionCodec codec, final long rollFrequency) throws IOException {
++        public static <E> Writer<E> create(File file, Serializer<E> serializer, CompressionCodec codec, final long rollFrequency) throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(33);
+             return new Writer(file, serializer, codec, rollFrequency, DEFAULT_BLOCK_SIZE, DEFAULT_FILE_INDEX_BITS, DEFAULT_RECORD_INDEX_BITS, DEFAULT_PAD_BITS, -1);
+         }
+ 
+         public static <E> Writer<E> create(
+                 File file, Serializer<E> serializer, CompressionCodec codec, final long rollFrequency, int blockSize, int fileIndexBits, int recordIndexBits, int padBits
+-        ) throws IOException {
++        ) throws IOException { com.indeed.lsmtree.jmhbench.MutationSwitch.tick(36);
+             return new Writer(file, serializer, codec, rollFrequency, blockSize, fileIndexBits, recordIndexBits, padBits, -1);
+         }
+ 

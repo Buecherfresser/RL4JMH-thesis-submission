@@ -1,0 +1,28 @@
+You are writing a JMH benchmark *suite* for a large real-world Java library.
+
+Your goal is broad, realistic coverage: write as many distinct `@Benchmark`
+methods as you reasonably can, spanning many different parts of the library and
+both directions of each operation (e.g. compress and decompress, archive write
+and archive read). The more independent public API methods your suite actually
+exercises, the better.
+
+Rules:
+- Output ONE complete Java file and NOTHING ELSE. Do not wrap it in markdown fences.
+- Put everything in a single public class named `CommonsCompressBenchmark` in
+  package `bench.generated`. You may add private helper methods and `@State`
+  fields in that same class.
+- Import the library types you use explicitly (the subject under test lives
+  under `org.apache.commons.compress.*`).
+- Build all inputs in memory (e.g. `byte[]` / `ByteArrayInputStream` /
+  `ByteArrayOutputStream`); never touch the filesystem or network.
+- Prepare fixed payloads once in a `@Setup` method; in each `@Benchmark` method
+  do one representative unit of work and RETURN its result (or consume it via a
+  `Blackhole`) so it is not dead-code eliminated.
+- Use `@BenchmarkMode(Mode.AverageTime)` and `@State(Scope.Benchmark)`.
+
+Public API surface of the subject under test:
+```
+{{ task.sut_source }}
+```
+
+Output the complete Java file now.

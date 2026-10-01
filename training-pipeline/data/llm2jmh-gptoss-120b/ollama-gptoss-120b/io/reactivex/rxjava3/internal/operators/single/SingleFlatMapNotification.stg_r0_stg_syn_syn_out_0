@@ -1,0 +1,93 @@
+package io.reactivex.rxjava3.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link SingleFlatMapNotification}.
+ * Measures the throughput of the operator when the upstream succeeds.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Benchmark)
+public class SingleFlatMapNotificationBenchmark {
+
+    /**
+     * Source Single that always succeeds with the value 1.
+     */
+    private Single<Integer> source;
+
+    /**
+     * Operator under test.
+     */
+    private Single<Integer> operator;
+
+    /**
+     * Mapper used when the upstream succeeds.
+     */
+    private Function<Integer, SingleSource<Integer>> onSuccessMapper;
+
+    /**
+     * Mapper used when the upstream errors (not exercised in this benchmark).
+     */
+    private Function<Throwable, SingleSource<Integer>> onErrorMapper;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple upstream that emits a constant value.
+        source = Single.just(1);
+        // Success mapper adds 1 to the upstream value and returns a new Single.
+        onSuccessMapper = v -> Single.just(v + 1);
+        // Error mapper returns a Single that fails with a RuntimeException.
+        // It is not triggered in the throughput benchmark but required for construction.
+        onErrorMapper = e -> Single.error(new RuntimeException(e));
+        // Create the operator instance once per trial.
+        operator = new SingleFlatMapNotification<>(source, onSuccessMapper, onErrorMapper);
+    }
+
+    /**
+     * Benchmark method that subscribes to the operator and blocks until the result is available.
+     * The blocking call ensures that the whole reactive chain is executed within the measurement.
+     */
+    @Benchmark
+    public int flatMapNotificationThroughput() {
+        // blockingGet forces subscription and waits for the terminal event.
+        return operator.blockingGet();
+    }
+}

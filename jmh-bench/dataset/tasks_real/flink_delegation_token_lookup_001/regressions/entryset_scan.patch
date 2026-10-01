@@ -1,0 +1,18 @@
+--- a/bench/TokenStore.java
++++ b/bench/TokenStore.java
+@@ -11,7 +11,14 @@
+         this.tokens = new HashMap<>(seed);
+     }
+ 
++    // Regressed: linear scan over entrySet instead of hash lookup.
+     public String lookup(String key) {
+-        return tokens.get(key);
++        String result = null;
++        for (Map.Entry<String, String> e : tokens.entrySet()) {
++            if (e.getKey().equals(key)) {
++                result = e.getValue();
++            }
++        }
++        return result;
+     }
+ }

@@ -1,0 +1,122 @@
+```java
+package io.reactivex.rxjava3.internal.util;
+
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+import java.util.Arrays;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmarks for {@link OpenHashSet}.
+ *
+ * <p>Measures throughput of {@code add} and {@code remove} operations under
+ * different initial sizes and load factors. The benchmarks use {@link Integer}
+ * as the element type to avoid boxing overhead in the benchmark code itself.
+ *
+ * <p>Best practices applied:
+ * <ul>
+ *   <li>Separate {@code @State} for shared data.</li>
+ *   <li>Parameterized initial size and load factor.</li>
+ *   <li>Pre‑populate the set in {@code @Setup(Level.Trial)} to isolate the cost
+ *       of the operation under test.</li>
+ *   <li>Use {@link Blackhole} to consume return values and prevent dead‑code elimination.</li>
+ *   <li>Warm‑up, measurement, and fork settings tuned for reliable results.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2, jvmArgsAppend = { "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintCompilation" })
+@State(Scope.Benchmark)
+public class OpenHashSetBenchmark {
+
+    /** Initial number of elements in the set before each trial. */
+    @Param({ "16", "256", "4096" })
+    public int initialSize;
+
+    /** Load factor used when constructing the set. */
+    @Param({ "0.5", "0.75", "0.9" })
+    public float loadFactor;
+
+    private OpenHashSet<Integer> set;
+
+    /** Value to be added in the {@code add} benchmark. */
+    private int nextValue;
+
+    /** Shuffled indices used by the {@code remove} benchmark. */
+    private int[] removalIndices;
+
+    /** Position within {@code removalIndices}. */
+    private int removalPos;
+
+    /** Populate the set with distinct integers before each trial. */
+    @Setup(Level.Trial)
+    public void setUp() {
+        set = new OpenHashSet<>(initialSize, loadFactor);
+        for (int i = 0; i < initialSize; i++) {
+            set.add(i);
+        }
+        nextValue = initialSize;
+
+        // Create a shuffled array of indices.
+        Integer[] boxed = IntStream.range(0, initialSize).boxed().toArray(Integer[]::new);
+        Collections.shuffle(Arrays.asList(boxed));
+        removalIndices = new int[initialSize];
+        for (int i = 0; i < initialSize; i++) {
+            removalIndices[i] = boxed[i];
+        }
+        removalPos = 0;
+    }
+
+    /** Benchmark the {@code add} operation. */
+    @Benchmark
+    public void add(Blackhole bh) {
+        boolean added = set.add(nextValue++);
+        bh.consume(added);
+    }
+
+    /** Benchmark the {@code remove} operation. */
+    @Benchmark
+    public void remove(Blackhole bh) {
+        // Cycle through the shuffled indices.
+        int idx = removalIndices[removalPos++ % removalIndices.length];
+        boolean removed = set.remove(idx);
+        bh.consume(removed);
+    }
+}
+```

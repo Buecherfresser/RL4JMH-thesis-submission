@@ -1,0 +1,97 @@
+package io.reactivex.rxjava3.internal.operators.maybe;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.*;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.*;
+import io.reactivex.rxjava3.exceptions.*;
+import io.reactivex.rxjava3.flowables.*;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.internal.disposables.*;
+import io.reactivex.rxjava3.internal.functions.*;
+import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.internal.jdk8.*;
+import io.reactivex.rxjava3.internal.observers.*;
+import io.reactivex.rxjava3.internal.operators.completable.*;
+import io.reactivex.rxjava3.internal.operators.flowable.*;
+import io.reactivex.rxjava3.internal.operators.maybe.*;
+import io.reactivex.rxjava3.internal.operators.mixed.*;
+import io.reactivex.rxjava3.internal.operators.observable.*;
+import io.reactivex.rxjava3.internal.operators.parallel.*;
+import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.internal.schedulers.*;
+import io.reactivex.rxjava3.internal.subscribers.*;
+import io.reactivex.rxjava3.internal.subscriptions.*;
+import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.observables.*;
+import io.reactivex.rxjava3.observers.*;
+import io.reactivex.rxjava3.operators.*;
+import io.reactivex.rxjava3.parallel.*;
+import io.reactivex.rxjava3.plugins.*;
+import io.reactivex.rxjava3.processors.*;
+import io.reactivex.rxjava3.schedulers.*;
+import io.reactivex.rxjava3.subjects.*;
+import io.reactivex.rxjava3.subscribers.*;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.*;
+
+/**
+ * JMH benchmark for {@link MaybeFilterSingle}.
+ *
+ * The benchmark measures the throughput of filtering a {@link Single} source
+ * into a {@link Maybe} using a simple predicate. It follows best practices:
+ * <ul>
+ *   <li>Separate state from benchmark logic.</li>
+ *   <li>Use {@link Blackhole} to consume results and avoid dead‑code elimination.</li>
+ *   <li>Provide warm‑up and measurement iterations.</li>
+ *   <li>Run in {@link Mode#Throughput} to express operations per time unit.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class MaybeFilterSingleBenchmark {
+
+    /**
+     * Simple source emitting a constant integer.
+     */
+    private Single<Integer> source;
+
+    /**
+     * Predicate used by the filter operator.
+     */
+    private Predicate<Integer> predicate;
+
+    /**
+     * The operator under test.
+     */
+    private Maybe<Integer> maybeFilterSingle;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A deterministic source; using just() avoids external variability.
+        source = Single.just(42);
+        // A lightweight predicate; change to a more expensive one if needed.
+        // always true for 42
+        predicate = value -> (value & 1) == 0;
+        // Create the operator instance once per trial.
+        maybeFilterSingle = new MaybeFilterSingle<>(source, predicate);
+    }
+
+    /**
+     * Executes the operator and consumes the result.
+     *
+     * The {@link Blackhole} ensures the returned value is used, preventing the JIT
+     * from optimizing away the whole call chain.
+     */
+    @Benchmark
+    public void filterSingle(Blackhole bh) {
+        // blockingGet() is appropriate for a micro‑benchmark; it forces the
+        // subscription to complete synchronously.
+        maybeFilterSingle.blockingSubscribe(bh::consume, bh::consume, () -> bh.consume(null));
+    }
+}

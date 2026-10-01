@@ -1,0 +1,42 @@
+```
+package io.reactivex.rxjava3.internal.jdk8.benchmark;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.*;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.internal.jdk8.ObservableFromCompletionStage;
+import io.reactivex.rxjava3.observers.TestObserver;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ObservableFromCompletionStageBenchmark {
+
+    private CompletionStage<Integer> completedStage;
+    private static final int VALUE = 42;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // A pre‑completed stage to avoid measuring stage creation overhead
+        completedStage = CompletableFuture.completedFuture(VALUE);
+    }
+
+    @Benchmark
+    public void subscribeAndConsume() {
+        Observable<Integer> source = new ObservableFromCompletionStage<>(completedStage);
+        TestObserver<Integer> testObserver = new TestObserver<>();
+        source.subscribe(testObserver);
+        // Ensure the emission is processed; timeout is generous for JMH stability
+        testObserver.awaitDone(1, TimeUnit.SECONDS);
+        // Optionally verify correctness (kept minimal to avoid affecting throughput)
+        // testObserver.assertValue(VALUE).assertNoErrors().assertComplete();
+    }
+}
+```

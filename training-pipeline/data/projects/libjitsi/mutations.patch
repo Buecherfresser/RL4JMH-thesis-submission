@@ -1,0 +1,652 @@
+diff --git a/org/jitsi/impl/configuration/ChangeEventDispatcher.java b/org/jitsi/impl/configuration/ChangeEventDispatcher.java
+index 1d4e1b6..6edc1f1 100644
+--- a/org/jitsi/impl/configuration/ChangeEventDispatcher.java
++++ b/org/jitsi/impl/configuration/ChangeEventDispatcher.java
+@@ -78,7 +78,7 @@ public class ChangeEventDispatcher
+      */
+     public synchronized void addPropertyChangeListener(
+         PropertyChangeListener listener)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(9);
+         if (propertyChangeListeners == null)
+             propertyChangeListeners = new Vector<PropertyChangeListener>();
+ 
+@@ -96,7 +96,7 @@ public class ChangeEventDispatcher
+     public synchronized void addPropertyChangeListener(
+         String propertyName,
+         PropertyChangeListener listener)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(13);
+         if (propertyChangeChildren == null)
+         {
+             propertyChangeChildren =
+diff --git a/org/jitsi/impl/configuration/ConfigurationServiceImpl.java b/org/jitsi/impl/configuration/ConfigurationServiceImpl.java
+index e978d3a..5f40e0a 100644
+--- a/org/jitsi/impl/configuration/ConfigurationServiceImpl.java
++++ b/org/jitsi/impl/configuration/ConfigurationServiceImpl.java
+@@ -174,7 +174,7 @@ public class ConfigurationServiceImpl
+     @Override
+     public void setProperty(String propertyName, Object property)
+         throws ConfigPropertyVetoException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(16);
+         setProperty(propertyName, property, false);
+     }
+ 
+@@ -186,7 +186,7 @@ public class ConfigurationServiceImpl
+                             Object property,
+                             boolean isSystem)
+         throws ConfigPropertyVetoException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(19);
+         Object oldValue = getProperty(propertyName);
+ 
+         //first check whether the change is ok with everyone
+diff --git a/org/jitsi/impl/configuration/PropertyConfigurationStore.java b/org/jitsi/impl/configuration/PropertyConfigurationStore.java
+index f349232..709a385 100644
+--- a/org/jitsi/impl/configuration/PropertyConfigurationStore.java
++++ b/org/jitsi/impl/configuration/PropertyConfigurationStore.java
+@@ -55,7 +55,7 @@ public class PropertyConfigurationStore
+      */
+     public void reloadConfiguration(File file)
+         throws IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(22);
+         properties.clear();
+ 
+         InputStream in = new BufferedInputStream(new FileInputStream(file));
+@@ -85,7 +85,7 @@ public class PropertyConfigurationStore
+      */
+     @Override
+     public void setNonSystemProperty(String name, Object value)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(24);
+         properties.setProperty(name, value.toString());
+     }
+ 
+diff --git a/org/jitsi/impl/configuration/SortedProperties.java b/org/jitsi/impl/configuration/SortedProperties.java
+index 1a5d427..9be4a41 100644
+--- a/org/jitsi/impl/configuration/SortedProperties.java
++++ b/org/jitsi/impl/configuration/SortedProperties.java
+@@ -42,7 +42,7 @@ public class SortedProperties
+      */
+     @Override
+     public synchronized Enumeration<Object> keys()
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(26);
+         final Object[] keys = keySet().toArray();
+ 
+         Arrays.sort(keys);
+@@ -52,7 +52,7 @@ public class SortedProperties
+                         private int i = 0;
+ 
+                         public boolean hasMoreElements()
+-                        {
++                        { org.jitsi.impl.jmhbench.MutationSwitch.tick(28);
+                             return i < keys.length;
+                         }
+ 
+diff --git a/org/jitsi/impl/configuration/xml/XMLConfUtils.java b/org/jitsi/impl/configuration/xml/XMLConfUtils.java
+index 1f2a6cc..bd64ea2 100644
+--- a/org/jitsi/impl/configuration/xml/XMLConfUtils.java
++++ b/org/jitsi/impl/configuration/xml/XMLConfUtils.java
+@@ -39,7 +39,7 @@ public class XMLConfUtils extends XMLUtils
+      */
+     public static Element getChildElementByChain(Element parent,
+                                                  String[] chain)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(1);
+         if(chain == null)
+             return null;
+         Element e = parent;
+@@ -65,7 +65,7 @@ public class XMLConfUtils extends XMLUtils
+     public static Element createLastPathComponent(
+             Document doc,
+             String[] path, int pathLength)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(5);
+         if (doc == null)
+             throw new IllegalArgumentException("doc must not be null");
+         if (path == null)
+diff --git a/org/jitsi/impl/configuration/xml/XMLConfigurationStore.java b/org/jitsi/impl/configuration/xml/XMLConfigurationStore.java
+index 718d8bb..14d997f 100644
+--- a/org/jitsi/impl/configuration/xml/XMLConfigurationStore.java
++++ b/org/jitsi/impl/configuration/xml/XMLConfigurationStore.java
+@@ -130,7 +130,7 @@ public class XMLConfigurationStore
+      * @see ConfigurationStore#getProperty(String)
+      */
+     public Object getProperty(String propertyName)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(30);
+         Object value = properties.get(propertyName);
+ 
+         // if this is a property reference make sure we return the referenced
+@@ -153,7 +153,7 @@ public class XMLConfigurationStore
+      * @see ConfigurationStore#getPropertyNames()
+      */
+     public String[] getPropertyNames()
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(32);
+         Set<String> propertyNames = properties.keySet();
+         return propertyNames.toArray(new String[propertyNames.size()]);
+     }
+diff --git a/org/jitsi/impl/fileaccess/FailSafeTransactionImpl.java b/org/jitsi/impl/fileaccess/FailSafeTransactionImpl.java
+index d47780c..d3fbf30 100644
+--- a/org/jitsi/impl/fileaccess/FailSafeTransactionImpl.java
++++ b/org/jitsi/impl/fileaccess/FailSafeTransactionImpl.java
+@@ -77,7 +77,7 @@ public class FailSafeTransactionImpl
+      * @throws IOException if an IOException occurs during the file restoration
+      */
+     public void restoreFile() throws IllegalStateException, IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(2);
+         File back = new File(this.file.getAbsolutePath() + BAK_EXT);
+ 
+         // if a backup copy is still present, simply restore it
+@@ -101,7 +101,7 @@ public class FailSafeTransactionImpl
+      */
+     public void beginTransaction()
+         throws IllegalStateException, IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(6);
+         // if the last transaction hasn't been closed, commit it
+         if (this.backup != null)
+         {
+diff --git a/org/jitsi/impl/fileaccess/FileAccessServiceImpl.java b/org/jitsi/impl/fileaccess/FileAccessServiceImpl.java
+index 88e3a12..7ca5b34 100644
+--- a/org/jitsi/impl/fileaccess/FileAccessServiceImpl.java
++++ b/org/jitsi/impl/fileaccess/FileAccessServiceImpl.java
+@@ -83,7 +83,7 @@ public class FileAccessServiceImpl implements FileAccessService
+     @Override
+     public File getTemporaryFile()
+         throws IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(10);
+         File retVal = null;
+ 
+         try
+@@ -109,7 +109,7 @@ public class FileAccessServiceImpl implements FileAccessService
+      */
+     @Override
+     public File getTemporaryDirectory() throws IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(14);
+         File file = getTemporaryFile();
+ 
+         if (!file.delete())
+diff --git a/org/jitsi/impl/fileaccess/TempFileManager.java b/org/jitsi/impl/fileaccess/TempFileManager.java
+index 2f81053..8819a40 100644
+--- a/org/jitsi/impl/fileaccess/TempFileManager.java
++++ b/org/jitsi/impl/fileaccess/TempFileManager.java
+@@ -58,7 +58,7 @@ public class TempFileManager {
+      *             if a file could not be created
+      */
+     public static File createTempFile(String prefix, String suffix)
+-            throws IOException {
++            throws IOException { org.jitsi.impl.jmhbench.MutationSwitch.tick(17);
+         // Check to see if you have already initialized a temp directory
+         // for this class.
+         if (sTmpDir == null) {
+@@ -154,7 +154,7 @@ public class TempFileManager {
+         // return only directories that start with your
+         // prefix.
+         FileFilter tmpDirFilter = new FileFilter() {
+-            public boolean accept(File pathname) {
++            public boolean accept(File pathname) { org.jitsi.impl.jmhbench.MutationSwitch.tick(20);
+                 return (pathname.isDirectory() && pathname.getName()
+                         .startsWith(TEMP_DIR_PREFIX));
+             }
+diff --git a/org/jitsi/impl/jmhbench/MutationSwitch.java b/org/jitsi/impl/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..98af045
+--- /dev/null
++++ b/org/jitsi/impl/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.jitsi.impl.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/jitsi/impl/libjitsi/LibJitsiImpl.java b/org/jitsi/impl/libjitsi/LibJitsiImpl.java
+index a9976ec..70ca760 100644
+--- a/org/jitsi/impl/libjitsi/LibJitsiImpl.java
++++ b/org/jitsi/impl/libjitsi/LibJitsiImpl.java
+@@ -72,7 +72,7 @@ public class LibJitsiImpl
+      */
+     @Override
+     protected <T> T getService(Class<T> serviceClass)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(3);
+         String className = serviceClass.getName();
+         ServiceLock lock;
+ 
+@@ -117,7 +117,7 @@ public class LibJitsiImpl
+          */
+         @SuppressWarnings("unchecked")
+         public <T> T getService(String className, Class<T> clazz)
+-        {
++        { org.jitsi.impl.jmhbench.MutationSwitch.tick(7);
+             T t;
+             // Do not allow repeating/recursive requests to create multiple
+             // instances of the specified clazz.
+diff --git a/org/jitsi/impl/libjitsi/LibJitsiOSGiImpl.java b/org/jitsi/impl/libjitsi/LibJitsiOSGiImpl.java
+index 5e84fcf..fc3b0ea 100644
+--- a/org/jitsi/impl/libjitsi/LibJitsiOSGiImpl.java
++++ b/org/jitsi/impl/libjitsi/LibJitsiOSGiImpl.java
+@@ -57,7 +57,7 @@ public class LibJitsiOSGiImpl
+      */
+     @Override
+     protected <T> T getService(Class<T> serviceClass)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(11);
+         ServiceReference<T> serviceReference
+             = bundleContext.getServiceReference(serviceClass);
+         T service
+diff --git a/org/jitsi/impl/neomedia/AudioMediaStreamImpl.java b/org/jitsi/impl/neomedia/AudioMediaStreamImpl.java
+index 272adf7..579279a 100644
+--- a/org/jitsi/impl/neomedia/AudioMediaStreamImpl.java
++++ b/org/jitsi/impl/neomedia/AudioMediaStreamImpl.java
+@@ -182,7 +182,7 @@ public class AudioMediaStreamImpl
+      */
+     @Override
+     public void setRTPTranslator(RTPTranslator rtpTranslator)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(4);
+         super.setRTPTranslator(rtpTranslator);
+ 
+         if (rtpTranslator != null)
+@@ -204,7 +204,7 @@ public class AudioMediaStreamImpl
+      */
+     public long getLastInputActivityTime()
+         throws IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(8);
+         RTPConnectorInputStream inData
+             = getRTPConnector().getDataInputStream(false);
+         long inDataActivity = -1;
+diff --git a/org/jitsi/impl/neomedia/CircularByteArray.java b/org/jitsi/impl/neomedia/CircularByteArray.java
+index 03a1093..ee78c5b 100644
+--- a/org/jitsi/impl/neomedia/CircularByteArray.java
++++ b/org/jitsi/impl/neomedia/CircularByteArray.java
+@@ -52,7 +52,7 @@ public class CircularByteArray
+      * <tt>CircularByteArray</tt>
+      */
+     public synchronized void push(byte element)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(12);
+         int tail = this.tail;
+ 
+         elements[tail] = element;
+@@ -70,7 +70,7 @@ public class CircularByteArray
+      * the same order as this <tt>CircularByteArray</tt>
+      */
+     public synchronized byte[] toArray()
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(15);
+         byte[] elements = this.elements;
+         byte[] array;
+ 
+diff --git a/org/jitsi/impl/neomedia/MediaStreamImpl.java b/org/jitsi/impl/neomedia/MediaStreamImpl.java
+index 6547474..6d1d9de 100644
+--- a/org/jitsi/impl/neomedia/MediaStreamImpl.java
++++ b/org/jitsi/impl/neomedia/MediaStreamImpl.java
+@@ -139,7 +139,7 @@ public class MediaStreamImpl
+         {
+             @Override
+             public void propertyChange(PropertyChangeEvent ev)
+-            {
++            { org.jitsi.impl.jmhbench.MutationSwitch.tick(18);
+                 String propertyName = ev.getPropertyName();
+ 
+                 if (MediaDeviceSession.OUTPUT_DATA_SOURCE.equals(propertyName))
+@@ -431,7 +431,7 @@ public class MediaStreamImpl
+      * Gets the {@link DiagnosticContext} of this instance.
+      */
+     public DiagnosticContext getDiagnosticContext()
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(21);
+         return diagnosticContext;
+     }
+ 
+diff --git a/org/jitsi/impl/neomedia/MediaStreamStatsImpl.java b/org/jitsi/impl/neomedia/MediaStreamStatsImpl.java
+index 6fde4ca..fe574ea 100644
+--- a/org/jitsi/impl/neomedia/MediaStreamStatsImpl.java
++++ b/org/jitsi/impl/neomedia/MediaStreamStatsImpl.java
+@@ -148,7 +148,7 @@ public class MediaStreamStatsImpl
+      */
+     public static JitterBufferControl getJitterBufferControl(
+             ReceiveStream receiveStream)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(23);
+         DataSource ds = receiveStream.getDataSource();
+ 
+         if (ds instanceof PushBufferDataSource)
+@@ -240,7 +240,7 @@ public class MediaStreamStatsImpl
+              */
+             @Override
+             public void rtcpReportReceived(RTCPReport report)
+-            {
++            { org.jitsi.impl.jmhbench.MutationSwitch.tick(25);
+                 MediaStreamStatsImpl.this.rtcpReportReceived(report);
+             }
+ 
+diff --git a/org/jitsi/impl/neomedia/MediaUtils.java b/org/jitsi/impl/neomedia/MediaUtils.java
+index 0b3bf8b..01054f0 100644
+--- a/org/jitsi/impl/neomedia/MediaUtils.java
++++ b/org/jitsi/impl/neomedia/MediaUtils.java
+@@ -672,7 +672,7 @@ public class MediaUtils
+     public static String createImageAttr(
+             java.awt.Dimension sendSize,
+             java.awt.Dimension maxRecvSize)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(27);
+         StringBuffer img = new StringBuffer();
+ 
+         /* send width */
+@@ -747,7 +747,7 @@ public class MediaUtils
+      */
+     @SuppressWarnings("unchecked")
+     public static MediaFormat getMediaFormat(Format format)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(29);
+         double clockRate;
+ 
+         if (format instanceof AudioFormat)
+diff --git a/org/jitsi/impl/neomedia/NeomediaServiceUtils.java b/org/jitsi/impl/neomedia/NeomediaServiceUtils.java
+index 5723bac..f66918e 100644
+--- a/org/jitsi/impl/neomedia/NeomediaServiceUtils.java
++++ b/org/jitsi/impl/neomedia/NeomediaServiceUtils.java
+@@ -24,7 +24,7 @@ import org.jitsi.service.libjitsi.*;
+ public class NeomediaServiceUtils
+ {
+     public static MediaServiceImpl getMediaServiceImpl()
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(31);
+         return (MediaServiceImpl) LibJitsi.getMediaService();
+     }
+ 
+diff --git a/org/jitsi/impl/neomedia/ProcessorUtility.java b/org/jitsi/impl/neomedia/ProcessorUtility.java
+index dc45092..1b78459 100644
+--- a/org/jitsi/impl/neomedia/ProcessorUtility.java
++++ b/org/jitsi/impl/neomedia/ProcessorUtility.java
+@@ -98,7 +98,7 @@ public class ProcessorUtility
+      * @param ce The event generated.
+      */
+     public void controllerUpdate(ControllerEvent ce)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(33);
+         Object stateLock = getStateLock();
+ 
+         synchronized (stateLock)
+@@ -133,7 +133,7 @@ public class ProcessorUtility
+      * otherwise
+      */
+     public synchronized boolean waitForState(Processor processor, int state)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(34);
+         processor.addControllerListener(this);
+         setFailed(false);
+ 
+diff --git a/org/jitsi/impl/neomedia/RTCPConnectorInputStream.java b/org/jitsi/impl/neomedia/RTCPConnectorInputStream.java
+index 91cc2fc..87766b8 100644
+--- a/org/jitsi/impl/neomedia/RTCPConnectorInputStream.java
++++ b/org/jitsi/impl/neomedia/RTCPConnectorInputStream.java
+@@ -57,7 +57,7 @@ public class RTCPConnectorInputStream
+      */
+     public void addRTCPFeedbackMessageListener(
+             RTCPFeedbackMessageListener listener)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(35);
+         if (listener == null)
+             throw new NullPointerException("listener");
+         if(!listeners.contains(listener))
+@@ -86,7 +86,7 @@ public class RTCPConnectorInputStream
+             Object source,
+             byte[] buffer, int offset, int length,
+             List<RTCPFeedbackMessageListener> listeners)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(36);
+         /*
+          * RTCP feedback message length is minimum 12 bytes:
+          * 1. Version/Padding/Feedback message type: 1 byte
+diff --git a/org/jitsi/impl/neomedia/RTPConnectorTCPInputStream.java b/org/jitsi/impl/neomedia/RTPConnectorTCPInputStream.java
+index af5893f..97ac7a5 100644
+--- a/org/jitsi/impl/neomedia/RTPConnectorTCPInputStream.java
++++ b/org/jitsi/impl/neomedia/RTPConnectorTCPInputStream.java
+@@ -54,7 +54,7 @@ public class RTPConnectorTCPInputStream
+      */
+     @Override
+     protected void doLogPacket(DatagramPacket p)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(37);
+         if (socket.getLocalAddress() == null)
+             return;
+ 
+@@ -87,7 +87,7 @@ public class RTPConnectorTCPInputStream
+     @Override
+     protected void receive(DatagramPacket p)
+         throws IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(38);
+         byte[] data;
+         int len;
+ 
+diff --git a/org/jitsi/impl/neomedia/RTPConnectorTCPOutputStream.java b/org/jitsi/impl/neomedia/RTPConnectorTCPOutputStream.java
+index 2c0874a..f62101d 100644
+--- a/org/jitsi/impl/neomedia/RTPConnectorTCPOutputStream.java
++++ b/org/jitsi/impl/neomedia/RTPConnectorTCPOutputStream.java
+@@ -59,7 +59,7 @@ public class RTPConnectorTCPOutputStream
+     @Override
+     protected void sendToTarget(RawPacket packet, InetSocketAddress target)
+         throws IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(39);
+         socket.getOutputStream().write(
+                 packet.getBuffer(),
+                 packet.getOffset(),
+@@ -73,7 +73,7 @@ public class RTPConnectorTCPOutputStream
+      */
+     @Override
+     protected void doLogPacket(RawPacket packet, InetSocketAddress target)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(40);
+         PacketLoggingService pktLogging = getPacketLoggingService();
+ 
+         if (pktLogging != null)
+diff --git a/org/jitsi/impl/neomedia/RTPConnectorUDPInputStream.java b/org/jitsi/impl/neomedia/RTPConnectorUDPInputStream.java
+index 9ca4a33..bb3497a 100644
+--- a/org/jitsi/impl/neomedia/RTPConnectorUDPInputStream.java
++++ b/org/jitsi/impl/neomedia/RTPConnectorUDPInputStream.java
+@@ -55,7 +55,7 @@ public class RTPConnectorUDPInputStream
+      */
+     @Override
+     protected void doLogPacket(DatagramPacket p)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(41);
+         if (socket.getLocalAddress() == null)
+             return;
+ 
+@@ -86,7 +86,7 @@ public class RTPConnectorUDPInputStream
+     @Override
+     protected void receive(DatagramPacket p)
+         throws IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(42);
+         socket.receive(p);
+     }
+ 
+diff --git a/org/jitsi/impl/neomedia/RTPConnectorUDPOutputStream.java b/org/jitsi/impl/neomedia/RTPConnectorUDPOutputStream.java
+index 752463a..93e8cf1 100644
+--- a/org/jitsi/impl/neomedia/RTPConnectorUDPOutputStream.java
++++ b/org/jitsi/impl/neomedia/RTPConnectorUDPOutputStream.java
+@@ -59,7 +59,7 @@ public class RTPConnectorUDPOutputStream
+     @Override
+     protected void sendToTarget(RawPacket packet, InetSocketAddress target)
+         throws IOException
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(43);
+         socket.send(
+                 new DatagramPacket(
+                         packet.getBuffer(),
+@@ -76,7 +76,7 @@ public class RTPConnectorUDPOutputStream
+      */
+     @Override
+     protected void doLogPacket(RawPacket packet, InetSocketAddress target)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(44);
+         if (socket == null || packet == null || target == null)
+             return;
+ 
+diff --git a/org/jitsi/impl/neomedia/VideoMediaStreamImpl.java b/org/jitsi/impl/neomedia/VideoMediaStreamImpl.java
+index 51724ef..106de17 100644
+--- a/org/jitsi/impl/neomedia/VideoMediaStreamImpl.java
++++ b/org/jitsi/impl/neomedia/VideoMediaStreamImpl.java
+@@ -90,7 +90,7 @@ public class VideoMediaStreamImpl
+      * resolution is a wildcard.
+      */
+     public static java.awt.Dimension[] parseSendRecvResolution(String imgattr)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(45);
+         java.awt.Dimension res[] = new java.awt.Dimension[2];
+         String token = null;
+         Pattern pSendSingle = Pattern.compile("send \\[x=[0-9]+,y=[0-9]+\\]");
+@@ -209,7 +209,7 @@ public class VideoMediaStreamImpl
+     public static Dimension selectVideoSize(
+             DataSource videoDS,
+             final int preferredWidth, final int preferredHeight)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(46);
+         if (videoDS == null)
+             return null;
+ 
+diff --git a/org/jitsi/impl/neomedia/audiolevel/AudioLevelMap.java b/org/jitsi/impl/neomedia/audiolevel/AudioLevelMap.java
+index 57e15c1..e9baa08 100644
+--- a/org/jitsi/impl/neomedia/audiolevel/AudioLevelMap.java
++++ b/org/jitsi/impl/neomedia/audiolevel/AudioLevelMap.java
+@@ -45,7 +45,7 @@ public class AudioLevelMap
+      * @param level the new audio level for the specified <tt>csrc</tt>.
+      */
+     public void putLevel(long csrc, int level)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(47);
+         //copy the levels matrix so that no one pulls it from under our feet.
+         long[][] levelsRef = levels;
+         int csrcIndex = findCSRC(levelsRef, csrc);
+@@ -70,7 +70,7 @@ public class AudioLevelMap
+      * and <tt>false</tt> otherwise.
+      */
+     public boolean removeLevel(long csrc)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(48);
+         //copy the levels matrix so that no one pulls it from under our feet.
+         long[][] levelsRef = levels;
+         int index = findCSRC(levelsRef, csrc);
+diff --git a/org/jitsi/impl/neomedia/codec/audio/FFmpegAudioDecoder.java b/org/jitsi/impl/neomedia/codec/audio/FFmpegAudioDecoder.java
+index 35371cc..dedc8ed 100644
+--- a/org/jitsi/impl/neomedia/codec/audio/FFmpegAudioDecoder.java
++++ b/org/jitsi/impl/neomedia/codec/audio/FFmpegAudioDecoder.java
+@@ -38,7 +38,7 @@ public class FFmpegAudioDecoder
+      * <tt>codecID</tt> is found by FFmpeg
+      */
+     public static void assertFindAVCodec(int codecID)
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(49);
+         if (FFmpeg.avcodec_find_decoder(codecID) == 0)
+         {
+             throw new RuntimeException(
+@@ -77,7 +77,7 @@ public class FFmpegAudioDecoder
+      */
+     @Override
+     protected synchronized void doClose()
+-    {
++    { org.jitsi.impl.jmhbench.MutationSwitch.tick(50);
+         super.doClose();
+ 
+         // avpkt

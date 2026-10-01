@@ -1,0 +1,74 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableDefer;
+import io.reactivex.rxjava3.functions.Supplier;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableDefer}.
+ *
+ * <p>This benchmark measures the throughput (operations per second) of the {@code defer}
+ * operator compared to a direct {@code Flowable.just} source. The benchmark follows
+ * best‑practice guidelines:
+ *
+ * <ul>
+ *   <li>Separate state per thread to avoid contention.</li>
+ *   <li>Warm‑up and measurement phases with stable timing.</li>
+ *   <li>Use {@link Blackhole} to consume emitted items and prevent dead‑code elimination.</li>
+ *   <li>Run in {@link Mode#Throughput} to express results as ops/sec.</li>
+ * </ul>
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
+@State(Scope.Thread)
+public class FlowableDeferBenchmark {
+
+    /** Supplier that creates a simple {@code Flowable.just(1)} publisher. */
+    private Supplier<Flowable<Integer>> simpleSupplier;
+
+    /** The {@code FlowableDefer} instance under test. */
+    private Flowable<Integer> deferFlowable;
+
+    /** Baseline flowable without defer. */
+    private Flowable<Integer> directFlowable;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        simpleSupplier = () -> Flowable.just(1);
+        deferFlowable = new FlowableDefer<>(simpleSupplier);
+        directFlowable = Flowable.just(1);
+    }
+
+    /**
+     * Benchmark the {@code defer} operator.
+     *
+     * <p>Each operation subscribes to the {@code FlowableDefer} and consumes the emitted
+     * value via {@link Blackhole}. The subscription is performed synchronously using
+     * {@code blockingSubscribe} to ensure the whole pipeline is executed within the
+     * benchmark iteration.
+     */
+    @Benchmark
+    public void defer(Blackhole bh) {
+        deferFlowable.blockingSubscribe(bh::consume);
+    }
+
+    /**
+     * Baseline benchmark without the {@code defer} operator.
+     *
+     * <p>This provides a reference point to understand the overhead introduced by
+     * {@code FlowableDefer}.
+     */
+    @Benchmark
+    public void direct(Blackhole bh) {
+        directFlowable.blockingSubscribe(bh::consume);
+    }
+}
+```

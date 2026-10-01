@@ -1,0 +1,49 @@
+```java
+package io.reactivex.rxjava3.internal.operators.observable;
+
+import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.functions.Function;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+/**
+ * JMH benchmark for {@link io.reactivex.rxjava3.internal.operators.observable.ObservableConcatMap}.
+ *
+ * Measures the throughput of the concatMap operator when mapping a range of integers
+ * to simple scalar Observables.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(3)
+@State(Scope.Thread)
+public class ObservableConcatMapBenchmark {
+
+    /** Number of items emitted by the source Observable per benchmark iteration. */
+    @Param({ "1000", "10000" })
+    public int itemCount;
+
+    /** Source Observable emitting a range of integers. */
+    private Observable<Integer> source;
+
+    /** Mapper function used by concatMap. */
+    private Function<Integer, ObservableSource<Integer>> mapper;
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Cold source that emits a fixed range of integers.
+        source = Observable.range(0, itemCount);
+        // Simple mapper that returns a scalar Observable for each upstream value.
+        mapper = i -> Observable.just(i);
+    }
+
+    /** Benchmark the concatMap operator in its default (IMMEDIATE error) mode. */
+    @Benchmark
+    public void concatMapThroughput(Blackhole bh) {
+        source.concatMap(mapper).subscribe(bh::consume);
+    }
+}
+```

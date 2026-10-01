@@ -1,0 +1,578 @@
+diff --git a/orestes/bloomfilter/FilterBuilder.java b/orestes/bloomfilter/FilterBuilder.java
+index 32cab2c..c891f7e 100644
+--- a/orestes/bloomfilter/FilterBuilder.java
++++ b/orestes/bloomfilter/FilterBuilder.java
+@@ -84,7 +84,7 @@ public class FilterBuilder implements Cloneable, Serializable {
+      * @param expectedElements number of expected elements.
+      * @return the modified FilterBuilder (fluent interface)
+      */
+-    public FilterBuilder expectedElements(int expectedElements) {
++    public FilterBuilder expectedElements(int expectedElements) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(1);
+         this.expectedElements = expectedElements;
+         return this;
+     }
+@@ -95,7 +95,7 @@ public class FilterBuilder implements Cloneable, Serializable {
+      * @param size size of the filter in bits
+      * @return the modified FilterBuilder (fluent interface)
+      */
+-    public FilterBuilder size(int size) {
++    public FilterBuilder size(int size) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(6);
+         this.size = size;
+         return this;
+     }
+@@ -107,7 +107,7 @@ public class FilterBuilder implements Cloneable, Serializable {
+      * @param falsePositiveProbability the tolerable false
+      * @return the modified FilterBuilder (fluent interface)
+      */
+-    public FilterBuilder falsePositiveProbability(double falsePositiveProbability) {
++    public FilterBuilder falsePositiveProbability(double falsePositiveProbability) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(11);
+         this.falsePositiveProbability = falsePositiveProbability;
+         return this;
+     }
+diff --git a/orestes/bloomfilter/HashProvider.java b/orestes/bloomfilter/HashProvider.java
+index 6dc8b74..8ec48b7 100644
+--- a/orestes/bloomfilter/HashProvider.java
++++ b/orestes/bloomfilter/HashProvider.java
+@@ -48,7 +48,7 @@ public class HashProvider {
+      * @param k     number of hashes to be computed
+      * @return array with <i>hashes</i> integer hash positions in the range <i>[0,size)</i>
+      */
+-    public static int[] hashCarterWegman(byte[] value, int m, int k) {
++    public static int[] hashCarterWegman(byte[] value, int m, int k) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(28);
+         int[] positions = new int[k];
+         BigInteger prime32 = BigInteger.valueOf(4294967279l);
+         BigInteger prime64 = BigInteger.valueOf(53200200938189l);
+@@ -72,7 +72,7 @@ public class HashProvider {
+      * @param k     number of hashes to be computed
+      * @return array with <i>hashes</i> integer hash positions in the range <i>[0,size)</i>
+      */
+-    public static int[] hashRNG(byte[] value, int m, int k) {
++    public static int[] hashRNG(byte[] value, int m, int k) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(32);
+         int[] positions = new int[k];
+         Random r = new Random(hashBytes(value));
+         for (int i = 0; i < k; i++) {
+@@ -89,7 +89,7 @@ public class HashProvider {
+      * @param k     number of hashes to be computed
+      * @return array with <i>hashes</i> integer hash positions in the range <i>[0,size)</i>
+      */
+-    public static int[] hashCRC(byte[] value, int m, int k) {
++    public static int[] hashCRC(byte[] value, int m, int k) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(36);
+         return hashChecksum(value, new CRC32(), m, k);
+     }
+ 
+diff --git a/orestes/bloomfilter/TimeMap.java b/orestes/bloomfilter/TimeMap.java
+index 7701368..ddb7935 100644
+--- a/orestes/bloomfilter/TimeMap.java
++++ b/orestes/bloomfilter/TimeMap.java
+@@ -27,17 +27,17 @@ public final class TimeMap<T> implements Map<T, Long> {
+     }
+ 
+     @Override
+-    public int size() {
++    public int size() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(16);
+         return map.size();
+     }
+ 
+     @Override
+-    public boolean isEmpty() {
++    public boolean isEmpty() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(20);
+         return map.isEmpty();
+     }
+ 
+     @Override
+-    public boolean containsKey(Object key) {
++    public boolean containsKey(Object key) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(24);
+         return map.containsKey(key);
+     }
+ 
+diff --git a/orestes/bloomfilter/cachesketch/ExpirationQueueMemory.java b/orestes/bloomfilter/cachesketch/ExpirationQueueMemory.java
+index 0f791ff..61fbfa9 100644
+--- a/orestes/bloomfilter/cachesketch/ExpirationQueueMemory.java
++++ b/orestes/bloomfilter/cachesketch/ExpirationQueueMemory.java
+@@ -25,7 +25,7 @@ public class ExpirationQueueMemory<T> implements ExpirationQueue<T> {
+     }
+ 
+     @Override
+-    public synchronized boolean enable() {
++    public synchronized boolean enable() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(2);
+         if (isEnabled) return false;
+ 
+         isEnabled = true;
+@@ -45,7 +45,7 @@ public class ExpirationQueueMemory<T> implements ExpirationQueue<T> {
+     }
+ 
+     @Override
+-    public synchronized boolean disable() {
++    public synchronized boolean disable() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(7);
+         if (!isEnabled) return false;
+ 
+         isEnabled = false;
+@@ -59,7 +59,7 @@ public class ExpirationQueueMemory<T> implements ExpirationQueue<T> {
+     }
+ 
+     @Override
+-    public int size() {
++    public int size() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(12);
+         return delayedQueue.size();
+     }
+ 
+diff --git a/orestes/bloomfilter/cachesketch/ExpiringBloomFilterMemory.java b/orestes/bloomfilter/cachesketch/ExpiringBloomFilterMemory.java
+index e786b0d..dffb327 100644
+--- a/orestes/bloomfilter/cachesketch/ExpiringBloomFilterMemory.java
++++ b/orestes/bloomfilter/cachesketch/ExpiringBloomFilterMemory.java
+@@ -39,7 +39,7 @@ public class ExpiringBloomFilterMemory<T> extends CountingBloomFilter32<T> imple
+     }
+ 
+     @Override
+-    public void cleanupTTLs() {
++    public void cleanupTTLs() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(17);
+         long now = ttlMap.now();
+         for (T key : ttlMap.keySet()) {
+             ttlMap.computeIfPresent(key, (k, v) -> {
+@@ -52,12 +52,12 @@ public class ExpiringBloomFilterMemory<T> extends CountingBloomFilter32<T> imple
+     }
+ 
+     @Override
+-    public synchronized void reportRead(T element, long TTL, TimeUnit unit) {
++    public synchronized void reportRead(T element, long TTL, TimeUnit unit) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(21);
+         ttlMap.putRemaining(element, TTL, unit);
+     }
+ 
+     @Override
+-    public synchronized Long reportWrite(T element, TimeUnit unit) {
++    public synchronized Long reportWrite(T element, TimeUnit unit) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(25);
+         // Only add if there is a potentially cached read
+         Long expiration = ttlMap.get(element);
+         if (expiration == null || expiration < ttlMap.now()) {
+diff --git a/orestes/bloomfilter/cachesketch/ExpiringBloomFilterPureRedis.java b/orestes/bloomfilter/cachesketch/ExpiringBloomFilterPureRedis.java
+index d41039c..ae23666 100644
+--- a/orestes/bloomfilter/cachesketch/ExpiringBloomFilterPureRedis.java
++++ b/orestes/bloomfilter/cachesketch/ExpiringBloomFilterPureRedis.java
+@@ -47,7 +47,7 @@ public class ExpiringBloomFilterPureRedis extends AbstractExpiringBloomFilterRed
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(29);
+         try (Jedis jedis = pool.getResource()) {
+             // Delete all used fields from Redis
+             jedis.del(keys.EXPIRATION_QUEUE_KEY, keys.COUNTS_KEY, keys.BITS_KEY, keys.TTL_KEY);
+@@ -55,7 +55,7 @@ public class ExpiringBloomFilterPureRedis extends AbstractExpiringBloomFilterRed
+     }
+ 
+     @Override
+-    public void softClear() {
++    public void softClear() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(33);
+         try (Jedis jedis = pool.getResource()) {
+             // Delete all used fields from Redis
+             jedis.del(keys.COUNTS_KEY, keys.BITS_KEY, keys.EXPIRATION_QUEUE_KEY);
+@@ -72,7 +72,7 @@ public class ExpiringBloomFilterPureRedis extends AbstractExpiringBloomFilterRed
+     }
+ 
+     @Override
+-    public void addToQueue(String item, long remaining, TimeUnit timeUnit) {
++    public void addToQueue(String item, long remaining, TimeUnit timeUnit) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(37);
+         try (Jedis jedis = pool.getResource()) {
+             boolean done;
+             do {
+diff --git a/orestes/bloomfilter/cachesketch/ExpiringBloomFilterRedis.java b/orestes/bloomfilter/cachesketch/ExpiringBloomFilterRedis.java
+index b1ae144..9057839 100644
+--- a/orestes/bloomfilter/cachesketch/ExpiringBloomFilterRedis.java
++++ b/orestes/bloomfilter/cachesketch/ExpiringBloomFilterRedis.java
+@@ -19,12 +19,12 @@ public class ExpiringBloomFilterRedis<T> extends AbstractExpiringBloomFilterRedi
+     }
+ 
+     @Override
+-    protected void addToQueue(T element, long remaining, TimeUnit timeUnit) {
++    protected void addToQueue(T element, long remaining, TimeUnit timeUnit) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(40);
+         queue.addExpiration(element, now() + remaining, timeUnit);
+     }
+ 
+     @Override
+-    public void clear() {
++    public void clear() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(43);
+         try (Jedis jedis = pool.getResource()) {
+             // Clear CBF, Bits, and TTLs
+             jedis.del(keys.COUNTS_KEY, keys.BITS_KEY, keys.TTL_KEY);
+@@ -33,7 +33,7 @@ public class ExpiringBloomFilterRedis<T> extends AbstractExpiringBloomFilterRedi
+     }
+ 
+     @Override
+-    public void softClear() {
++    public void softClear() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(46);
+         try (Jedis jedis = pool.getResource()) {
+             // Clear CBF, Bits, and TTLs
+             jedis.del(keys.COUNTS_KEY, keys.BITS_KEY);
+diff --git a/orestes/bloomfilter/jmhbench/MutationSwitch.java b/orestes/bloomfilter/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..58fdc36
+--- /dev/null
++++ b/orestes/bloomfilter/jmhbench/MutationSwitch.java
+@@ -0,0 +1,77 @@
++/*
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package orestes.bloomfilter.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/orestes/bloomfilter/json/BloomFilterConverter.java b/orestes/bloomfilter/json/BloomFilterConverter.java
+index 888cea8..e7743b1 100644
+--- a/orestes/bloomfilter/json/BloomFilterConverter.java
++++ b/orestes/bloomfilter/json/BloomFilterConverter.java
+@@ -19,7 +19,7 @@ public class BloomFilterConverter {
+      * @param source the Bloom filter to convert
+      * @return the JSON representation of the Bloom filter
+      */
+-    public static JsonElement toJson(BloomFilter<?> source) {
++    public static JsonElement toJson(BloomFilter<?> source) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(3);
+         JsonObject root = new JsonObject();
+         root.addProperty("m", source.getSize());
+         root.addProperty("h", source.getHashes());
+@@ -41,7 +41,7 @@ public class BloomFilterConverter {
+      * @param source the Bloom filter to convert
+      * @return the Base64 representation of the Bloom filter
+      */
+-    public static String toBase64(BloomFilter<?> source) {
++    public static String toBase64(BloomFilter<?> source) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(8);
+         return toBase64(source.getBitSet().toByteArray());
+     }
+ 
+@@ -55,7 +55,7 @@ public class BloomFilterConverter {
+      * @param source the the JSON source
+      * @return the constructed Bloom filter
+      */
+-    public static BloomFilter<String> fromJson(JsonElement source) {
++    public static BloomFilter<String> fromJson(JsonElement source) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(13);
+         return fromJson(source, String.class);
+     }
+ 
+diff --git a/orestes/bloomfilter/memory/BloomFilterMemory.java b/orestes/bloomfilter/memory/BloomFilterMemory.java
+index 2e81063..07733af 100644
+--- a/orestes/bloomfilter/memory/BloomFilterMemory.java
++++ b/orestes/bloomfilter/memory/BloomFilterMemory.java
+@@ -17,12 +17,12 @@ public class BloomFilterMemory<T> implements BloomFilter<T> {
+     }
+ 
+     @Override
+-    public FilterBuilder config() {
++    public FilterBuilder config() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(4);
+         return config;
+     }
+ 
+     @Override
+-    public synchronized boolean addRaw(byte[] element) {
++    public synchronized boolean addRaw(byte[] element) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(9);
+         boolean added = false;
+         for (int position : hash(element)) {
+             if (!getBit(position)) {
+@@ -34,7 +34,7 @@ public class BloomFilterMemory<T> implements BloomFilter<T> {
+     }
+ 
+     @Override
+-    public synchronized void clear() {
++    public synchronized void clear() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(14);
+         bloom.clear();
+     }
+ 
+diff --git a/orestes/bloomfilter/memory/CountingBloomFilter16.java b/orestes/bloomfilter/memory/CountingBloomFilter16.java
+index 96f7abd..1f847ba 100644
+--- a/orestes/bloomfilter/memory/CountingBloomFilter16.java
++++ b/orestes/bloomfilter/memory/CountingBloomFilter16.java
+@@ -20,7 +20,7 @@ public class CountingBloomFilter16<T> extends CountingBloomFilterMemory<T>{
+ 
+ 
+     @Override
+-    protected long increment(int index) {
++    protected long increment(int index) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(18);
+         if(Short.toUnsignedLong(counters[index]) == MAX) {
+             overflowHandler.run();
+             return MAX;
+@@ -29,7 +29,7 @@ public class CountingBloomFilter16<T> extends CountingBloomFilterMemory<T>{
+     }
+ 
+     @Override
+-    protected long decrement(int index) {
++    protected long decrement(int index) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(22);
+         if(counters[index] == 0)
+             return 0;
+         return Short.toUnsignedLong(--counters[index]);
+@@ -46,7 +46,7 @@ public class CountingBloomFilter16<T> extends CountingBloomFilterMemory<T>{
+     }
+ 
+     @Override
+-    public Map<Integer, Long> getCountMap() {
++    public Map<Integer, Long> getCountMap() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(26);
+         Map<Integer, Long> result = new HashMap<>();
+         for (int i = 0; i < counters.length; i++) {
+             long count = Short.toUnsignedLong(counters[i]);
+diff --git a/orestes/bloomfilter/memory/CountingBloomFilter32.java b/orestes/bloomfilter/memory/CountingBloomFilter32.java
+index dd0a015..eab7f84 100644
+--- a/orestes/bloomfilter/memory/CountingBloomFilter32.java
++++ b/orestes/bloomfilter/memory/CountingBloomFilter32.java
+@@ -19,7 +19,7 @@ public class CountingBloomFilter32<T> extends CountingBloomFilterMemory<T>{
+     }
+ 
+     @Override
+-    protected long increment(int index) {
++    protected long increment(int index) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(30);
+         if(Integer.toUnsignedLong(counters[index]) == MAX) {
+             overflowHandler.run();
+             return MAX;
+@@ -28,7 +28,7 @@ public class CountingBloomFilter32<T> extends CountingBloomFilterMemory<T>{
+     }
+ 
+     @Override
+-    protected long decrement(int index) {
++    protected long decrement(int index) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(34);
+         if(counters[index] == 0)
+             return 0;
+         return Integer.toUnsignedLong(--counters[index]);
+@@ -45,7 +45,7 @@ public class CountingBloomFilter32<T> extends CountingBloomFilterMemory<T>{
+     }
+ 
+     @Override
+-    public Map<Integer, Long> getCountMap() {
++    public Map<Integer, Long> getCountMap() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(38);
+         Map<Integer, Long> result = new HashMap<>();
+         for (int i = 0; i < counters.length; i++) {
+             long count = Integer.toUnsignedLong(counters[i]);
+diff --git a/orestes/bloomfilter/memory/CountingBloomFilter64.java b/orestes/bloomfilter/memory/CountingBloomFilter64.java
+index a09034c..108a512 100644
+--- a/orestes/bloomfilter/memory/CountingBloomFilter64.java
++++ b/orestes/bloomfilter/memory/CountingBloomFilter64.java
+@@ -19,14 +19,14 @@ public class CountingBloomFilter64<T> extends CountingBloomFilterMemory<T>{
+     }
+ 
+     @Override
+-    protected long increment(int index) {
++    protected long increment(int index) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(41);
+         if(counters[index] == MAX)
+             return MAX;
+         return ++counters[index];
+     }
+ 
+     @Override
+-    protected long decrement(int index) {
++    protected long decrement(int index) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(44);
+         if(counters[index] == 0)
+             return 0;
+         return --counters[index];
+@@ -43,7 +43,7 @@ public class CountingBloomFilter64<T> extends CountingBloomFilterMemory<T>{
+     }
+ 
+     @Override
+-    public Map<Integer, Long> getCountMap() {
++    public Map<Integer, Long> getCountMap() { orestes.bloomfilter.jmhbench.MutationSwitch.tick(47);
+         Map<Integer, Long> result = new HashMap<>();
+         for (int i = 0; i < counters.length; i++) {
+             long count = counters[i];
+diff --git a/orestes/bloomfilter/memory/CountingBloomFilter8.java b/orestes/bloomfilter/memory/CountingBloomFilter8.java
+index af588bd..1317849 100644
+--- a/orestes/bloomfilter/memory/CountingBloomFilter8.java
++++ b/orestes/bloomfilter/memory/CountingBloomFilter8.java
+@@ -19,7 +19,7 @@ public class CountingBloomFilter8<T> extends CountingBloomFilterMemory<T>{
+     }
+ 
+     @Override
+-    protected long increment(int index) {
++    protected long increment(int index) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(49);
+         if(Byte.toUnsignedLong(counters[index]) == MAX) {
+             overflowHandler.run();
+             return MAX;
+diff --git a/orestes/bloomfilter/redis/MessagePackEncoder.java b/orestes/bloomfilter/redis/MessagePackEncoder.java
+index bb14d73..546f4e0 100644
+--- a/orestes/bloomfilter/redis/MessagePackEncoder.java
++++ b/orestes/bloomfilter/redis/MessagePackEncoder.java
+@@ -33,7 +33,7 @@ public class MessagePackEncoder {
+      * @param positions Positions within a Bloom filter to encode.
+      * @return A packed item.
+      */
+-    public byte[] encodeItem(String item, int[] positions) {
++    public byte[] encodeItem(String item, int[] positions) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(5);
+         String hash = createRandomHash();
+         HashMap<String, Object> map = new HashMap<>();
+         map.put("name", item);
+@@ -53,7 +53,7 @@ public class MessagePackEncoder {
+      * @param bytes The bytes to decode.
+      * @return An unpacked item name.
+      */
+-    public String decodeItem(byte[] bytes) {
++    public String decodeItem(byte[] bytes) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(10);
+         MapValue map;
+         try {
+             map = messagePack.read(bytes).asMapValue();
+diff --git a/orestes/bloomfilter/redis/RedisBitSet.java b/orestes/bloomfilter/redis/RedisBitSet.java
+index 0d94edc..a170e4e 100644
+--- a/orestes/bloomfilter/redis/RedisBitSet.java
++++ b/orestes/bloomfilter/redis/RedisBitSet.java
+@@ -43,7 +43,7 @@ public class RedisBitSet extends BitSet {
+      * @param indexes the index positions to query
+      * @return an array containing the values at the given index positions
+      */
+-    public Boolean[] getBulk(int... indexes) {
++    public Boolean[] getBulk(int... indexes) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(15);
+         List<Boolean> results = pool.allowingSlaves().transactionallyDo(p -> {
+             for (int index : indexes) {
+                 get(p, index);
+@@ -79,11 +79,11 @@ public class RedisBitSet extends BitSet {
+     }
+ 
+     @Override
+-    public void clear(int bitIndex) {
++    public void clear(int bitIndex) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(19);
+         set(bitIndex, false);
+     }
+ 
+-    public void clear(PipelineBase p, int bitIndex) {
++    public void clear(PipelineBase p, int bitIndex) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(23);
+         set(p, bitIndex, false);
+     }
+ 
+diff --git a/orestes/bloomfilter/redis/RedisUtils.java b/orestes/bloomfilter/redis/RedisUtils.java
+index a749e70..78b29ff 100644
+--- a/orestes/bloomfilter/redis/RedisUtils.java
++++ b/orestes/bloomfilter/redis/RedisUtils.java
+@@ -21,7 +21,7 @@ public class RedisUtils {
+      * @param map The map to encode.
+      * @return A map of byte arrays.
+      */
+-    public static Map<byte[], byte[]> encodeMap(Map<Integer, Long> map) {
++    public static Map<byte[], byte[]> encodeMap(Map<Integer, Long> map) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(27);
+         return map.entrySet().stream()
+             .collect(toMap(e -> encodeKey(e.getKey()), e -> encodeValue(e.getValue())));
+     }
+@@ -32,7 +32,7 @@ public class RedisUtils {
+      * @param key The key to encode.
+      * @return A byte array representing that key.
+      */
+-    public static byte[] encodeKey(int key) {
++    public static byte[] encodeKey(int key) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(31);
+         return ByteBuffer.allocate(4).putInt(key).array();
+     }
+ 
+@@ -42,7 +42,7 @@ public class RedisUtils {
+      * @param keys The keys to encode.
+      * @return An array of byte arrays representing those keys.
+      */
+-    public static byte[][] encodeKey(int[] keys) {
++    public static byte[][] encodeKey(int[] keys) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(35);
+         return IntStream.of(keys).mapToObj(RedisUtils::encodeKey).toArray(byte[][]::new);
+     }
+ 
+diff --git a/orestes/bloomfilter/redis/helper/RedisBasePoolBuilder.java b/orestes/bloomfilter/redis/helper/RedisBasePoolBuilder.java
+index 7caae64..bdbd1d6 100644
+--- a/orestes/bloomfilter/redis/helper/RedisBasePoolBuilder.java
++++ b/orestes/bloomfilter/redis/helper/RedisBasePoolBuilder.java
+@@ -14,19 +14,19 @@ public class RedisBasePoolBuilder<B extends RedisBasePoolBuilder> {
+     protected int redisConnections;
+     protected int timeout;
+ 
+-    protected JedisPoolConfig getPoolConfig(int redisConnections) {
++    protected JedisPoolConfig getPoolConfig(int redisConnections) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(39);
+         JedisPoolConfig config = new JedisPoolConfig();
+         config.setBlockWhenExhausted(true);
+         config.setMaxTotal(redisConnections);
+         return config;
+     }
+ 
+-    public B host(String host) {
++    public B host(String host) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(42);
+         this.host = host;
+         return (B) this;
+     }
+ 
+-    public B port(int port) {
++    public B port(int port) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(45);
+         this.port = port;
+         return (B) this;
+     }
+diff --git a/orestes/bloomfilter/redis/helper/RedisSentinelPoolBuilder.java b/orestes/bloomfilter/redis/helper/RedisSentinelPoolBuilder.java
+index 767a8f4..fab7f48 100644
+--- a/orestes/bloomfilter/redis/helper/RedisSentinelPoolBuilder.java
++++ b/orestes/bloomfilter/redis/helper/RedisSentinelPoolBuilder.java
+@@ -11,12 +11,12 @@ public class RedisSentinelPoolBuilder extends RedisBasePoolBuilder<RedisSentinel
+     public RedisSentinelPoolBuilder() {
+     }
+ 
+-    public RedisSentinelPoolBuilder master(String master) {
++    public RedisSentinelPoolBuilder master(String master) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(48);
+         this.master = master;
+         return this;
+     }
+ 
+-    public RedisSentinelPoolBuilder sentinels(Set<String> sentinels) {
++    public RedisSentinelPoolBuilder sentinels(Set<String> sentinels) { orestes.bloomfilter.jmhbench.MutationSwitch.tick(50);
+         this.sentinels = sentinels;
+         return this;
+     }

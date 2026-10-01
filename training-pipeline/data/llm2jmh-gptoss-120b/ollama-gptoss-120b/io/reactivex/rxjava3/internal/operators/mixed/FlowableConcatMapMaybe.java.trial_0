@@ -1,0 +1,68 @@
+```
+package io.reactivex.rxjava3.benchmarks.internal.operators.mixed;
+
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.mixed.FlowableConcatMapMaybe;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * JMH benchmark for {@link FlowableConcatMapMaybe}.
+ *
+ * The benchmark measures the throughput (operations per second) of the
+ * {@code concatMapMaybe} operator when mapping a simple {@code Flowable}
+ * of integers to {@code Maybe.just} values.
+ *
+ * The test is deliberately kept synchronous (no asynchronous schedulers)
+ * to focus on the operator's internal overhead.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(value = 2)
+@Threads(1)
+@State(Scope.Thread)
+public class FlowableConcatMapMaybeBenchmark {
+
+    /** Number of items emitted by the source Flowable per benchmark iteration. */
+    @Param({"1000", "10000", "100000"})
+    public int itemCount;
+
+    /** Prefetch size used by the operator. */
+    @Param({"32", "64", "128"})
+    public int prefetch;
+
+    /** The mapper function used in concatMapMaybe. */
+    private Function<Integer, MaybeSource<Integer>> mapper;
+
+    /** The source Flowable that will be reused across iterations. */
+    private Flowable<Integer> source;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        // Simple mapper that wraps the integer into a Maybe.just.
+        mapper = v -> Maybe.just(v);
+
+        // Create a cold Flowable that emits a range of integers.
+        source = Flowable.range(1, itemCount);
+    }
+
+    /**
+     * Benchmark method that subscribes to the Flowable with concatMapMaybe
+     * and consumes all emitted items via Blackhole.
+     *
+     * The subscription is performed synchronously using {@code blockingSubscribe}
+     * to ensure the benchmark measures only the operator's work.
+     */
+    @Benchmark
+    public void concatMapMaybeThroughput(Blackhole bh) {
+        source
+            .concatMapMaybe(mapper, FlowableConcatMapMaybe.ErrorMode.IMMEDIATE, prefetch)
+            .blockingSubscribe(bh::consume);
+    }
+}
+```

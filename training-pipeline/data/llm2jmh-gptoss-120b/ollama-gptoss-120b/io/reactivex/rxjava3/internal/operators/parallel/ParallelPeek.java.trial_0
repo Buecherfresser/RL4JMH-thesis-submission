@@ -1,0 +1,83 @@
+```
+package io.reactivex.rxjava3.benchmarks;
+
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.parallel.ParallelFlowable;
+import io.reactivex.rxjava3.internal.operators.parallel.ParallelPeek;
+import io.reactivex.rxjava3.functions.*;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark measuring the overhead of {@link ParallelPeek} when used with
+ * no‑op side‑effect callbacks. The benchmark runs in throughput mode,
+ * reporting how many items per second can be processed.
+ */
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
+@State(Scope.Thread)
+public class ParallelPeekBenchmark {
+
+    /** Number of items emitted by the source per benchmark iteration. */
+    @Param({"10000", "100000"})
+    public int itemCount;
+
+    /** Parallelism level – typically the number of CPU cores. */
+    @Param({"1", "2", "4", "8"})
+    public int parallelism;
+
+    private ParallelFlowable<Integer> source;
+    private ParallelPeek<Integer> peekOperator;
+
+    /** No‑op callbacks required by {@link ParallelPeek}. */
+    private static final Consumer<Integer> NOOP_CONSUMER = t -> { };
+    private static final Action NOOP_ACTION = () -> { };
+    private static final Consumer<Throwable> NOOP_ERROR = e -> { };
+    private static final Consumer<org.reactivestreams.Subscription> NOOP_SUB = s -> { };
+    private static final LongConsumer NOOP_LONG_CONSUMER = n -> { };
+
+    @Setup(Level.Trial)
+    public void setUp() {
+        // Create a parallel flowable that emits a fixed range of integers.
+        source = Flowable.range(1, itemCount)
+                .parallel(parallelism)
+                .runOn(Schedulers.computation());
+
+        // Wrap the source with ParallelPeek using no‑op side‑effects.
+        peekOperator = new ParallelPeek<>(
+                source,
+                NOOP_CONSUMER,          // onNext
+                NOOP_CONSUMER,          // onAfterNext
+                NOOP_ERROR,             // onError
+                NOOP_ACTION,            // onComplete
+                NOOP_ACTION,            // onAfterTerminated
+                NOOP_SUB,               // onSubscribe
+                NOOP_LONG_CONSUMER,     // onRequest
+                NOOP_ACTION             // onCancel
+        );
+    }
+
+    /**
+     * Consumes the entire stream and feeds each item into the Blackhole.
+     * The Blackhole prevents dead‑code elimination.
+     */
+    @Benchmark
+    public void peekThroughput(Blackhole bh) {
+        // Convert back to a sequential Flowable, then block and consume.
+        peekOperator
+                .sequential()
+                .subscribe(bh::consume);
+        // Ensure the subscription has completed before returning.
+        // The sequential Flowable blocks until termination.
+        // No additional synchronization is required because the
+        // subscription runs on the computation scheduler and the
+        // main thread waits for completion.
+    }
+}
+```

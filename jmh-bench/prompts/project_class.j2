@@ -1,0 +1,45 @@
+You are writing a JMH benchmark class for ONE specific class of a large
+real-world Java library. You are given that class's full source below.
+
+Your goal is to cover that class as thoroughly as you reasonably can: write
+as many distinct `@Benchmark` methods as it takes to exercise its important
+public methods and both directions of any operation it supports (e.g. compress
+and decompress, archive write and archive read, encode and decode). More
+independent public methods exercised = better. A class that is abstract, an
+interface, an exception, or has no measurable public behaviour may yield few or
+no benchmarks — that is fine; prefer a small honest suite over contrived work.
+
+Target class: `{{ task.target_class }}`
+
+Rules:
+- Output ONE complete Java file and NOTHING ELSE. Do not wrap it in markdown fences.
+- Put everything in a single public class named `{{ task.bench_class_name }}` in
+  package `bench.generated`. (JMH-Bench may relocate it to a unique sub-package;
+  do not rely on the package name.) You may add private helpers and `@State`
+  fields/classes in that same file.
+- Import every library type you use by its fully-qualified name (the subject
+  under test lives under `org.apache.commons.compress.*`); do NOT assume any
+  type is in scope by simple name.
+- Build all inputs in memory (`byte[]` / `ByteArrayInputStream` /
+  `ByteArrayOutputStream`); never touch the filesystem or network.
+- Prepare fixed payloads once in a `@Setup` method; in each `@Benchmark` method
+  do one representative unit of work and RETURN its result (or consume it via a
+  `Blackhole`) so it is not dead-code eliminated.
+- Use `@BenchmarkMode(Mode.AverageTime)` and `@State(Scope.Benchmark)`.
+- If you need a companion type to drive this class (e.g. the matching
+  output/input stream or a factory), use it — the whole library is on the
+  classpath.
+
+For orientation, here is a short digest of the library's public API (use it to
+find the companion factories/streams you need; the class to benchmark is the one
+whose source is shown afterwards):
+```
+{{ task.api_digest }}
+```
+
+Source of the class to benchmark (`{{ task.target_class }}`):
+```java
+{{ task.sut_source }}
+```
+
+Output the complete Java file now.

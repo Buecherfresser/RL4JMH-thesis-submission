@@ -1,0 +1,25 @@
+instance_id: flink_kryo_input_read_001
+target_class: bench.IntInput
+expected_input_shapes: []
+tags:
+- bytes
+- flink
+- real-world
+provenance:
+  project: apache/flink
+  url: https://github.com/apache/flink/pull/24586
+  commit: 39779829b8853c61c9da9eaf193f0fedf5857f7b
+  description: 'Inspired by Flink PR #24586 ([FLINK-34954] Kryo Input bug fix).
+
+    The simplified SUT here decodes a big-endian int from a byte
+
+    buffer; the full real class is not extracted, so the SUT may
+
+    be expanded later by following the linked PR.
+
+    '
+junit_test_path: tests/IntInputTest.java
+regressions:
+- id: bytebuffer_per_read
+  patch: regressions/bytebuffer_per_read.patch
+  description: Allocate a ByteBuffer per readInt call.

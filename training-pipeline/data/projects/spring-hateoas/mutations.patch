@@ -1,0 +1,665 @@
+diff --git a/org/springframework/hateoas/Affordance.java b/org/springframework/hateoas/Affordance.java
+index 2109c1c..d88311b 100644
+--- a/org/springframework/hateoas/Affordance.java
++++ b/org/springframework/hateoas/Affordance.java
+@@ -48,7 +48,7 @@ public final class Affordance implements Iterable<AffordanceModel> {
+ 	 */
+ 	@Nullable
+ 	@SuppressWarnings("unchecked")
+-	public <T extends AffordanceModel> T getAffordanceModel(MediaType mediaType) {
++	public <T extends AffordanceModel> T getAffordanceModel(MediaType mediaType) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(27);
+ 		return (T) this.models.get(mediaType);
+ 	}
+ 
+@@ -60,7 +60,7 @@ public final class Affordance implements Iterable<AffordanceModel> {
+ 	 * @since 3.0
+ 	 */
+ 	@SuppressWarnings("unchecked")
+-	public <T extends AffordanceModel> T getRequiredAffordanceModel(MediaType mediaType) {
++	public <T extends AffordanceModel> T getRequiredAffordanceModel(MediaType mediaType) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(33);
+ 
+ 		var result = getAffordanceModel(mediaType);
+ 
+diff --git a/org/springframework/hateoas/CollectionModel.java b/org/springframework/hateoas/CollectionModel.java
+index 5761cc7..72bda74 100644
+--- a/org/springframework/hateoas/CollectionModel.java
++++ b/org/springframework/hateoas/CollectionModel.java
+@@ -80,7 +80,7 @@ public class CollectionModel<T> extends RepresentationModel<CollectionModel<T>>
+ 	 * @return
+ 	 * @since 1.1
+ 	 */
+-	public static <T> CollectionModel<T> empty() {
++	public static <T> CollectionModel<T> empty() { org.springframework.hateoas.jmhbench.MutationSwitch.tick(39);
+ 		return of(Collections.emptyList());
+ 	}
+ 
+@@ -92,7 +92,7 @@ public class CollectionModel<T> extends RepresentationModel<CollectionModel<T>>
+ 	 * @since 1.4
+ 	 * @see #withFallbackType(Class, Class...)
+ 	 */
+-	public static <T> CollectionModel<T> empty(Class<T> elementType, Class<?>... generics) {
++	public static <T> CollectionModel<T> empty(Class<T> elementType, Class<?>... generics) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(45);
+ 		return empty(ResolvableType.forClassWithGenerics(elementType, generics));
+ 	}
+ 
+diff --git a/org/springframework/hateoas/LinkParser.java b/org/springframework/hateoas/LinkParser.java
+index 5c95770..9be4b44 100644
+--- a/org/springframework/hateoas/LinkParser.java
++++ b/org/springframework/hateoas/LinkParser.java
+@@ -37,7 +37,7 @@ class LinkParser {
+ 	 * @param source must not be {@literal null}.
+ 	 * @return will never be {@literal null}.
+ 	 */
+-	public static List<Link> parseLinks(String source) {
++	public static List<Link> parseLinks(String source) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(1);
+ 
+ 		var links = new ArrayList<Link>();
+ 		int l = source.length();
+@@ -111,7 +111,7 @@ class LinkParser {
+ 	 * @param input must not be {@literal null}.
+ 	 * @return
+ 	 */
+-	public static Link parseLink(String input) {
++	public static Link parseLink(String input) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(8);
+ 		return parseLink(input, new int[] { 0 });
+ 	}
+ 
+diff --git a/org/springframework/hateoas/StringLinkRelation.java b/org/springframework/hateoas/StringLinkRelation.java
+index 1b0d5fd..2443366 100644
+--- a/org/springframework/hateoas/StringLinkRelation.java
++++ b/org/springframework/hateoas/StringLinkRelation.java
+@@ -45,7 +45,7 @@ final class StringLinkRelation implements LinkRelation, Serializable {
+ 	 * @return
+ 	 */
+ 	@JsonCreator
+-	public static StringLinkRelation of(String relation) {
++	public static StringLinkRelation of(String relation) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(15);
+ 
+ 		Assert.hasText(relation, "Relation must not be null or empty!");
+ 
+@@ -65,7 +65,7 @@ final class StringLinkRelation implements LinkRelation, Serializable {
+ 	 */
+ 	@JsonValue
+ 	@Override
+-	public String value() {
++	public String value() { org.springframework.hateoas.jmhbench.MutationSwitch.tick(21);
+ 		return relation;
+ 	}
+ 
+diff --git a/org/springframework/hateoas/aot/AotUtils.java b/org/springframework/hateoas/aot/AotUtils.java
+index 2298978..77ee14f 100644
+--- a/org/springframework/hateoas/aot/AotUtils.java
++++ b/org/springframework/hateoas/aot/AotUtils.java
+@@ -63,7 +63,7 @@ class AotUtils {
+ 	 * @param context must not be {@literal null}.
+ 	 */
+ 	public static void registerModelDomainTypesForReflection(ResolvableType type, ReflectionHints reflection,
+-			Class<?> context) {
++			Class<?> context) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(2);
+ 
+ 		if (HttpEntity.class.isAssignableFrom(type.resolve(Object.class))) {
+ 			registerModelDomainTypesForReflection(type.as(HttpEntity.class).getGeneric(0), reflection, context);
+@@ -81,7 +81,7 @@ class AotUtils {
+ 	 * @param reflection must not be {@literal null}.
+ 	 * @param context must not be {@literal null}.
+ 	 */
+-	public static void registerTypeForReflection(Class<?> type, ReflectionHints reflection, Class<?> context) {
++	public static void registerTypeForReflection(Class<?> type, ReflectionHints reflection, Class<?> context) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(9);
+ 
+ 		if (SEEN_TYPES.contains(type)) {
+ 			return;
+diff --git a/org/springframework/hateoas/aot/ControllerMethodReturnTypeAotProcessor.java b/org/springframework/hateoas/aot/ControllerMethodReturnTypeAotProcessor.java
+index 17c5a76..338dcad 100644
+--- a/org/springframework/hateoas/aot/ControllerMethodReturnTypeAotProcessor.java
++++ b/org/springframework/hateoas/aot/ControllerMethodReturnTypeAotProcessor.java
+@@ -83,7 +83,7 @@ public class ControllerMethodReturnTypeAotProcessor implements BeanRegistrationA
+ 	 */
+ 	@Override
+ 	@Nullable
+-	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
++	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(16);
+ 
+ 		var beanClass = registeredBean.getBeanClass();
+ 
+@@ -116,7 +116,7 @@ public class ControllerMethodReturnTypeAotProcessor implements BeanRegistrationA
+ 		 * @see org.springframework.beans.factory.aot.BeanRegistrationAotContribution#applyTo(org.springframework.aot.generate.GenerationContext, org.springframework.beans.factory.aot.BeanRegistrationCode)
+ 		 */
+ 		@Override
+-		public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
++		public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(22);
+ 
+ 			Class<?> proxyType = registerCglibProxy(beanClass, beanClass, generationContext);
+ 
+diff --git a/org/springframework/hateoas/aot/HateoasTypesRuntimeHints.java b/org/springframework/hateoas/aot/HateoasTypesRuntimeHints.java
+index fda4c71..ee2de5c 100644
+--- a/org/springframework/hateoas/aot/HateoasTypesRuntimeHints.java
++++ b/org/springframework/hateoas/aot/HateoasTypesRuntimeHints.java
+@@ -38,7 +38,7 @@ class HateoasTypesRuntimeHints implements RuntimeHintsRegistrar {
+ 	 * @see org.springframework.aot.hint.RuntimeHintsRegistrar#registerHints(org.springframework.aot.hint.RuntimeHints, java.lang.ClassLoader)
+ 	 */
+ 	@Override
+-	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
++	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(28);
+ 
+ 		var packageName = RepresentationModel.class.getPackageName();
+ 		var reflection = hints.reflection();
+diff --git a/org/springframework/hateoas/aot/HypermediaTypeAotProcessor.java b/org/springframework/hateoas/aot/HypermediaTypeAotProcessor.java
+index e6ae1c4..9317850 100644
+--- a/org/springframework/hateoas/aot/HypermediaTypeAotProcessor.java
++++ b/org/springframework/hateoas/aot/HypermediaTypeAotProcessor.java
+@@ -47,7 +47,7 @@ class HypermediaTypeAotProcessor implements BeanRegistrationAotProcessor {
+ 	 * @see org.springframework.beans.factory.aot.BeanRegistrationAotProcessor#processAheadOfTime(org.springframework.beans.factory.support.RegisteredBean)
+ 	 */
+ 	@Override
+-	public @Nullable BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
++	public @Nullable BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(34);
+ 
+ 		EnableHypermediaSupport annotation = AnnotatedElementUtils.findMergedAnnotation(registeredBean.getBeanClass(),
+ 				EnableHypermediaSupport.class);
+@@ -90,7 +90,7 @@ class HypermediaTypeAotProcessor implements BeanRegistrationAotProcessor {
+ 		 * @see org.springframework.beans.factory.aot.BeanRegistrationAotContribution#applyTo(org.springframework.aot.generate.GenerationContext, org.springframework.beans.factory.aot.BeanRegistrationCode)
+ 		 */
+ 		@Override
+-		public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
++		public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(40);
+ 
+ 			mediaTypePackage.forEach(it -> {
+ 
+diff --git a/org/springframework/hateoas/aot/HypermediaTypesRuntimeHints.java b/org/springframework/hateoas/aot/HypermediaTypesRuntimeHints.java
+index a3aa962..8bf3cfc 100644
+--- a/org/springframework/hateoas/aot/HypermediaTypesRuntimeHints.java
++++ b/org/springframework/hateoas/aot/HypermediaTypesRuntimeHints.java
+@@ -57,7 +57,7 @@ class HypermediaTypesRuntimeHints implements RuntimeHintsRegistrar {
+ 	 * @see org.springframework.aot.hint.RuntimeHintsRegistrar#registerHints(org.springframework.aot.hint.RuntimeHints, java.lang.ClassLoader)
+ 	 */
+ 	@Override
+-	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
++	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(46);
+ 
+ 		AotUtils.registerTypesForReflection(hypermediaPackage, hints.reflection(),
+ 				HAS_JACKSON_SUPER_TYPE_FILTER, IS_JACKSON_ANNOTATION_PRESENT_FILTER);
+diff --git a/org/springframework/hateoas/client/Hop.java b/org/springframework/hateoas/client/Hop.java
+index 5cc17c7..028781a 100644
+--- a/org/springframework/hateoas/client/Hop.java
++++ b/org/springframework/hateoas/client/Hop.java
+@@ -62,7 +62,7 @@ public final class Hop {
+ 	 * @param rel must not be {@literal null} or empty.
+ 	 * @return
+ 	 */
+-	public static Hop rel(String rel) {
++	public static Hop rel(String rel) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(3);
+ 
+ 		Assert.hasText(rel, "Relation must not be null or empty!");
+ 
+@@ -76,7 +76,7 @@ public final class Hop {
+ 	 * @param value can be {@literal null}.
+ 	 * @return
+ 	 */
+-	public Hop withParameter(String name, Object value) {
++	public Hop withParameter(String name, Object value) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(10);
+ 
+ 		Assert.hasText(name, "Name must not be null or empty!");
+ 
+diff --git a/org/springframework/hateoas/client/JsonPathLinkDiscoverer.java b/org/springframework/hateoas/client/JsonPathLinkDiscoverer.java
+index a6b4fda..1217a24 100644
+--- a/org/springframework/hateoas/client/JsonPathLinkDiscoverer.java
++++ b/org/springframework/hateoas/client/JsonPathLinkDiscoverer.java
+@@ -67,7 +67,7 @@ public class JsonPathLinkDiscoverer implements LinkDiscoverer {
+ 	 * @see org.springframework.hateoas.LinkDiscoverer#findLinkWithRel(org.springframework.hateoas.LinkRelation, java.lang.String)
+ 	 */
+ 	@Override
+-	public Optional<Link> findLinkWithRel(LinkRelation relation, String representation) {
++	public Optional<Link> findLinkWithRel(LinkRelation relation, String representation) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(17);
+ 		return firstOrEmpty(findLinksWithRel(relation, representation));
+ 	}
+ 
+@@ -76,7 +76,7 @@ public class JsonPathLinkDiscoverer implements LinkDiscoverer {
+ 	 * @see org.springframework.hateoas.LinkDiscoverer#findLinkWithRel(org.springframework.hateoas.LinkRelation, java.io.InputStream)
+ 	 */
+ 	@Override
+-	public Optional<Link> findLinkWithRel(LinkRelation relation, InputStream representation) {
++	public Optional<Link> findLinkWithRel(LinkRelation relation, InputStream representation) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(23);
+ 		return firstOrEmpty(findLinksWithRel(relation, representation));
+ 	}
+ 
+diff --git a/org/springframework/hateoas/client/LinkDiscoverers.java b/org/springframework/hateoas/client/LinkDiscoverers.java
+index cae9753..892ba64 100644
+--- a/org/springframework/hateoas/client/LinkDiscoverers.java
++++ b/org/springframework/hateoas/client/LinkDiscoverers.java
+@@ -48,7 +48,7 @@ public class LinkDiscoverers {
+ 	 * @param mediaType
+ 	 * @return will never be {@literal null}.
+ 	 */
+-	public Optional<LinkDiscoverer> getLinkDiscovererFor(MediaType mediaType) {
++	public Optional<LinkDiscoverer> getLinkDiscovererFor(MediaType mediaType) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(29);
+ 		return discoverers.getPluginFor(mediaType);
+ 	}
+ 
+@@ -58,7 +58,7 @@ public class LinkDiscoverers {
+ 	 * @param mediaType
+ 	 * @return
+ 	 */
+-	public Optional<LinkDiscoverer> getLinkDiscovererFor(String mediaType) {
++	public Optional<LinkDiscoverer> getLinkDiscovererFor(String mediaType) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(35);
+ 		return getLinkDiscovererFor(MediaType.valueOf(mediaType));
+ 	}
+ 
+diff --git a/org/springframework/hateoas/client/Rels.java b/org/springframework/hateoas/client/Rels.java
+index 0f24670..c94eda2 100644
+--- a/org/springframework/hateoas/client/Rels.java
++++ b/org/springframework/hateoas/client/Rels.java
+@@ -40,7 +40,7 @@ class Rels {
+ 	 * @param discoverers must not be {@literal null}.
+ 	 * @return
+ 	 */
+-	public static Rel getRelFor(String rel, LinkDiscoverers discoverers) {
++	public static Rel getRelFor(String rel, LinkDiscoverers discoverers) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(41);
+ 
+ 		Assert.hasText(rel, "Relation name must not be null!");
+ 		Assert.notNull(discoverers, "LinkDiscoverers must not be null!");
+@@ -94,7 +94,7 @@ class Rels {
+ 		 * @see org.springframework.hateoas.client.Rels.Rel#findInResponse(java.lang.String, org.springframework.http.MediaType)
+ 		 */
+ 		@Override
+-		public Optional<Link> findInResponse(String response, MediaType mediaType) {
++		public Optional<Link> findInResponse(String response, MediaType mediaType) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(47);
+ 
+ 			return discoverers //
+ 					.getRequiredLinkDiscovererFor(mediaType) //
+diff --git a/org/springframework/hateoas/config/HateoasConfiguration.java b/org/springframework/hateoas/config/HateoasConfiguration.java
+index 6ddfb07..5f97efa 100644
+--- a/org/springframework/hateoas/config/HateoasConfiguration.java
++++ b/org/springframework/hateoas/config/HateoasConfiguration.java
+@@ -72,7 +72,7 @@ public class HateoasConfiguration {
+ 	private @Autowired ApplicationContext context;
+ 
+ 	@Bean
+-	public MessageResolver messageResolver() {
++	public MessageResolver messageResolver() { org.springframework.hateoas.jmhbench.MutationSwitch.tick(4);
+ 		return MessageResolver.of(lookupMessageSource());
+ 	}
+ 
+diff --git a/org/springframework/hateoas/config/HypermediaConfigurationImportSelector.java b/org/springframework/hateoas/config/HypermediaConfigurationImportSelector.java
+index bf9660f..e4c7c0d 100644
+--- a/org/springframework/hateoas/config/HypermediaConfigurationImportSelector.java
++++ b/org/springframework/hateoas/config/HypermediaConfigurationImportSelector.java
+@@ -55,7 +55,7 @@ class HypermediaConfigurationImportSelector implements ImportSelector, ResourceL
+ 	 * @see org.springframework.context.ResourceLoaderAware#setResourceLoader(org.springframework.core.io.ResourceLoader)
+ 	 */
+ 	@Override
+-	public void setResourceLoader(ResourceLoader resourceLoader) {
++	public void setResourceLoader(ResourceLoader resourceLoader) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(11);
+ 		this.resourceLoader = resourceLoader;
+ 	}
+ 
+@@ -64,7 +64,7 @@ class HypermediaConfigurationImportSelector implements ImportSelector, ResourceL
+ 	 * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
+ 	 */
+ 	@Override
+-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
++	public void setBeanFactory(BeanFactory beanFactory) throws BeansException { org.springframework.hateoas.jmhbench.MutationSwitch.tick(18);
+ 		this.beanFactory = (ConfigurableBeanFactory) beanFactory;
+ 	}
+ 
+diff --git a/org/springframework/hateoas/config/HypermediaRestTemplateConfigurer.java b/org/springframework/hateoas/config/HypermediaRestTemplateConfigurer.java
+index af5e4a4..4df2175 100644
+--- a/org/springframework/hateoas/config/HypermediaRestTemplateConfigurer.java
++++ b/org/springframework/hateoas/config/HypermediaRestTemplateConfigurer.java
+@@ -42,7 +42,7 @@ public class HypermediaRestTemplateConfigurer {
+ 	 * @param template
+ 	 * @return {@link RestTemplate} capable of speaking hypermedia.
+ 	 */
+-	public RestTemplate registerHypermediaTypes(RestTemplate template) {
++	public RestTemplate registerHypermediaTypes(RestTemplate template) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(24);
+ 
+ 		converters.augmentClient(template.getMessageConverters());
+ 
+diff --git a/org/springframework/hateoas/config/HypermediaWebClientConfigurer.java b/org/springframework/hateoas/config/HypermediaWebClientConfigurer.java
+index b84c347..fcaacd9 100644
+--- a/org/springframework/hateoas/config/HypermediaWebClientConfigurer.java
++++ b/org/springframework/hateoas/config/HypermediaWebClientConfigurer.java
+@@ -45,7 +45,7 @@ public class HypermediaWebClientConfigurer {
+ 	 * @param builder
+ 	 * @return {@link WebClient.Builder} registered to handle hypermedia types.
+ 	 */
+-	public WebClient.Builder registerHypermediaTypes(WebClient.Builder builder) {
++	public WebClient.Builder registerHypermediaTypes(WebClient.Builder builder) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(30);
+ 
+ 		return builder.codecs(it -> {
+ 			it.defaultCodecs().configureDefaultCodec(customizer);
+diff --git a/org/springframework/hateoas/config/HypermediaWebTestClientConfigurer.java b/org/springframework/hateoas/config/HypermediaWebTestClientConfigurer.java
+index 71b28b3..6405fed 100644
+--- a/org/springframework/hateoas/config/HypermediaWebTestClientConfigurer.java
++++ b/org/springframework/hateoas/config/HypermediaWebTestClientConfigurer.java
+@@ -71,7 +71,7 @@ public class HypermediaWebTestClientConfigurer implements WebTestClientConfigure
+ 	@Override
+ 	public void afterConfigurerAdded(WebTestClient.Builder builder, //
+ 			@Nullable WebHttpHandlerBuilder webHttpHandlerBuilder, //
+-			@Nullable ClientHttpConnector clientHttpConnector) {
++			@Nullable ClientHttpConnector clientHttpConnector) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(36);
+ 		builder.codecs(this.configurer);
+ 	}
+ }
+diff --git a/org/springframework/hateoas/config/RestTemplateHateoasConfiguration.java b/org/springframework/hateoas/config/RestTemplateHateoasConfiguration.java
+index 591c546..20a38a7 100644
+--- a/org/springframework/hateoas/config/RestTemplateHateoasConfiguration.java
++++ b/org/springframework/hateoas/config/RestTemplateHateoasConfiguration.java
+@@ -66,7 +66,7 @@ class RestTemplateHateoasConfiguration {
+ 		 */
+ 		@NonNull
+ 		@Override
+-		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
++		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException { org.springframework.hateoas.jmhbench.MutationSwitch.tick(42);
+ 
+ 			return !RestTemplate.class.isInstance(bean) //
+ 					? bean
+diff --git a/org/springframework/hateoas/config/WebClientHateoasConfiguration.java b/org/springframework/hateoas/config/WebClientHateoasConfiguration.java
+index 7d9475d..2b1c8ee 100644
+--- a/org/springframework/hateoas/config/WebClientHateoasConfiguration.java
++++ b/org/springframework/hateoas/config/WebClientHateoasConfiguration.java
+@@ -76,7 +76,7 @@ class WebClientHateoasConfiguration {
+ 		 */
+ 		@NonNull
+ 		@Override
+-		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
++		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException { org.springframework.hateoas.jmhbench.MutationSwitch.tick(48);
+ 
+ 			return !WebClient.class.isInstance(bean) //
+ 					? bean //
+diff --git a/org/springframework/hateoas/jmhbench/MutationSwitch.java b/org/springframework/hateoas/jmhbench/MutationSwitch.java
+new file mode 100644
+index 0000000..7964ea7
+--- /dev/null
++++ b/org/springframework/hateoas/jmhbench/MutationSwitch.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * Generated by jmhgen (jmh-make-mutants); do not edit by hand.
++ *
++ * JMH-Bench-style performance-mutation switch baked into a copy of the subject-under-test.
++ * Each call site {@code MutationSwitch.tick(id)} is an independent, dormant performance
++ * mutant. Exactly one mutant is armed per JVM via {@code -Djmhbench.mutant=<id>}; when armed,
++ * the matching site injects a tiny, fixed, reliably measurable latency. With
++ * {@code -Djmhbench.record=true} the switch instead counts how many times each mutant id was
++ * reached and dumps the counts to {@code -Djmhbench.record.file} at JVM shutdown.
++ */
++package org.springframework.hateoas.jmhbench;
++
++import java.io.IOException;
++import java.io.Writer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++
++public final class MutationSwitch {
++
++    /** Number of mutants defined in this build. */
++    public static final int COUNT = 50;
++
++    private static final int ARMED = Integer.getInteger("jmhbench.mutant", -1);
++    private static final boolean RECORD = Boolean.getBoolean("jmhbench.record");
++    private static final long[] HITS = new long[COUNT + 1];
++
++    static {
++        if (RECORD) {
++            final String file = System.getProperty("jmhbench.record.file");
++            if (file != null && !file.isEmpty()) {
++                Runtime.getRuntime().addShutdownHook(new Thread(() -> dump(file)));
++            }
++        }
++    }
++
++    private MutationSwitch() {
++    }
++
++    /**
++     * Mutation hook. No-op unless this {@code id} is armed (then it slows down) or recording is
++     * enabled (then it counts the reach).
++     *
++     * @param id the mutant id for this call site
++     */
++    public static void tick(final int id) {
++        if (RECORD && id >= 0 && id < HITS.length) {
++            HITS[id]++;
++        }
++        if (id == ARMED) {
++            slow();
++        }
++    }
++
++    private static void slow() {
++        try {
++            // Heavyweight operator: a tiny, fixed latency (see the JMH-Bench plan).
++            Thread.sleep(0, 1);
++        } catch (final InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++
++    private static void dump(final String file) {
++        final StringBuilder sb = new StringBuilder();
++        for (int i = 0; i < HITS.length; i++) {
++            if (HITS[i] > 0) {
++                sb.append(i).append(' ').append(HITS[i]).append('\n');
++            }
++        }
++        try (Writer w = Files.newBufferedWriter(Paths.get(file), StandardCharsets.UTF_8)) {
++            w.write(sb.toString());
++        } catch (final IOException e) {
++            // best-effort: a failed dump just means no coverage for this run
++        }
++    }
++}
+diff --git a/org/springframework/hateoas/mediatype/PropertyUtils.java b/org/springframework/hateoas/mediatype/PropertyUtils.java
+index f47688e..7a98745 100644
+--- a/org/springframework/hateoas/mediatype/PropertyUtils.java
++++ b/org/springframework/hateoas/mediatype/PropertyUtils.java
+@@ -96,12 +96,12 @@ public class PropertyUtils {
+ 		}
+ 	}
+ 
+-	public static Map<String, Object> extractPropertyValues(@Nullable Object object) {
++	public static Map<String, Object> extractPropertyValues(@Nullable Object object) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(5);
+ 		return extractPropertyValues(object, true);
+ 	}
+ 
+ 	@SuppressWarnings("unchecked")
+-	public static <T> T createObjectFromProperties(BeanDescription description, Map<String, Object> properties) {
++	public static <T> T createObjectFromProperties(BeanDescription description, Map<String, Object> properties) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(12);
+ 
+ 		Class<?> clazz = description.getBeanClass();
+ 		T obj = (T) BeanUtils.instantiateClass(clazz);
+diff --git a/org/springframework/hateoas/mediatype/hal/HalModelBuilder.java b/org/springframework/hateoas/mediatype/hal/HalModelBuilder.java
+index c8a6eed..bb34e96 100644
+--- a/org/springframework/hateoas/mediatype/hal/HalModelBuilder.java
++++ b/org/springframework/hateoas/mediatype/hal/HalModelBuilder.java
+@@ -60,7 +60,7 @@ public class HalModelBuilder {
+ 	 *
+ 	 * @return will never be {@literal null}.
+ 	 */
+-	public static HalModelBuilder halModel() {
++	public static HalModelBuilder halModel() { org.springframework.hateoas.jmhbench.MutationSwitch.tick(19);
+ 		return new HalModelBuilder(new EmbeddedWrappers(false));
+ 	}
+ 
+@@ -70,7 +70,7 @@ public class HalModelBuilder {
+ 	 * @param wrappers must not be {@literal null}.
+ 	 * @return will never be {@literal null}.
+ 	 */
+-	public static HalModelBuilder halModel(EmbeddedWrappers wrappers) {
++	public static HalModelBuilder halModel(EmbeddedWrappers wrappers) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(25);
+ 
+ 		Assert.notNull(wrappers, "EmbeddedWrappers must not be null!");
+ 
+diff --git a/org/springframework/hateoas/mediatype/hal/forms/HalFormsTemplateBuilder.java b/org/springframework/hateoas/mediatype/hal/forms/HalFormsTemplateBuilder.java
+index c029593..122b325 100644
+--- a/org/springframework/hateoas/mediatype/hal/forms/HalFormsTemplateBuilder.java
++++ b/org/springframework/hateoas/mediatype/hal/forms/HalFormsTemplateBuilder.java
+@@ -52,7 +52,7 @@ class HalFormsTemplateBuilder {
+ 	 * @param resource must not be {@literal null}.
+ 	 * @return will never be {@literal null}.
+ 	 */
+-	public Map<String, HalFormsTemplate> findTemplates(RepresentationModel<?> resource) {
++	public Map<String, HalFormsTemplate> findTemplates(RepresentationModel<?> resource) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(31);
+ 
+ 		Map<String, HalFormsTemplate> templates = new HashMap<>();
+ 		Link selfLink = resource.getLink(IanaLinkRelations.SELF).orElse(null);
+@@ -108,7 +108,7 @@ class HalFormsTemplateBuilder {
+ 			this.soleTemplate = soleTemplate;
+ 		}
+ 
+-		public static TemplateTitle of(HalFormsAffordanceModel affordance, boolean soleTemplate) {
++		public static TemplateTitle of(HalFormsAffordanceModel affordance, boolean soleTemplate) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(37);
+ 			return new TemplateTitle(affordance, soleTemplate);
+ 		}
+ 
+diff --git a/org/springframework/hateoas/mediatype/jsonpath/JacksonMappingProvider.java b/org/springframework/hateoas/mediatype/jsonpath/JacksonMappingProvider.java
+index 9a67508..3745b23 100644
+--- a/org/springframework/hateoas/mediatype/jsonpath/JacksonMappingProvider.java
++++ b/org/springframework/hateoas/mediatype/jsonpath/JacksonMappingProvider.java
+@@ -38,7 +38,7 @@ public class JacksonMappingProvider implements MappingProvider {
+ 	}
+ 
+ 	@Override
+-	public <T> @Nullable T map(Object source, Class<T> targetType, Configuration configuration) {
++	public <T> @Nullable T map(Object source, Class<T> targetType, Configuration configuration) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(43);
+ 
+ 		if (source == null) {
+ 			return null;
+@@ -54,7 +54,7 @@ public class JacksonMappingProvider implements MappingProvider {
+ 	@Override
+ 	@SuppressWarnings("unchecked")
+ 	public <T> @Nullable T map(Object source, final TypeRef<T> targetType,
+-			Configuration configuration) {
++			Configuration configuration) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(49);
+ 
+ 		if (source == null) {
+ 			return null;
+diff --git a/org/springframework/hateoas/server/core/AnnotationMappingDiscoverer.java b/org/springframework/hateoas/server/core/AnnotationMappingDiscoverer.java
+index 238f641..b485d97 100644
+--- a/org/springframework/hateoas/server/core/AnnotationMappingDiscoverer.java
++++ b/org/springframework/hateoas/server/core/AnnotationMappingDiscoverer.java
+@@ -77,7 +77,7 @@ public class AnnotationMappingDiscoverer implements RawMappingDiscoverer {
+ 	 */
+ 	@Override
+ 	@Nullable
+-	public UriMapping getUriMapping(Class<?> type) {
++	public UriMapping getUriMapping(Class<?> type) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(6);
+ 		return UriMapping.of(getMapping(type));
+ 	}
+ 
+@@ -87,7 +87,7 @@ public class AnnotationMappingDiscoverer implements RawMappingDiscoverer {
+ 	 */
+ 	@Override
+ 	@Nullable
+-	public UriMapping getUriMapping(Method method) {
++	public UriMapping getUriMapping(Method method) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(13);
+ 
+ 		Assert.notNull(method, "Method must not be null!");
+ 
+diff --git a/org/springframework/hateoas/server/core/CachingMappingDiscoverer.java b/org/springframework/hateoas/server/core/CachingMappingDiscoverer.java
+index 5b7b944..f7b52a5 100644
+--- a/org/springframework/hateoas/server/core/CachingMappingDiscoverer.java
++++ b/org/springframework/hateoas/server/core/CachingMappingDiscoverer.java
+@@ -46,7 +46,7 @@ public class CachingMappingDiscoverer implements MappingDiscoverer {
+ 		this.delegate = delegate;
+ 	}
+ 
+-	public static CachingMappingDiscoverer of(MappingDiscoverer delegate) {
++	public static CachingMappingDiscoverer of(MappingDiscoverer delegate) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(20);
+ 		return new CachingMappingDiscoverer(delegate);
+ 	}
+ 
+@@ -56,7 +56,7 @@ public class CachingMappingDiscoverer implements MappingDiscoverer {
+ 	 */
+ 	@Nullable
+ 	@Override
+-	public UriMapping getUriMapping(Class<?> type) {
++	public UriMapping getUriMapping(Class<?> type) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(26);
+ 
+ 		String key = key(type, null);
+ 
+diff --git a/org/springframework/hateoas/server/core/DummyInvocationUtils.java b/org/springframework/hateoas/server/core/DummyInvocationUtils.java
+index ea68959..2925fa0 100644
+--- a/org/springframework/hateoas/server/core/DummyInvocationUtils.java
++++ b/org/springframework/hateoas/server/core/DummyInvocationUtils.java
+@@ -79,7 +79,7 @@ public class DummyInvocationUtils {
+ 		@Override
+ 		@Nullable
+ 		@SuppressWarnings("null")
+-		public Object invoke(org.aopalliance.intercept.MethodInvocation invocation) {
++		public Object invoke(org.aopalliance.intercept.MethodInvocation invocation) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(32);
+ 
+ 			Method method = invocation.getMethod();
+ 
+@@ -100,7 +100,7 @@ public class DummyInvocationUtils {
+ 		 * @see org.springframework.hateoas.core.DummyInvocationUtils.LastInvocationAware#getLastInvocation()
+ 		 */
+ 		@Override
+-		public @Nullable MethodInvocation getLastInvocation() {
++		public @Nullable MethodInvocation getLastInvocation() { org.springframework.hateoas.jmhbench.MutationSwitch.tick(38);
+ 			return invocation;
+ 		}
+ 
+diff --git a/org/springframework/hateoas/server/core/EncodingUtils.java b/org/springframework/hateoas/server/core/EncodingUtils.java
+index dfde5d2..8036b53 100644
+--- a/org/springframework/hateoas/server/core/EncodingUtils.java
++++ b/org/springframework/hateoas/server/core/EncodingUtils.java
+@@ -43,7 +43,7 @@ final class EncodingUtils {
+ 	 * @param source must not be {@literal null}.
+ 	 * @return
+ 	 */
+-	public static String encodePath(Object source) {
++	public static String encodePath(Object source) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(44);
+ 
+ 		Assert.notNull(source, "Path value must not be null!");
+ 
+@@ -60,7 +60,7 @@ final class EncodingUtils {
+ 	 * @param source must not be {@literal null}.
+ 	 * @return
+ 	 */
+-	public static String encodeFragment(Object source) {
++	public static String encodeFragment(Object source) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(50);
+ 
+ 		Assert.notNull(source, "Fragment value must not be null!");
+ 
+diff --git a/org/springframework/hateoas/support/ClassUtils.java b/org/springframework/hateoas/support/ClassUtils.java
+index 82da804..433c363 100644
+--- a/org/springframework/hateoas/support/ClassUtils.java
++++ b/org/springframework/hateoas/support/ClassUtils.java
+@@ -24,7 +24,7 @@ public class ClassUtils {
+ 
+ 	@Nullable
+ 	@SuppressWarnings("unchecked")
+-	public static <T> Class<T> loadIfPresent(String type) {
++	public static <T> Class<T> loadIfPresent(String type) { org.springframework.hateoas.jmhbench.MutationSwitch.tick(7);
+ 
+ 		try {
+ 			return (Class<T>) org.springframework.util.ClassUtils.forName(type,
+diff --git a/org/springframework/hateoas/support/WebStack.java b/org/springframework/hateoas/support/WebStack.java
+index 79460f8..147f414 100644
+--- a/org/springframework/hateoas/support/WebStack.java
++++ b/org/springframework/hateoas/support/WebStack.java
+@@ -60,7 +60,7 @@ public enum WebStack {
+ 	 * Based on what client/server components are on the classpath, return what configuration classes should be
+ 	 * registered.
+ 	 */
+-	public List<String> getAvailableConfigurations() {
++	public List<String> getAvailableConfigurations() { org.springframework.hateoas.jmhbench.MutationSwitch.tick(14);
+ 
+ 		List<String> configurations = new ArrayList<>();
+ 
